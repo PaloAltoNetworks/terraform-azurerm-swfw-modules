@@ -28,7 +28,7 @@ The following snippet deploys Application Insights in Workspace mode, setting th
 
 ```hcl
 module "ai" {
-  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/application_insights"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/application_insights"
 
   name                      = "vmseries-ai
   metrics_retention_in_days = 365

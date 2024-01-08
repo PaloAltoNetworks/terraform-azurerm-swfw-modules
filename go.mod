@@ -1,4 +1,4 @@
-module github.com/PaloAltoNetworks/terraform-azure-vmseries-modules
+module github.com/PaloAltoNetworks/terraform-azure-swfw-modules
 
 go 1.21
 
@@ -7,7 +7,7 @@ toolchain go1.21.2
 require (
 	// github.com/stretchr/testify v1.8.4
 	// golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1
-	github.com/PaloAltoNetworks/terraform-modules-vmseries-tests-skeleton v1.1.0
+	github.com/PaloAltoNetworks/terraform-modules-swfw-tests-skeleton v1.2.0
 	github.com/gruntwork-io/terratest v0.45.0
 )
 
