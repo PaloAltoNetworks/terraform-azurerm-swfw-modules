@@ -746,14 +746,10 @@ The most basic properties are as follows:
 
             When `bootstrap_xml_template` is set, one of the following properties might be required.
 
-        - `private_snet_key`       - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
-                                     pointing to a private Subnet definition in `var.vnets` (the `vnet_key` property is used to
-                                     identify a VNET). The Subnet definition is used to calculate static routes for a private
+        - `data_snet_key`       - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
+                                     pointing to a data Subnet definition in `var.vnets` (the `vnet_key` property is used to
+                                     identify a VNET). The Subnet definition is used to calculate static routes for a data
                                      Load Balancer health checks and for Inbound traffic.
-        - `public_snet_key`        - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
-                                     pointing to a public Subnet definition in `var.vnets` (the `vnet_key` property is used to
-                                     identify a VNET). The Subnet definition is used to calculate static routes for a public
-                                     Load Balancer health checks and for Outbound traffic.
         - `ai_update_interval`     - (`number`, optional, defaults to `5`) Application Insights update interval, used only when
                                      `ngfw_metrics` module is defined and used in this example. The Application Insights
                                      Instrumentation Key will be populated automatically.
@@ -812,8 +808,7 @@ map(object({
         static_files           = optional(map(string), {})
         bootstrap_package_path = optional(string)
         bootstrap_xml_template = optional(string)
-        private_snet_key       = optional(string)
-        public_snet_key        = optional(string)
+        data_snet_key          = optional(string)
         ai_update_interval     = optional(number, 5)
         intranet_cidr          = optional(string)
       }))

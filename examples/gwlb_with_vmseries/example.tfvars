@@ -1,6 +1,6 @@
 # --- GENERAL --- #
 location            = "North Europe"
-resource_group_name = "transit-vnet-common"
+resource_group_name = "gwlb"
 name_prefix         = "example-"
 tags = {
   "CreatedBy"   = "Palo Alto Networks"
@@ -29,58 +29,27 @@ vnets = {
           }
         }
       }
-      "public" = {
-        name = "public-nsg"
+      "data" = {
+        name = "data-nsg"
       }
     }
     route_tables = {
       "management" = {
         name = "mgmt-rt"
         routes = {
-          "private_blackhole" = {
-            name           = "private-blackhole-udr"
+          "data_blackhole" = {
+            name           = "data-blackhole-udr"
             address_prefix = "10.0.0.16/28"
-            next_hop_type  = "None"
-          }
-          "public_blackhole" = {
-            name           = "public-blackhole-udr"
-            address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
         }
       }
-      "private" = {
-        name = "private-rt"
-        routes = {
-          "default" = {
-            name                = "default-udr"
-            address_prefix      = "0.0.0.0/0"
-            next_hop_type       = "VirtualAppliance"
-            next_hop_ip_address = "10.0.0.30"
-          }
-          "mgmt_blackhole" = {
-            name           = "mgmt-blackhole-udr"
-            address_prefix = "10.0.0.0/28"
-            next_hop_type  = "None"
-          }
-          "public_blackhole" = {
-            name           = "public-blackhole-udr"
-            address_prefix = "10.0.0.32/28"
-            next_hop_type  = "None"
-          }
-        }
-      }
-      "public" = {
-        name = "public-rt"
+      "data" = {
+        name = "data-rt"
         routes = {
           "mgmt_blackhole" = {
             name           = "mgmt-blackhole-udr"
             address_prefix = "10.0.0.0/28"
-            next_hop_type  = "None"
-          }
-          "private_blackhole" = {
-            name           = "private-blackhole-udr"
-            address_prefix = "10.0.0.16/28"
             next_hop_type  = "None"
           }
         }
@@ -94,16 +63,39 @@ vnets = {
         route_table_key                 = "management"
         enable_storage_service_endpoint = true
       }
-      "private" = {
-        name             = "private-snet"
+      "data" = {
+        name             = "data-snet"
         address_prefixes = ["10.0.0.16/28"]
-        route_table_key  = "private"
+        route_table_key  = "data"
       }
-      "public" = {
-        name                       = "public-snet"
-        address_prefixes           = ["10.0.0.32/28"]
-        network_security_group_key = "public"
-        route_table_key            = "public"
+    }
+  }
+  "app1" = {
+    name          = "app1"
+    address_space = ["10.0.2.0/25"]
+    network_security_groups = {
+      "application_inbound" = {
+        name = "application-inbound-nsg"
+        rules = {
+          app_inbound = {
+            name                       = "application-allow-inbound"
+            priority                   = 100
+            direction                  = "Inbound"
+            access                     = "Allow"
+            protocol                   = "Tcp"
+            source_address_prefixes    = ["134.238.135.14", "134.238.135.140"]
+            source_port_range          = "*"
+            destination_address_prefix = "*"
+            destination_port_ranges    = ["22", "80", "443"]
+          }
+        }
+      }
+    }
+    subnets = {
+      "app1" = {
+        name                       = "app1-snet"
+        address_prefixes           = ["10.0.2.0/28"]
+        network_security_group_key = "application_inbound"
       }
     }
   }
@@ -112,11 +104,11 @@ vnets = {
 
 # --- LOAD BALANCING PART --- #
 load_balancers = {
-  "public" = {
-    name = "public-lb"
+  "app1" = {
+    name = "app1-lb"
     nsg_auto_rules_settings = {
-      nsg_vnet_key = "transit"
-      nsg_key      = "public"
+      nsg_vnet_key = "app1"
+      nsg_key      = "application_inbound"
       source_ips   = ["0.0.0.0/0"]
     }
     frontend_ips = {
@@ -124,6 +116,7 @@ load_balancers = {
         name             = "app1"
         public_ip_name   = "public-lb-app1-pip"
         create_public_ip = true
+        gwlb_key         = "gwlb"
         in_rules = {
           "balanceHttp" = {
             name     = "HTTP"
@@ -131,22 +124,10 @@ load_balancers = {
             port     = 80
           }
         }
-      }
-    }
-  }
-  "private" = {
-    name = "private-lb"
-    frontend_ips = {
-      "ha-ports" = {
-        name               = "private-vmseries"
-        vnet_key           = "transit"
-        subnet_key         = "private"
-        private_ip_address = "10.0.0.30"
-        in_rules = {
-          HA_PORTS = {
-            name     = "HA-ports"
-            port     = 0
-            protocol = "All"
+        out_rules = {
+          outbound = {
+            name     = "tcp-outbound"
+            protocol = "Tcp"
           }
         }
       }
@@ -154,7 +135,60 @@ load_balancers = {
   }
 }
 
+# --- GWLB PART --- #
+gateway_load_balancers = {
+  gwlb = {
+    name = "vmseries-gwlb"
+
+    frontend_ip = {
+      vnet_key   = "transit"
+      subnet_key = "data"
+    }
+
+    health_probe = {
+      name     = "custom-health-probe"
+      port     = 80
+      protocol = "Tcp"
+    }
+
+    backends = {
+      backend = {
+        name = "custom-backend"
+        tunnel_interfaces = {
+          internal = {
+            identifier = 800
+            port       = 2000
+            protocol   = "VXLAN"
+            type       = "Internal"
+          }
+          external = {
+            identifier = 801
+            port       = 2001
+            protocol   = "VXLAN"
+            type       = "External"
+          }
+        }
+      }
+    }
+
+    lb_rule = {
+      name = "custom-lb-rule"
+    }
+  }
+}
+
 # --- VMSERIES PART --- #
+bootstrap_storages = {
+  "bootstrap" = {
+    name = "examplegwlbbootstrap"
+    storage_network_security = {
+      vnet_key            = "transit"
+      allowed_subnet_keys = ["management"]
+      allowed_public_ips  = ["134.238.135.14", "134.238.135.140"]
+    }
+  }
+}
+
 vmseries = {
   "fw-1" = {
     name = "firewall01"
@@ -162,10 +196,15 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key          = "transit"
-      size              = "Standard_DS3_v2"
-      zone              = 1
-      bootstrap_options = "type=dhcp-client"
+      vnet_key = "transit"
+      size     = "Standard_DS3_v2"
+      zone     = 1
+      bootstrap_package = {
+        bootstrap_storage_key  = "bootstrap"
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+        bootstrap_xml_template = "templates/bootstrap-gwlb.tftpl"
+        data_snet_key          = "data"
+      }
     }
     interfaces = [
       {
@@ -174,15 +213,10 @@ vmseries = {
         create_public_ip = true
       },
       {
-        name              = "vm01-private"
-        subnet_key        = "private"
-        load_balancer_key = "private"
-      },
-      {
-        name              = "vm01-public"
-        subnet_key        = "public"
-        create_public_ip  = true
-        load_balancer_key = "public"
+        name             = "vm01-data"
+        subnet_key       = "data"
+        gwlb_key         = "gwlb"
+        gwlb_backend_key = "backend"
       }
     ]
   }
@@ -192,10 +226,15 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key          = "transit"
-      size              = "Standard_DS3_v2"
-      zone              = 2
-      bootstrap_options = "type=dhcp-client"
+      vnet_key = "transit"
+      size     = "Standard_DS3_v2"
+      zone     = 2
+      bootstrap_package = {
+        bootstrap_storage_key  = "bootstrap"
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+        bootstrap_xml_template = "templates/bootstrap-gwlb.tftpl"
+        data_snet_key          = "data"
+      }
     }
     interfaces = [
       {
@@ -204,16 +243,31 @@ vmseries = {
         create_public_ip = true
       },
       {
-        name              = "vm02-private"
-        subnet_key        = "private"
-        load_balancer_key = "private"
-      },
-      {
-        name              = "vm02-public"
-        subnet_key        = "public"
-        create_public_ip  = true
-        load_balancer_key = "public"
+        name             = "vm02-data"
+        subnet_key       = "data"
+        gwlb_key         = "gwlb"
+        gwlb_backend_key = "backend"
       }
     ]
+  }
+}
+
+
+appvms = {
+  app1vm01 = {
+    name              = "app1-vm01"
+    avzone            = "3"
+    vnet_key          = "app1"
+    subnet_key        = "app1"
+    load_balancer_key = "app1"
+    username          = "appadmin"
+    custom_data       = <<SCRIPT
+#!/bin/sh
+sudo apt-get update
+sudo apt-get install -y nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+echo "Backend VM is $(hostname)" | sudo tee /var/www/html/index.html
+SCRIPT
   }
 }

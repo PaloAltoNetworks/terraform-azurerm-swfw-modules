@@ -192,13 +192,8 @@ resource "local_file" "bootstrap_xml" {
   content = templatefile(
     each.value.bootstrap_package.bootstrap_xml_template,
     {
-      private_azure_router_ip = cidrhost(
-        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.private_snet_key],
-        1
-      )
-
-      public_azure_router_ip = cidrhost(
-        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.public_snet_key],
+      data_gateway_ip = cidrhost(
+        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.data_snet_key],
         1
       )
 
@@ -208,15 +203,6 @@ resource "local_file" "bootstrap_xml" {
       )
 
       ai_update_interval = each.value.bootstrap_package.ai_update_interval
-
-      private_network_cidr = coalesce(
-        each.value.bootstrap_package.intranet_cidr,
-        module.vnet[each.value.vnet_key].vnet_cidr[0]
-      )
-
-      mgmt_profile_appgw_cidr = flatten([
-        for _, v in var.appgws : var.vnets[v.vnet_key].subnets[v.subnet_key].address_prefixes
-      ])
     }
   )
 
@@ -403,7 +389,7 @@ module "appvm" {
   ]
 
   username    = try(each.value.username, null)
-  password    = try(each.value.password, null)
+  password    = try(random_password.this[0].result, null)
   ssh_keys    = try(each.value.ssh_keys, [])
   custom_data = try(each.value.custom_data, null)
 
