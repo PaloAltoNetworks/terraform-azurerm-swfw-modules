@@ -120,14 +120,16 @@ load_balancers = {
         gwlb_key         = "gwlb"
         in_rules = {
           "balanceHttp" = {
-            name     = "HTTP"
-            protocol = "Tcp"
-            port     = 80
+            name        = "HTTP"
+            protocol    = "Tcp"
+            port        = 80
+            floating_ip = false
           }
           "balanceHttps" = {
-            name     = "HTTPS"
-            protocol = "Tcp"
-            port     = 443
+            name        = "HTTPS"
+            protocol    = "Tcp"
+            port        = 443
+            floating_ip = false
           }
         }
         out_rules = {
