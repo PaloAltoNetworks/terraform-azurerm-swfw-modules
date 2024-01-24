@@ -98,8 +98,7 @@ Name | Type | Description
 Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
-[`zones`](#zones) | `list` | Controls zones for Load Balancer's Fronted IP configurations.
-[`backend_name`](#backend_name) | `string` | The name of the backend pool to create.
+[`load_balancer`](#load_balancer) | `object` | A map defining basic Load Balancer configuration.
 [`health_probes`](#health_probes) | `map` | Backend's health probe definition.
 [`nsg_auto_rules_settings`](#nsg_auto_rules_settings) | `object` | Controls automatic creation of NSG rules for all defined inbound rules.
 
@@ -336,7 +335,6 @@ map(object({
 
 
 
-
 ### Optional Inputs
 
 
@@ -353,39 +351,46 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### zones
+#### load_balancer
 
-Controls zones for Load Balancer's Fronted IP configurations.
+A map defining basic Load Balancer configuration.
 
-For:
+Following properties are available:
 
-- public IPs    - these are zones in which the public IP resource is available
-- private IPs   - this represents Zones to which Azure will deploy paths leading to Load Balancer frontend IPs
-                  (all frontends are affected)
+- `zones`        - (`list`, optional, defaults to `["1", "2", "3"]`) controls zones for Load Balancer's Fronted IP
+                   configurations.
 
-Setting this variable to explicit `null` disables a zonal deployment.
-This can be helpful in regions where Availability Zones are not available.
-  
-For public Load Balancers, since this setting controls also Availability Zones for public IPs,
-you need to specify all zones available in a region (typically 3): `["1","2","3"]`.
+    For:
+
+    - public IPs    - these are zones in which the public IP resource is available
+    - private IPs   - this represents Zones to which Azure will deploy paths leading to Load Balancer frontend IPs
+                      (all frontends are affected)
+
+    Setting this variable to explicit `null` disables a zonal deployment.
+    This can be helpful in regions where Availability Zones are not available.
+      
+    For public Load Balancers, since this setting controls also Availability Zones for public IPs,
+    you need to specify all zones available in a region (typically 3): `["1","2","3"]`.
+
+- `backend_name` - (`string`, optional, defaults to `vmseries_backend`) - the name of the backend pool to create. All frontends
+                   of the Load Balancer always use the same backend.
 
 
-Type: list(string)
 
-Default value: `[1 2 3]`
+Type: 
+
+```hcl
+object({
+    zones        = optional(list(string), ["1", "2", "3"])
+    backend_name = optional(string, "vmseries_backend")
+  })
+```
+
+
+Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-
-#### backend_name
-
-The name of the backend pool to create. All frontends of the Load Balancer always use the same backend.
-
-Type: string
-
-Default value: `vmseries_backend`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### health_probes
 

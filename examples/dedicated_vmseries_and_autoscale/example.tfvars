@@ -127,8 +127,10 @@ natgws = {
 # --- LOAD BALANCING PART --- #
 load_balancers = {
   "public" = {
-    name  = "public-lb"
-    zones = null
+    name = "public-lb"
+    load_balancer = {
+      zones = null
+    }
     nsg_auto_rules_settings = {
       nsg_vnet_key = "transit"
       nsg_key      = "public"
@@ -150,8 +152,10 @@ load_balancers = {
     }
   }
   "private" = {
-    name  = "private-lb"
-    zones = null
+    name = "private-lb"
+    load_balancer = {
+      zones = null
+    }
     frontend_ips = {
       "ha-ports" = {
         name               = "private-vmseries"

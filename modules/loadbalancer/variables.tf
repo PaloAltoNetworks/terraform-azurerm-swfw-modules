@@ -19,27 +19,43 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "zones" {
+variable "load_balancer" {
   description = <<-EOF
-  Controls zones for Load Balancer's Fronted IP configurations.
+  A map defining basic Load Balancer configuration.
 
-  For:
+  Following properties are available:
 
-  - public IPs    - these are zones in which the public IP resource is available
-  - private IPs   - this represents Zones to which Azure will deploy paths leading to Load Balancer frontend IPs
-                    (all frontends are affected)
+  - `zones`        - (`list`, optional, defaults to `["1", "2", "3"]`) controls zones for Load Balancer's Fronted IP
+                     configurations.
 
-  Setting this variable to explicit `null` disables a zonal deployment.
-  This can be helpful in regions where Availability Zones are not available.
-  
-  For public Load Balancers, since this setting controls also Availability Zones for public IPs,
-  you need to specify all zones available in a region (typically 3): `["1","2","3"]`.
+      For:
+
+      - public IPs    - these are zones in which the public IP resource is available
+      - private IPs   - this represents Zones to which Azure will deploy paths leading to Load Balancer frontend IPs
+                        (all frontends are affected)
+
+      Setting this variable to explicit `null` disables a zonal deployment.
+      This can be helpful in regions where Availability Zones are not available.
+      
+      For public Load Balancers, since this setting controls also Availability Zones for public IPs,
+      you need to specify all zones available in a region (typically 3): `["1","2","3"]`.
+
+  - `backend_name` - (`string`, optional, defaults to `vmseries_backend`) - the name of the backend pool to create. All frontends
+                     of the Load Balancer always use the same backend.
+
   EOF
-  default     = ["1", "2", "3"]
-  type        = list(string)
-  validation {
-    condition     = length(var.zones) > 0 || var.zones == null
-    error_message = "The `var.zones` can either be a non empty list of Availability Zones or explicit `null`."
+  default     = {}
+  nullable    = false
+  type = object({
+    zones        = optional(list(string), ["1", "2", "3"])
+    backend_name = optional(string, "vmseries_backend")
+  })
+  validation { # backend_name
+    condition     = can(regex("^\\w[\\w_\\.-]{0,78}(\\w|_)$", var.load_balancer.backend_name))
+    error_message = <<-EOF
+    The `backend_name` property can be maximum 80 chars long and most consist of word characters, dots, underscores and dashes.
+    It has to start with a word character and end with one or with an underscore.
+    EOF
   }
 }
 
@@ -315,13 +331,6 @@ variable "frontend_ips" {
     ]))
     error_message = "The `out_rule.idle_timeout_in_minutes` property should can take values between 4 and 120 (minutes)."
   }
-}
-
-variable "backend_name" {
-  description = "The name of the backend pool to create. All frontends of the Load Balancer always use the same backend."
-  default     = "vmseries_backend"
-  nullable    = false
-  type        = string
 }
 
 variable "health_probes" {

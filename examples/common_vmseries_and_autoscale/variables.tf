@@ -192,9 +192,9 @@ variable "load_balancers" {
   Following properties are available:
 
   - `name`                    - (`string`, required) a name of the Load Balancer
-  - `zones`                   - (`list`, optional, defaults to `["1", "2", "3"]`) list of zones the resource will be
-                                available in, please check the
-                                [module documentation](../../modules/loadbalancer/README.md#zones) for more details
+  - `load_balancer`           - (`map`, optional, defaults to `null`) a map defining basic Load Balancer configuration, for
+                                for details on available properties see
+                                [module documentation](../../modules/loadbalancer/README.md#load_balancer)
   - `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by
                                 load balancing rules;
                                 please check [module documentation](../../modules/loadbalancer/README.md#health_probes)
@@ -213,8 +213,8 @@ variable "load_balancers" {
 
     Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
 
-    > [!NOTE] 
-    > In this example the `subnet_id` is not available directly, three other properties were introduced instead.
+    **Note!** \
+    In this example the `subnet_id` is not available directly, three other properties were introduced instead.
 
     - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map
     - `vnet_key`    - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets` map
@@ -223,8 +223,11 @@ variable "load_balancers" {
   default     = {}
   nullable    = false
   type = map(object({
-    name  = string
-    zones = optional(list(string), ["1", "2", "3"])
+    name = string
+    load_balancer = optional(object({
+      zones        = optional(list(string))
+      backend_name = optional(string)
+    }))
     health_probes = optional(map(object({
       name                = string
       protocol            = string

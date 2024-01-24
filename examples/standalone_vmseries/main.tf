@@ -98,7 +98,7 @@ module "load_balancer" {
   name                = "${var.name_prefix}${each.value.name}"
   location            = var.location
   resource_group_name = local.resource_group.name
-  zones               = each.value.zones
+  load_balancer       = each.value.load_balancer
 
   health_probes = each.value.health_probes
 
@@ -349,7 +349,7 @@ module "appgw" {
       )
       backend_pool = merge(
         each.value.application_gateway.backend_pool,
-        { vmseries_ips = local.ips_4_nics_with_appgw_key[each.key] }
+        length(local.ips_4_nics_with_appgw_key) == 0 ? {} : { vmseries_ips = local.ips_4_nics_with_appgw_key[each.key] }
       )
     }
   )

@@ -97,7 +97,7 @@ module "load_balancer" {
   name                = "${var.name_prefix}${each.value.name}"
   location            = var.location
   resource_group_name = local.resource_group.name
-  zones               = each.value.zones
+  load_balancer       = each.value.load_balancer
 
   health_probes = each.value.health_probes
 
@@ -220,5 +220,6 @@ module "vmss" {
   )
   autoscaling_profiles = each.value.autoscaling_profiles
 
-  tags = var.tags
+  tags       = var.tags
+  depends_on = [module.vnet, module.load_balancer, module.appgw]
 }
