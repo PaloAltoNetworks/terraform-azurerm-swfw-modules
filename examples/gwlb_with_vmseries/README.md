@@ -501,10 +501,14 @@ Map with Gateway Load Balancer definitions.
 
 Following settings are available:
 - `name`         - (`string`, required) name of the Gatewa Load Balancer Gateway.
-- `frontend_ip`  - (`object`, required) frontend IP configuration (refer to [module documentation](../../modules/gwlb/README.md) for details)
-- `health_probe  - (`object`, optional) health probe settings  (refer to [module documentation](../../modules/gwlb/README.md) for details)
-- `backends`     - (`map`, optional) map of backends (refer to [module documentation](../../modules/gwlb/README.md) for details)
-- `lb_rule`      - (`object`, optional) load balancer rule  (refer to [module documentation](../../modules/gwlb/README.md) for details)
+- `frontend_ip`  - (`object`, required) frontend IP configuration
+                   (refer to [module documentation](../../modules/gwlb/README.md) for details)
+- `health_probe  - (`object`, optional) health probe settings
+                   (refer to [module documentation](../../modules/gwlb/README.md) for details)
+- `backends`     - (`map`, optional) map of backends
+                   (refer to [module documentation](../../modules/gwlb/README.md) for details)
+- `lb_rule`      - (`object`, optional) load balancer rule
+                   (refer to [module documentation](../../modules/gwlb/README.md) for details)
 
 
 Type: 
