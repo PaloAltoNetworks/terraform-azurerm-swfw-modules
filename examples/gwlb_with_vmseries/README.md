@@ -97,7 +97,7 @@ Name | Type | Description
 [`enable_zones`](#enable_zones) | `bool` | If `true`, enable zone support for resources.
 [`natgws`](#natgws) | `map` | A map defining NAT Gateways.
 [`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (private and public) Load Balancers.
-[`gateway_load_balancers`](#gateway_load_balancers) | `any` | Map with Gateway Load Balancer definitions.
+[`gateway_load_balancers`](#gateway_load_balancers) | `map` | Map with Gateway Load Balancer definitions.
 [`availability_sets`](#availability_sets) | `map` | A map defining availability sets.
 [`ngfw_metrics`](#ngfw_metrics) | `object` | A map controlling metrics-relates resources.
 [`bootstrap_storages`](#bootstrap_storages) | `map` | A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs.
@@ -184,10 +184,10 @@ Type: string
 #### vnets
 
 A map defining VNETs.
-  
+
 For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-- `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
+- `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET,
                               `false` will source an existing VNET.
 - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be
                               a full resource name, including prefixes.
@@ -290,7 +290,7 @@ Example:
 ```
 name_prefix = "test-"
 ```
-  
+
 **Note!** \
 This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name,
 even if it is also prefixed with the same value as the one in this property.
@@ -306,7 +306,7 @@ Default value: ``
 
 When set to `true` it will cause a Resource Group creation.
 Name of the newly specified RG is controlled by `resource_group_name`.
-  
+
 When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
 
 
@@ -330,12 +330,12 @@ Default value: `true`
 
 #### natgws
 
-A map defining NAT Gateways. 
+A map defining NAT Gateways.
 
 Please note that a NAT Gateway is a zonal resource, this means it's always placed in a zone (even when you do not specify one
 explicitly). Please refer to Microsoft documentation for notes on NAT Gateway's zonal resiliency.
 For detailed documentation on each property refer to [module documentation](../../modules/natgw/README.md).
-  
+
 Following properties are supported:
 - `create_natgw`       - (`bool`, optional, defaults to `true`) create (`true`) or source an existing NAT Gateway (`false`),
                          created or sourced: the NAT Gateway will be assigned to a subnet created by the `vnet` module.
@@ -417,7 +417,7 @@ Following properties are available:
                               please check [module documentation](../../modules/loadbalancer/README.md#health_probes)
                               for more specific use cases and available properties
 - `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule
-                              that will be populated with `Allow` rules for each load balancing rule (`in_rules`); please check 
+                              that will be populated with `Allow` rules for each load balancing rule (`in_rules`); please check
                               [module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings)
                               for available properties; please note that in this example two additional properties are
                               available:
@@ -430,7 +430,7 @@ Following properties are available:
 
   Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
 
-  > [!NOTE] 
+  > [!NOTE]
   > In this example the `subnet_id` is not available directly, three other properties were introduced instead.
 
   - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map
@@ -497,14 +497,52 @@ Default value: `map[]`
 
 #### gateway_load_balancers
 
-Map with Gateway Load Balancer definitions. Following settings are supported:
+Map with Gateway Load Balancer definitions.
 
-TODO: adjust type and description
+Following settings are available:
+- `name`         - (`string`, required) name of the Gatewa Load Balancer Gateway.
+- `frontend_ip`  - (`object`, required) frontend IP configuration (refer to [module documentation](../../modules/gwlb/README.md) for details)
+- `health_probe  - (`object`, optional) health probe settings  (refer to [module documentation](../../modules/gwlb/README.md) for details)
+- `backends`     - (`map`, optional) map of backends (refer to [module documentation](../../modules/gwlb/README.md) for details)
+- `lb_rule`      - (`object`, optional) load balancer rule  (refer to [module documentation](../../modules/gwlb/README.md) for details)
 
-Please consult [module documentation](../../modules/gwlb/README.md) for details.
 
+Type: 
 
-Type: any
+```hcl
+map(object({
+    name = string
+    frontend_ip = object({
+      name                       = optional(string)
+      vnet_key                   = string
+      subnet_key                 = string
+      private_ip_address         = optional(string)
+      private_ip_address_version = optional(string, "IPv4")
+    })
+    health_probe = optional(object({
+      name                = optional(string)
+      protocol            = string
+      port                = optional(number)
+      probe_threshold     = optional(number)
+      interval_in_seconds = optional(number)
+      request_path        = optional(string, "/")
+    }))
+    backends = optional(map(object({
+      name = optional(string)
+      tunnel_interfaces = map(object({
+        identifier = number
+        port       = number
+        protocol   = optional(string, "VXLAN")
+        type       = string
+      }))
+    })))
+    lb_rule = optional(object({
+      name              = optional(string)
+      load_distribution = optional(string, "Default")
+    }))
+  }))
+```
+
 
 Default value: `map[]`
 
@@ -559,7 +597,7 @@ Following properties are available:
                                 the Log Analytics Workspace
 - `sku`                       - (`string`, optional, defaults to module defaults) the SKU of the Log Analytics Workspace.
 - `metrics_retention_in_days` - (`number`, optional, defaults to module defaults) workspace and insights data retention in
-                                days, possible values are between 30 and 730. For sourced Workspaces this applies only to 
+                                days, possible values are between 30 and 730. For sourced Workspaces this applies only to
                                 the Application Insights instances.
 
 
@@ -598,7 +636,7 @@ You can create or re-use an existing Storage Account and/or File Share. For deta
                                 host (created) a Storage Account. When skipped the code will fall back to
                                 `var.resource_group_name`.
 - `storage_account`           - (`map`, optional, defaults to `{}`) a map controlling basic Storage Account configuration, for
-                                detailed documentation see 
+                                detailed documentation see
                                 [module's documentation](../../modules/bootstrap/README.md#storage_account). The property you
                                 should pay attention to is:
   - `create`                    - (`bool`, optional, defaults to module defaults) controls if the Storage Account specified in
@@ -610,7 +648,7 @@ You can create or re-use an existing Storage Account and/or File Share. For deta
   - `allowed_subnet_keys`       - (`list`, optional, defaults to `[]`) a list of keys pointing to Subnet definitions in the
                                   `var.vnets` map. These Subnets will have dedicated access to the Storage Account. For this to
                                   work they also need to have the Storage Account Service Endpoint enabled.
-  - `vnet_key`                  - a key pointing to a VNET definition in the `var.vnets` map that stores the Subnets described 
+  - `vnet_key`                  - a key pointing to a VNET definition in the `var.vnets` map that stores the Subnets described
                                   in `allowed_subnet_keys`.
 - `file_shares_configuration` - (`map`, optional, defaults to `{}`) a map defining common File Share setting. For detailed
                                 documentation see
@@ -682,7 +720,7 @@ The most basic properties are as follows:
 
     **Note!** \
     The `disable_password_authentication` property is by default `false` in this example. When using this value, you don't have
-    to specify anything but you can still additionally pass SSH keys for authentication. You can however set this property to 
+    to specify anything but you can still additionally pass SSH keys for authentication. You can however set this property to
     `true`, then you have to specify `ssh_keys` property.
 
     For all properties and their default values see [module's documentation](../../modules/vmseries/README.md#authentication).
@@ -756,13 +794,13 @@ The most basic properties are as follows:
         - `intranet_cidr`          - (`string`, optional, defaults to `null`) a CIDR of the Intranet - combined CIDR of all
                                      private networks. When set it will override the private Subnet CIDR for inbound traffic
                                      static routes.
-      
+
     For details on the other properties refer to [module's documentation](../../modules/panorama/README.md#virtual_machine).
 
 - `interfaces`      - (`list`, required) configuration of all network interfaces
-  
+
     **Note!** \
-    Order of the interfaces does matter - the 1<sup>st</sup> interface is the management one. 
+    Order of the interfaces does matter - the 1<sup>st</sup> interface is the management one.
 
     For details on available properties please see [module's documentation](../../modules/panorama/README.md#interfaces).
 
@@ -1011,10 +1049,7 @@ Default value: `map[]`
 
 #### appvms
 
-Configuration for sample application VMs. Available settings:
-
-TODO: adjust type and description
-  
+Configuration for sample application VMs.
 
 
 Type: any

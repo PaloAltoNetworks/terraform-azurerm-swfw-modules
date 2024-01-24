@@ -149,7 +149,7 @@ module "gwlb" {
 
   zones = var.enable_zones ? try(each.value.zones, null) : null
   frontend_ip = {
-    name                       = try(each.value.frontend_ip.name, "${var.name_prefix}${each.value.name}")
+    name                       = coalesce(each.value.frontend_ip.name, "${var.name_prefix}${each.value.name}")
     private_ip_address_version = try(each.value.frontend_ip.private_ip_address_version, null)
     private_ip_address         = try(each.value.frontend_ip.private_ip_address, null)
     subnet_id                  = module.vnet[each.value.frontend_ip.vnet_key].subnet_ids[each.value.frontend_ip.subnet_key]

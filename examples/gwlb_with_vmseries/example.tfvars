@@ -64,9 +64,10 @@ vnets = {
         enable_storage_service_endpoint = true
       }
       "data" = {
-        name             = "data-snet"
-        address_prefixes = ["10.0.0.16/28"]
-        route_table_key  = "data"
+        name                       = "data-snet"
+        address_prefixes           = ["10.0.0.16/28"]
+        network_security_group_key = "data"
+        route_table_key            = "data"
       }
     }
   }
@@ -106,11 +107,11 @@ vnets = {
 load_balancers = {
   "app1" = {
     name = "app1-lb"
-    nsg_auto_rules_settings = {
-      nsg_vnet_key = "app1"
-      nsg_key      = "application_inbound"
-      source_ips   = ["0.0.0.0/0"]
-    }
+    # nsg_auto_rules_settings = {
+    #   nsg_vnet_key = "app1"
+    #   nsg_key      = "application_inbound"
+    #   source_ips   = ["0.0.0.0/0"]
+    # }
     frontend_ips = {
       "app1" = {
         name             = "app1"
@@ -122,6 +123,11 @@ load_balancers = {
             name     = "HTTP"
             protocol = "Tcp"
             port     = 80
+          }
+          "balanceHttps" = {
+            name     = "HTTPS"
+            protocol = "Tcp"
+            port     = 443
           }
         }
         out_rules = {
