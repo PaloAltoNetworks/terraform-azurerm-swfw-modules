@@ -111,8 +111,10 @@ vnets = {
 
 natgws = {
   "natgw" = {
-    name        = "public-natgw"
-    vnet_key    = "transit"
+    name = "public-natgw"
+    natgw = {
+      vnet_key = "transit"
+    }
     subnet_keys = ["public", "management"]
     public_ip_prefix = {
       create = true
