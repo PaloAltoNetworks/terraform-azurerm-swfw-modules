@@ -92,7 +92,6 @@ resource "azurerm_application_gateway" "this" {
   }
 
   # There is only a single backend - the VMSeries private IPs assigned to untrusted NICs
-  # REFACTOR: APPGW : check if we can add NICs as backends, not only IPs
   backend_address_pool {
     name         = var.application_gateway.backend_pool.name
     ip_addresses = var.application_gateway.backend_pool.vmseries_ips
