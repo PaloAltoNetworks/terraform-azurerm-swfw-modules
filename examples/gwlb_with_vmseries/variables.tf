@@ -543,10 +543,10 @@ variable "vmseries" {
 
               When `bootstrap_xml_template` is set, one of the following properties might be required.
 
-          - `data_snet_key`       - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
+          - `data_snet_key`          - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
                                        pointing to a data Subnet definition in `var.vnets` (the `vnet_key` property is used to
                                        identify a VNET). The Subnet definition is used to calculate static routes for a data
-                                       Load Balancer health checks and for Inbound traffic.
+                                       Load Balancer health checks.
           - `ai_update_interval`     - (`number`, optional, defaults to `5`) Application Insights update interval, used only when
                                        `ngfw_metrics` module is defined and used in this example. The Application Insights
                                        Instrumentation Key will be populated automatically.

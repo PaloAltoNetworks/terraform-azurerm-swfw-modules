@@ -125,6 +125,7 @@ module "load_balancer" {
       {
         public_ip_name = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : "${v.public_ip_name}",
         subnet_id      = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
+        gwlb_fip_id    = try(module.gwlb[v.gwlb_key].frontend_ip_config_id, null)
       }
     )
   }
@@ -133,6 +134,30 @@ module "load_balancer" {
   depends_on = [module.vnet]
 }
 
+
+# create Gateway Load Balancers
+module "gwlb" {
+  for_each = var.gateway_load_balancers
+  source   = "../../modules/gwlb"
+
+  name                = "${var.name_prefix}${each.value.name}"
+  resource_group_name = try(each.value.resource_group_name, local.resource_group.name)
+  location            = var.location
+
+  backends     = try(each.value.backends, null)
+  health_probe = try(each.value.health_probe, null)
+  lb_rule      = try(each.value.lb_rule, null)
+
+  zones = var.enable_zones ? try(each.value.zones, null) : null
+  frontend_ip = {
+    name                       = coalesce(each.value.frontend_ip.name, "${var.name_prefix}${each.value.name}")
+    private_ip_address_version = try(each.value.frontend_ip.private_ip_address_version, null)
+    private_ip_address         = try(each.value.frontend_ip.private_ip_address, null)
+    subnet_id                  = module.vnet[each.value.frontend_ip.vnet_key].subnet_ids[each.value.frontend_ip.subnet_key]
+  }
+
+  tags = var.tags
+}
 
 
 # create the actual VM-Series VMs and resources
@@ -168,15 +193,20 @@ resource "local_file" "bootstrap_xml" {
   content = templatefile(
     each.value.bootstrap_package.bootstrap_xml_template,
     {
-      private_azure_router_ip = cidrhost(
+      data_gateway_ip = try(cidrhost(
+        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.data_snet_key],
+        1
+      ), null)
+
+      private_azure_router_ip = try(cidrhost(
         module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.private_snet_key],
         1
-      )
+      ), null)
 
-      public_azure_router_ip = cidrhost(
+      public_azure_router_ip = try(cidrhost(
         module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.public_snet_key],
         1
-      )
+      ), null)
 
       ai_instr_key = try(
         module.ngfw_metrics[0].metrics_instrumentation_keys[each.key],
@@ -300,9 +330,14 @@ module "vmseries" {
     public_ip_name                = v.create_public_ip ? "${var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")}" : v.public_ip_name
     public_ip_resource_group_name = v.public_ip_resource_group_name
     private_ip_address            = v.private_ip_address
-    attach_to_lb_backend_pool     = v.load_balancer_key != null
-    lb_backend_pool_id            = try(module.load_balancer[v.load_balancer_key].backend_pool_id, null)
-
+    attach_to_lb_backend_pool     = v.load_balancer_key != null || v.gwlb_key != null
+    lb_backend_pool_id = try(
+      module.load_balancer[v.load_balancer_key].backend_pool_id,
+      try(
+        module.gwlb[v.gwlb_key].backend_pool_ids[v.gwlb_backend_key],
+        null
+      )
+    )
   }]
 
   tags = var.tags

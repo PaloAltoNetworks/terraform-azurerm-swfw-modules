@@ -107,11 +107,11 @@ vnets = {
 load_balancers = {
   "app1" = {
     name = "app1-lb"
-    # nsg_auto_rules_settings = {
-    #   nsg_vnet_key = "app1"
-    #   nsg_key      = "application_inbound"
-    #   source_ips   = ["0.0.0.0/0"]
-    # }
+    nsg_auto_rules_settings = {
+      nsg_vnet_key = "app1"
+      nsg_key      = "application_inbound"
+      source_ips   = ["0.0.0.0/0"]
+    }
     frontend_ips = {
       "app1" = {
         name             = "app1"
