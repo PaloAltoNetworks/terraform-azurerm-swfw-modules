@@ -430,12 +430,12 @@ Following properties are available:
 
   Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
 
-  > [!NOTE]
-  > In this example the `subnet_id` is not available directly, three other properties were introduced instead.
+    **Note** \
+    In this example the `subnet_id` is not available directly, two other properties were introduced instead.
 
-  - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map
-  - `vnet_key`    - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets` map
-                    that stores the Subnet described by `subnet_key`
+    - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map
+    - `vnet_key`    - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets` map
+                      that stores the Subnet described by `subnet_key`
 
 
 Type: 
