@@ -19,7 +19,7 @@ The acceptance applies to the entirety of your Azure Subscription.
 
 ```hcl
 module "panorama" {
-  source  = "PaloAltoNetworks/vmseries-modules/azurerm//modules/panorama"
+  source  = "PaloAltoNetworks/swfw-modules/azurerm//modules/panorama"
 
   panorama_name       = var.panorama_name
   resource_group_name = azurerm_resource_group.this.name

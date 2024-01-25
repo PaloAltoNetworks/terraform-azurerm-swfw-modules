@@ -21,7 +21,7 @@ provider "azurerm" {
 
 ```hcl
 module "vmss" {
-  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/vmss"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/vmss"
 
   location                  = "Australia Central"
   name_prefix               = "pan"
