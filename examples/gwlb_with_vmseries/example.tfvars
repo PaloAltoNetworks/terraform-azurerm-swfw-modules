@@ -22,7 +22,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["134.238.135.14", "134.238.135.140"]
+            source_address_prefixes    = ["0.0.0.0/0"] # TODO: whitelist public IP addresses that will be used to manage the appliances
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -84,7 +84,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["134.238.135.14", "134.238.135.140"]
+            source_address_prefixes    = ["0.0.0.0/0"] # TODO: whitelist public IP addresses that will be used to manage the appliances
             source_port_range          = "*"
             destination_address_prefix = "*"
             destination_port_ranges    = ["22", "80", "443"]
@@ -192,7 +192,7 @@ bootstrap_storages = {
     storage_network_security = {
       vnet_key            = "transit"
       allowed_subnet_keys = ["management"]
-      allowed_public_ips  = ["134.238.135.14", "134.238.135.140"]
+      allowed_public_ips  = ["0.0.0.0/0"] # TODO: whitelist public IP addresses that will be used to manage the appliances
     }
   }
 }
