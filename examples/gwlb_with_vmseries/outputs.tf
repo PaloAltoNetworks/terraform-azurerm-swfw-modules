@@ -9,14 +9,6 @@ output "passwords" {
   sensitive   = true
 }
 
-output "natgw_public_ips" {
-  description = "Nat Gateways Public IP resources."
-  value = length(var.natgws) > 0 ? { for k, v in module.natgw : k => {
-    pip        = v.natgw_pip
-    pip_prefix = v.natgw_pip_prefix
-  } } : null
-}
-
 output "metrics_instrumentation_keys" {
   description = "The Instrumentation Key of the created instance(s) of Azure Application Insights."
   value       = try(module.ngfw_metrics[0].metrics_instrumentation_keys, null)

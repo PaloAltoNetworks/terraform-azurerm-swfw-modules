@@ -95,14 +95,12 @@ Name | Type | Description
 [`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
 [`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
 [`enable_zones`](#enable_zones) | `bool` | If `true`, enable zone support for resources.
-[`natgws`](#natgws) | `map` | A map defining NAT Gateways.
 [`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (private and public) Load Balancers.
 [`gateway_load_balancers`](#gateway_load_balancers) | `map` | Map with Gateway Load Balancer definitions.
 [`availability_sets`](#availability_sets) | `map` | A map defining availability sets.
 [`ngfw_metrics`](#ngfw_metrics) | `object` | A map controlling metrics-relates resources.
 [`bootstrap_storages`](#bootstrap_storages) | `map` | A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs.
 [`vmseries`](#vmseries) | `map` | A map defining Azure Virtual Machines based on Palo Alto Networks Next Generation Firewall image.
-[`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
 [`appvms`](#appvms) | `any` | Configuration for sample application VMs.
 
 
@@ -113,7 +111,6 @@ Name |  Description
 --- | ---
 `usernames` | Initial administrative username to use for VM-Series.
 `passwords` | Initial administrative password to use for VM-Series.
-`natgw_public_ips` | Nat Gateways Public IP resources.
 `metrics_instrumentation_keys` | The Instrumentation Key of the created instance(s) of Azure Application Insights.
 `lb_frontend_ips` | IP Addresses of the load balancers.
 `vmseries_mgmt_ips` | IP addresses for the VM-Series management interface.
@@ -138,13 +135,11 @@ Modules used in this module:
 Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | Manage the network required for the topology.
-`natgw` | - | ../../modules/natgw | 
 `load_balancer` | - | ../../modules/loadbalancer | create load balancers, both internal and external
 `gwlb` | - | ../../modules/gwlb | create Gateway Load Balancers
 `ngfw_metrics` | - | ../../modules/ngfw_metrics | create the actual VM-Series VMs and resources
 `bootstrap` | - | ../../modules/bootstrap | 
 `vmseries` | - | ../../modules/vmseries | 
-`appgw` | - | ../../modules/appgw | 
 `appvm` | - | ../../modules/virtual_machine | 
 
 
@@ -264,8 +259,6 @@ map(object({
 
 
 
-
-
 ### Optional Inputs
 
 
@@ -327,77 +320,6 @@ Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-
-#### natgws
-
-A map defining NAT Gateways.
-
-Please note that a NAT Gateway is a zonal resource, this means it's always placed in a zone (even when you do not specify one
-explicitly). Please refer to Microsoft documentation for notes on NAT Gateway's zonal resiliency.
-For detailed documentation on each property refer to [module documentation](../../modules/natgw/README.md).
-
-Following properties are supported:
-- `create_natgw`       - (`bool`, optional, defaults to `true`) create (`true`) or source an existing NAT Gateway (`false`),
-                         created or sourced: the NAT Gateway will be assigned to a subnet created by the `vnet` module.
-- `name`               - (`string`, required) a name of a NAT Gateway. In case `create_natgw = false` this should be a full
-                         resource name, including prefixes.
-- `resource_group_name - (`string`, optional) name of a Resource Group hosting the NAT Gateway (newly created or the existing
-                         one).
-- `zone`               - (`string`, optional) an Availability Zone in which the NAT Gateway will be placed, when skipped
-                         AzureRM will pick a zone.
-- `idle_timeout`       - (`number`, optional, defults to 4) connection IDLE timeout in minutes, for newly created resources.
-- `vnet_key`           - (`string`, required) a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this
-                         NAT Gateway will be assigned to.
-- `subnet_keys`        - (`list(string)`, required) a list of subnets (key values) the NAT Gateway will be assigned to, defined
-                         in `var.vnets` for a VNET described by `vnet_name`.
-- `public_ip`          - (`object`, optional) an object defining a public IP resource attached to the NAT Gateway.
-- `public_ip_prefix`   - (`object`, optional) an object defining a public IP prefix resource attached to the NAT Gatway.
-
-Example:
-```
-natgws = {
-  "natgw" = {
-    name        = "natgw"
-    vnet_key    = "transit-vnet"
-    subnet_keys = ["management"]
-    public_ip = {
-      create = true
-      name   = "natgw-pip"
-    }
-  }
-}
-```
-
-
-Type: 
-
-```hcl
-map(object({
-    create_natgw        = optional(bool, true)
-    name                = string
-    resource_group_name = optional(string)
-    zone                = optional(string)
-    idle_timeout        = optional(number, 4)
-    vnet_key            = string
-    subnet_keys         = list(string)
-    public_ip = optional(object({
-      create              = bool
-      name                = string
-      resource_group_name = optional(string)
-    }))
-    public_ip_prefix = optional(object({
-      create              = bool
-      name                = string
-      resource_group_name = optional(string)
-      length              = optional(number)
-    }))
-  }))
-```
-
-
-Default value: `map[]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### load_balancers
 
@@ -878,171 +800,6 @@ map(object({
       gwlb_backend_key              = optional(string)
       add_to_appgw_backend          = optional(bool, false)
     }))
-  }))
-```
-
-
-Default value: `map[]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### appgws
-
-A map defining all Application Gateways in the current deployment.
-
-For detailed documentation on how to configure this resource, for available properties, especially for the defaults, refer to [module documentation](../../modules/appgw/README.md).
-
-Following properties are supported:
-- `name`                              - (`string`, required) name of the Application Gateway.
-- `public_ip`                         - (`string`, required) public IP address.
-- `vnet_key`                          - (`string`, required) a key of a VNET defined in the `var.vnets` map.
-- `subnet_key`                        - (`string`, required) a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
-- `managed_identities`                - (`list`, optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
-- `capacity`                          - (`number`, object) capacity configuration for Application Gateway (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `waf`                               - (`object`, required) WAF basic configuration, defining WAF rules is not supported
-- `enable_http2`                      - (`bool`, optional) enable HTTP2 support on the Application Gateway
-- `zones`                             - (`list`, required) for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
-- `frontend_ip_configuration_name`    - (`string`, optional) frontend IP configuration name
-- `vmseries_public_nic_name`          - (`string`, optional) VM-Series NIC name, for which IP address will be used in backend pool
-- `listeners`                         - (`map`, required) map of listeners (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `backend_pool`                      - (`object`, optional) backend pool (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `backends`                          - (`map`, optional) map of backends (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `probes`                            - (`map`, optional) map of probes (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `rewrites`                          - (`map`, optional) map of rewrites (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `rules`                             - (`map`, required) map of rules (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `redirects`                         - (`map`, optional) map of redirects (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `url_path_maps`                     - (`map`, optional) map of URL path maps (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `ssl_policy_type`                   - (`string`, optional) type of an SSL policy, defaults to `Predefined`
-- `ssl_policy_name`                   - (`string`, optional) name of an SSL policy, for `ssl_policy_type` set to `Predefined`
-- `ssl_policy_min_protocol_version`   - (`string`, optional) minimum version of the TLS protocol for SSL Policy, for `ssl_policy_type` set to `Custom`
-- `ssl_policy_cipher_suites`          - (`list`, optional) a list of accepted cipher suites, for `ssl_policy_type` set to `Custom`
-- `ssl_profiles`                      - (`map`, optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property
-
-
-Type: 
-
-```hcl
-map(object({
-    name = string
-    public_ip = object({
-      name                = string
-      resource_group_name = optional(string)
-      create              = optional(bool, true)
-    })
-    vnet_key           = string
-    subnet_key         = string
-    managed_identities = optional(list(string))
-    capacity = object({
-      static = optional(number)
-      autoscale = optional(object({
-        min = optional(number)
-        max = optional(number)
-      }))
-    })
-    waf = optional(object({
-      prevention_mode  = bool
-      rule_set_type    = optional(string, "OWASP")
-      rule_set_version = optional(string)
-    }))
-    enable_http2                   = optional(bool)
-    zones                          = list(string)
-    frontend_ip_configuration_name = optional(string, "public_ipconfig")
-    vmseries_public_nic_name       = optional(string, "public")
-    listeners = map(object({
-      name                     = string
-      port                     = number
-      protocol                 = optional(string, "Http")
-      host_names               = optional(list(string))
-      ssl_profile_name         = optional(string)
-      ssl_certificate_path     = optional(string)
-      ssl_certificate_pass     = optional(string)
-      ssl_certificate_vault_id = optional(string)
-      custom_error_pages       = optional(map(string), {})
-    }))
-    backend_pool = optional(object({
-      name         = string
-      vmseries_ips = optional(list(string), [])
-    }))
-    backends = optional(map(object({
-      name                  = string
-      path                  = optional(string)
-      hostname_from_backend = optional(string)
-      hostname              = optional(string)
-      port                  = optional(number, 80)
-      protocol              = optional(string, "Http")
-      timeout               = optional(number, 60)
-      cookie_based_affinity = optional(string, "Enabled")
-      affinity_cookie_name  = optional(string)
-      probe                 = optional(string)
-      root_certs = optional(map(object({
-        name = string
-        path = string
-      })), {})
-    })))
-    probes = optional(map(object({
-      name       = string
-      path       = string
-      host       = optional(string)
-      port       = optional(number)
-      protocol   = optional(string, "Http")
-      interval   = optional(number, 5)
-      timeout    = optional(number, 30)
-      threshold  = optional(number, 2)
-      match_code = optional(list(number))
-      match_body = optional(string)
-    })), {})
-    rewrites = optional(map(object({
-      name = optional(string)
-      rules = optional(map(object({
-        name     = string
-        sequence = number
-        conditions = optional(map(object({
-          pattern     = string
-          ignore_case = optional(bool, false)
-          negate      = optional(bool, false)
-        })), {})
-        request_headers  = optional(map(string), {})
-        response_headers = optional(map(string), {})
-      })))
-    })), {})
-    rules = map(object({
-      name         = string
-      priority     = number
-      backend      = optional(string)
-      listener     = string
-      rewrite      = optional(string)
-      url_path_map = optional(string)
-      redirect     = optional(string)
-    }))
-    redirects = optional(map(object({
-      name                 = string
-      type                 = string
-      target_listener      = optional(string)
-      target_url           = optional(string)
-      include_path         = optional(bool, false)
-      include_query_string = optional(bool, false)
-    })), {})
-    url_path_maps = optional(map(object({
-      name    = string
-      backend = string
-      path_rules = optional(map(object({
-        paths    = list(string)
-        backend  = optional(string)
-        redirect = optional(string)
-      })))
-    })), {})
-    ssl_global = optional(object({
-      ssl_policy_type                 = string
-      ssl_policy_name                 = optional(string)
-      ssl_policy_min_protocol_version = optional(string)
-      ssl_policy_cipher_suites        = optional(list(string))
-    }))
-    ssl_profiles = optional(map(object({
-      name                            = string
-      ssl_policy_name                 = optional(string)
-      ssl_policy_min_protocol_version = optional(string)
-      ssl_policy_cipher_suites        = optional(list(string))
-    })), {})
   }))
 ```
 

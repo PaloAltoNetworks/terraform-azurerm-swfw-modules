@@ -102,7 +102,6 @@ vnets = {
   }
 }
 
-
 # --- LOAD BALANCING PART --- #
 load_balancers = {
   "app1" = {
@@ -260,7 +259,7 @@ vmseries = {
   }
 }
 
-
+# --- APPLICATION VM PART --- #
 appvms = {
   app1vm01 = {
     name              = "app1-vm01"

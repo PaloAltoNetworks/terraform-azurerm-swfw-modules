@@ -67,28 +67,6 @@ module "vnet" {
   tags = var.tags
 }
 
-
-module "natgw" {
-  source = "../../modules/natgw"
-
-  for_each = var.natgws
-
-  create_natgw        = each.value.create_natgw
-  name                = each.value.create_natgw ? "${var.name_prefix}${each.value.name}" : each.value.name
-  resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
-  location            = var.location
-  zone                = try(each.value.zone, null)
-  idle_timeout        = each.value.idle_timeout
-  subnet_ids          = { for v in each.value.subnet_keys : v => module.vnet[each.value.vnet_key].subnet_ids[v] }
-
-  public_ip        = try(merge(each.value.public_ip, { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }), null)
-  public_ip_prefix = try(merge(each.value.public_ip_prefix, { name = "${each.value.public_ip_prefix.create ? var.name_prefix : ""}${each.value.public_ip_prefix.name}" }), null)
-
-  tags       = var.tags
-  depends_on = [module.vnet]
-}
-
-
 # create load balancers, both internal and external
 module "load_balancer" {
   source = "../../modules/loadbalancer"
@@ -327,47 +305,6 @@ module "vmseries" {
     module.load_balancer,
     module.bootstrap,
   ]
-}
-
-module "appgw" {
-  source = "../../modules/appgw"
-
-  for_each = var.appgws
-
-  name                = each.value.name
-  public_ip           = each.value.public_ip
-  resource_group_name = local.resource_group.name
-  location            = var.location
-  subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
-
-  managed_identities = each.value.managed_identities
-  capacity           = each.value.capacity
-  waf                = each.value.waf
-  enable_http2       = each.value.enable_http2
-  zones              = each.value.zones
-
-  frontend_ip_configuration_name = each.value.frontend_ip_configuration_name
-  listeners                      = each.value.listeners
-  backend_pool = {
-    name = "vmseries"
-    vmseries_ips = [
-      for k, v in var.vmseries : module.vmseries[k].interfaces[
-        "${var.name_prefix}${v.name}-${each.value.vmseries_public_nic_name}" # TODO: fix this so that we do not need to use vmseries_public_nic_name
-      ].private_ip_address if try(v.add_to_appgw_backend, false)
-    ]
-  }
-  backends      = each.value.backends
-  probes        = each.value.probes
-  rewrites      = each.value.rewrites
-  rules         = each.value.rules
-  redirects     = each.value.redirects
-  url_path_maps = each.value.url_path_maps
-
-  ssl_global   = each.value.ssl_global
-  ssl_profiles = each.value.ssl_profiles
-
-  tags       = var.tags
-  depends_on = [module.vnet]
 }
 
 module "appvm" {
