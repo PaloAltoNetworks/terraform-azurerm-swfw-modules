@@ -94,7 +94,6 @@ Name | Type | Description
 [`tags`](#tags) | `map` | Map of tags to assign to the created resources.
 [`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
 [`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
-[`enable_zones`](#enable_zones) | `bool` | If `true`, enable zone support for resources.
 [`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (private and public) Load Balancers.
 [`gateway_load_balancers`](#gateway_load_balancers) | `map` | Map with Gateway Load Balancer definitions.
 [`availability_sets`](#availability_sets) | `map` | A map defining availability sets.
@@ -174,7 +173,6 @@ Name of the Resource Group.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
 
 #### vnets
 
@@ -309,16 +307,6 @@ Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-
-#### enable_zones
-
-If `true`, enable zone support for resources.
-
-Type: bool
-
-Default value: `true`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
 
 
 #### load_balancers

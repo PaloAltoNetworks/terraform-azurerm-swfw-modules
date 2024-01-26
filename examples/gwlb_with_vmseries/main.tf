@@ -125,7 +125,7 @@ module "gwlb" {
   health_probe = try(each.value.health_probe, null)
   lb_rule      = try(each.value.lb_rule, null)
 
-  zones = var.enable_zones ? try(each.value.zones, null) : null
+  zones = try(each.value.zones, null)
   frontend_ip = {
     name                       = coalesce(each.value.frontend_ip.name, "${var.name_prefix}${each.value.name}")
     private_ip_address_version = try(each.value.frontend_ip.private_ip_address_version, null)

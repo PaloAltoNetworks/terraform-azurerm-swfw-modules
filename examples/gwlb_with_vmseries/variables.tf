@@ -45,12 +45,6 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "enable_zones" {
-  description = "If `true`, enable zone support for resources."
-  default     = true
-  type        = bool
-}
-
 
 ### VNET
 variable "vnets" {
