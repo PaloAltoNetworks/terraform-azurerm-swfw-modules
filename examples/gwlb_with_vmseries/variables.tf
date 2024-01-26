@@ -231,7 +231,8 @@ variable "gateway_load_balancers" {
   EOF
   default     = {}
   type = map(object({
-    name = string
+    name  = string
+    zones = optional(list(string), ["1", "2", "3"])
     frontend_ip = object({
       name                       = optional(string)
       vnet_key                   = string
