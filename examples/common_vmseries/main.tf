@@ -1,8 +1,8 @@
 # Generate a random password.
 resource "random_password" "this" {
-  count = anytrue([
-    for _, v in var.vmseries : v.authentication.password == null
-  ]) ? 1 : 0
+  count = anytrue([for _, v in var.vmseries : v.authentication.password == null]) ? (
+    anytrue([for _, v in var.test_environments : v.test_vm_authentication.password == null]) ? 2 : 1
+  ) : 0
 
   length           = 16
   min_lower        = 16 - 4
@@ -350,6 +350,46 @@ module "appgw" {
 
   ssl_global   = each.value.ssl_global
   ssl_profiles = each.value.ssl_profiles
+
+  tags       = var.tags
+  depends_on = [module.vnet]
+}
+
+### Create test infrastructure
+
+locals {
+  test_vm_authentication = {
+    for k, v in var.test_environments : k =>
+    merge(
+      v.test_vm_authentication,
+      {
+        password = coalesce(v.test_vm_authentication.password, try(random_password.this[1].result, null))
+      }
+    )
+  }
+}
+
+module "test_infrastructure" {
+  source = "../../modules/test_infrastructure"
+
+  for_each = var.test_environments
+
+  resource_group_name = try(
+    "${var.name_prefix}${each.value.resource_group_name}", "${local.resource_group.name}-testenv"
+  )
+  location = var.location
+  vnets = { for k, v in each.value.vnets : k => merge(v, {
+    hub_resource_group_name = coalesce(v.hub_resource_group_name, local.resource_group.name)
+  }) }
+  test_vm_authentication = local.test_vm_authentication[each.key]
+  test_vms = { for k, v in each.value.test_vms : k => merge(v, {
+    name           = "${var.name_prefix}${v.name}"
+    interface_name = "${var.name_prefix}${coalesce(v.interface_name, "${v.name}-nic")}"
+  }) }
+  bastions = { for k, v in each.value.bastions : k => merge(v, {
+    name           = "${var.name_prefix}${v.name}"
+    public_ip_name = "${var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")}"
+  }) }
 
   tags       = var.tags
   depends_on = [module.vnet]

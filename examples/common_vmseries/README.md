@@ -191,6 +191,7 @@ Name | Type | Description
 [`bootstrap_storages`](#bootstrap_storages) | `map` | A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs.
 [`vmseries`](#vmseries) | `map` | A map defining Azure Virtual Machines based on Palo Alto Networks Next Generation Firewall image.
 [`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
+[`test_environments`](#test_environments) | `map` | A map defining test environments including test VMs and Azure Bastion hosts.
 
 
 
@@ -205,6 +206,9 @@ Name |  Description
 `lb_frontend_ips` | IP Addresses of the load balancers.
 `vmseries_mgmt_ips` | IP addresses for the VM-Series management interface.
 `bootstrap_storage_urls` | 
+`test_vms_usernames` | Initial administrative username to use for test VMs.
+`test_vms_passwords` | Initial administrative password to use for test VMs.
+`test_vms_ips` | IP Addresses of the test VMs.
 
 ## Module's Nameplate
 
@@ -231,6 +235,7 @@ Name | Version | Source | Description
 `bootstrap` | - | ../../modules/bootstrap | 
 `vmseries` | - | ../../modules/vmseries | 
 `appgw` | - | ../../modules/appgw | 
+`test_infrastructure` | - | ../../modules/test_infrastructure | 
 
 
 Resources used in this module:
@@ -339,6 +344,7 @@ map(object({
 
 
 <sup>[back to list](#modules-required-inputs)</sup>
+
 
 
 
@@ -1080,5 +1086,134 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+#### test_environments
+
+A map defining test environments including test VMs and Azure Bastion hosts.
+
+For details and defaults for available options please refer to the [`test_infrastructure`](../../modules/test_infrastructure/README.md) module.
+
+Following properties are supported:
+
+- `create_resource_group`  - (`bool`, optional, defaults to `true`) when set to `true`, a new Resource Group is created. When 
+                             set to `false`, an existing Resource Group is sourced.
+- `resource_group_name`    - (`string`, optional) name of the Resource Group to be created or sourced.
+- `vnets`                  - (`map`, required) map defining VNETs and peerings for the test environment.
+    
+  The most basic properties are as follows:
+  - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
+                                `false` will source an existing VNET.
+  - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = `false` this should be
+                                a full resource name, including prefixes.
+  - `address_space`           - (`list(string)`, required when `create_virtual_network = `false`) a list of CIDRs for a newly
+                                created VNET.
+  - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which
+                                the VNET will reside or is sourced from.
+  - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
+                                otherwise use source existing subnets.
+  - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
+                                [VNET module documentation](../../modules/vnet/README.md#subnets).
+  - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
+                                [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
+  - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
+                                [VNET module documentation](../../modules/vnet/README.md#route_tables).
+
+  For all properties and their default values see [VNET module documentation](../../modules/vnet/README.md).
+  
+- `test_vm_authentication` - (`map`, optional, defaults to example defaults) authentication settings for the deployed VMs.
+- `test_vms`               - (`map`, required) a map defining test VMs.
+    
+  The most basic properties are as follows:
+  - `name`       - (`string`, required) a name of the VM.
+  - `vnet_key`   - (`string`, required) a key describing a VNET defined in `vnets` property.
+  - `subnet_key` - (`string`, required) a key describing a Subnet found in a VNET definition.
+
+  For all properties and their default values see [module's documentation](../../modules/test_infrastructure/README.md#test_vms).
+  
+- `bastions`               - (`map`, required) a map containing Azure Bastion definitions.
+    
+  The most basic properties are as follows:
+  - `name`       - (`string`, required) an Azure Bastion name.
+  - `vnet_key`   - (`string`, required) a key describing a VNET defined in `vnets` property. This VNET should already have an
+                   existing subnet called `AzureBastionSubnet` (the name is hardcoded by Microsoft).
+  - `subnet_key` - (`string`, required) a key pointing to a Subnet dedicated to a Bastion deployment.
+
+  For all properties and their default values see [module's documentation](../../modules/test_infrastructure/README.md#bastions).
+
+
+
+Type: 
+
+```hcl
+map(object({
+    create_resource_group = optional(bool, true)
+    resource_group_name   = optional(string)
+    vnets = map(object({
+      name                    = string
+      resource_group_name     = optional(string)
+      create_virtual_network  = optional(bool, true)
+      address_space           = optional(list(string))
+      hub_resource_group_name = optional(string)
+      hub_vnet_name           = string
+      network_security_groups = optional(map(object({
+        name                          = string
+        disable_bgp_route_propagation = optional(bool)
+        rules = optional(map(object({
+          name                         = string
+          priority                     = number
+          direction                    = string
+          access                       = string
+          protocol                     = string
+          source_port_range            = optional(string)
+          source_port_ranges           = optional(list(string))
+          destination_port_range       = optional(string)
+          destination_port_ranges      = optional(list(string))
+          source_address_prefix        = optional(string)
+          source_address_prefixes      = optional(list(string))
+          destination_address_prefix   = optional(string)
+          destination_address_prefixes = optional(list(string))
+        })), {})
+      })), {})
+      route_tables = optional(map(object({
+        name = string
+        routes = map(object({
+          name                = string
+          address_prefix      = string
+          next_hop_type       = string
+          next_hop_ip_address = optional(string)
+        }))
+      })), {})
+      create_subnets = optional(bool, true)
+      subnets = optional(map(object({
+        name                            = string
+        address_prefixes                = optional(list(string), [])
+        network_security_group_key      = optional(string)
+        route_table_key                 = optional(string)
+        enable_storage_service_endpoint = optional(bool, false)
+      })), {})
+    }))
+    test_vm_authentication = optional(object({
+      username = optional(string, "bitnami")
+      password = optional(string)
+    }), {})
+    test_vms = map(object({
+      name           = string
+      interface_name = optional(string)
+      vnet_key       = string
+      subnet_key     = string
+      size           = optional(string)
+    }))
+    bastions = map(object({
+      name           = string
+      public_ip_name = optional(string)
+      vnet_key       = string
+      subnet_key     = string
+    }))
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 <!-- END_TF_DOCS -->
