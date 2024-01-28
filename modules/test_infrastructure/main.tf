@@ -1,4 +1,4 @@
-# Create or source the Resource Group.
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
   name     = var.resource_group_name
@@ -7,6 +7,7 @@ resource "azurerm_resource_group" "this" {
   tags = var.tags
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group
 data "azurerm_resource_group" "this" {
   count = var.create_resource_group ? 0 : 1
   name  = var.resource_group_name
@@ -16,7 +17,7 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
-# Manage the network required for the topology.
+# https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/blob/main/modules/vnet/README.md
 module "vnet" {
   source = "../vnet"
 
@@ -38,6 +39,7 @@ module "vnet" {
   tags = var.tags
 }
 
+# https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/blob/main/modules/vnet_peering/README.md
 module "vnet_peering" {
   source   = "../vnet_peering"
   for_each = { for k, v in var.vnets : k => v if v.hub_vnet_name != null }
@@ -57,7 +59,7 @@ module "vnet_peering" {
   depends_on = [module.vnet]
 }
 
-# Create test VM running a web server
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface
 resource "azurerm_network_interface" "vm" {
   for_each = var.test_vms
 
@@ -76,6 +78,7 @@ locals {
   password = sensitive(var.test_vm_authentication.password)
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine
 resource "azurerm_linux_virtual_machine" "this" {
   for_each = var.test_vms
 
@@ -110,7 +113,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   }
 }
 
-# Create Bastion host for management
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "bastion" {
 
   for_each = var.bastions
@@ -122,6 +125,7 @@ resource "azurerm_public_ip" "bastion" {
   sku                 = "Standard"
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/bastion_host
 resource "azurerm_bastion_host" "this" {
 
   for_each = var.bastions
