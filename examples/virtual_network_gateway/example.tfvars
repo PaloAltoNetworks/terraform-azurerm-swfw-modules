@@ -46,9 +46,9 @@ virtual_network_gateways = {
       generation    = "Generation2"
       active_active = true
     }
+    vnet_key   = "transit"
+    subnet_key = "vpn"
     network = {
-      vnet_key        = "transit"
-      subnet_key      = "vpn"
       public_ip_zones = ["1", "2", "3"]
       ip_configurations = {
         primary = {

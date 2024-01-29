@@ -21,14 +21,21 @@ variable "tags" {
   type        = map(string)
 }
 
+variable "subnet_id" {
+  description = <<-EOF
+  An ID of a subnet that will host the Application Gateway.
+
+  This has to be a subnet dedicated to  Application Gateway v2.
+  EOF
+  type        = string
+}
+
 variable "application_gateway" {
   description = <<-EOF
   A map defining basic Application Gateway configuration. 
 
   Following properties are either required or important:
 
-  - `subnet_id`                       - (`string`, required) an ID of a subnet that will host the Application Gateway, this has to
-                                        be a subnet dedicated to  Application Gateway v2
   - `public_ip`                       - (`map`, required) a map defining listener's public IP configuration
     - `name`                  - (`string`, required) name of the Public IP resource
     - `create`                - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or sourced
@@ -110,7 +117,6 @@ variable "application_gateway" {
 
   EOF
   type = object({
-    subnet_id = string
     public_ip = object({
       name                = string
       resource_group_name = optional(string)

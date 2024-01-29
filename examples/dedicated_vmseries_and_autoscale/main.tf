@@ -79,7 +79,7 @@ module "natgw" {
 
   natgw = each.value.natgw
 
-  subnet_ids = { for v in each.value.subnet_keys : v => module.vnet[each.value.natgw.vnet_key].subnet_ids[v] }
+  subnet_ids = { for v in each.value.subnet_keys : v => module.vnet[each.value.vnet_key].subnet_ids[v] }
 
   public_ip        = try(merge(each.value.public_ip, { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }), null)
   public_ip_prefix = try(merge(each.value.public_ip_prefix, { name = "${each.value.public_ip_prefix.create ? var.name_prefix : ""}${each.value.public_ip_prefix.name}" }), null)
@@ -123,7 +123,7 @@ module "load_balancer" {
       v,
       {
         public_ip_name = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : "${v.public_ip_name}",
-        subnet_id      = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
+        subnet_id      = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
       }
     )
   }
@@ -166,10 +166,11 @@ module "appgw" {
   resource_group_name = local.resource_group.name
   location            = var.location
 
+  subnet_id = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
+
   application_gateway = merge(
     each.value.application_gateway,
     {
-      subnet_id = module.vnet[each.value.application_gateway.vnet_key].subnet_ids[each.value.application_gateway.subnet_key]
       public_ip = merge(
         each.value.application_gateway.public_ip,
         { name = "${each.value.application_gateway.public_ip.create ? var.name_prefix : ""}${each.value.application_gateway.public_ip.name}" }
@@ -206,7 +207,7 @@ module "vmss" {
   interfaces = [
     for v in each.value.interfaces : {
       name                   = v.name
-      subnet_id              = module.vnet[each.value.virtual_machine_scale_set.vnet_key].subnet_ids[v.subnet_key]
+      subnet_id              = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
       create_public_ip       = v.create_public_ip
       pip_domain_name_label  = v.pip_domain_name_label
       lb_backend_pool_ids    = try([module.load_balancer[v.load_balancer_key].backend_pool_id], [])

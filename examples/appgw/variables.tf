@@ -128,41 +128,41 @@ variable "appgws" {
 
   Below you can find a brief list of available properties:
 
-  - `name` - (`string`, required) the name of the Application Gateway, will be prefixed with `var.name_prefix`
+  - `name`            - (`string`, required) the name of the Application Gateway, will be prefixed with `var.name_prefix`
+  - `subnet_key`      - (`string`, required) a key pointing to a Subnet definition in the `var.vnets` map, this has to be an
+                        Application Gateway V2 dedicated subnet.
+  - `vnet_key`        - (`string`, required) a key pointing to a VNET definition in the `var.vnets` map that stores the Subnet
+                        described by `subnet_key`.
   - `application_gateway` - (`map`, required) defines the basic Application Gateway settings, for details see
                             [module's documentation](../../modules/appgw/README.md#application_gateway). The most important
                             properties are:
-    - `subnet_key`    - (`string`, required) a key pointing to a Subnet definition in the `var.vnets` map, this has to be an
-                        Application Gateway V2 dedicated subnet.
-    - `vnet_key`      - (`string`, required) a key pointing to a VNET definition in the `var.vnets` map that stores the Subnet
-                        described by `subnet_key`.
     - `public_ip`     - (`map`, required) defines a Public IP resource used by the Application Gateway instance, a newly created
                         Public IP will have it's name prefixes with `var.name_prefix`
     - `zones`         - (`list`, optional, defaults to module defaults) parameter controlling if this is a zonal, or a non-zonal
                         deployment
     - `backend_pool`  - (`map`, optional, defaults to module defaults) backend pool definition, when skipped, an empty backend
                         will be created
-  - `listeners`       - (`map`, required) defines Application Gateway's Listeners, see
-                        [module's documentation](../../modules/appgw/README.md#listeners) for details
-  - `backends`        - (`map`, optional, mutually exclusive with `redirects` and `url_path_maps`) defines HTTP backend settings,
-                        see [module's documentation](../../modules/appgw/README.md#backends) for details
-  - `probes`          - (`map`, optional, defaults to module defaults) defines backend probes used check health of backends,
-                        see [module's documentation](../../modules/appgw/README.md#probes) for details
-  - `rewrites`        - (`map`, optional, defaults to module defaults) defines rewrite rules,
-                        see [module's documentation](../../modules/appgw/README.md#rewrites) for details
-  - `redirects        - (`map`, optional, mutually exclusive with `backends` and `url_path_maps`) static redirects definition,
-                        see [module's documentation](../../modules/appgw/README.md#redirects) for details
-  - `url_path_maps    - (`map`, optional, mutually exclusive with `backends` and `redirects`) URL path maps definition, 
-                        see [module's documentation](../../modules/appgw/README.md#url_path_maps) for details
-  - `rules            - (`map`, required) Application Gateway Rules definition, bind together a `listener` with either `backend`,
-                        `redirect` or `url_path_map`, see [module's documentation](../../modules/appgw/README.md#rules)
-                        for details
+  - `listeners`           - (`map`, required) defines Application Gateway's Listeners, see
+                            [module's documentation](../../modules/appgw/README.md#listeners) for details
+  - `backends`            - (`map`, optional, mutually exclusive with `redirects` and `url_path_maps`) defines HTTP backend
+                            settings, see [module's documentation](../../modules/appgw/README.md#backends) for details
+  - `probes`              - (`map`, optional, defaults to module defaults) defines backend probes used check health of backends,
+                            see [module's documentation](../../modules/appgw/README.md#probes) for details
+  - `rewrites`            - (`map`, optional, defaults to module defaults) defines rewrite rules,
+                            see [module's documentation](../../modules/appgw/README.md#rewrites) for details
+  - `redirects            - (`map`, optional, mutually exclusive with `backends` and `url_path_maps`) static redirects definition,
+                            see [module's documentation](../../modules/appgw/README.md#redirects) for details
+  - `url_path_maps        - (`map`, optional, mutually exclusive with `backends` and `redirects`) URL path maps definition, 
+                            see [module's documentation](../../modules/appgw/README.md#url_path_maps) for details
+  - `rules                - (`map`, required) Application Gateway Rules definition, bind together a `listener` with either
+                            `backend`, `redirect` or `url_path_map`, see
+                            [module's documentation](../../modules/appgw/README.md#rules) for details
   EOF
   type = map(object({
-    name = string
+    name       = string
+    vnet_key   = string
+    subnet_key = string
     application_gateway = object({
-      vnet_key   = string
-      subnet_key = string
       public_ip = object({
         name                = string
         resource_group_name = optional(string)

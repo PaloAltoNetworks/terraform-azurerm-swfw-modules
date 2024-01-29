@@ -149,11 +149,11 @@ load_balancers = {
     }
   }
   "private" = {
-    name = "private-lb"
+    name     = "private-lb"
+    vnet_key = "transit"
     frontend_ips = {
       "ha-ports" = {
         name               = "private-vmseries"
-        vnet_key           = "transit"
         subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
@@ -176,11 +176,11 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key          = "transit"
       size              = "Standard_DS3_v2"
       zone              = 1
       bootstrap_options = "type=dhcp-client"
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm01-mgmt"
@@ -207,11 +207,11 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key          = "transit"
       size              = "Standard_DS3_v2"
       zone              = 2
       bootstrap_options = "type=dhcp-client"
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm02-mgmt"
@@ -238,10 +238,10 @@ vmseries = {
 # --- APPLICATION GATEWAYs --- #
 appgws = {
   public = {
-    name = "appgw"
+    name       = "appgw"
+    vnet_key   = "transit"
+    subnet_key = "appgw"
     application_gateway = {
-      vnet_key   = "transit"
-      subnet_key = "appgw"
       public_ip = {
         name = "appgw-pip"
       }

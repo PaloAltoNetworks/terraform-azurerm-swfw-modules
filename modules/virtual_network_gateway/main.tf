@@ -52,7 +52,7 @@ resource "azurerm_virtual_network_gateway" "this" {
       name                          = ip_configuration.value.name
       public_ip_address_id          = ip_configuration.value.create_public_ip ? azurerm_public_ip.this[ip_configuration.value.name].id : data.azurerm_public_ip.exists[ip_configuration.value.name].id
       private_ip_address_allocation = ip_configuration.value.private_ip_address_allocation
-      subnet_id                     = var.network.subnet_id
+      subnet_id                     = var.subnet_id
     }
   }
 

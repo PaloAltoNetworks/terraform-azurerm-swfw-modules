@@ -135,11 +135,11 @@ load_balancers = {
     }
   }
   "private" = {
-    name = "private-lb"
+    name     = "private-lb"
+    vnet_key = "transit"
     frontend_ips = {
       "ha-ports" = {
         name               = "private-vmseries"
-        vnet_key           = "transit"
         subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
@@ -177,9 +177,8 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 1
+      size = "Standard_DS3_v2"
+      zone = 1
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
@@ -188,6 +187,7 @@ vmseries = {
         public_snet_key        = "public"
       }
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-in-01-mgmt"
@@ -212,9 +212,8 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 2
+      size = "Standard_DS3_v2"
+      zone = 2
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
@@ -223,6 +222,7 @@ vmseries = {
         public_snet_key        = "public"
       }
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-in-02-mgmt"
@@ -246,9 +246,8 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 1
+      size = "Standard_DS3_v2"
+      zone = 1
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
@@ -257,6 +256,7 @@ vmseries = {
         public_snet_key        = "public"
       }
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-obew-01-mgmt"
@@ -281,9 +281,8 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 2
+      size = "Standard_DS3_v2"
+      zone = 2
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
@@ -292,6 +291,7 @@ vmseries = {
         public_snet_key        = "public"
       }
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-obew-02-mgmt"

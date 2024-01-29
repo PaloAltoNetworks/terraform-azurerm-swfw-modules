@@ -415,8 +415,8 @@ Following properties are supported:
 - `natgw`              - (`map`, required) a map defining basic NAT Gateway configuration. For details on available options
                          please refer to [module documentation](../../modules/natgw/README.md#natgw). One property that's worth
                          mentioning is:
-  - `vnet_key` - (`string`, required) a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this NAT Gateway
-                 will be assigned to.
+- `vnet_key`           - (`string`, required) a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this
+                         NAT Gateway will be assigned to.
 - `subnet_keys`        - (`list(string)`, required) a list of subnets (key values) the NAT Gateway will be assigned to, defined
                          in `var.vnets` for a VNET described by `vnet_name`.
 - `public_ip`          - (`object`, optional) an object defining a public IP resource attached to the NAT Gateway.
@@ -445,11 +445,11 @@ map(object({
     name                = string
     resource_group_name = optional(string)
     natgw = object({
-      vnet_key     = string
       create       = optional(bool, true)
       zone         = optional(string)
       idle_timeout = optional(number)
     })
+    vnet_key    = string
     subnet_keys = list(string)
     public_ip = optional(object({
       create              = bool
@@ -496,17 +496,17 @@ Following properties are available:
                         in the `var.vnets` map
   - `nsg_vnet_key`    - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition
                         in the `var.vnets` map that stores the NSG described by `nsg_key`
+- `vnet_key`                - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets`
+                              map that stores the Subnet described by `subnet_key`.
 - `frontend_ips`            - (`map`, optional, defaults to `{}`) a map containing frontend IP configuration with respective
                               `in_rules` and `out_rules`
 
   Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
 
   **Note!** \
-  In this example the `subnet_id` is not available directly, three other properties were introduced instead.
+  In this example the `subnet_id` is not available directly, three other property was introduced instead:
 
-  - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map
-  - `vnet_key`    - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets` map
-                    that stores the Subnet described by `subnet_key`
+  - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map.
 
 
 Type: 
@@ -534,12 +534,12 @@ map(object({
       source_ips              = list(string)
       base_priority           = optional(number)
     }))
+    vnet_key = optional(string)
     frontend_ips = optional(map(object({
       name                          = string
       public_ip_name                = optional(string)
       create_public_ip              = optional(bool, false)
       public_ip_resource_group_name = optional(string)
-      vnet_key                      = optional(string)
       subnet_key                    = optional(string)
       private_ip_address            = optional(string)
       gwlb_key                      = optional(string)
@@ -759,8 +759,6 @@ The most basic properties are as follows:
 
     The most often used option are as follows:
 
-    - `vnet_key`  - (`string`, required) a key of a VNET defined in `var.vnets`. This is the VNET that hosts subnets used to
-                    deploy network interfaces for deployed VM.
     - `size`      - (`string`, optional, defaults to module defaults) Azure VM size (type). Consult the *VM-Series Deployment
                     Guide* as only a few selected sizes are supported.
     - `zone`      - (`string`, optional, defaults to module defaults) the Availability Zone in which the VM and (if deployed)
@@ -822,6 +820,9 @@ The most basic properties are as follows:
       
     For details on the other properties refer to [module's documentation](../../modules/panorama/README.md#virtual_machine).
 
+- `vnet_key`        - (`string`, required) a key of a VNET defined in `var.vnets`. This is the VNET that hosts subnets used to
+                      deploy network interfaces for deployed VM.
+
 - `interfaces`      - (`list`, required) configuration of all network interfaces
   
     **Note!** \
@@ -864,7 +865,6 @@ map(object({
       custom_id               = optional(string)
     })
     virtual_machine = object({
-      vnet_key          = string
       size              = optional(string)
       bootstrap_options = optional(string)
       bootstrap_package = optional(object({
@@ -890,6 +890,7 @@ map(object({
       identity_ids                 = optional(list(string))
       allow_extension_operations   = optional(bool)
     })
+    vnet_key = string
     interfaces = list(object({
       name                          = string
       subnet_key                    = string
@@ -921,45 +922,45 @@ represents the Rules section of an Application Gateway in Azure Portal.
 
 Below you can find a brief list of available properties:
 
-- `name` - (`string`, required) the name of the Application Gateway, will be prefixed with `var.name_prefix`
+- `name`            - (`string`, required) the name of the Application Gateway, will be prefixed with `var.name_prefix`
+- `subnet_key`      - (`string`, required) a key pointing to a Subnet definition in the `var.vnets` map, this has to be an
+                      Application Gateway V2 dedicated subnet.
+- `vnet_key`        - (`string`, required) a key pointing to a VNET definition in the `var.vnets` map that stores the Subnet
+                      described by `subnet_key`.
 - `application_gateway` - (`map`, required) defines the basic Application Gateway settings, for details see
                           [module's documentation](../../modules/appgw/README.md#application_gateway). The most important
                           properties are:
-  - `subnet_key`    - (`string`, required) a key pointing to a Subnet definition in the `var.vnets` map, this has to be an
-                      Application Gateway V2 dedicated subnet.
-  - `vnet_key`      - (`string`, required) a key pointing to a VNET definition in the `var.vnets` map that stores the Subnet
-                      described by `subnet_key`.
-  - `public_ip`     - (`map`, required) defines a Public IP resource used by the Application Gateway instance, a newly created
+      - `public_ip`     - (`map`, required) defines a Public IP resource used by the Application Gateway instance, a newly created
                       Public IP will have it's name prefixes with `var.name_prefix`
   - `zones`         - (`list`, optional, defaults to module defaults) parameter controlling if this is a zonal, or a non-zonal
                       deployment
   - `backend_pool`  - (`map`, optional, defaults to module defaults) backend pool definition, when skipped, an empty backend
                       will be created
-- `listeners`       - (`map`, required) defines Application Gateway's Listeners, see
+- `listeners`           - (`map`, required) defines Application Gateway's Listeners, see
                       [module's documentation](../../modules/appgw/README.md#listeners) for details
-- `backends`        - (`map`, optional, mutually exclusive with `redirects` and `url_path_maps`) defines HTTP backend settings,
-                      see [module's documentation](../../modules/appgw/README.md#backends) for details
-- `probes`          - (`map`, optional, defaults to module defaults) defines backend probes used check health of backends,
+- `backends`            - (`map`, optional, mutually exclusive with `redirects` and `url_path_maps`) defines HTTP backend
+                          settings, see [module's documentation](../../modules/appgw/README.md#backends) for details
+- `probes`              - (`map`, optional, defaults to module defaults) defines backend probes used check health of backends,
                       see [module's documentation](../../modules/appgw/README.md#probes) for details
-- `rewrites`        - (`map`, optional, defaults to module defaults) defines rewrite rules,
+- `rewrites`            - (`map`, optional, defaults to module defaults) defines rewrite rules,
                       see [module's documentation](../../modules/appgw/README.md#rewrites) for details
-- `redirects        - (`map`, optional, mutually exclusive with `backends` and `url_path_maps`) static redirects definition,
+- `redirects            - (`map`, optional, mutually exclusive with `backends` and `url_path_maps`) static redirects definition,
                       see [module's documentation](../../modules/appgw/README.md#redirects) for details
-- `url_path_maps    - (`map`, optional, mutually exclusive with `backends` and `redirects`) URL path maps definition, 
+- `url_path_maps        - (`map`, optional, mutually exclusive with `backends` and `redirects`) URL path maps definition, 
                       see [module's documentation](../../modules/appgw/README.md#url_path_maps) for details
-- `rules            - (`map`, required) Application Gateway Rules definition, bind together a `listener` with either `backend`,
-                      `redirect` or `url_path_map`, see [module's documentation](../../modules/appgw/README.md#rules)
-                      for details
+- `rules                - (`map`, required) Application Gateway Rules definition, bind together a `listener` with either
+                          `backend`, `redirect` or `url_path_map`, see
+                          [module's documentation](../../modules/appgw/README.md#rules) for details
 
 
 Type: 
 
 ```hcl
 map(object({
-    name = string
+    name       = string
+    vnet_key   = string
+    subnet_key = string
     application_gateway = object({
-      vnet_key   = string
-      subnet_key = string
       public_ip = object({
         name                = string
         resource_group_name = optional(string)

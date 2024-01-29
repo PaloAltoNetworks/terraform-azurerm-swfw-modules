@@ -401,8 +401,6 @@ The basic Panorama VM configuration properties are as follows:
 
     Following properties are available:
 
-    - `vnet_key`  - (`string`, required) a key of a VNET defined in `var.vnets`. This is the VNET that hosts subnets used to
-                    deploy network interfaces for deployed VM.
     - `size`      - (`string`, optional, defaults to module defaults) Azure VM size (type). Consult the *VM-Series Deployment
                     Guide* as only a few selected sizes are supported.
     - `zone`      - (`string`, optional, defaults to module defaults) the Availability Zone in which the VM will be created.
@@ -411,6 +409,8 @@ The basic Panorama VM configuration properties are as follows:
       
     For details on the other properties refer to [module's documentation](../../modules/panorama/README.md#virtual_machine).
 
+- `vnet_key`        - (`string`, required) a key of a VNET defined in `var.vnets`. This is the VNET that hosts subnets used to
+                      deploy network interfaces for deployed VM.
 - `interfaces`      - (`list`, required) configuration of all network interfaces, order does matter - the 1<sup>st</sup>
                       interface should be the management one. 
                         
@@ -453,7 +453,6 @@ map(object({
       custom_id               = optional(string)
     })
     virtual_machine = object({
-      vnet_key                   = string
       size                       = optional(string)
       zone                       = string
       disk_type                  = optional(string)
@@ -465,6 +464,7 @@ map(object({
       identity_type              = optional(string)
       identity_ids               = optional(list(string))
     })
+    vnet_key = string
     interfaces = list(object({
       name                          = string
       subnet_key                    = string

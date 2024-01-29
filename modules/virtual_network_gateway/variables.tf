@@ -75,14 +75,21 @@ variable "virtual_network_gateway" {
   }
 }
 
+variable "subnet_id" {
+  description = <<-EOF
+  An ID of a Subnet in which the Virtual Network Gateway will be created.
+
+  This has to be a dedicated Subnet names `GatewaySubnet`.
+  EOF
+  type        = string
+}
+
 variable "network" {
   description = <<-EOF
   Network configuration of the Virtual Network Gateway.
 
   Following properties are available:
 
-  - `subnet_id`                        - (`string`, required) ID of a Subnet in which the Virtual Network Gateway will be created.
-                                         This has to be a dedicated Subnet names `GatewaySubnet`.
   - `public_ip_zones`                  - (`list`, optional, defaults to `["1", "2", "3"]`) a list of Availability Zones in which
                                          the Virtual Network Gateway will be available.
   - `ip_configurations`                - (`map`, required) a map defining the Public IPs used by the Virtual Network Gateway.
@@ -107,7 +114,6 @@ variable "network" {
 
   EOF
   type = object({
-    subnet_id       = string
     public_ip_zones = optional(list(string), ["1", "2", "3"])
     ip_configurations = object({
       primary = object({

@@ -83,7 +83,7 @@ resource "azurerm_application_gateway" "this" {
 
   gateway_ip_configuration {
     name      = "ip_config"
-    subnet_id = var.application_gateway.subnet_id
+    subnet_id = var.subnet_id
   }
 
   frontend_ip_configuration {

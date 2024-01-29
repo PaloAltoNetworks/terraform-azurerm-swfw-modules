@@ -817,6 +817,7 @@ Name | Type | Description
 [`name`](#name) | `string` | The name of the Application Gateway.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`subnet_id`](#subnet_id) | `string` | An ID of a subnet that will host the Application Gateway.
 [`application_gateway`](#application_gateway) | `object` | A map defining basic Application Gateway configuration.
 [`listeners`](#listeners) | `map` | A map of listeners for the Application Gateway.
 [`rules`](#rules) | `map` | A map of rules for the Application Gateway.
@@ -896,14 +897,23 @@ Type: string
 <sup>[back to list](#modules-required-inputs)</sup>
 
 
+#### subnet_id
+
+An ID of a subnet that will host the Application Gateway.
+
+This has to be a subnet dedicated to  Application Gateway v2.
+
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
 #### application_gateway
 
 A map defining basic Application Gateway configuration. 
 
 Following properties are either required or important:
 
-- `subnet_id`                       - (`string`, required) an ID of a subnet that will host the Application Gateway, this has to
-                                      be a subnet dedicated to  Application Gateway v2
 - `public_ip`                       - (`map`, required) a map defining listener's public IP configuration
   - `name`                  - (`string`, required) name of the Public IP resource
   - `create`                - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or sourced
@@ -989,7 +999,6 @@ Type:
 
 ```hcl
 object({
-    subnet_id = string
     public_ip = object({
       name                = string
       resource_group_name = optional(string)
@@ -1132,6 +1141,7 @@ Type: map(string)
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 
 #### ssl_profiles

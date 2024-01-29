@@ -49,10 +49,9 @@ module "vng" {
   location            = var.location
   resource_group_name = local.resource_group.name
 
-  network = merge(
-    each.value.network,
-    { subnet_id = module.vnet[each.value.network.vnet_key].subnet_ids[each.value.network.subnet_key] }
-  )
+  network   = each.value.network
+  subnet_id = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
+
 
   virtual_network_gateway  = each.value.virtual_network_gateway
   azure_bgp_peer_addresses = each.value.azure_bgp_peer_addresses

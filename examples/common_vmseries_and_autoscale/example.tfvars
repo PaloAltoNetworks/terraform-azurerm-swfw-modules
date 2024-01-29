@@ -149,11 +149,11 @@ load_balancers = {
     }
   }
   "private" = {
-    name = "private-lb"
+    name     = "private-lb"
+    vnet_key = "transit"
     frontend_ips = {
       "ha-ports" = {
         name               = "private-vmseries"
-        vnet_key           = "transit"
         subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
@@ -173,10 +173,10 @@ load_balancers = {
 # --- APPLICATION GATEWAYs --- #
 appgws = {
   public = {
-    name = "appgw"
+    name       = "appgw"
+    vnet_key   = "transit"
+    subnet_key = "appgw"
     application_gateway = {
-      vnet_key   = "transit"
-      subnet_key = "appgw"
       public_ip = {
         name = "appgw-pip"
       }
@@ -235,13 +235,13 @@ scale_sets = {
       disable_password_authentication = false
     }
     virtual_machine_scale_set = {
-      vnet_key          = "transit"
       bootstrap_options = "type=dhcp-client"
       zones             = ["1", "2", "3"]
     }
     autoscaling_configuration = {
       default_count = 1
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "management"

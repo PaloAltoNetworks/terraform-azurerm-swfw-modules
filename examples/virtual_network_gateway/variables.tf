@@ -125,9 +125,9 @@ variable "virtual_network_gateways" {
       generation    = optional(string)
       custom_routes = optional(map(list(string)))
     })
+    vnet_key   = string
+    subnet_key = string
     network = object({
-      vnet_key        = string
-      subnet_key      = string
       public_ip_zones = optional(list(string))
       ip_configurations = object({
         primary = object({

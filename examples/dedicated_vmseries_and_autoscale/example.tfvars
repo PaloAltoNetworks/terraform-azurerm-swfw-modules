@@ -111,9 +111,9 @@ vnets = {
 
 natgws = {
   "natgw" = {
-    name = "public-natgw"
+    name     = "public-natgw"
+    vnet_key = "transit"
     natgw = {
-      vnet_key = "transit"
     }
     subnet_keys = ["public", "management"]
     public_ip_prefix = {
@@ -158,10 +158,10 @@ load_balancers = {
     load_balancer = {
       zones = null
     }
+    vnet_key = "transit"
     frontend_ips = {
       "ha-ports" = {
         name               = "private-vmseries"
-        vnet_key           = "transit"
         subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
@@ -191,13 +191,13 @@ scale_sets = {
       disable_password_authentication = false
     }
     virtual_machine_scale_set = {
-      vnet_key          = "transit"
       bootstrap_options = "type=dhcp-client"
       zones             = null
     }
     autoscaling_configuration = {
       default_count = 2
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name       = "management"
@@ -223,13 +223,13 @@ scale_sets = {
       disable_password_authentication = false
     }
     virtual_machine_scale_set = {
-      vnet_key          = "transit"
       bootstrap_options = "type=dhcp-client"
       zones             = null
     }
     autoscaling_configuration = {
       default_count = 2
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name       = "management"

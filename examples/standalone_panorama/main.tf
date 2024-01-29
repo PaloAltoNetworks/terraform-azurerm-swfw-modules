@@ -102,7 +102,7 @@ module "panorama" {
 
   interfaces = [for v in each.value.interfaces : {
     name                          = "${var.name_prefix}${v.name}"
-    subnet_id                     = module.vnet[each.value.virtual_machine.vnet_key].subnet_ids[v.subnet_key]
+    subnet_id                     = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
     create_public_ip              = v.create_public_ip
     public_ip_name                = v.create_public_ip ? "${var.name_prefix}${coalesce(v.public_ip_name, "${each.value.name}-pip")}" : v.public_ip_name
     public_ip_resource_group_name = v.public_ip_resource_group_name

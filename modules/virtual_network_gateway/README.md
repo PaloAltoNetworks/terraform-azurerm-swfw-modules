@@ -148,6 +148,7 @@ Name | Type | Description
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
 [`virtual_network_gateway`](#virtual_network_gateway) | `object` | A map containing the basic Virtual Network Gateway configuration.
+[`subnet_id`](#subnet_id) | `string` | An ID of a Subnet in which the Virtual Network Gateway will be created.
 [`network`](#network) | `object` | Network configuration of the Virtual Network Gateway.
 [`azure_bgp_peer_addresses`](#azure_bgp_peer_addresses) | `map` | Map of IP addresses used on Azure side for BGP.
 [`bgp`](#bgp) | `object` | A map controlling the BGP configuration used by this Virtual Network Gateway.
@@ -266,14 +267,23 @@ object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
+#### subnet_id
+
+An ID of a Subnet in which the Virtual Network Gateway will be created.
+
+This has to be a dedicated Subnet names `GatewaySubnet`.
+
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
 #### network
 
 Network configuration of the Virtual Network Gateway.
 
 Following properties are available:
 
-- `subnet_id`                        - (`string`, required) ID of a Subnet in which the Virtual Network Gateway will be created.
-                                       This has to be a dedicated Subnet names `GatewaySubnet`.
 - `public_ip_zones`                  - (`list`, optional, defaults to `["1", "2", "3"]`) a list of Availability Zones in which
                                        the Virtual Network Gateway will be available.
 - `ip_configurations`                - (`map`, required) a map defining the Public IPs used by the Virtual Network Gateway.
@@ -302,7 +312,6 @@ Type:
 
 ```hcl
 object({
-    subnet_id       = string
     public_ip_zones = optional(list(string), ["1", "2", "3"])
     ip_configurations = object({
       primary = object({
@@ -497,6 +506,7 @@ Type: map(string)
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 
 

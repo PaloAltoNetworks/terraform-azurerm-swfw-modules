@@ -40,10 +40,10 @@ vnets = {
 
 appgws = {
   "public-empty" = {
-    name = "empty"
+    name       = "empty"
+    vnet_key   = "transit"
+    subnet_key = "appgw"
     application_gateway = {
-      vnet_key   = "transit"
-      subnet_key = "appgw"
       public_ip = {
         name = "public-empty-ip"
       }
@@ -71,14 +71,14 @@ appgws = {
     }
   }
   "public-http-minimum" = {
-    name = "appgw-http-minimum"
+    name       = "appgw-http-minimum"
+    vnet_key   = "transit"
+    subnet_key = "appgw"
     application_gateway = {
       public_ip = {
         name = "pip-http-minimum"
       }
-      vnet_key   = "transit"
-      subnet_key = "appgw"
-      zones      = []
+      zones = []
     }
     listeners = {
       minimum = {
@@ -124,10 +124,10 @@ appgws = {
         name   = "pip-existing"
         create = false
       }
-      vnet_key   = "transit"
-      subnet_key = "appgw"
-      zones      = ["1"]
+      zones = ["1"]
     }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
     backends = {
       existing = {
         name                      = "http-backend"
@@ -168,14 +168,14 @@ appgws = {
     }
   }
   "public-http-autoscale" = {
-    name = "appgw-http-autoscale"
+    name       = "appgw-http-autoscale"
+    vnet_key   = "transit"
+    subnet_key = "appgw"
     application_gateway = {
       public_ip = {
         name = "pip-http-autoscale"
       }
-      vnet_key   = "transit"
-      subnet_key = "appgw"
-      zones      = null
+      zones = null
       capacity = {
         autoscale = {
           min = 2
@@ -209,14 +209,14 @@ appgws = {
     }
   }
   "public-waf" = {
-    name = "appgw-waf"
+    name       = "appgw-waf"
+    vnet_key   = "transit"
+    subnet_key = "appgw"
     application_gateway = {
       public_ip = {
         name = "pip-waf"
       }
-      vnet_key   = "transit"
-      subnet_key = "appgw"
-      zones      = []
+      zones = []
       capacity = {
         static = 4
       }
@@ -280,7 +280,9 @@ appgws = {
   #    openssl pkcs12 -inkey test1.key -in test1.crt -export -out test1.pfx
   #    openssl pkcs12 -inkey test2.key -in test2.crt -export -out test2.pfx
   "public-ssl-custom" = {
-    name = "appgw-ssl-custom"
+    name       = "appgw-ssl-custom"
+    vnet_key   = "transit"
+    subnet_key = "appgw"
     application_gateway = {
       public_ip = {
         name = "pip-ssl-custom"
@@ -289,8 +291,6 @@ appgws = {
         name = "vmseries-pool"
       }
       frontend_ip_configuration_name = "public_ipconfig"
-      vnet_key                       = "transit"
-      subnet_key                     = "appgw"
       zones                          = ["1", "2", "3"]
       global_ssl_policy = {
         type                 = "Custom"
@@ -598,13 +598,13 @@ appgws = {
     }
   }
   "public-ssl-predefined" = {
-    name = "appgw-ssl-predefined"
+    name       = "appgw-ssl-predefined"
+    vnet_key   = "transit"
+    subnet_key = "appgw"
     application_gateway = {
       public_ip = {
         name = "pip-ssl-predefined"
       }
-      vnet_key   = "transit"
-      subnet_key = "appgw"
       backend_pool = {
         name = "vmseries-pool-custom"
       }

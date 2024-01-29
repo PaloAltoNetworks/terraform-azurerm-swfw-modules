@@ -61,11 +61,11 @@ module "appgw" {
   name                = "${var.name_prefix}${each.value.name}"
   resource_group_name = local.resource_group.name
   location            = var.location
+  subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
   application_gateway = merge(
     each.value.application_gateway,
     {
-      subnet_id = module.vnet[each.value.application_gateway.vnet_key].subnet_ids[each.value.application_gateway.subnet_key]
       public_ip = merge(
         each.value.application_gateway.public_ip,
         {

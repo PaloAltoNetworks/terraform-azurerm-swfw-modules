@@ -50,9 +50,9 @@ vmseries = {
     }
     virtual_machine = {
       bootstrap_options = "type=dhcp-client"
-      vnet_key          = "transit"
       zone              = null
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-mgmt"
