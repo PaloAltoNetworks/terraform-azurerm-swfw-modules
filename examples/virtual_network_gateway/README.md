@@ -84,16 +84,22 @@ A map defining VNETs.
   
 For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-- `create_virtual_network`  - (`bool`, optional, defaults to `false`) when set to `true` will create a VNET, `false` will source an existing VNET.
-- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a full resource name, including prefixes.
-- `address_space`           - (`list(string)`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET
-- `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the VNET will reside or is sourced from
-
-- `create_subnets`          - (`bool`, optinoal, defaults to `true`) if `true`, create Subnets inside the Virtual Network, otherwise use source existing subnets
-- `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see [VNET module documentation](../../modules/vnet/README.md#subnets)
-
-- `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see [VNET module documentation](../../modules/vnet/README.md#network_security_groups)
-- `route_tables`            - (`map`, optional) map of Route Tables to create, for details see [VNET module documentation](../../modules/vnet/README.md#route_tables)
+- `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
+                              `false` will source an existing VNET.
+- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be
+                              a full resource name, including prefixes.
+- `address_space`           - (`list(string)`, required when `create_virtual_network = false`) a list of CIDRs for a newly
+                              created VNET
+- `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which
+                              the VNET will reside or is sourced from
+- `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
+                              otherwise use source existing subnets
+- `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
+                              [VNET module documentation](../../modules/vnet/README.md#subnets)
+- `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
+                              [VNET module documentation](../../modules/vnet/README.md#network_security_groups)
+- `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
+                              [VNET module documentation](../../modules/vnet/README.md#route_tables)
 
 
 Type: 
@@ -101,12 +107,11 @@ Type:
 ```hcl
 map(object({
     name                   = string
-    create_virtual_network = optional(bool, true)
-    address_space          = optional(list(string), [])
     resource_group_name    = optional(string)
+    create_virtual_network = optional(bool, true)
+    address_space          = optional(list(string))
     network_security_groups = optional(map(object({
-      name     = string
-      location = optional(string)
+      name = string
       rules = optional(map(object({
         name                         = string
         priority                     = number
@@ -124,13 +129,13 @@ map(object({
       })), {})
     })), {})
     route_tables = optional(map(object({
-      name     = string
-      location = optional(string)
+      name                          = string
+      disable_bgp_route_propagation = optional(bool)
       routes = map(object({
-        name                   = string
-        address_prefix         = string
-        next_hop_type          = string
-        next_hop_in_ip_address = optional(string)
+        name                = string
+        address_prefix      = string
+        next_hop_type       = string
+        next_hop_ip_address = optional(string)
       }))
     })), {})
     create_subnets = optional(bool, true)
@@ -256,19 +261,19 @@ map(object({
     })
     local_network_gateways = map(object({
       name = string
-      remote_bgp_settings = optional(list(object({
+      remote_bgp_settings = optional(object({
         asn                 = string
         bgp_peering_address = string
         peer_weight         = optional(number)
-      })), [])
+      }))
       gateway_address = optional(string)
       address_space   = optional(list(string), [])
-      custom_bgp_addresses = optional(list(object({
-        primary_key   = string
-        secondary_key = optional(string)
-      })), [])
       connection = object({
         name = string
+        custom_bgp_addresses = optional(object({
+          primary_key   = string
+          secondary_key = optional(string)
+        }))
         ipsec_policies = list(object({
           dh_group         = string
           ike_encryption   = string

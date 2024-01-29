@@ -54,18 +54,22 @@ virtual_network_gateways = {
         primary = {
           name             = "primary"
           create_public_ip = true
-          public_ip_name   = "pip1" # REFACTOR give this IP a proper name
+          public_ip_name   = "vng-primary-pip"
         }
         secondary = {
           name             = "secondary"
           create_public_ip = true
-          public_ip_name   = "pip2" # REFACTOR give this IP a proper name
+          public_ip_name   = "vng-secondary-pip"
         }
       }
     }
     azure_bgp_peer_addresses = {
-      primary   = "169.254.21.2"
-      secondary = "169.254.22.2"
+      one_primary     = "169.254.21.2"
+      one_secondary   = "169.254.22.2"
+      two_primary     = "169.254.21.12"
+      two_secondary   = "169.254.22.12"
+      three_primary   = "169.254.21.22"
+      three_secondary = "169.254.22.22"
     }
     bgp = {
       enable = true
@@ -73,11 +77,11 @@ virtual_network_gateways = {
         asn = "65002"
         primary_peering_addresses = {
           name               = "primary"
-          apipa_address_keys = ["primary"]
+          apipa_address_keys = ["one_primary", "two_primary", "three_primary"]
         }
         secondary_peering_addresses = {
           name               = "secondary"
-          apipa_address_keys = ["secondary"]
+          apipa_address_keys = ["one_secondary", "two_secondary", "three_secondary"]
         }
       }
     }
@@ -85,18 +89,16 @@ virtual_network_gateways = {
       lg1 = {
         name            = "local_gw_1"
         gateway_address = "8.8.8.8"
-        remote_bgp_settings = [{
+        remote_bgp_settings = {
           asn                 = "65000"
           bgp_peering_address = "169.254.21.1"
-        }]
-        custom_bgp_addresses = [
-          {
-            primary_key   = "primary"
-            secondary_key = "secondary"
-          }
-        ]
+        }
         connection = {
-          name       = "connection_1"
+          name = "connection_1"
+          custom_bgp_addresses = {
+            primary_key   = "one_primary"
+            secondary_key = "one_secondary"
+          }
           mode       = "InitiatorOnly"
           shared_key = "test123"
           ipsec_policies = [
@@ -116,18 +118,16 @@ virtual_network_gateways = {
       lg2 = {
         name            = "local_gw_2"
         gateway_address = "4.4.4.4"
-        remote_bgp_settings = [{
+        remote_bgp_settings = {
           asn                 = "65000"
           bgp_peering_address = "169.254.22.1"
-        }]
-        custom_bgp_addresses = [
-          {
-            primary_key   = "primary"
-            secondary_key = "secondary"
-          }
-        ]
+        }
         connection = {
-          name       = "connection_2"
+          name = "connection_2"
+          custom_bgp_addresses = {
+            primary_key   = "two_primary"
+            secondary_key = "two_secondary"
+          }
           mode       = "InitiatorOnly"
           shared_key = "test123"
           ipsec_policies = [

@@ -231,7 +231,7 @@ A map containing the basic Virtual Network Gateway configuration.
 You configure the size, capacity and capabilities with 4 parameters that heavily depend on each other. Please follow the table
 below for details on available combinations:
 
-# REFACTOR add here a table with possible config combinations
+# REFACTOR : add here a table with possible config combinations
 
 Following properties are available:
 
@@ -386,7 +386,7 @@ object({
         apipa_address_keys = list(string)
         default_addresses  = optional(list(string))
       })
-      secondary_peering_addresses = optional(object({ # REFACTOR add a precondition like for network configuration
+      secondary_peering_addresses = optional(object({ # REFACTOR : add a precondition like for network configuration
         name               = string
         apipa_address_keys = list(string)
         default_addresses  = optional(list(string))
@@ -447,19 +447,19 @@ Type:
 ```hcl
 map(object({
     name = string
-    remote_bgp_settings = optional(list(object({ # REFACTOR: check how many items you can have here, does it depend on active-active? maybe this should also be map to avoid confusion (if max 2 are allowed)
+    remote_bgp_settings = optional(object({
       asn                 = string
       bgp_peering_address = string
       peer_weight         = optional(number)
-    })), [])
-    gateway_address = optional(string)
+    }))
     address_space   = optional(list(string), [])
-    custom_bgp_addresses = optional(list(object({ # REFACTOR: check how many items you can have here, does it depend on active-active? maybe this should also be map to avoid confusion (if max 2 are allowed)
-      primary_key   = string
-      secondary_key = optional(string)
-    })), [])
+    gateway_address = optional(string)
     connection = object({
       name = string
+      custom_bgp_addresses = optional(object({
+        primary_key   = string
+        secondary_key = optional(string)
+      }))
       ipsec_policies = list(object({
         dh_group         = string
         ike_encryption   = string

@@ -154,12 +154,13 @@ resource "azurerm_local_network_gateway" "this" {
   gateway_address     = each.value.gateway_address
   address_space       = each.value.address_space
 
+
   dynamic "bgp_settings" {
-    for_each = each.value.remote_bgp_settings
+    for_each = each.value.remote_bgp_settings != null ? [1] : []
     content {
-      asn                 = bgp_settings.value.asn
-      bgp_peering_address = bgp_settings.value.bgp_peering_address
-      peer_weight         = bgp_settings.value.peer_weight
+      asn                 = each.value.remote_bgp_settings.asn
+      bgp_peering_address = each.value.remote_bgp_settings.bgp_peering_address
+      peer_weight         = each.value.remote_bgp_settings.peer_weight
     }
   }
 
@@ -183,10 +184,10 @@ resource "azurerm_virtual_network_gateway_connection" "this" {
   shared_key                     = each.value.connection.shared_key
 
   dynamic "custom_bgp_addresses" {
-    for_each = each.value.custom_bgp_addresses
+    for_each = each.value.connection.custom_bgp_addresses != null ? [1] : []
     content {
-      primary   = var.azure_bgp_peer_addresses[custom_bgp_addresses.value.primary_key]
-      secondary = try(var.azure_bgp_peer_addresses[custom_bgp_addresses.value.secondary_key], null)
+      primary   = var.azure_bgp_peer_addresses[each.value.connection.custom_bgp_addresses.primary_key]
+      secondary = try(var.azure_bgp_peer_addresses[each.value.connection.custom_bgp_addresses.secondary_key], null)
     }
   }
 
