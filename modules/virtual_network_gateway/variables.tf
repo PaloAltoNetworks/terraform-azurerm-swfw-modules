@@ -25,10 +25,43 @@ variable "virtual_network_gateway" {
   description = <<-EOF
   A map containing the basic Virtual Network Gateway configuration.
 
-  You configure the size, capacity and capabilities with 4 parameters that heavily depend on each other. Please follow the table
+  You configure the size, capacity and capabilities with 3/4 parameters that heavily depend on each other. Please follow the table
   below for details on available combinations:
 
-  # REFACTOR : add here a table with possible config combinations
+  <table>
+    <tr>
+      <th>type</th>
+      <th>generation</th>
+      <th>sku</th>
+    </tr>
+    <tr>
+      <td rowspan="6">ExpressRoute</td>
+      <td rowspan="6">N/A</td>
+      <td>Standard</td>
+    </tr>
+    <tr><td>HighPerformance</td></tr>
+    <tr><td>UltraPerformance</td></tr>
+    <tr><td>ErGw1AZ</td></tr>
+    <tr><td>ErGw2AZ</td></tr>
+    <tr><td>ErGw3AZ</td></tr>
+    <tr>
+      <td rowspan="11">Vpn</td>
+      <td rowspan="3">Generation1</td>
+      <td>Basic</td>
+    <tr><td>VpnGw1</td></tr>
+    <tr><td>VpnGw1AZ</td></tr>
+    <tr>
+      <td rowspan="8">Generation1/Generation2</td>
+      <td>VpnGw2</td>
+    </tr>
+    <tr><td>VpnGw3</td></tr>
+    <tr><td>VpnGw4</td></tr>
+    <tr><td>VpnGw5</td></tr>
+    <tr><td>VpnGw2AZ</td></tr>
+    <tr><td>VpnGw3AZ</td></tr>
+    <tr><td>VpnGw4AZ</td></tr>
+    <tr><td>VpnGw5AZ</td></tr>
+  </table>
 
   Following properties are available:
 
@@ -37,7 +70,8 @@ variable "virtual_network_gateway" {
   - `vpn_type`      - (`string`, optional, defaults to `RouteBased`) the routing type of the Virtual Network Gateway, possible
                       values are: `RouteBased` or `PolicyBased`.
   - `generation`    - (`string`, optional, defaults to `Generation1`) the Generation of the Virtual Network gateway, possible
-                      values are: `None`, `Generation1` or `Generation2`.
+                      values are: `None`, `Generation1` or `Generation2`. This property is ignored when type is set to 
+                      `ExpressRoute`.
   - `sku`           - (`string`, optional, defaults to `Basic`) sets the size and capacity of the virtual network gateway.
   - `active_active` - (`bool`, optional, defaults to `false`) when set to true creates an active-active Virtual Network Gateway,
                       active-passive otherwise. Not supported for `Basic` and `Standard` SKUs.
@@ -72,6 +106,32 @@ variable "virtual_network_gateway" {
     The `virtual_network_gateway.generation` property can take one of the following values: "Generation1" or "Generation2"
     or "None".
     EOF
+  }
+  validation { # active_active
+    condition     = var.virtual_network_gateway.type == "ExpressRoute" ? !var.virtual_network_gateway.active_active : true
+    error_message = <<-EOF
+    The `active_active` property has to be set to `false` (default) type is `ExpressRoute`.
+    EOF
+  }
+  validation { # type, generation, sku
+    condition = var.virtual_network_gateway.generation == "Generation2" && var.virtual_network_gateway.type == "Vpn" ? contains(
+      ["VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.virtual_network_gateway.sku
+    ) : true
+    error_message = <<-EOF
+    For `sku` of "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ" or "VpnGw5AZ" the `generation`
+    property has to be set to `Generation2` and `type` to `Vpn`.
+    EOF
+  }
+  validation { # type, sku
+    condition = (var.virtual_network_gateway.type == "Vpn" && contains(
+      ["Basic", "VpnGw1", "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"],
+      var.virtual_network_gateway.sku
+      )) || (
+      var.virtual_network_gateway.type == "ExpressRoute" && contains(
+        ["Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ"], var.virtual_network_gateway.sku
+      )
+    )
+    error_message = "Invalid combination of `sku` and `type`. Please check documentation for `var.virtual_network_gateway`."
   }
 }
 
@@ -122,7 +182,7 @@ variable "network" {
         public_ip_name                = string
         private_ip_address_allocation = optional(string, "Dynamic")
       })
-      secondary = optional(object({ # REFACTOR: add precondition that would make this required when active-active is set to true and type == Vpn
+      secondary = optional(object({
         name                          = string
         create_public_ip              = optional(bool, true)
         public_ip_name                = string
@@ -154,6 +214,8 @@ variable "azure_bgp_peer_addresses" { # do not delete this one
   }
   ```
   EOF
+  default     = {}
+  nullable    = false
   type        = map(string)
   validation {
     condition = alltrue([
@@ -187,6 +249,7 @@ variable "bgp" {
     - `secondary_peering_addresses` - (`map`, optional, defaults to `null`) a map defining secondary peering addresses, required
                                       only for `active-active` deployments. Same properties are available.
   EOF
+  default     = null
   type = object({
     enable = optional(bool, false)
     configuration = optional(object({
@@ -197,7 +260,7 @@ variable "bgp" {
         apipa_address_keys = list(string)
         default_addresses  = optional(list(string))
       })
-      secondary_peering_addresses = optional(object({ # REFACTOR : add a precondition like for network configuration
+      secondary_peering_addresses = optional(object({
         name               = string
         apipa_address_keys = list(string)
         default_addresses  = optional(list(string))
@@ -205,11 +268,11 @@ variable "bgp" {
     }))
   })
   validation { # configuration
-    condition     = (var.bgp.enable && var.bgp.configuration != null) || (!var.bgp.enable && var.bgp.configuration == null)
+    condition     = var.bgp == null ? true : (var.bgp.enable && var.bgp.configuration != null) || (!var.bgp.enable && var.bgp.configuration == null)
     error_message = "The `configuration` property is required only when `enabled` is set to `true`."
   }
   validation { # configuration.peer_weight
-    condition     = var.bgp.configuration.peer_weight == null ? true : var.bgp.configuration.peer_weight >= 0 && var.bgp.configuration.peer_weight <= 100
+    condition     = var.bgp == null ? true : var.bgp.configuration.peer_weight == null ? true : var.bgp.configuration.peer_weight >= 0 && var.bgp.configuration.peer_weight <= 100
     error_message = "Possible values for `peer_weight` are between 0 and 100."
   }
 }
@@ -339,6 +402,8 @@ variable "local_network_gateways" {
     - `shared_key`      - (`string`, optional, defaults to `null`) a shared IPSec key used during connection creation.
 
   EOF
+  default     = {}
+  nullable    = false
   type = map(object({
     name = string
     remote_bgp_settings = optional(object({

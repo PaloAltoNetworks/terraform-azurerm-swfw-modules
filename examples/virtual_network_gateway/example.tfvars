@@ -1,7 +1,7 @@
 # --- GENERAL --- #
 location            = "North Europe"
-resource_group_name = "vng-example"
-name_prefix         = "fosix-"
+resource_group_name = "vng"
+name_prefix         = "example-"
 tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
@@ -34,10 +34,97 @@ vnets = {
       }
     }
   }
+  er = {
+    name                    = "vpn"
+    address_space           = ["10.0.1.0/24"]
+    network_security_groups = {}
+    route_tables = {
+      "rt" = {
+        name = "rt-er"
+        routes = {
+          "udr" = {
+            name           = "udr"
+            address_prefix = "10.0.0.0/8"
+            next_hop_type  = "None"
+          }
+        }
+      }
+    }
+    subnets = {
+      vpn = {
+        name             = "GatewaySubnet"
+        address_prefixes = ["10.0.1.0/25"]
+        route_table_key  = "rt"
+      }
+    }
+  }
 }
 
 # --- VNG PART --- #
 virtual_network_gateways = {
+  expressroute = {
+    name = "expressroute"
+    virtual_network_gateway = {
+      type = "ExpressRoute"
+      # vpn_type = "PolicyBased"
+      sku = "Standard"
+      # generation = "Generation1"
+    }
+    vnet_key   = "transit"
+    subnet_key = "vpn"
+    network = {
+      public_ip_zones = ["1"]
+      ip_configurations = {
+        primary = {
+          create_public_ip = true
+          name             = "primary"
+          public_ip_name   = "expressroute_pip"
+        }
+      }
+    }
+  }
+  expressroute_policy_based = {
+    name = "er_policy"
+    virtual_network_gateway = {
+      type       = "ExpressRoute"
+      vpn_type   = "PolicyBased"
+      sku        = "Standard"
+      generation = "Generation2"
+    }
+    vnet_key   = "er"
+    subnet_key = "vpn"
+    network = {
+      public_ip_zones = ["1"]
+      ip_configurations = {
+        primary = {
+          create_public_ip = true
+          name             = "primary"
+          public_ip_name   = "er_policy_pip"
+        }
+      }
+    }
+  }
+  vpn_simple = {
+    name = "simple-vpn"
+    virtual_network_gateway = {
+      type = "Vpn"
+      # vpn_type   = "PolicyBased"
+      sku        = "VpnGw1"
+      generation = "Generation1"
+    }
+    vnet_key   = "er"
+    subnet_key = "vpn"
+    network = {
+      public_ip_zones = []
+      ip_configurations = {
+        primary = {
+          create_public_ip = true
+          name             = "primary"
+          public_ip_name   = "simple_vpn_pip"
+        }
+      }
+    }
+  }
   "vng" = {
     name = "vng"
     virtual_network_gateway = {

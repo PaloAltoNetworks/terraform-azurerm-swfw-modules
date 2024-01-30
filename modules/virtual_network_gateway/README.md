@@ -5,7 +5,8 @@ A terraform module for deploying a VNG (Virtual Network Gateway) and its compone
 
 ## Usage
 
-In order to use module `virtual_network_gateway`, you need to deploy `azurerm_resource_group` and use module `vnet` as prerequisites.
+In order to use module `virtual_network_gateway`, you need to deploy `azurerm_resource_group` and use module `vnet` as
+prerequisites.
 Then you can use below code as an example of calling module to create VNG:
 
 ```hcl
@@ -14,35 +15,18 @@ module "vng" {
 
   for_each = var.virtual_network_gateways
 
+  name                = "${var.name_prefix}${each.value.name}"
   location            = var.location
   resource_group_name = local.resource_group.name
-  name                = each.value.name
-  zones               = each.value.avzones
 
-  type     = each.value.type
-  vpn_type = each.value.vpn_type
-  sku      = each.value.sku
+  network   = each.value.network
+  subnet_id = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
-  active_active                    = each.value.active_active
-  default_local_network_gateway_id = each.value.default_local_network_gateway_id
-  edge_zone                        = each.value.edge_zone
-  enable_bgp                       = each.value.enable_bgp
-  generation                       = each.value.generation
-  private_ip_address_enabled       = each.value.private_ip_address_enabled
-
-  ip_configuration = [
-    for ip_configuration in each.value.ip_configuration :
-    merge(ip_configuration, { subnet_id = module.vnet[ip_configuration.vnet_key].subnet_ids[ip_configuration.subnet_name] })
-  ]
-
-  vpn_client_configuration  = each.value.vpn_client_configuration
-  azure_bgp_peers_addresses = each.value.azure_bgp_peers_addresses
-  local_bgp_settings        = each.value.local_bgp_settings
-  custom_route              = each.value.custom_route
-  ipsec_shared_key          = each.value.ipsec_shared_key
-  local_network_gateways    = each.value.local_network_gateways
-  connection_mode           = each.value.connection_mode
-  ipsec_policy              = each.value.ipsec_policy
+  virtual_network_gateway  = each.value.virtual_network_gateway
+  azure_bgp_peer_addresses = each.value.azure_bgp_peer_addresses
+  bgp                      = each.value.bgp
+  local_network_gateways   = each.value.local_network_gateways
+  vpn_clients              = each.value.vpn_clients
 
   tags = var.tags
 }
@@ -52,91 +36,280 @@ Below there are provided sample values for `virtual_network_gateways` map:
 
 ```hcl
 virtual_network_gateways = {
-  "vng" = {
-    name          = "vng"
-    type          = "Vpn"
-    sku           = "VpnGw2"
-    generation    = "Generation2"
-    active_active = true
-    enable_bgp    = true
-    ip_configuration = [
-      {
-        name             = "001"
-        create_public_ip = true
-        public_ip_name   = "pip1"
-        vnet_key         = "transit"
-        subnet_name      = "GatewaySubnet"
-      },
-      {
-        name             = "002"
-        create_public_ip = true
-        public_ip_name   = "pip2"
-        vnet_key         = "transit"
-        subnet_name      = "GatewaySubnet"
-      }
-    ]
-    ipsec_shared_key = "test123"
-    azure_bgp_peers_addresses = {
-      primary_1   = "169.254.21.2"
-      secondary_1 = "169.254.22.2"
+  expressroute = {
+    name = "expressroute"
+    virtual_network_gateway = {
+      type = "ExpressRoute"
+      # vpn_type = "PolicyBased"
+      sku = "Standard"
+      # generation = "Generation1"
     }
-    local_bgp_settings = {
-      asn = "65002"
-      peering_addresses = {
-        "001" = {
-          apipa_addresses = ["primary_1"]
-        },
-        "002" = {
-          apipa_addresses = ["secondary_1"]
+    vnet_key   = "transit"
+    subnet_key = "vpn"
+    network = {
+      public_ip_zones = ["1"]
+      ip_configurations = {
+        primary = {
+          create_public_ip = true
+          name             = "primary"
+          public_ip_name   = "expressroute_pip"
+        }
+      }
+    }
+  }
+  expressroute_policy_based = {
+    name = "er_policy"
+    virtual_network_gateway = {
+      type       = "ExpressRoute"
+      vpn_type   = "PolicyBased"
+      sku        = "Standard"
+      generation = "Generation2"
+    }
+    vnet_key   = "er"
+    subnet_key = "vpn"
+    network = {
+      public_ip_zones = ["1"]
+      ip_configurations = {
+        primary = {
+          create_public_ip = true
+          name             = "primary"
+          public_ip_name   = "er_policy_pip"
+        }
+      }
+    }
+  }
+  vpn_simple = {
+    name = "simple-vpn"
+    virtual_network_gateway = {
+      type = "Vpn"
+      # vpn_type   = "PolicyBased"
+      sku        = "VpnGw1"
+      generation = "Generation1"
+    }
+    vnet_key   = "er"
+    subnet_key = "vpn"
+    network = {
+      public_ip_zones = []
+      ip_configurations = {
+        primary = {
+          create_public_ip = true
+          name             = "primary"
+          public_ip_name   = "simple_vpn_pip"
+        }
+      }
+    }
+  }
+  "vng" = {
+    name = "vng"
+    virtual_network_gateway = {
+      type          = "Vpn"
+      sku           = "VpnGw2AZ"
+      generation    = "Generation2"
+      active_active = true
+    }
+    vnet_key   = "transit"
+    subnet_key = "vpn"
+    network = {
+      public_ip_zones = ["1", "2", "3"]
+      ip_configurations = {
+        primary = {
+          name             = "primary"
+          create_public_ip = true
+          public_ip_name   = "vng-primary-pip"
+        }
+        secondary = {
+          name             = "secondary"
+          create_public_ip = true
+          public_ip_name   = "vng-secondary-pip"
+        }
+      }
+    }
+    azure_bgp_peer_addresses = {
+      one_primary     = "169.254.21.2"
+      one_secondary   = "169.254.22.2"
+      two_primary     = "169.254.21.12"
+      two_secondary   = "169.254.22.12"
+      three_primary   = "169.254.21.22"
+      three_secondary = "169.254.22.22"
+    }
+    bgp = {
+      enable = true
+      configuration = {
+        asn = "65002"
+        primary_peering_addresses = {
+          name               = "primary"
+          apipa_address_keys = ["one_primary", "two_primary", "three_primary"]
+        }
+        secondary_peering_addresses = {
+          name               = "secondary"
+          apipa_address_keys = ["one_secondary", "two_secondary", "three_secondary"]
         }
       }
     }
     local_network_gateways = {
-      "lg1" = {
-        local_ng_name   = "lg1"
-        connection_name = "cn1"
+      lg1 = {
+        name            = "local_gw_1"
         gateway_address = "8.8.8.8"
-        remote_bgp_settings = [{
+        remote_bgp_settings = {
           asn                 = "65000"
           bgp_peering_address = "169.254.21.1"
-        }]
-        custom_bgp_addresses = [
-          {
-            primary   = "primary_1"
-            secondary = "secondary_1"
+        }
+        connection = {
+          name = "connection_1"
+          custom_bgp_addresses = {
+            primary_key   = "one_primary"
+            secondary_key = "one_secondary"
           }
-        ]
-      },
-      "lg2" = {
-        local_ng_name   = "lg2"
-        connection_name = "cn2"
+          mode       = "InitiatorOnly"
+          shared_key = "test123"
+          ipsec_policies = [
+            {
+              dh_group         = "ECP384"
+              ike_encryption   = "AES256"
+              ike_integrity    = "SHA256"
+              ipsec_encryption = "AES256"
+              ipsec_integrity  = "SHA256"
+              pfs_group        = "ECP384"
+              sa_datasize      = "102400000"
+              sa_lifetime      = "14400"
+            }
+          ]
+        }
+      }
+      lg2 = {
+        name            = "local_gw_2"
         gateway_address = "4.4.4.4"
-        remote_bgp_settings = [{
+        remote_bgp_settings = {
           asn                 = "65000"
           bgp_peering_address = "169.254.22.1"
-        }]
-        custom_bgp_addresses = [
-          {
-            primary   = "primary_1"
-            secondary = "secondary_1"
+        }
+        connection = {
+          name = "connection_2"
+          custom_bgp_addresses = {
+            primary_key   = "two_primary"
+            secondary_key = "two_secondary"
           }
-        ]
+          mode       = "InitiatorOnly"
+          shared_key = "test123"
+          ipsec_policies = [
+            {
+              dh_group         = "ECP384"
+              ike_encryption   = "AES256"
+              ike_integrity    = "SHA256"
+              ipsec_encryption = "AES256"
+              ipsec_integrity  = "SHA256"
+              pfs_group        = "ECP384"
+              sa_datasize      = "102400000"
+              sa_lifetime      = "14400"
+            }
+          ]
+        }
       }
     }
-    connection_mode = "InitiatorOnly"
-    ipsec_policy = [
-      {
-        dh_group         = "ECP384"
-        ike_encryption   = "AES256"
-        ike_integrity    = "SHA256"
-        ipsec_encryption = "AES256"
-        ipsec_integrity  = "SHA256"
-        pfs_group        = "ECP384"
-        sa_datasize      = "102400000"
-        sa_lifetime      = "14400"
-      }
-    ]
   }
+}
+```
+
+To make defining the VNGs easy, you can use the following variable in *glue code*:
+
+```hcl
+variable "virtual_network_gateways" {
+  description = "Map of virtual_network_gateways to create"
+  default     = {}
+  nullable    = false
+  type = map(object({
+    name = string
+    virtual_network_gateway = object({
+      type          = optional(string)
+      vpn_type      = optional(string)
+      sku           = optional(string)
+      active_active = optional(bool)
+      generation    = optional(string)
+      custom_routes = optional(map(list(string)))
+    })
+    vnet_key   = string
+    subnet_key = string
+    network = object({
+      public_ip_zones = optional(list(string))
+      ip_configurations = object({
+        primary = object({
+          name                          = string
+          create_public_ip              = optional(bool)
+          public_ip_name                = string
+          private_ip_address_allocation = optional(string)
+        })
+        secondary = optional(object({
+          name                          = string
+          create_public_ip              = optional(bool)
+          public_ip_name                = string
+          private_ip_address_allocation = optional(string)
+        }))
+      })
+      private_ip_address_enabled       = optional(bool)
+      default_local_network_gateway_id = optional(string)
+      edge_zone                        = optional(string)
+    })
+    azure_bgp_peer_addresses = optional(map(string))
+    bgp = optional(object({
+      enable = optional(bool, false)
+      configuration = optional(object({
+        asn         = string
+        peer_weight = optional(number)
+        primary_peering_addresses = object({
+          name               = string
+          apipa_address_keys = list(string)
+          default_addresses  = optional(list(string))
+        })
+        secondary_peering_addresses = optional(object({
+          name               = string
+          apipa_address_keys = list(string)
+          default_addresses  = optional(list(string))
+        }))
+      }))
+    }))
+    local_network_gateways = optional(map(object({
+      name = string
+      remote_bgp_settings = optional(object({
+        asn                 = string
+        bgp_peering_address = string
+        peer_weight         = optional(number)
+      }))
+      gateway_address = optional(string)
+      address_space   = optional(list(string), [])
+      connection = object({
+        name = string
+        custom_bgp_addresses = optional(object({
+          primary_key   = string
+          secondary_key = optional(string)
+        }))
+        ipsec_policies = list(object({
+          dh_group         = string
+          ike_encryption   = string
+          ike_integrity    = string
+          ipsec_encryption = string
+          ipsec_integrity  = string
+          pfs_group        = string
+          sa_datasize      = optional(string)
+          sa_lifetime      = optional(string)
+        }))
+        type       = optional(string)
+        mode       = optional(string)
+        shared_key = optional(string)
+      })
+    })), {})
+    vpn_clients = optional(map(object({
+      address_space         = string
+      aad_tenant            = optional(string)
+      aad_audience          = optional(string)
+      aad_issuer            = optional(string)
+      root_certificates     = optional(map(string), {})
+      revoked_certificates  = optional(map(string), {})
+      radius_server_address = optional(string)
+      radius_server_secret  = optional(string)
+      vpn_client_protocols  = optional(list(string))
+      vpn_auth_types        = optional(list(string))
+    })), {})
+  }))
 }
 ```
 
@@ -150,9 +323,6 @@ Name | Type | Description
 [`virtual_network_gateway`](#virtual_network_gateway) | `object` | A map containing the basic Virtual Network Gateway configuration.
 [`subnet_id`](#subnet_id) | `string` | An ID of a Subnet in which the Virtual Network Gateway will be created.
 [`network`](#network) | `object` | Network configuration of the Virtual Network Gateway.
-[`azure_bgp_peer_addresses`](#azure_bgp_peer_addresses) | `map` | Map of IP addresses used on Azure side for BGP.
-[`bgp`](#bgp) | `object` | A map controlling the BGP configuration used by this Virtual Network Gateway.
-[`local_network_gateways`](#local_network_gateways) | `map` | Map of local network gateways and their connections.
 
 
 ## Module's Optional Inputs
@@ -160,7 +330,10 @@ Name | Type | Description
 Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
+[`azure_bgp_peer_addresses`](#azure_bgp_peer_addresses) | `map` | Map of IP addresses used on Azure side for BGP.
+[`bgp`](#bgp) | `object` | A map controlling the BGP configuration used by this Virtual Network Gateway.
 [`vpn_clients`](#vpn_clients) | `map` | VPN client configurations (IPSec point-to-site connections).
+[`local_network_gateways`](#local_network_gateways) | `map` | Map of local network gateways and their connections.
 
 
 
@@ -229,10 +402,43 @@ Type: string
 
 A map containing the basic Virtual Network Gateway configuration.
 
-You configure the size, capacity and capabilities with 4 parameters that heavily depend on each other. Please follow the table
+You configure the size, capacity and capabilities with 3/4 parameters that heavily depend on each other. Please follow the table
 below for details on available combinations:
 
-# REFACTOR : add here a table with possible config combinations
+<table>
+  <tr>
+    <th>type</th>
+    <th>generation</th>
+    <th>sku</th>
+  </tr>
+  <tr>
+    <td rowspan="6">ExpressRoute</td>
+    <td rowspan="6">N/A</td>
+    <td>Standard</td>
+  </tr>
+  <tr><td>HighPerformance</td></tr>
+  <tr><td>UltraPerformance</td></tr>
+  <tr><td>ErGw1AZ</td></tr>
+  <tr><td>ErGw2AZ</td></tr>
+  <tr><td>ErGw3AZ</td></tr>
+  <tr>
+    <td rowspan="11">Vpn</td>
+    <td rowspan="3">Generation1</td>
+    <td>Basic</td>
+  <tr><td>VpnGw1</td></tr>
+  <tr><td>VpnGw1AZ</td></tr>
+  <tr>
+    <td rowspan="8">Generation1/Generation2</td>
+    <td>VpnGw2</td>
+  </tr>
+  <tr><td>VpnGw3</td></tr>
+  <tr><td>VpnGw4</td></tr>
+  <tr><td>VpnGw5</td></tr>
+  <tr><td>VpnGw2AZ</td></tr>
+  <tr><td>VpnGw3AZ</td></tr>
+  <tr><td>VpnGw4AZ</td></tr>
+  <tr><td>VpnGw5AZ</td></tr>
+</table>
 
 Following properties are available:
 
@@ -241,7 +447,8 @@ Following properties are available:
 - `vpn_type`      - (`string`, optional, defaults to `RouteBased`) the routing type of the Virtual Network Gateway, possible
                     values are: `RouteBased` or `PolicyBased`.
 - `generation`    - (`string`, optional, defaults to `Generation1`) the Generation of the Virtual Network gateway, possible
-                    values are: `None`, `Generation1` or `Generation2`.
+                    values are: `None`, `Generation1` or `Generation2`. This property is ignored when type is set to 
+                    `ExpressRoute`.
 - `sku`           - (`string`, optional, defaults to `Basic`) sets the size and capacity of the virtual network gateway.
 - `active_active` - (`bool`, optional, defaults to `false`) when set to true creates an active-active Virtual Network Gateway,
                     active-passive otherwise. Not supported for `Basic` and `Standard` SKUs.
@@ -320,7 +527,7 @@ object({
         public_ip_name                = string
         private_ip_address_allocation = optional(string, "Dynamic")
       })
-      secondary = optional(object({ # REFACTOR: add precondition that would make this required when active-active is set to true and type == Vpn
+      secondary = optional(object({
         name                          = string
         create_public_ip              = optional(bool, true)
         public_ip_name                = string
@@ -335,6 +542,31 @@ object({
 
 
 <sup>[back to list](#modules-required-inputs)</sup>
+
+
+
+
+
+
+
+### Optional Inputs
+
+
+
+
+
+#### tags
+
+The map of tags to assign to all created resources.
+
+Type: map(string)
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+
+
 
 #### azure_bgp_peer_addresses
 
@@ -358,7 +590,9 @@ azure_bgp_peers_addresses = {
 
 Type: map(string)
 
-<sup>[back to list](#modules-required-inputs)</sup>
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### bgp
 
@@ -395,7 +629,7 @@ object({
         apipa_address_keys = list(string)
         default_addresses  = optional(list(string))
       })
-      secondary_peering_addresses = optional(object({ # REFACTOR : add a precondition like for network configuration
+      secondary_peering_addresses = optional(object({
         name               = string
         apipa_address_keys = list(string)
         default_addresses  = optional(list(string))
@@ -405,8 +639,61 @@ object({
 ```
 
 
-<sup>[back to list](#modules-required-inputs)</sup>
+Default value: `&{}`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### vpn_clients
+
+VPN client configurations (IPSec point-to-site connections).
+
+This is a map, where each value is a VPN client configuration. Keys are just names describing a particular configuration. They
+are not being used in the actual deployment.
+
+Following properties are available:
+
+- `address_space`           - (`string`, required) the address space out of which IP addresses for vpn clients will be taken.
+                              You can provide more than one address space, e.g. in CIDR notation.
+- `aad_tenant`              - (`string`, optional, defaults to `null`) AzureAD Tenant URL
+- `aad_audience`            - (`string`, optional, defaults to `null`) the client id of the Azure VPN application.
+                              See Create an Active Directory (AD) tenant for P2S OpenVPN protocol connections for values
+- `aad_issuer`              - (`string`, optional, defaults to `null`) the STS url for your tenant
+- `root_certificates`       - (`map`, optional, defaults to `{}`) a map defining root certificates used to sign client 
+                              certificates used by VPN clients. The key is a name of the certificate, value is the public
+                              certificate in PEM format.
+- `revoked_certificates     - (`map`, optional, defaults to `null`) a map defining revoked certificates. The key is a name of
+                              the certificate, value is the thumbprint of the certificate.
+- `radius_server_address`   - (`string`, optional, defaults to `null`) the address of the Radius server.
+- `radius_server_secret`    - (`string`, optional, defaults to `null`) the secret used by the Radius server.
+- `vpn_client_protocols`    - (`list(string)`, optional, defaults to `null`) list of the protocols supported by the vpn client.
+                              The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with
+                              the use of aad_tenant, aad_audience and aad_issuer.
+- `vpn_auth_types`          - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for
+                              the virtual network gateway. The supported values are AAD, Radius and Certificate.
+
+
+
+Type: 
+
+```hcl
+map(object({
+    address_space         = string
+    aad_tenant            = optional(string)
+    aad_audience          = optional(string)
+    aad_issuer            = optional(string)
+    root_certificates     = optional(map(string), {})
+    revoked_certificates  = optional(map(string), {})
+    radius_server_address = optional(string)
+    radius_server_secret  = optional(string)
+    vpn_client_protocols  = optional(list(string))
+    vpn_auth_types        = optional(list(string))
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### local_network_gateways
 
@@ -487,83 +774,9 @@ map(object({
 ```
 
 
-<sup>[back to list](#modules-required-inputs)</sup>
-
-
-
-### Optional Inputs
-
-
-
-
-
-#### tags
-
-The map of tags to assign to all created resources.
-
-Type: map(string)
-
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-
-
-
-
-
-#### vpn_clients
-
-VPN client configurations (IPSec point-to-site connections).
-
-This is a map, where each value is a VPN client configuration. Keys are just names describing a particular configuration. They
-are not being used in the actual deployment.
-
-Following properties are available:
-
-- `address_space`           - (`string`, required) the address space out of which IP addresses for vpn clients will be taken.
-                              You can provide more than one address space, e.g. in CIDR notation.
-- `aad_tenant`              - (`string`, optional, defaults to `null`) AzureAD Tenant URL
-- `aad_audience`            - (`string`, optional, defaults to `null`) the client id of the Azure VPN application.
-                              See Create an Active Directory (AD) tenant for P2S OpenVPN protocol connections for values
-- `aad_issuer`              - (`string`, optional, defaults to `null`) the STS url for your tenant
-- `root_certificates`       - (`map`, optional, defaults to `{}`) a map defining root certificates used to sign client 
-                              certificates used by VPN clients. The key is a name of the certificate, value is the public
-                              certificate in PEM format.
-- `revoked_certificates     - (`map`, optional, defaults to `null`) a map defining revoked certificates. The key is a name of
-                              the certificate, value is the thumbprint of the certificate.
-- `radius_server_address`   - (`string`, optional, defaults to `null`) the address of the Radius server.
-- `radius_server_secret`    - (`string`, optional, defaults to `null`) the secret used by the Radius server.
-- `vpn_client_protocols`    - (`list(string)`, optional, defaults to `null`) list of the protocols supported by the vpn client.
-                              The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with
-                              the use of aad_tenant, aad_audience and aad_issuer.
-- `vpn_auth_types`          - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for
-                              the virtual network gateway. The supported values are AAD, Radius and Certificate.
-
-
-
-Type: 
-
-```hcl
-map(object({
-    address_space         = string
-    aad_tenant            = optional(string)
-    aad_audience          = optional(string)
-    aad_issuer            = optional(string)
-    root_certificates     = optional(map(string), {})
-    revoked_certificates  = optional(map(string), {})
-    radius_server_address = optional(string)
-    radius_server_secret  = optional(string)
-    vpn_client_protocols  = optional(list(string))
-    vpn_auth_types        = optional(list(string))
-  }))
-```
-
-
-Default value: `map[]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
 
 
 <!-- END_TF_DOCS -->

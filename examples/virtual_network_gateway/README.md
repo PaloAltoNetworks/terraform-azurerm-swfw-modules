@@ -241,8 +241,8 @@ map(object({
       default_local_network_gateway_id = optional(string)
       edge_zone                        = optional(string)
     })
-    azure_bgp_peer_addresses = map(string)
-    bgp = object({
+    azure_bgp_peer_addresses = optional(map(string))
+    bgp = optional(object({
       enable = optional(bool, false)
       configuration = optional(object({
         asn         = string
@@ -258,8 +258,8 @@ map(object({
           default_addresses  = optional(list(string))
         }))
       }))
-    })
-    local_network_gateways = map(object({
+    }))
+    local_network_gateways = optional(map(object({
       name = string
       remote_bgp_settings = optional(object({
         asn                 = string
@@ -288,7 +288,7 @@ map(object({
         mode       = optional(string)
         shared_key = optional(string)
       })
-    }))
+    })), {})
     vpn_clients = optional(map(object({
       address_space         = string
       aad_tenant            = optional(string)
