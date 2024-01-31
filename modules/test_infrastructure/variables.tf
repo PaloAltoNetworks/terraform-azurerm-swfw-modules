@@ -104,7 +104,7 @@ variable "hub_vnet_name" {
   default     = null
 }
 
-variable "test_vm_authentication" {
+variable "authentication" {
   description = <<-EOF
   A map defining authentication details for test VMs.
   
@@ -119,6 +119,25 @@ variable "test_vm_authentication" {
   })
 }
 
+variable "image" {
+  description = <<-EOF
+  A map defining basic test VM image configuration. By default, latest Bitnami WordPress VM is deployed.
+
+  Following properties are available:
+  - `publisher` - (`string`, optional, defaults to `bitnami`) the Azure Publisher identifier for a image which should be deployed.
+  - `offer`     - (`string`, optional, defaults to `wordpress`) the Azure Offer identifier corresponding to a published image.
+  - `sku`       - (`string`, optional, defaults to `4-4`) the Azure SKU identifier corresponding to a published image and offer.
+  - `version`   - (`string`, optional, defaults to `latest`) the version of the image available on Azure Marketplace.
+
+  EOF
+  type = object({
+    publisher = optional(string, "bitnami")
+    offer     = optional(string, "wordpress")
+    sku       = optional(string, "4-4")
+    version   = optional(string, "latest")
+  })
+}
+
 variable "test_vms" {
   description = <<-EOF
   A map defining test VMs.
@@ -130,6 +149,7 @@ variable "test_vms" {
   - `vnet_key`       - (`string`, required) a key describing a VNET defined in `var.vnets`.
   - `subnet_key`     - (`string`, required) a key describing a Subnet found in a VNET definition.
   - `size`           - (`string`, optional, default to `Standard_D1_v2`) a size of the test VM.
+  - `custom_data`    - (`string`, optional) custom data to pass to the test VM. This can be used as cloud-init for Linux systems.
   
   EOF
   type = map(object({
@@ -138,7 +158,14 @@ variable "test_vms" {
     vnet_key       = string
     subnet_key     = string
     size           = optional(string, "Standard_D1_v2")
+    custom_data    = optional(string)
   }))
+}
+
+variable "custom_data" {
+  description = "The custom data to supply to the virtual machine. This can be used as a cloud-init for Linux systems."
+  type        = string
+  default     = null
 }
 
 variable "bastions" {

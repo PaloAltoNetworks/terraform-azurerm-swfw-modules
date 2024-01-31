@@ -75,7 +75,7 @@ resource "azurerm_network_interface" "vm" {
 }
 
 locals {
-  password = sensitive(var.test_vm_authentication.password)
+  password = sensitive(var.authentication.password)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine
@@ -89,27 +89,27 @@ resource "azurerm_linux_virtual_machine" "this" {
   resource_group_name             = local.resource_group.name
   location                        = var.location
   size                            = each.value.size
-  admin_username                  = var.test_vm_authentication.username
+  admin_username                  = var.authentication.username
   admin_password                  = local.password
   disable_password_authentication = false
   network_interface_ids           = [azurerm_network_interface.vm[each.key].id]
   allow_extension_operations      = false
-
+  custom_data                     = each.value.custom_data
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
 
   source_image_reference {
-    publisher = "bitnami"
-    offer     = "wordpress"
-    sku       = "4-4"
-    version   = "latest"
+    publisher = var.image.publisher
+    offer     = var.image.offer
+    sku       = var.image.sku
+    version   = var.image.version
   }
   plan {
-    name      = "4-4"
-    product   = "wordpress"
-    publisher = "bitnami"
+    name      = var.image.sku
+    product   = var.image.offer
+    publisher = var.image.publisher
   }
 }
 

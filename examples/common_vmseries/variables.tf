@@ -796,7 +796,9 @@ variable "test_environments" {
 
     For all properties and their default values see [VNET module documentation](../../modules/vnet/README.md).
   
-  - `test_vm_authentication` - (`map`, optional, defaults to example defaults) authentication settings for the deployed VMs.
+  - `authentication`         - (`map`, optional, defaults to example defaults) authentication settings for the deployed VMs.
+  - `image`                  - (`map`, optional, defaults to module defaults) properties defining a base image used by the 
+                               deployed VM. By default, latest Bitnami WordPress VM is deployed.
   - `test_vms`               - (`map`, required) a map defining test VMs.
     
     The most basic properties are as follows:
@@ -866,16 +868,23 @@ variable "test_environments" {
         enable_storage_service_endpoint = optional(bool, false)
       })), {})
     }))
-    test_vm_authentication = optional(object({
+    authentication = optional(object({
       username = optional(string, "bitnami")
       password = optional(string)
     }), {})
+    image = optional(object({
+      publisher = string
+      offer     = string
+      sku       = string
+      version   = string
+    }))
     test_vms = map(object({
       name           = string
       interface_name = optional(string)
       vnet_key       = string
       subnet_key     = string
       size           = optional(string)
+      custom_data    = optional(string)
     }))
     bastions = map(object({
       name           = string

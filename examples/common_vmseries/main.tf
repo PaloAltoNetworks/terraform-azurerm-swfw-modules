@@ -1,7 +1,7 @@
 # Generate a random password.
 resource "random_password" "this" {
   count = anytrue([for _, v in var.vmseries : v.authentication.password == null]) ? (
-    anytrue([for _, v in var.test_environments : v.test_vm_authentication.password == null]) ? 2 : 1
+    anytrue([for _, v in var.test_environments : v.authentication.password == null]) ? 2 : 1
   ) : 0
 
   length           = 16
@@ -361,9 +361,9 @@ locals {
   test_vm_authentication = {
     for k, v in var.test_environments : k =>
     merge(
-      v.test_vm_authentication,
+      v.authentication,
       {
-        password = coalesce(v.test_vm_authentication.password, try(random_password.this[1].result, null))
+        password = coalesce(v.authentication.password, try(random_password.this[1].result, null))
       }
     )
   }
@@ -379,9 +379,17 @@ module "test_infrastructure" {
   )
   location = var.location
   vnets = { for k, v in each.value.vnets : k => merge(v, {
+    name                    = "${var.name_prefix}${v.name}"
     hub_resource_group_name = coalesce(v.hub_resource_group_name, local.resource_group.name)
+    network_security_groups = { for kv, vv in v.network_security_groups : kv => merge(vv, {
+      name = "${var.name_prefix}${v.name}" })
+    }
+    route_tables = { for kv, vv in v.route_tables : kv => merge(vv, {
+      name = "${var.name_prefix}${v.name}" })
+    }
   }) }
-  test_vm_authentication = local.test_vm_authentication[each.key]
+  authentication = local.test_vm_authentication[each.key]
+  image          = each.value.image
   test_vms = { for k, v in each.value.test_vms : k => merge(v, {
     name           = "${var.name_prefix}${v.name}"
     interface_name = "${var.name_prefix}${coalesce(v.interface_name, "${v.name}-nic")}"

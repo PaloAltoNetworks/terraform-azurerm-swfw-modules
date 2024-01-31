@@ -15,7 +15,8 @@ Name | Type | Description
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
-[`test_vm_authentication`](#test_vm_authentication) | `object` | A map defining authentication details for test VMs.
+[`authentication`](#authentication) | `object` | A map defining authentication details for test VMs.
+[`image`](#image) | `object` | A map defining basic test VM image configuration.
 [`test_vms`](#test_vms) | `map` | A map defining test VMs.
 [`bastions`](#bastions) | `map` | A map containing Azure Bastion definition.
 
@@ -28,6 +29,7 @@ Name | Type | Description
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`hub_resource_group_name`](#hub_resource_group_name) | `string` | Name of the Resource Group hosting the hub/transit infrastructure.
 [`hub_vnet_name`](#hub_vnet_name) | `string` | Name of the hub/transit VNET.
+[`custom_data`](#custom_data) | `string` | The custom data to supply to the virtual machine.
 
 
 
@@ -43,19 +45,19 @@ Name |  Description
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 Providers used in this module:
 
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 Modules used in this module:
 Name | Version | Source | Description
 --- | --- | --- | ---
-`vnet` | - | ../vnet | Manage the network required for the topology.
-`vnet_peering` | - | ../vnet_peering | 
+`vnet` | - | ../vnet | https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/blob/main/modules/vnet/README.md
+`vnet_peering` | - | ../vnet_peering | https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/blob/main/modules/vnet_peering/README.md
 
 
 Resources used in this module:
@@ -168,7 +170,7 @@ map(object({
 
 
 
-#### test_vm_authentication
+#### authentication
 
 A map defining authentication details for test VMs.
   
@@ -190,6 +192,32 @@ object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
+#### image
+
+A map defining basic test VM image configuration. By default, latest Bitnami WordPress VM is deployed.
+
+Following properties are available:
+- `publisher` - (`string`, optional, defaults to `bitnami`) the Azure Publisher identifier for a image which should be deployed.
+- `offer`     - (`string`, optional, defaults to `wordpress`) the Azure Offer identifier corresponding to a published image.
+- `sku`       - (`string`, optional, defaults to `4-4`) the Azure SKU identifier corresponding to a published image and offer.
+- `version`   - (`string`, optional, defaults to `latest`) the version of the image available on Azure Marketplace.
+
+
+
+Type: 
+
+```hcl
+object({
+    publisher = optional(string, "bitnami")
+    offer     = optional(string, "wordpress")
+    sku       = optional(string, "4-4")
+    version   = optional(string, "latest")
+  })
+```
+
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
 #### test_vms
 
 A map defining test VMs.
@@ -201,6 +229,7 @@ Values contain the following elements:
 - `vnet_key`       - (`string`, required) a key describing a VNET defined in `var.vnets`.
 - `subnet_key`     - (`string`, required) a key describing a Subnet found in a VNET definition.
 - `size`           - (`string`, optional, default to `Standard_D1_v2`) a size of the test VM.
+- `custom_data`    - (`string`, optional) custom data to pass to the test VM. This can be used as cloud-init for Linux systems.
   
 
 
@@ -213,11 +242,13 @@ map(object({
     vnet_key       = string
     subnet_key     = string
     size           = optional(string, "Standard_D1_v2")
+    custom_data    = optional(string)
   }))
 ```
 
 
 <sup>[back to list](#modules-required-inputs)</sup>
+
 
 #### bastions
 
@@ -297,6 +328,17 @@ Default value: `&{}`
 <sup>[back to list](#modules-optional-inputs)</sup>
 
 
+
+
+#### custom_data
+
+The custom data to supply to the virtual machine. This can be used as a cloud-init for Linux systems.
+
+Type: string
+
+Default value: `&{}`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
 <!-- END_TF_DOCS -->
