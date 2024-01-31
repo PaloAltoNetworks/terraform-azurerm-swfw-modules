@@ -333,7 +333,7 @@ variable "vpn_clients" {
   - `root_certificates`       - (`map`, optional, defaults to `{}`) a map defining root certificates used to sign client 
                                 certificates used by VPN clients. The key is a name of the certificate, value is the public
                                 certificate in PEM format.
-  - `revoked_certificates     - (`map`, optional, defaults to `null`) a map defining revoked certificates. The key is a name of
+  - `revoked_certificates`    - (`map`, optional, defaults to `null`) a map defining revoked certificates. The key is a name of
                                 the certificate, value is the thumbprint of the certificate.
   - `radius_server_address`   - (`string`, optional, defaults to `null`) the address of the Radius server.
   - `radius_server_secret`    - (`string`, optional, defaults to `null`) the secret used by the Radius server.
@@ -397,7 +397,7 @@ variable "local_network_gateways" {
                              seconds.
     - `connection_type` - (`string`, optional, defaults to `IPsec`) a VPN connection type, can be one of: `IPsec`, `ExpressRoute`
                           or `Vnet2Vnet`.
-    - `connection_mode` - (`string`, optional, defaults to `Default) connection mode to use, can be one of: `Default`,
+    - `connection_mode` - (`string`, optional, defaults to `Default`) connection mode to use, can be one of: `Default`,
                           `InitiatorOnly` or `ResponderOnly`.
     - `shared_key`      - (`string`, optional, defaults to `null`) a shared IPSec key used during connection creation.
 
