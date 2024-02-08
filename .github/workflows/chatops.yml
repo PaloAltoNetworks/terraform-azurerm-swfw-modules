@@ -34,6 +34,20 @@ jobs:
             })
             console.log(pr.data.head.ref)
             return pr.data.head.ref
+
+      - name: get PR source repository
+        uses: actions/github-script@v6
+        id: src-repo
+        with:
+          result-encoding: string
+          script: |
+            let pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            })
+            console.log(pr.data.head.repo.full_name)
+            return pr.data.head.repo.full_name    
       
       - name: Generate GitHub token
         id: generate-token
@@ -64,6 +78,7 @@ jobs:
             pr-id=${{ github.event.issue.number }}
             pr-title=${{ github.event.issue.title }}
             branch=${{ steps.pr.outputs.result }}
+            repository=${{ steps.src-repo.outputs.result }}
 
       - name: Edit comment with error message
         if: steps.scd.outputs.error-message
