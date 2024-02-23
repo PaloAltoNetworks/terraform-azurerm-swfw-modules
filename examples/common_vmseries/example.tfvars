@@ -221,18 +221,18 @@ vmseries = {
 # --- TEST INFRASTRUCTURE PART --- #
 
 test_environments = {
-  "east-testenv" = {
+  "app1_testenv" = {
     vnets = {
-      "spoke_east" = {
-        name          = "spoke-east-vnet"
+      "app1" = {
+        name          = "app1-vnet"
         address_space = ["10.100.0.0/25"]
         hub_vnet_name = "example-transit"
         route_tables = {
           nva = {
-            name = "east2NVA"
+            name = "app1-rt"
             routes = {
-              "2NVA" = {
-                name                = "2NVA-udr"
+              "toNVA" = {
+                name                = "toNVA-udr"
                 address_prefix      = "0.0.0.0/0"
                 next_hop_type       = "VirtualAppliance"
                 next_hop_ip_address = "10.0.0.30"
@@ -242,7 +242,7 @@ test_environments = {
         }
         subnets = {
           "vms" = {
-            name             = "vms"
+            name             = "vms-snet"
             address_prefixes = ["10.100.0.0/26"]
             route_table_key  = "nva"
           }
@@ -253,33 +253,33 @@ test_environments = {
         }
       }
     }
-    test_vms = {
-      "east_vm" = {
-        name       = "east-vm"
-        vnet_key   = "spoke_east"
+    spoke_vms = {
+      "app1_vm" = {
+        name       = "app1-vm"
+        vnet_key   = "app1"
         subnet_key = "vms"
       }
     }
     bastions = {
-      "bastion_east" = {
-        name       = "east-bastion"
-        vnet_key   = "spoke_east"
+      "app1_bastion" = {
+        name       = "app1-bastion"
+        vnet_key   = "app1"
         subnet_key = "bastion"
       }
     }
   }
-  "west-testenv" = {
+  "app2_testenv" = {
     vnets = {
-      "spoke_west" = {
-        name          = "spoke-west-vnet"
+      "app2" = {
+        name          = "app2-vnet"
         address_space = ["10.100.1.0/25"]
         hub_vnet_name = "example-transit"
         route_tables = {
           nva = {
-            name = "west2NVA"
+            name = "app2-rt"
             routes = {
-              "2NVA" = {
-                name                = "2NVA-udr"
+              "toNVA" = {
+                name                = "toNVA-udr"
                 address_prefix      = "0.0.0.0/0"
                 next_hop_type       = "VirtualAppliance"
                 next_hop_ip_address = "10.0.0.30"
@@ -289,7 +289,7 @@ test_environments = {
         }
         subnets = {
           "vms" = {
-            name             = "vms"
+            name             = "vms-snet"
             address_prefixes = ["10.100.1.0/26"]
             route_table_key  = "nva"
           }
@@ -300,17 +300,17 @@ test_environments = {
         }
       }
     }
-    test_vms = {
-      "west_vm" = {
-        name       = "west-vm"
-        vnet_key   = "spoke_west"
+    spoke_vms = {
+      "app2_vm" = {
+        name       = "app2-vm"
+        vnet_key   = "app2"
         subnet_key = "vms"
       }
     }
     bastions = {
-      "bastion_west" = {
-        name       = "west-bastion"
-        vnet_key   = "spoke_west"
+      "app2_bastion" = {
+        name       = "app2-bastion"
+        vnet_key   = "app2"
         subnet_key = "bastion"
       }
     }

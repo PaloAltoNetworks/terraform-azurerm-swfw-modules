@@ -1120,9 +1120,7 @@ Following properties are supported:
   For all properties and their default values see [VNET module documentation](../../modules/vnet/README.md).
   
 - `authentication`         - (`map`, optional, defaults to example defaults) authentication settings for the deployed VMs.
-- `image`                  - (`map`, optional, defaults to module defaults) properties defining a base image used by the 
-                             deployed VM. By default, latest Bitnami WordPress VM is deployed.
-- `test_vms`               - (`map`, required) a map defining test VMs.
+- `spoke_vms`              - (`map`, required) a map defining test VMs.
     
   The most basic properties are as follows:
   - `name`       - (`string`, required) a name of the VM.
@@ -1197,19 +1195,21 @@ map(object({
       username = optional(string, "bitnami")
       password = optional(string)
     }), {})
-    image = optional(object({
-      publisher = string
-      offer     = string
-      sku       = string
-      version   = string
-    }))
-    test_vms = map(object({
+    spoke_vms = map(object({
       name           = string
       interface_name = optional(string)
+      disk_name      = optional(string)
       vnet_key       = string
       subnet_key     = string
       size           = optional(string)
-      custom_data    = optional(string)
+      image = optional(object({
+        publisher               = optional(string)
+        offer                   = optional(string)
+        sku                     = optional(string)
+        version                 = optional(string)
+        enable_marketplace_plan = optional(bool)
+      }), {})
+      custom_data = optional(string)
     }))
     bastions = map(object({
       name           = string

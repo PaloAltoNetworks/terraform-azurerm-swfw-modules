@@ -61,7 +61,7 @@ module "vnet_peering" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface
 resource "azurerm_network_interface" "vm" {
-  for_each = var.test_vms
+  for_each = var.spoke_vms
 
   name                = each.value.interface_name
   location            = var.location
@@ -80,7 +80,7 @@ locals {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine
 resource "azurerm_linux_virtual_machine" "this" {
-  for_each = var.test_vms
+  for_each = var.spoke_vms
 
   # checkov:skip=CKV_AZURE_178:This is a test, non-production VM
   # checkov:skip=CKV_AZURE_149:This is a test, non-production VM
@@ -95,21 +95,31 @@ resource "azurerm_linux_virtual_machine" "this" {
   network_interface_ids           = [azurerm_network_interface.vm[each.key].id]
   allow_extension_operations      = false
   custom_data                     = each.value.custom_data
+
   os_disk {
+    name                 = each.value.disk_name
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
 
   source_image_reference {
-    publisher = var.image.publisher
-    offer     = var.image.offer
-    sku       = var.image.sku
-    version   = var.image.version
+    publisher = each.value.image.publisher
+    offer     = each.value.image.offer
+    sku       = each.value.image.sku
+    version   = each.value.image.version
   }
-  plan {
-    name      = var.image.sku
-    product   = var.image.offer
-    publisher = var.image.publisher
+
+  dynamic "plan" {
+    for_each = each.value.image.enable_marketplace_plan ? [1] : []
+    content {
+      name      = each.value.image.sku
+      product   = each.value.image.offer
+      publisher = each.value.image.publisher
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [source_image_reference["version"]]
   }
 }
 

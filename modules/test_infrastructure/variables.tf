@@ -106,11 +106,11 @@ variable "hub_vnet_name" {
 
 variable "authentication" {
   description = <<-EOF
-  A map defining authentication details for test VMs.
+  A map defining authentication details for spoke VMs.
   
   Following properties are available:
-  - `username` - (`string`, optional, defaults to `bitnami`) the initial administrative test VM username.
-  - `password` - (`string`, required) the initial administrative test VM password.
+  - `username` - (`string`, optional, defaults to `bitnami`) the initial administrative spoke VM username.
+  - `password` - (`string`, required) the initial administrative spoke VM password.
   
   EOF
   type = object({
@@ -119,53 +119,49 @@ variable "authentication" {
   })
 }
 
-variable "image" {
+variable "spoke_vms" {
   description = <<-EOF
-  A map defining basic test VM image configuration. By default, latest Bitnami WordPress VM is deployed.
-
-  Following properties are available:
-  - `publisher` - (`string`, optional, defaults to `bitnami`) the Azure Publisher identifier for a image which should be deployed.
-  - `offer`     - (`string`, optional, defaults to `wordpress`) the Azure Offer identifier corresponding to a published image.
-  - `sku`       - (`string`, optional, defaults to `4-4`) the Azure SKU identifier corresponding to a published image and offer.
-  - `version`   - (`string`, optional, defaults to `latest`) the version of the image available on Azure Marketplace.
-
-  EOF
-  type = object({
-    publisher = optional(string, "bitnami")
-    offer     = optional(string, "wordpress")
-    sku       = optional(string, "4-4")
-    version   = optional(string, "latest")
-  })
-}
-
-variable "test_vms" {
-  description = <<-EOF
-  A map defining test VMs.
+  A map defining spoke VMs for testing.
 
   Values contain the following elements:
 
-  - `name`           - (`string`, required) a name of the test VM.
-  - `interface_name` - (`string`, required) a name of the test VM's network interface.
+  - `name`           - (`string`, required) a name of the spoke VM.
+  - `interface_name` - (`string`, required) a name of the spoke VM's network interface.
+  - `disk_name`      - (`string`, required) a name of the OS disk.
   - `vnet_key`       - (`string`, required) a key describing a VNET defined in `var.vnets`.
   - `subnet_key`     - (`string`, required) a key describing a Subnet found in a VNET definition.
-  - `size`           - (`string`, optional, default to `Standard_D1_v2`) a size of the test VM.
-  - `custom_data`    - (`string`, optional) custom data to pass to the test VM. This can be used as cloud-init for Linux systems.
+  - `size`           - (`string`, optional, default to `Standard_D1_v2`) a size of the spoke VM.
+  - `image`          - (`map`, optional) a map defining basic spoke VM image configuration. By default, latest Bitnami WordPress
+                       VM is deployed.
+    - `publisher`               - (`string`, optional, defaults to `bitnami`) the Azure Publisher identifier for an image which
+                                  should be deployed.
+    - `offer`                   - (`string`, optional, defaults to `wordpress`) the Azure Offer identifier corresponding to a 
+                                  published image.
+    - `sku`                     - (`string`, optional, defaults to `4-4`) the Azure SKU identifier corresponding to a published
+                                  image and offer.
+    - `version`                 - (`string`, optional, defaults to `latest`) the version of the image available on Azure
+                                  Marketplace.
+    - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
+                                  on Azure Marketplace.
+  - `custom_data`    - (`string`, optional) custom data to pass to the spoke VM. This can be used as cloud-init for Linux systems.
   
   EOF
   type = map(object({
     name           = string
     interface_name = string
+    disk_name      = string
     vnet_key       = string
     subnet_key     = string
     size           = optional(string, "Standard_D1_v2")
-    custom_data    = optional(string)
+    image = object({
+      publisher               = optional(string, "bitnami")
+      offer                   = optional(string, "wordpress")
+      sku                     = optional(string, "4-4")
+      version                 = optional(string, "latest")
+      enable_marketplace_plan = optional(bool, true)
+    })
+    custom_data = optional(string)
   }))
-}
-
-variable "custom_data" {
-  description = "The custom data to supply to the virtual machine. This can be used as a cloud-init for Linux systems."
-  type        = string
-  default     = null
 }
 
 variable "bastions" {
