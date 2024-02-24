@@ -7,7 +7,7 @@ locals {
   # Calculate a flat map of all backend's trusted root certificates.
   # Root certs are created upfront and then referenced in a single list in the http setting's config.
   root_certs_flat_list = flatten([
-    for k, v in var.backends : [
+    for k, v in var.backend_settings : [
       for key, root_cert in v.root_certs : root_cert
     ]
   ])
@@ -163,7 +163,7 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "backend_http_settings" {
-    for_each = var.backends
+    for_each = var.backend_settings
 
     content {
       name                                = backend_http_settings.value.name
@@ -279,7 +279,7 @@ resource "azurerm_application_gateway" "this" {
     content {
       name                               = url_path_map.value.name
       default_backend_address_pool_name  = var.application_gateway.backend_pool.name
-      default_backend_http_settings_name = var.backends[url_path_map.value.backend_key].name
+      default_backend_http_settings_name = var.backend_settings[url_path_map.value.backend_key].name
 
       dynamic "path_rule" {
         for_each = url_path_map.value.path_rules
@@ -288,7 +288,7 @@ resource "azurerm_application_gateway" "this" {
           name                        = path_rule.key
           paths                       = path_rule.value.paths
           backend_address_pool_name   = path_rule.value.backend_key != null ? var.application_gateway.backend_pool.name : null
-          backend_http_settings_name  = path_rule.value.backend_key != null ? var.backends[path_rule.value.backend_key].name : null
+          backend_http_settings_name  = path_rule.value.backend_key != null ? var.backend_settings[path_rule.value.backend_key].name : null
           redirect_configuration_name = path_rule.value.redirect_key != null ? var.redirects[path_rule.value.redirect_key].name : null
         }
       }
@@ -308,7 +308,7 @@ resource "azurerm_application_gateway" "this" {
         request_routing_rule.value.backend_key != null ? var.application_gateway.backend_pool.name : null
       )
       backend_http_settings_name = (
-        request_routing_rule.value.backend_key != null ? var.backends[request_routing_rule.value.backend_key].name : null
+        request_routing_rule.value.backend_key != null ? var.backend_settings[request_routing_rule.value.backend_key].name : null
       )
       redirect_configuration_name = (
         request_routing_rule.value.redirect_key != null ? var.redirects[request_routing_rule.value.redirect_key].name : null
@@ -326,7 +326,7 @@ resource "azurerm_application_gateway" "this" {
     precondition {
       condition = var.probes != null ? alltrue(flatten([
         for k, probe in var.probes : probe.host != null || alltrue(flatten([
-          for b, backend in var.backends : backend.probe_key == k ? backend.hostname != null || backend.hostname_from_backend : true
+          for b, backend in var.backend_settings : backend.probe_key == k ? backend.hostname != null || backend.hostname_from_backend : true
         ]))
       ])) : true
       error_message = <<EOF

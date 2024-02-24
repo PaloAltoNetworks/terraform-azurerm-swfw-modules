@@ -252,7 +252,7 @@ appgws = {
         port = 80
       }
     }
-    backends = {
+    backend_settings = {
       http = {
         name     = "http"
         port     = 80

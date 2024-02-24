@@ -829,7 +829,7 @@ Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`ssl_profiles`](#ssl_profiles) | `map` | A map of SSL profiles.
-[`backends`](#backends) | `map` | A map of backend settings for the Application Gateway.
+[`backend_settings`](#backend_settings) | `map` | A map of backend settings for the Application Gateway.
 [`probes`](#probes) | `map` | A map of probes for the Application Gateway.
 [`rewrites`](#rewrites) | `map` | A map of rewrites for the Application Gateway.
 [`redirects`](#redirects) | `map` | A map of redirects for the Application Gateway.
@@ -1179,7 +1179,7 @@ Default value: `map[]`
 <sup>[back to list](#modules-optional-inputs)</sup>
 
 
-#### backends
+#### backend_settings
 
 A map of backend settings for the Application Gateway.
 
@@ -1385,7 +1385,6 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 
 <!-- END_TF_DOCS -->

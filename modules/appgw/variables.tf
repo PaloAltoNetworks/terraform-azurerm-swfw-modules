@@ -365,7 +365,7 @@ variable "listeners" {
 }
 
 
-variable "backends" {
+variable "backend_settings" {
   description = <<-EOF
   A map of backend settings for the Application Gateway.
 

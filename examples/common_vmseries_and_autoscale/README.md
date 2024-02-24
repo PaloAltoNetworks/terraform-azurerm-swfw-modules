@@ -832,15 +832,15 @@ Default value: `map[]`
                         will be created
   - `listeners`           - (`map`, required) defines Application Gateway's Listeners, see
                         [module's documentation](../../modules/appgw/README.md#listeners) for details
-  - `backends`            - (`map`, optional, mutually exclusive with `redirects` and `url_path_maps`) defines HTTP backend
-                            settings, see [module's documentation](../../modules/appgw/README.md#backends) for details
+  - `backend_settings`    - (`map`, optional, mutually exclusive with `redirects` and `url_path_maps`) defines HTTP backend
+                            settings, see [module's documentation](../../modules/appgw/README.md#backend_settings) for details
   - `probes`              - (`map`, optional, defaults to module defaults) defines backend probes used check health of backends,
                         see [module's documentation](../../modules/appgw/README.md#probes) for details
   - `rewrites`            - (`map`, optional, defaults to module defaults) defines rewrite rules,
                         see [module's documentation](../../modules/appgw/README.md#rewrites) for details
-  - `redirects            - (`map`, optional, mutually exclusive with `backends` and `url_path_maps`) static redirects definition,
+  - `redirects            - (`map`, optional, mutually exclusive with `backend_settings` and `url_path_maps`) static redirects definition,
                         see [module's documentation](../../modules/appgw/README.md#redirects) for details
-  - `url_path_maps        - (`map`, optional, mutually exclusive with `backends` and `redirects`) URL path maps definition, 
+  - `url_path_maps        - (`map`, optional, mutually exclusive with `backend_settings` and `redirects`) URL path maps definition, 
                         see [module's documentation](../../modules/appgw/README.md#url_path_maps) for details
   - `rules                - (`map`, required) Application Gateway Rules definition, bind together a `listener` with either
                             `backend`, `redirect` or `url_path_map`, see
@@ -899,7 +899,7 @@ map(object({
       ssl_certificate_vault_id = optional(string)
       custom_error_pages       = optional(map(string))
     }))
-    backends = optional(map(object({
+    backend_settings = optional(map(object({
       name                      = string
       port                      = number
       protocol                  = string
@@ -980,6 +980,5 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

@@ -355,14 +355,14 @@ module "appgw" {
     }
   )
 
-  listeners     = each.value.listeners
-  backends      = each.value.backends
-  probes        = each.value.probes
-  rewrites      = each.value.rewrites
-  rules         = each.value.rules
-  redirects     = each.value.redirects
-  url_path_maps = each.value.url_path_maps
-  ssl_profiles  = each.value.ssl_profiles
+  listeners        = each.value.listeners
+  backend_settings = each.value.backend_settings
+  probes           = each.value.probes
+  rewrites         = each.value.rewrites
+  rules            = each.value.rules
+  redirects        = each.value.redirects
+  url_path_maps    = each.value.url_path_maps
+  ssl_profiles     = each.value.ssl_profiles
 
   tags       = var.tags
   depends_on = [module.vnet, module.vmseries]
