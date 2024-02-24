@@ -54,7 +54,7 @@ appgws = {
         port = 80
       }
     }
-    backends = {
+    backend_settings = {
       http = {
         name     = "http"
         port     = 80
@@ -86,7 +86,7 @@ appgws = {
         port = 80
       }
     }
-    backends = {
+    backend_settings = {
       minimum = {
         name     = "minimum-backend"
         port     = 80
@@ -128,7 +128,7 @@ appgws = {
     }
     vnet_key   = "transit"
     subnet_key = "appgw"
-    backends = {
+    backend_settings = {
       existing = {
         name                      = "http-backend"
         port                      = 80
@@ -184,7 +184,7 @@ appgws = {
       }
 
     }
-    backends = {
+    backend_settings = {
       http = {
         name                      = "http-backend"
         port                      = 80
@@ -227,7 +227,7 @@ appgws = {
         rule_set_version = "3.2"
       }
     }
-    backends = {
+    backend_settings = {
       waf = {
         name                      = "waf-backend"
         port                      = 80
@@ -374,7 +374,7 @@ appgws = {
         port = 643
       }
     }
-    backends = {
+    backend_settings = {
       http = {
         name                      = "http-settings"
         port                      = 80
@@ -638,7 +638,7 @@ appgws = {
         host_names           = ["test2.appgw.local"]
       }
     }
-    backends = {
+    backend_settings = {
       https1 = {
         name                      = "https1-settings"
         port                      = 481

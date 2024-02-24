@@ -1099,7 +1099,7 @@ Every rule contains following attributes:
                        from 1 to 20000 with 1 being the highest priority and 20000 being the lowest priority.
 - `listener_key`     - (`string`, required) a key identifying a listener config defined in `var.listeners`
 - `backend_key`      - (`string`, optional, mutually exclusive with `url_path_map_key` and `redirect_key`) a key identifying a
-                       backend config defined in `var.backends`
+                       backend config defined in `var.backend_settings`
 - `rewrite_key`      - (`string`, optional, defaults to `null`) a key identifying a rewrite config defined in `var.rewrites`
 - `url_path_map_key` - (`string`, optional, mutually exclusive with `backend_key` and `redirect_key`) a key identifying
                        a url_path_map config defined in `var.url_path_maps`
@@ -1358,11 +1358,11 @@ A map of URL path maps for the Application Gateway.
 
 Every URL path map contains attributes:
 - `name`         - (`string`, required) the name of redirect.
-- `backend_key`      - (`string`, required) a key identifying the default backend for redirect defined in `var.backends`
+- `backend_key`      - (`string`, required) a key identifying the default backend for redirect defined in `var.backend_settings`
 - `path_rules`   - (`map`, optional, defaults to `{}`) the map of rules, where every object has attributes:
     - `paths`    - (`list`, required) List of paths
     - `backend_key`  - (`string`, optional, mutually exclusive with `redirect_key`) a key identifying a backend config defined
-                       in `var.backends`
+                       in `var.backend_settings`
     - `redirect_key` - (`string`, optional, mutually exclusive with `backend_key`) a key identifying a redirect config defined
                        in `var.redirects`
 
