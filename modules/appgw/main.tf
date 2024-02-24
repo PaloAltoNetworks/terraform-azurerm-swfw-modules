@@ -16,24 +16,24 @@ locals {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
 data "azurerm_public_ip" "this" {
-  count = var.application_gateway.public_ip.create ? 0 : 1
+  count = var.public_ip.create ? 0 : 1
 
-  name                = var.application_gateway.public_ip.name
-  resource_group_name = coalesce(var.application_gateway.public_ip.resource_group_name, var.resource_group_name)
+  name                = var.public_ip.name
+  resource_group_name = coalesce(var.public_ip.resource_group_name, var.resource_group_name)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
-  count = var.application_gateway.public_ip.create ? 1 : 0
+  count = var.public_ip.create ? 1 : 0
 
-  name                = var.application_gateway.public_ip.name
+  name                = var.public_ip.name
   resource_group_name = var.resource_group_name
   location            = var.location
 
   sku               = "Standard"
   allocation_method = "Static"
-  domain_name_label = var.application_gateway.domain_name_label
-  zones             = var.application_gateway.zones
+  domain_name_label = var.domain_name_label
+  zones             = var.zones
   tags              = var.tags
 }
 
@@ -42,42 +42,42 @@ resource "azurerm_application_gateway" "this" {
   name                = var.name
   resource_group_name = var.resource_group_name
   location            = var.location
-  zones               = var.application_gateway.zones
-  enable_http2        = var.application_gateway.enable_http2
+  zones               = var.zones
+  enable_http2        = var.enable_http2
   tags                = var.tags
 
   sku {
-    name     = var.application_gateway.waf != null ? "WAF_v2" : "Standard_v2"
-    tier     = var.application_gateway.waf != null ? "WAF_v2" : "Standard_v2"
-    capacity = var.application_gateway.capacity.autoscale == null ? var.application_gateway.capacity.static : null
+    name     = var.waf != null ? "WAF_v2" : "Standard_v2"
+    tier     = var.waf != null ? "WAF_v2" : "Standard_v2"
+    capacity = var.capacity.autoscale == null ? var.capacity.static : null
   }
 
   dynamic "waf_configuration" {
-    for_each = var.application_gateway.waf != null ? [1] : []
+    for_each = var.waf != null ? [1] : []
 
     content {
       enabled          = true
-      firewall_mode    = var.application_gateway.waf.prevention_mode ? "Prevention" : "Detection"
-      rule_set_type    = var.application_gateway.waf.rule_set_type
-      rule_set_version = var.application_gateway.waf.rule_set_version
+      firewall_mode    = var.waf.prevention_mode ? "Prevention" : "Detection"
+      rule_set_type    = var.waf.rule_set_type
+      rule_set_version = var.waf.rule_set_version
     }
   }
 
   dynamic "autoscale_configuration" {
-    for_each = var.application_gateway.capacity.autoscale != null ? [1] : []
+    for_each = var.capacity.autoscale != null ? [1] : []
 
     content {
-      min_capacity = var.application_gateway.capacity.autoscale.min
-      max_capacity = var.application_gateway.capacity.autoscale.max
+      min_capacity = var.capacity.autoscale.min
+      max_capacity = var.capacity.autoscale.max
     }
   }
 
   dynamic "identity" {
-    for_each = var.application_gateway.managed_identities != null ? [1] : []
+    for_each = var.managed_identities != null ? [1] : []
 
     content {
       type         = "UserAssigned"
-      identity_ids = var.application_gateway.managed_identities
+      identity_ids = var.managed_identities
     }
   }
 
@@ -87,21 +87,21 @@ resource "azurerm_application_gateway" "this" {
   }
 
   frontend_ip_configuration {
-    name                 = var.application_gateway.frontend_ip_configuration_name
+    name                 = var.frontend_ip_configuration_name
     public_ip_address_id = try(azurerm_public_ip.this[0].id, data.azurerm_public_ip.this[0].id)
   }
 
   # There is only a single backend - the VMSeries private IPs assigned to untrusted NICs
   backend_address_pool {
-    name         = var.application_gateway.backend_pool.name
-    ip_addresses = var.application_gateway.backend_pool.vmseries_ips
+    name         = var.backend_pool.name
+    ip_addresses = var.backend_pool.vmseries_ips
   }
 
   ssl_policy {
-    policy_name          = var.application_gateway.global_ssl_policy.type == "Predefined" ? var.application_gateway.global_ssl_policy.name : null
-    policy_type          = var.application_gateway.global_ssl_policy.type
-    min_protocol_version = var.application_gateway.global_ssl_policy.min_protocol_version
-    cipher_suites        = var.application_gateway.global_ssl_policy.cipher_suites
+    policy_name          = var.global_ssl_policy.type == "Predefined" ? var.global_ssl_policy.name : null
+    policy_type          = var.global_ssl_policy.type
+    min_protocol_version = var.global_ssl_policy.min_protocol_version
+    cipher_suites        = var.global_ssl_policy.cipher_suites
   }
 
   # The following block is supported only in v2 Application Gateways.
@@ -111,8 +111,8 @@ resource "azurerm_application_gateway" "this" {
     content {
       name = ssl_profile.value.name
       ssl_policy {
-        policy_name          = var.application_gateway.global_ssl_policy.type == "Predefined" ? ssl_profile.value.ssl_policy_name : null
-        policy_type          = var.application_gateway.global_ssl_policy.type
+        policy_name          = var.global_ssl_policy.type == "Predefined" ? ssl_profile.value.ssl_policy_name : null
+        policy_type          = var.global_ssl_policy.type
         min_protocol_version = ssl_profile.value.ssl_policy_min_protocol_version
         cipher_suites        = ssl_profile.value.ssl_policy_cipher_suites
       }
@@ -197,7 +197,7 @@ resource "azurerm_application_gateway" "this" {
 
     content {
       name                           = http_listener.value.name
-      frontend_ip_configuration_name = var.application_gateway.frontend_ip_configuration_name
+      frontend_ip_configuration_name = var.frontend_ip_configuration_name
       frontend_port_name             = http_listener.value.port
       protocol                       = http_listener.value.protocol
       host_names                     = http_listener.value.host_names
@@ -278,7 +278,7 @@ resource "azurerm_application_gateway" "this" {
 
     content {
       name                               = url_path_map.value.name
-      default_backend_address_pool_name  = var.application_gateway.backend_pool.name
+      default_backend_address_pool_name  = var.backend_pool.name
       default_backend_http_settings_name = var.backend_settings[url_path_map.value.backend_key].name
 
       dynamic "path_rule" {
@@ -287,7 +287,7 @@ resource "azurerm_application_gateway" "this" {
         content {
           name                        = path_rule.key
           paths                       = path_rule.value.paths
-          backend_address_pool_name   = path_rule.value.backend_key != null ? var.application_gateway.backend_pool.name : null
+          backend_address_pool_name   = path_rule.value.backend_key != null ? var.backend_pool.name : null
           backend_http_settings_name  = path_rule.value.backend_key != null ? var.backend_settings[path_rule.value.backend_key].name : null
           redirect_configuration_name = path_rule.value.redirect_key != null ? var.redirects[path_rule.value.redirect_key].name : null
         }
@@ -305,7 +305,7 @@ resource "azurerm_application_gateway" "this" {
 
       http_listener_name = var.listeners[request_routing_rule.value.listener_key].name
       backend_address_pool_name = (
-        request_routing_rule.value.backend_key != null ? var.application_gateway.backend_pool.name : null
+        request_routing_rule.value.backend_key != null ? var.backend_pool.name : null
       )
       backend_http_settings_name = (
         request_routing_rule.value.backend_key != null ? var.backend_settings[request_routing_rule.value.backend_key].name : null

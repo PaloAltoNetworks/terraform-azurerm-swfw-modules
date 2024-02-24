@@ -21,6 +21,15 @@ variable "tags" {
   type        = map(string)
 }
 
+variable "subnet_id" {
+  description = <<-EOF
+  An ID of a Subnet in which the Virtual Network Gateway will be created.
+
+  This has to be a dedicated Subnet names `GatewaySubnet`.
+  EOF
+  type        = string
+}
+
 variable "virtual_network_gateway" {
   description = <<-EOF
   A map containing the basic Virtual Network Gateway configuration.
@@ -133,15 +142,6 @@ variable "virtual_network_gateway" {
     )
     error_message = "Invalid combination of `sku` and `type`. Please check documentation for `var.virtual_network_gateway`."
   }
-}
-
-variable "subnet_id" {
-  description = <<-EOF
-  An ID of a Subnet in which the Virtual Network Gateway will be created.
-
-  This has to be a dedicated Subnet names `GatewaySubnet`.
-  EOF
-  type        = string
 }
 
 variable "network" {

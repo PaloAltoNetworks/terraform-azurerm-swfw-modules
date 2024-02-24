@@ -43,10 +43,8 @@ appgws = {
     name       = "empty"
     vnet_key   = "transit"
     subnet_key = "appgw"
-    application_gateway = {
-      public_ip = {
-        name = "public-empty-ip"
-      }
+    public_ip = {
+      name = "public-empty-ip"
     }
     listeners = {
       "http" = {
@@ -74,11 +72,9 @@ appgws = {
     name       = "appgw-http-minimum"
     vnet_key   = "transit"
     subnet_key = "appgw"
-    application_gateway = {
-      public_ip = {
-        name = "pip-http-minimum"
-      }
-      zones = []
+    zones      = []
+    public_ip = {
+      name = "pip-http-minimum"
     }
     listeners = {
       minimum = {
@@ -118,16 +114,20 @@ appgws = {
     }
   }
   "public-http-existing" = {
-    name = "appgw-http-existing"
-    application_gateway = {
-      public_ip = {
-        name   = "pip-existing"
-        create = false
-      }
-      zones = ["1"]
-    }
+    name       = "appgw-http-existing"
     vnet_key   = "transit"
     subnet_key = "appgw"
+    zones      = ["1"]
+    public_ip = {
+      name   = "pip-existing"
+      create = false
+    }
+    listeners = {
+      existing = {
+        name = "existing-listener"
+        port = 80
+      }
+    }
     backend_settings = {
       existing = {
         name                      = "http-backend"
@@ -135,12 +135,6 @@ appgws = {
         protocol                  = "Http"
         timeout                   = 60
         use_cookie_based_affinity = true
-      }
-    }
-    listeners = {
-      existing = {
-        name = "existing-listener"
-        port = 80
       }
     }
     rewrites = {
@@ -171,18 +165,21 @@ appgws = {
     name       = "appgw-http-autoscale"
     vnet_key   = "transit"
     subnet_key = "appgw"
-    application_gateway = {
-      public_ip = {
-        name = "pip-http-autoscale"
+    zones      = null
+    public_ip = {
+      name = "pip-http-autoscale"
+    }
+    capacity = {
+      autoscale = {
+        min = 2
+        max = 20
       }
-      zones = null
-      capacity = {
-        autoscale = {
-          min = 2
-          max = 20
-        }
+    }
+    listeners = {
+      http = {
+        name = "http-listener"
+        port = 80
       }
-
     }
     backend_settings = {
       http = {
@@ -191,12 +188,6 @@ appgws = {
         protocol                  = "Http"
         timeout                   = 60
         use_cookie_based_affinity = true
-      }
-    }
-    listeners = {
-      http = {
-        name = "http-listener"
-        port = 80
       }
     }
     rules = {
@@ -212,19 +203,23 @@ appgws = {
     name       = "appgw-waf"
     vnet_key   = "transit"
     subnet_key = "appgw"
-    application_gateway = {
-      public_ip = {
-        name = "pip-waf"
-      }
-      zones = []
-      capacity = {
-        static = 4
-      }
-      enable_http2 = true
+    zones      = []
+    public_ip = {
+      name = "pip-waf"
+    }
+    capacity = {
+      static = 4
+    }
+    enable_http2 = true
+    waf = {
+      prevention_mode  = true
+      rule_set_type    = "OWASP"
+      rule_set_version = "3.2"
+    }
+    listeners = {
       waf = {
-        prevention_mode  = true
-        rule_set_type    = "OWASP"
-        rule_set_version = "3.2"
+        name = "waf-listener"
+        port = 80
       }
     }
     backend_settings = {
@@ -234,12 +229,6 @@ appgws = {
         protocol                  = "Http"
         timeout                   = 60
         use_cookie_based_affinity = true
-      }
-    }
-    listeners = {
-      waf = {
-        name = "waf-listener"
-        port = 80
       }
     }
     rewrites = {
@@ -283,30 +272,24 @@ appgws = {
     name       = "appgw-ssl-custom"
     vnet_key   = "transit"
     subnet_key = "appgw"
-    application_gateway = {
-      public_ip = {
-        name = "pip-ssl-custom"
-      }
-      backend_pool = {
-        name = "vmseries-pool"
-      }
-      frontend_ip_configuration_name = "public_ipconfig"
-      zones                          = ["1", "2", "3"]
-      global_ssl_policy = {
-        type                 = "Custom"
-        min_protocol_version = "TLSv1_0"
-        cipher_suites = ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA",
-          "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256",
-          "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
-          "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
-          "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
-          "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-          "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-          "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-          "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256",
-          "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256",
-        "TLS_RSA_WITH_AES_256_GCM_SHA384"]
-      }
+    zones      = ["1", "2", "3"]
+    public_ip = {
+      name = "pip-ssl-custom"
+    }
+    global_ssl_policy = {
+      type                 = "Custom"
+      min_protocol_version = "TLSv1_0"
+      cipher_suites = ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA",
+        "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256",
+        "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+        "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+        "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256",
+        "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256",
+      "TLS_RSA_WITH_AES_256_GCM_SHA384"]
     }
     ssl_profiles = {
       profile1 = {
@@ -330,6 +313,7 @@ appgws = {
         "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"]
       }
     }
+    frontend_ip_configuration_name = "public_ipconfig"
     listeners = {
       http = {
         name = "http-listener"
@@ -373,6 +357,9 @@ appgws = {
         name = "path-redirect-rul-listener"
         port = 643
       }
+    }
+    backend_pool = {
+      name = "vmseries-pool"
     }
     backend_settings = {
       http = {
@@ -491,6 +478,58 @@ appgws = {
         }
       }
     }
+    redirects = {
+      redirect_listener = {
+        name                 = "listener-redirect"
+        type                 = "Permanent"
+        target_listener_key  = "http"
+        include_path         = true
+        include_query_string = true
+      }
+      redirect_url = {
+        name                 = "url-redirect"
+        type                 = "Temporary"
+        target_url           = "http://example.com"
+        include_path         = true
+        include_query_string = true
+      }
+    }
+    url_path_maps = {
+      path_based_backend = {
+        name        = "backend-map"
+        backend_key = "http"
+        path_rules = {
+          http = {
+            paths       = ["/plaintext"]
+            backend_key = "http"
+          }
+          https = {
+            paths       = ["/secure"]
+            backend_key = "https1"
+          }
+        }
+      }
+      path_based_redirect_listener = {
+        name        = "redirect-listener-map"
+        backend_key = "http"
+        path_rules = {
+          http = {
+            paths        = ["/redirect"]
+            redirect_key = "redirect_listener"
+          }
+        }
+      }
+      path_based_redirect_url = {
+        name        = "redirect-url-map"
+        backend_key = "http"
+        path_rules = {
+          http = {
+            paths        = ["/redirect"]
+            redirect_key = "redirect_url"
+          }
+        }
+      }
+    }
     rules = {
       http = {
         name         = "http-rule"
@@ -544,74 +583,17 @@ appgws = {
         url_path_map_key = "path_based_redirect_url"
       }
     }
-    redirects = {
-      redirect_listener = {
-        name                 = "listener-redirect"
-        type                 = "Permanent"
-        target_listener_key  = "http"
-        include_path         = true
-        include_query_string = true
-      }
-      redirect_url = {
-        name                 = "url-redirect"
-        type                 = "Temporary"
-        target_url           = "http://example.com"
-        include_path         = true
-        include_query_string = true
-      }
-    }
-    url_path_maps = {
-      path_based_backend = {
-        name        = "backend-map"
-        backend_key = "http"
-        path_rules = {
-          http = {
-            paths       = ["/plaintext"]
-            backend_key = "http"
-          }
-          https = {
-            paths       = ["/secure"]
-            backend_key = "https1"
-          }
-        }
-      }
-      path_based_redirect_listener = {
-        name        = "redirect-listener-map"
-        backend_key = "http"
-        path_rules = {
-          http = {
-            paths        = ["/redirect"]
-            redirect_key = "redirect_listener"
-          }
-        }
-      }
-      path_based_redirect_url = {
-        name        = "redirect-url-map"
-        backend_key = "http"
-        path_rules = {
-          http = {
-            paths        = ["/redirect"]
-            redirect_key = "redirect_url"
-          }
-        }
-      }
-    }
   }
   "public-ssl-predefined" = {
     name       = "appgw-ssl-predefined"
     vnet_key   = "transit"
     subnet_key = "appgw"
-    application_gateway = {
-      public_ip = {
-        name = "pip-ssl-predefined"
-      }
-      backend_pool = {
-        name = "vmseries-pool-custom"
-      }
-      global_ssl_policy = {
-        type = "Predefined"
-        name = "AppGwSslPolicy20170401"
-      }
+    public_ip = {
+      name = "pip-ssl-predefined"
+    }
+    global_ssl_policy = {
+      type = "Predefined"
+      name = "AppGwSslPolicy20170401"
     }
     ssl_profiles = {
       profile1 = {
@@ -637,6 +619,9 @@ appgws = {
         ssl_certificate_pass = ""
         host_names           = ["test2.appgw.local"]
       }
+    }
+    backend_pool = {
+      name = "vmseries-pool-custom"
     }
     backend_settings = {
       https1 = {

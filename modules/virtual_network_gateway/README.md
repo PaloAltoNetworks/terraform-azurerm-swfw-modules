@@ -320,8 +320,8 @@ Name | Type | Description
 [`name`](#name) | `string` | The name of the Virtual Network Gateway.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
-[`virtual_network_gateway`](#virtual_network_gateway) | `object` | A map containing the basic Virtual Network Gateway configuration.
 [`subnet_id`](#subnet_id) | `string` | An ID of a Subnet in which the Virtual Network Gateway will be created.
+[`virtual_network_gateway`](#virtual_network_gateway) | `object` | A map containing the basic Virtual Network Gateway configuration.
 [`network`](#network) | `object` | Network configuration of the Virtual Network Gateway.
 
 
@@ -398,6 +398,17 @@ Type: string
 <sup>[back to list](#modules-required-inputs)</sup>
 
 
+#### subnet_id
+
+An ID of a Subnet in which the Virtual Network Gateway will be created.
+
+This has to be a dedicated Subnet names `GatewaySubnet`.
+
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
 #### virtual_network_gateway
 
 A map containing the basic Virtual Network Gateway configuration.
@@ -471,17 +482,6 @@ object({
   })
 ```
 
-
-<sup>[back to list](#modules-required-inputs)</sup>
-
-#### subnet_id
-
-An ID of a Subnet in which the Virtual Network Gateway will be created.
-
-This has to be a dedicated Subnet names `GatewaySubnet`.
-
-
-Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
@@ -777,6 +777,5 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

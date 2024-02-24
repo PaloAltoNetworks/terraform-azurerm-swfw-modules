@@ -52,7 +52,7 @@ module "vnet" {
   tags = var.tags
 }
 
-# Create Application Gateay
+# Create Application Gateway
 module "appgw" {
   source = "../../modules/appgw"
 
@@ -63,27 +63,27 @@ module "appgw" {
   location            = var.location
   subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
-  application_gateway = merge(
-    each.value.application_gateway,
-    {
-      public_ip = merge(
-        each.value.application_gateway.public_ip,
-        {
-          name = "${each.value.application_gateway.public_ip.create ? var.name_prefix : ""}${each.value.application_gateway.public_ip.name}"
-        }
-      )
-    }
+  zones = each.value.zones
+  public_ip = merge(
+    each.value.public_ip,
+    { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }
   )
-
-
-  listeners        = each.value.listeners
-  backend_settings = each.value.backend_settings
-  probes           = each.value.probes
-  rewrites         = each.value.rewrites
-  rules            = each.value.rules
-  redirects        = each.value.redirects
-  url_path_maps    = each.value.url_path_maps
-  ssl_profiles     = each.value.ssl_profiles
+  domain_name_label              = each.value.domain_name_label
+  capacity                       = each.value.capacity
+  enable_http2                   = each.value.enable_http2
+  waf                            = each.value.waf
+  managed_identities             = each.value.managed_identities
+  global_ssl_policy              = each.value.global_ssl_policy
+  ssl_profiles                   = each.value.ssl_profiles
+  frontend_ip_configuration_name = each.value.frontend_ip_configuration_name
+  listeners                      = each.value.listeners
+  backend_pool                   = each.value.backend_pool
+  backend_settings               = each.value.backend_settings
+  probes                         = each.value.probes
+  rewrites                       = each.value.rewrites
+  redirects                      = each.value.redirects
+  url_path_maps                  = each.value.url_path_maps
+  rules                          = each.value.rules
 
   tags       = var.tags
   depends_on = [module.vnet, azurerm_public_ip.this]

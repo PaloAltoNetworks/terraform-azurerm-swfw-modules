@@ -43,7 +43,7 @@ Modules used in this module:
 Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | Manage the network required for the topology.
-`appgw` | - | ../../modules/appgw | Create Application Gateay
+`appgw` | - | ../../modules/appgw | Create Application Gateway
 
 
 Resources used in this module:
@@ -159,40 +159,37 @@ For detailed documentation on how to configure this resource, for available prop
 refer to [module documentation](../../modules/appgw/README.md).
 
 **Note!** \
-The `rules` property is meant to bind together `backend`, `redirect` or `url_path_map` (all 3 are mutually exclusive). It
-represents the Rules section of an Application Gateway in Azure Portal.
+The `rules` property is meant to bind together `backend_setting`, `redirect` or `url_path_map` (all 3 are mutually exclusive). 
+It represents the Rules section of an Application Gateway in Azure Portal.
 
-Below you can find a brief list of available properties:
+Below you can find a brief list of most important properties:
 
-- `name`            - (`string`, required) the name of the Application Gateway, will be prefixed with `var.name_prefix`
-- `subnet_key`      - (`string`, required) a key pointing to a Subnet definition in the `var.vnets` map, this has to be an
-                      Application Gateway V2 dedicated subnet.
-- `vnet_key`        - (`string`, required) a key pointing to a VNET definition in the `var.vnets` map that stores the Subnet
-                      described by `subnet_key`.
-- `application_gateway` - (`map`, required) defines the basic Application Gateway settings, for details see
-                          [module's documentation](../../modules/appgw/README.md#application_gateway). The most important
-                          properties are:
-  - `public_ip`     - (`map`, required) defines a Public IP resource used by the Application Gateway instance, a newly created
-                      Public IP will have it's name prefixes with `var.name_prefix`
-  - `zones`         - (`list`, optional, defaults to module defaults) parameter controlling if this is a zonal, or a non-zonal
-                      deployment
-  - `backend_pool`  - (`map`, optional, defaults to module defaults) backend pool definition, when skipped, an empty backend
-                      will be created
-- `listeners`           - (`map`, required) defines Application Gateway's Listeners, see
-                          [module's documentation](../../modules/appgw/README.md#listeners) for details
-- `backends`            - (`map`, optional, mutually exclusive with `redirects` and `url_path_maps`) defines HTTP backend
-                          settings, see [module's documentation](../../modules/appgw/README.md#backends) for details
-- `probes`              - (`map`, optional, defaults to module defaults) defines backend probes used check health of backends,
-                          see [module's documentation](../../modules/appgw/README.md#probes) for details
-- `rewrites`            - (`map`, optional, defaults to module defaults) defines rewrite rules,
-                          see [module's documentation](../../modules/appgw/README.md#rewrites) for details
-- `redirects            - (`map`, optional, mutually exclusive with `backends` and `url_path_maps`) static redirects definition,
-                          see [module's documentation](../../modules/appgw/README.md#redirects) for details
-- `url_path_maps        - (`map`, optional, mutually exclusive with `backends` and `redirects`) URL path maps definition, 
-                          see [module's documentation](../../modules/appgw/README.md#url_path_maps) for details
-- `rules                - (`map`, required) Application Gateway Rules definition, bind together a `listener` with either
-                          `backend`, `redirect` or `url_path_map`, see
-                          [module's documentation](../../modules/appgw/README.md#rules) for details
+- `name`             - (`string`, required) the name of the Application Gateway, will be prefixed with `var.name_prefix`.
+- `vnet_key`         - (`string`, required) a key pointing to a VNET definition in the `var.vnets` map that stores the Subnet
+                       described by `subnet_key`.
+- `subnet_key`       - (`string`, required) a key pointing to a Subnet definition in the `var.vnets` map, this has to be an
+                       Application Gateway V2 dedicated subnet.
+- `zones`            - (`list`, optional, defaults to module defaults) parameter controlling if this is a zonal, or a non-zonal
+                       deployment.
+- `public_ip`        - (`map`, required) defines a Public IP resource used by the Application Gateway instance, a newly created
+                       Public IP will have it's name prefixes with `var.name_prefix`.
+- `listeners`        - (`map`, required) defines Application Gateway's Listeners, see
+                       [module's documentation](../../modules/appgw/README.md#listeners) for details.
+- `backend_pool`     - (`map`, optional, defaults to module defaults) backend pool definition, when skipped an empty backend
+                       will be created.
+- `backend_settings` - (`map`, optional, mutually exclusive with `redirects` and `url_path_maps`) defines HTTP backend
+                       settings, see [module's documentation](../../modules/appgw/README.md#backend_settings) for details.
+- `probes`           - (`map`, optional, defaults to module defaults) defines backend probes used check health of backends, see
+                       [module's documentation](../../modules/appgw/README.md#probes) for details.
+- `rewrites`         - (`map`, optional, defaults to module defaults) defines rewrite rules, see 
+                       [module's documentation](../../modules/appgw/README.md#rewrites) for details.
+- `redirects         - (`map`, optional, mutually exclusive with `backend_settings` and `url_path_maps`) static redirects 
+                       definition, see [module's documentation](../../modules/appgw/README.md#redirects) for details.
+- `url_path_maps     - (`map`, optional, mutually exclusive with `backend_settings` and `redirects`) URL path maps definition, 
+                       see [module's documentation](../../modules/appgw/README.md#url_path_maps) for details.
+- `rules             - (`map`, required) Application Gateway Rules definition, bind together a `listener` with either
+                       `backend_setting`, `redirect` or `url_path_map`, see
+                       [module's documentation](../../modules/appgw/README.md#rules) for details.
 
 
 Type: 
@@ -202,40 +199,40 @@ map(object({
     name       = string
     vnet_key   = string
     subnet_key = string
-    application_gateway = object({
-      public_ip = object({
-        name                = string
-        resource_group_name = optional(string)
-        create              = optional(bool, true)
-      })
-      capacity = optional(object({
-        static = optional(number)
-        autoscale = optional(object({
-          min = number
-          max = number
-        }))
-      }))
-      zones             = optional(list(string))
-      domain_name_label = optional(string)
-      enable_http2      = optional(bool)
-      waf = optional(object({
-        prevention_mode  = bool
-        rule_set_type    = optional(string)
-        rule_set_version = optional(string)
-      }))
-      managed_identities = optional(list(string))
-      global_ssl_policy = optional(object({
-        type                 = optional(string)
-        name                 = optional(string)
-        min_protocol_version = optional(string)
-        cipher_suites        = optional(list(string))
-      }))
-      frontend_ip_configuration_name = optional(string)
-      backend_pool = optional(object({
-        name         = optional(string)
-        vmseries_ips = optional(list(string))
-      }))
+    zones      = optional(list(string))
+    public_ip = object({
+      name                = string
+      create              = optional(bool, true)
+      resource_group_name = optional(string)
     })
+    domain_name_label = optional(string)
+    capacity = optional(object({
+      static = optional(number)
+      autoscale = optional(object({
+        min = number
+        max = number
+      }))
+    }))
+    enable_http2 = optional(bool)
+    waf = optional(object({
+      prevention_mode  = bool
+      rule_set_type    = optional(string)
+      rule_set_version = optional(string)
+    }))
+    managed_identities = optional(list(string))
+    global_ssl_policy = optional(object({
+      type                 = optional(string)
+      name                 = optional(string)
+      min_protocol_version = optional(string)
+      cipher_suites        = optional(list(string))
+    }))
+    ssl_profiles = optional(map(object({
+      name                            = string
+      ssl_policy_name                 = optional(string)
+      ssl_policy_min_protocol_version = optional(string)
+      ssl_policy_cipher_suites        = optional(list(string))
+    })))
+    frontend_ip_configuration_name = optional(string)
     listeners = map(object({
       name                     = string
       port                     = number
@@ -247,7 +244,11 @@ map(object({
       ssl_certificate_vault_id = optional(string)
       custom_error_pages       = optional(map(string))
     }))
-    backends = optional(map(object({
+    backend_pool = optional(object({
+      name         = optional(string)
+      vmseries_ips = optional(list(string))
+    }))
+    backend_settings = optional(map(object({
       name                      = string
       port                      = number
       protocol                  = string
@@ -289,15 +290,6 @@ map(object({
         response_headers = optional(map(string))
       })))
     })))
-    rules = map(object({
-      name             = string
-      priority         = number
-      backend_key      = optional(string)
-      listener_key     = string
-      rewrite_key      = optional(string)
-      url_path_map_key = optional(string)
-      redirect_key     = optional(string)
-    }))
     redirects = optional(map(object({
       name                 = string
       type                 = string
@@ -315,12 +307,15 @@ map(object({
         redirect_key = optional(string)
       })))
     })))
-    ssl_profiles = optional(map(object({
-      name                            = string
-      ssl_policy_name                 = optional(string)
-      ssl_policy_min_protocol_version = optional(string)
-      ssl_policy_cipher_suites        = optional(list(string))
-    })))
+    rules = map(object({
+      name             = string
+      priority         = number
+      backend_key      = optional(string)
+      listener_key     = string
+      rewrite_key      = optional(string)
+      url_path_map_key = optional(string)
+      redirect_key     = optional(string)
+    }))
   }))
 ```
 
@@ -376,7 +371,6 @@ Type: bool
 Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 
 

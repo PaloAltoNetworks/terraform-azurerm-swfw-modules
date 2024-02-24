@@ -241,10 +241,8 @@ appgws = {
     name       = "appgw"
     vnet_key   = "transit"
     subnet_key = "appgw"
-    application_gateway = {
-      public_ip = {
-        name = "appgw-pip"
-      }
+    public_ip = {
+      name = "appgw-pip"
     }
     listeners = {
       "http" = {
