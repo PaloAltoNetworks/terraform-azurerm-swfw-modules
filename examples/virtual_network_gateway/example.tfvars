@@ -63,17 +63,17 @@ vnets = {
 # --- VNG PART --- #
 virtual_network_gateways = {
   expressroute = {
-    name = "expressroute"
-    virtual_network_gateway = {
-      type = "ExpressRoute"
-      # vpn_type = "PolicyBased"
-      sku = "Standard"
-      # generation = "Generation1"
-    }
+    name       = "expressroute"
     vnet_key   = "transit"
     subnet_key = "vpn"
+    zones      = ["1"]
+
+    type       = "ExpressRoute"
+    vpn_type   = "RouteBased"
+    generation = "Generation1"
+    sku        = "Standard"
+
     network = {
-      public_ip_zones = ["1"]
       ip_configurations = {
         primary = {
           create_public_ip = true
@@ -84,17 +84,17 @@ virtual_network_gateways = {
     }
   }
   expressroute_policy_based = {
-    name = "er_policy"
-    virtual_network_gateway = {
-      type       = "ExpressRoute"
-      vpn_type   = "PolicyBased"
-      sku        = "Standard"
-      generation = "Generation2"
-    }
+    name       = "er_policy"
     vnet_key   = "er"
     subnet_key = "vpn"
+    zones      = ["1"]
+
+    type       = "ExpressRoute"
+    vpn_type   = "PolicyBased"
+    generation = "Generation2"
+    sku        = "Standard"
+
     network = {
-      public_ip_zones = ["1"]
       ip_configurations = {
         primary = {
           create_public_ip = true
@@ -105,17 +105,17 @@ virtual_network_gateways = {
     }
   }
   vpn_simple = {
-    name = "simple-vpn"
-    virtual_network_gateway = {
-      type = "Vpn"
-      # vpn_type   = "PolicyBased"
-      sku        = "VpnGw1"
-      generation = "Generation1"
-    }
+    name       = "simple-vpn"
     vnet_key   = "er"
     subnet_key = "vpn"
+    zones      = []
+
+    type       = "Vpn"
+    vpn_type   = "PolicyBased"
+    generation = "Generation1"
+    sku        = "VpnGw1"
+
     network = {
-      public_ip_zones = []
       ip_configurations = {
         primary = {
           create_public_ip = true
@@ -126,17 +126,17 @@ virtual_network_gateways = {
     }
   }
   "vng" = {
-    name = "vng"
-    virtual_network_gateway = {
-      type          = "Vpn"
-      sku           = "VpnGw2AZ"
-      generation    = "Generation2"
-      active_active = true
-    }
+    name       = "vng"
     vnet_key   = "transit"
     subnet_key = "vpn"
+    zones      = ["1", "2", "3"]
+
+    type          = "Vpn"
+    generation    = "Generation2"
+    sku           = "VpnGw2AZ"
+    active_active = true
+
     network = {
-      public_ip_zones = ["1", "2", "3"]
       ip_configurations = {
         primary = {
           name             = "primary"

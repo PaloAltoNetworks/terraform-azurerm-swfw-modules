@@ -204,25 +204,24 @@ Default value: `true`
 
 #### virtual_network_gateways
 
-Map of virtual_network_gateways to create
+Map of virtual_network_gateways to create.
 
 Type: 
 
 ```hcl
 map(object({
-    name = string
-    virtual_network_gateway = object({
-      type          = optional(string)
-      vpn_type      = optional(string)
-      sku           = optional(string)
-      active_active = optional(bool)
-      generation    = optional(string)
-      custom_routes = optional(map(list(string)))
-    })
-    vnet_key   = string
-    subnet_key = string
+    name          = string
+    vnet_key      = string
+    subnet_key    = string
+    zones         = optional(list(string))
+    edge_zone     = optional(string)
+    type          = optional(string)
+    vpn_type      = optional(string)
+    generation    = optional(string)
+    sku           = optional(string)
+    active_active = optional(bool)
+    custom_routes = optional(map(list(string)))
     network = object({
-      public_ip_zones = optional(list(string))
       ip_configurations = object({
         primary = object({
           name                          = string
@@ -239,7 +238,6 @@ map(object({
       })
       private_ip_address_enabled       = optional(bool)
       default_local_network_gateway_id = optional(string)
-      edge_zone                        = optional(string)
     })
     azure_bgp_peer_addresses = optional(map(string))
     bgp = optional(object({
@@ -308,6 +306,5 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

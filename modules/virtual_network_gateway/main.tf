@@ -8,7 +8,7 @@ resource "azurerm_public_ip" "this" {
 
   allocation_method = "Static"
   sku               = "Standard"
-  zones             = var.network.public_ip_zones
+  zones             = var.zones
 
   tags = var.tags
 }
@@ -27,13 +27,13 @@ resource "azurerm_virtual_network_gateway" "this" {
   resource_group_name = var.resource_group_name
   location            = var.location
 
-  type                             = var.virtual_network_gateway.type
-  vpn_type                         = var.virtual_network_gateway.vpn_type
-  sku                              = var.virtual_network_gateway.sku
-  generation                       = var.virtual_network_gateway.type == "VPN" ? var.virtual_network_gateway.generation : null
-  active_active                    = var.virtual_network_gateway.active_active
+  type                             = var.type
+  vpn_type                         = var.vpn_type
+  sku                              = var.sku
+  generation                       = var.type == "VPN" ? var.generation : null
+  active_active                    = var.active_active
   default_local_network_gateway_id = var.network.default_local_network_gateway_id
-  edge_zone                        = var.network.edge_zone
+  edge_zone                        = var.edge_zone
   private_ip_address_enabled       = var.network.private_ip_address_enabled
 
   dynamic "ip_configuration" {
@@ -78,7 +78,7 @@ resource "azurerm_virtual_network_gateway" "this" {
   }
 
   dynamic "custom_route" {
-    for_each = var.virtual_network_gateway.custom_routes
+    for_each = var.custom_routes
     content {
       address_prefixes = custom_route.value
     }
@@ -120,14 +120,14 @@ resource "azurerm_virtual_network_gateway" "this" {
 
   lifecycle {
     precondition { # bgp
-      condition     = var.virtual_network_gateway.type == "ExpressRoute" ? var.bgp == null : true
+      condition     = var.type == "ExpressRoute" ? var.bgp == null : true
       error_message = <<-EOF
       VNG Name: [${var.name}]
       BGP configuration is supported only for Virtual Network Gateways of "VPN" type. `var.bgp` should have a value of `null`.
       EOF
     }
     precondition { # azure_bgp_peer_addresses
-      condition     = var.virtual_network_gateway.type == "ExpressRoute" ? length(var.azure_bgp_peer_addresses) == 0 : true
+      condition     = var.type == "ExpressRoute" ? length(var.azure_bgp_peer_addresses) == 0 : true
       error_message = <<-EOF
       VNG Name: [${var.name}]
       BGP configuration is supported only for Virtual Network Gateways of "VPN" type.
@@ -135,27 +135,26 @@ resource "azurerm_virtual_network_gateway" "this" {
       EOF
     }
     precondition { # network.ip_configurations.secondary
-      condition     = var.virtual_network_gateway.active_active ? var.network.ip_configurations.secondary != null : var.network.ip_configurations.secondary == null
+      condition     = var.active_active ? var.network.ip_configurations.secondary != null : var.network.ip_configurations.secondary == null
       error_message = <<-EOF
       VNG Name: [${var.name}]
-      The `network.ip_configurations.secondary` property is required ONLY `virtual_network_gateway.active_active` is set
-      to `true`.
+      The `network.ip_configurations.secondary` property is required ONLY when `active_active` variable is set to `true`.
       EOF
     }
     precondition { # bgp.configuration.secondary_peering_addresses
-      condition     = var.virtual_network_gateway.active_active ? var.bgp.configuration.secondary_peering_addresses != null : try(var.bgp.configuration.secondary_peering_addresses, null) == null
+      condition     = var.active_active ? var.bgp.configuration.secondary_peering_addresses != null : try(var.bgp.configuration.secondary_peering_addresses, null) == null
       error_message = <<-EOF
       VNG Name: [${var.name}]
-      The `bgp.configuration.secondary_peering_addresses` property is required ONLY when `virtual_network_gateway.active_active`
-      is set to `true`.
+      The `bgp.configuration.secondary_peering_addresses` property is required ONLY when `active_active` variable is set to
+      `true`.
       EOF
     }
-    precondition { # network.public_ip_zones
-      condition = var.virtual_network_gateway.type == "Vpn" && can(
-        regex("^\\w{5,6}$", var.virtual_network_gateway.sku)
-      ) ? length(coalesce(var.network.public_ip_zones, [])) == 0 : true
+    precondition { # zones
+      condition = var.type == "Vpn" && can(
+        regex("^\\w{5,6}$", var.sku)
+      ) ? length(coalesce(var.zones, [])) == 0 : true
       error_message = <<-EOF
-      For Virtual Network Gateways of `Vpn` type, sku of non `AZ` type, the `network.public_ip_zones` has to be an empty list.
+      For Virtual Network Gateways of `Vpn` type, sku of non `AZ` type, the `zones` variable has to be an empty list.
       EOF
     }
   }

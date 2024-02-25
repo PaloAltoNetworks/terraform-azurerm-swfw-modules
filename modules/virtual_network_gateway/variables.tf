@@ -1,10 +1,8 @@
-# Main resource
 variable "name" {
   description = "The name of the Virtual Network Gateway."
   type        = string
 }
 
-# Common settings
 variable "resource_group_name" {
   description = "The name of the Resource Group to use."
   type        = string
@@ -30,120 +28,124 @@ variable "subnet_id" {
   type        = string
 }
 
-variable "virtual_network_gateway" {
+variable "zones" {
   description = <<-EOF
-  A map containing the basic Virtual Network Gateway configuration.
+  After provider version 3.x you need to specify in which availability zone(s) you want to place a Public IP address.
 
-  You configure the size, capacity and capabilities with 3/4 parameters that heavily depend on each other. Please follow the table
-  below for details on available combinations:
-
-  <table>
-    <tr>
-      <th>type</th>
-      <th>generation</th>
-      <th>sku</th>
-    </tr>
-    <tr>
-      <td rowspan="6">ExpressRoute</td>
-      <td rowspan="6">N/A</td>
-      <td>Standard</td>
-    </tr>
-    <tr><td>HighPerformance</td></tr>
-    <tr><td>UltraPerformance</td></tr>
-    <tr><td>ErGw1AZ</td></tr>
-    <tr><td>ErGw2AZ</td></tr>
-    <tr><td>ErGw3AZ</td></tr>
-    <tr>
-      <td rowspan="11">Vpn</td>
-      <td rowspan="3">Generation1</td>
-      <td>Basic</td>
-    <tr><td>VpnGw1</td></tr>
-    <tr><td>VpnGw1AZ</td></tr>
-    <tr>
-      <td rowspan="8">Generation1/Generation2</td>
-      <td>VpnGw2</td>
-    </tr>
-    <tr><td>VpnGw3</td></tr>
-    <tr><td>VpnGw4</td></tr>
-    <tr><td>VpnGw5</td></tr>
-    <tr><td>VpnGw2AZ</td></tr>
-    <tr><td>VpnGw3AZ</td></tr>
-    <tr><td>VpnGw4AZ</td></tr>
-    <tr><td>VpnGw5AZ</td></tr>
-  </table>
-
-  Following properties are available:
-
-  - `type`          - (`string`, optional, defaults to `Vpn`) the type of the Virtual Network Gateway, possible values are: `Vpn`
-                      or `ExpressRoute`.
-  - `vpn_type`      - (`string`, optional, defaults to `RouteBased`) the routing type of the Virtual Network Gateway, possible
-                      values are: `RouteBased` or `PolicyBased`.
-  - `generation`    - (`string`, optional, defaults to `Generation1`) the Generation of the Virtual Network gateway, possible
-                      values are: `None`, `Generation1` or `Generation2`. This property is ignored when type is set to 
-                      `ExpressRoute`.
-  - `sku`           - (`string`, optional, defaults to `Basic`) sets the size and capacity of the virtual network gateway.
-  - `active_active` - (`bool`, optional, defaults to `false`) when set to true creates an active-active Virtual Network Gateway,
-                      active-passive otherwise. Not supported for `Basic` and `Standard` SKUs.
-  - `custom_routes` - (`map`, optional, defaults to `{}`) a map defining custom routes. Each route is a list of address blocks
-                      reserved for this Virtual Network (in CIDR notation). Keys in this map are only to identify the CIDR blocks,
-                      values are lists of the actual address blocks
-
+  For zone-redundant with 3 availability zones in current region, value will be:
+  ```["1","2","3"]```
   EOF
-  type = object({
-    type          = optional(string, "Vpn")
-    vpn_type      = optional(string, "RouteBased")
-    sku           = optional(string, "Basic")
-    active_active = optional(bool, false)
-    generation    = optional(string, "Generation1")
-    custom_routes = optional(map(list(string)), {})
-  })
-  validation { # type
-    condition     = contains(["Vpn", "ExpressRoute"], var.virtual_network_gateway.type)
+  default     = null
+  type        = list(string)
+  validation {
+    condition = var.zones == null || (var.zones != null ? (
+      length(var.zones) == 3 && length(setsubtract(var.zones, ["1", "2", "3"])) == 0
+    ) : true)
+    error_message = "No zones or all 3 zones are expected."
+  }
+}
+
+variable "edge_zone" {
+  description = "Specifies the Edge Zone within the Azure Region where this Virtual Network Gateway should exist."
+  default     = null
+  type        = string
+}
+
+variable "type" {
+  description = "The type of the Virtual Network Gateway."
+  default     = "Vpn"
+  nullable    = false
+  type        = string
+  validation {
+    condition     = contains(["Vpn", "ExpressRoute"], var.type)
     error_message = <<-EOF
-    The `virtual_network_gateway.type` property can take one of the following values: "Vpn" or "ExpressRoute".
+    The `type` variable can take one of the following values: "Vpn" or "ExpressRoute".
     EOF
   }
-  validation { # vpn_type
-    condition     = contains(["RouteBased", "PolicyBased"], var.virtual_network_gateway.vpn_type)
+}
+
+variable "vpn_type" {
+  description = "The routing type of the Virtual Network Gateway."
+  default     = "RouteBased"
+  nullable    = false
+  type        = string
+  validation {
+    condition     = contains(["RouteBased", "PolicyBased"], var.vpn_type)
     error_message = <<-EOF
-    The `virtual_network_gateway.vpn_type` property can take one of the following values: "RouteBased" or "PolicyBased".
+    The `vpn_type` variable can take one of the following values: "RouteBased" or "PolicyBased".
     EOF
   }
-  validation { # active_active
-    condition     = var.virtual_network_gateway.type == "ExpressRoute" ? !var.virtual_network_gateway.active_active : true
+}
+
+variable "generation" {
+  description = "The Generation of the Virtual Network gateway."
+  type        = string
+  default     = "Generation1"
+  nullable    = false
+  validation {
+    condition     = contains(["Generation1", "Generation2", "None"], coalesce(var.generation, "Generation1"))
     error_message = <<-EOF
-    The `active_active` property has to be set to `false` (default) type is `ExpressRoute`.
+    The `generation` variable can take one of the following values: "Generation1", "Generation2" or "None".
     EOF
   }
-  validation { # generation
-    condition     = contains(["Generation1", "Generation2", "None"], var.virtual_network_gateway.generation)
-    error_message = <<-EOF
-    The `virtual_network_gateway.generation` property can take one of the following values: "Generation1" or "Generation2"
-    or "None".
-    EOF
-  }
-  validation { # type, sku & generation
-    condition = var.virtual_network_gateway.generation == "Generation2" && var.virtual_network_gateway.type == "Vpn" ? contains(
-      ["VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.virtual_network_gateway.sku
-    ) : true
-    error_message = <<-EOF
-    For `sku` of "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ" or "VpnGw5AZ" the `generation`
-    property has to be set to `Generation2` and `type` to `Vpn`.
-    EOF
-  }
-  validation { # type & sku
-    condition = (var.virtual_network_gateway.type == "Vpn" && contains(
-      ["Basic", "VpnGw1", "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"],
-      var.virtual_network_gateway.sku
-      )) || (
-      var.virtual_network_gateway.type == "ExpressRoute" && contains(
-        ["Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ"], var.virtual_network_gateway.sku
-      )
+}
+
+variable "sku" {
+  description = <<-EOF
+  Configuration of the size and capacity of the virtual network gateway.
+
+  Valid option depends on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU.
+  Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
+  EOF
+  default     = "Basic"
+  nullable    = false
+  type        = string
+  validation {
+    condition = contains(
+      ["Basic", "Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ", "VpnGw1", "VpnGw2", "VpnGw3",
+      "VpnGw4", "VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.sku
     )
     error_message = <<-EOF
-    Invalid combination of `sku` and `type`. Please check documentation for `var.virtual_network_gateway`.
+    The `sku` variable can take one of the following values: "Basic", "Standard", "HighPerformance", "UltraPerformance",
+    "ErGw1AZ", "ErGw2AZ", "ErGw3AZ", "VpnGw1", "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ",
+    "VpnGw4AZ" or "VpnGw5AZ". They also depend on the `type`, `vpn_type` and `generation` variables.
     EOF
   }
+}
+
+variable "active_active" {
+  description = <<-EOF
+  Active-active Virtual Network Gateway.
+
+  If set to `true`, an active-active Virtual Network Gateway will be created.
+  An active-active gateway requires a HighPerformance or an UltraPerformance SKU.
+  If set to `false`, an active-standby gateway will be created. Defaults to `false`.
+  EOF
+  default     = false
+  nullable    = false
+  type        = bool
+  validation {
+    condition     = var.type == "ExpressRoute" ? !var.active_active : true
+    error_message = <<-EOF
+    The `active_active` variable has to be set to `false` (default) when type is `ExpressRoute`.
+    EOF
+  }
+}
+
+variable "custom_routes" {
+  description = <<-EOF
+  List of custom routes.
+
+  Every object in the list contains attributes:
+  - `address_prefixes` - (`list`, optional, defaults to `null`) a list of address blocks reserved for this virtual network in
+                         CIDR notation as defined below.
+
+  EOF
+  default     = []
+  nullable    = false
+  type = list(object({
+    address_prefixes = optional(list(string))
+  }))
 }
 
 variable "network" {
@@ -152,30 +154,25 @@ variable "network" {
 
   Following properties are available:
 
-  - `public_ip_zones`                  - (`list`, optional, defaults to `["1", "2", "3"]`) a list of Availability Zones in which
-                                         the Virtual Network Gateway will be available.
   - `ip_configurations`                - (`map`, required) a map defining the Public IPs used by the Virtual Network Gateway.
                                          Contains 2 properties:
     - `primary`   - (`map`, required) a map defining the primary Public IP address, following properties are available:
-      - `name`             - (`string`, required) name of the IP config.
-      - `create_public_ip` - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
-      - `public_ip_name`   - (`string`, required) name of a Public IP resource, depending on the value of 
-                             `create_public_ip` property this will be a name of a newly create or existing resource (for values
-                             of `true` and `false` accordingly).
+      - `name`                          - (`string`, required) name of the IP config.
+      - `create_public_ip`              - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
+      - `public_ip_name`                - (`string`, required) name of a Public IP resource, depending on the value of 
+                                          `create_public_ip` property this will be a name of a newly create or existing resource
+                                          (for values of `true` and `false` accordingly).
       - `dynamic_private_ip_allocation` - (`bool`, optional, defaults to `true`) controls if the private IP address is assigned
                                           dynamically or statically.
     - `secondary` - (`map`, optional, defaults to `null`) a map defining the secondary Public IP resource. Required only for
                     `type` set to `Vpn` and `active-active` set to `true`. Same properties available like in `primary` property.
   - `private_ip_address_enabled`       - (`bool`, optional, defaults to `false`) controls whether the private IP is enabled on
                                          the gateway.
-  - `default_local_network_gateway_id` - (`string`, optional, defaults to `null`) the ID of the local Network Gateway. When set
+  - `default_local_network_gateway_id` - (`string`, optional, defaults to `null`) the ID of the local Network Gateway. When set,
                                          the outbound Internet traffic from the virtual network, in which the gateway is created,
                                          will be routed through local network gateway (forced tunnelling).
-  - `edge_zone`                        - (`string`, optional, defaults to `null`) specifies the Edge Zone within the Azure Region
-                                         where this Virtual Network Gateway should exist.
   EOF
   type = object({
-    public_ip_zones = optional(list(string), ["1", "2", "3"])
     ip_configurations = object({
       primary = object({
         name                          = string
@@ -192,11 +189,10 @@ variable "network" {
     })
     private_ip_address_enabled       = optional(bool, false)
     default_local_network_gateway_id = optional(string)
-    edge_zone                        = optional(string)
   })
 }
 
-variable "azure_bgp_peer_addresses" { # do not delete this one
+variable "azure_bgp_peer_addresses" {
   description = <<-EOF
   Map of IP addresses used on Azure side for BGP.
 
@@ -286,88 +282,6 @@ variable "bgp" {
     Possible values for `peer_weight` are between 0 and 100.
     EOF
   }
-}
-
-
-
-# variable "sku" {
-#   description = <<-EOF
-#   Configuration of the size and capacity of the virtual network gateway.
-
-#   Valid option depends on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU.
-#   Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
-#   EOF
-#   default     = "Basic"
-#   nullable    = false
-#   type        = string
-#   validation {
-#     condition     = contains(["Basic", "Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ", "VpnGw1", "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.sku)
-#     error_message = "Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ and depend on the type, vpn_type and generation arguments"
-#   }
-# }
-
-
-
-# variable "zones" {
-#   description = <<-EOF
-#   After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
-
-#   For zone-redundant with 3 availability zones in current region value will be:
-#   ```["1","2","3"]```
-#   EOF
-#   default     = null
-#   type        = list(string)
-#   validation {
-#     condition = var.zones == null || (var.zones != null ? (
-#       length(var.zones) == 3 && length(setsubtract(var.zones, ["1", "2", "3"])) == 0
-#     ) : true)
-#     error_message = "No zones or all 3 zones are expected"
-#   }
-# }
-
-
-variable "vpn_clients" {
-  description = <<-EOF
-  VPN client configurations (IPSec point-to-site connections).
-
-  This is a map, where each value is a VPN client configuration. Keys are just names describing a particular configuration. They
-  are not being used in the actual deployment.
-
-  Following properties are available:
-
-  - `address_space`         - (`string`, required) the address space out of which IP addresses for vpn clients will be taken.
-                              You can provide more than one address space, e.g. in CIDR notation.
-  - `aad_tenant`            - (`string`, optional, defaults to `null`) AzureAD Tenant URL
-  - `aad_audience`          - (`string`, optional, defaults to `null`) the client id of the Azure VPN application.
-                              See Create an Active Directory (AD) tenant for P2S OpenVPN protocol connections for values
-  - `aad_issuer`            - (`string`, optional, defaults to `null`) the STS url for your tenant
-  - `root_certificates`     - (`map`, optional, defaults to `{}`) a map defining root certificates used to sign client 
-                              certificates used by VPN clients. The key is a name of the certificate, value is the public
-                              certificate in PEM format.
-  - `revoked_certificates`  - (`map`, optional, defaults to `null`) a map defining revoked certificates. The key is a name of
-                              the certificate, value is the thumbprint of the certificate.
-  - `radius_server_address` - (`string`, optional, defaults to `null`) the address of the Radius server.
-  - `radius_server_secret`  - (`string`, optional, defaults to `null`) the secret used by the Radius server.
-  - `vpn_client_protocols`  - (`list(string)`, optional, defaults to `null`) list of the protocols supported by the vpn client.
-                              The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with
-                              the use of aad_tenant, aad_audience and aad_issuer.
-  - `vpn_auth_types`        - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for
-                              the virtual network gateway. The supported values are AAD, Radius and Certificate.
-  EOF
-  default     = {}
-  nullable    = false
-  type = map(object({
-    address_space         = string
-    aad_tenant            = optional(string)
-    aad_audience          = optional(string)
-    aad_issuer            = optional(string)
-    root_certificates     = optional(map(string), {})
-    revoked_certificates  = optional(map(string), {})
-    radius_server_address = optional(string)
-    radius_server_secret  = optional(string)
-    vpn_client_protocols  = optional(list(string))
-    vpn_auth_types        = optional(list(string))
-  }))
 }
 
 variable "local_network_gateways" {
@@ -538,4 +452,48 @@ variable "local_network_gateways" {
     Possible values for `pfs_group` are "ECP256", "ECP384", "PFS1", "PFS14", "PFS2", "PFS2048", "PFS24", "PFSMM" or "None".
     EOF
   }
+}
+
+variable "vpn_clients" {
+  description = <<-EOF
+  VPN client configurations (IPSec point-to-site connections).
+
+  This is a map, where each value is a VPN client configuration. Keys are just names describing a particular configuration. They
+  are not being used in the actual deployment.
+
+  Following properties are available:
+
+  - `address_space`         - (`string`, required) the address space out of which IP addresses for vpn clients will be taken.
+                              You can provide more than one address space, e.g. in CIDR notation.
+  - `aad_tenant`            - (`string`, optional, defaults to `null`) AzureAD Tenant URL
+  - `aad_audience`          - (`string`, optional, defaults to `null`) the client id of the Azure VPN application.
+                              See Create an Active Directory (AD) tenant for P2S OpenVPN protocol connections for values
+  - `aad_issuer`            - (`string`, optional, defaults to `null`) the STS url for your tenant
+  - `root_certificates`     - (`map`, optional, defaults to `{}`) a map defining root certificates used to sign client 
+                              certificates used by VPN clients. The key is a name of the certificate, value is the public
+                              certificate in PEM format.
+  - `revoked_certificates`  - (`map`, optional, defaults to `null`) a map defining revoked certificates. The key is a name of
+                              the certificate, value is the thumbprint of the certificate.
+  - `radius_server_address` - (`string`, optional, defaults to `null`) the address of the Radius server.
+  - `radius_server_secret`  - (`string`, optional, defaults to `null`) the secret used by the Radius server.
+  - `vpn_client_protocols`  - (`list(string)`, optional, defaults to `null`) list of the protocols supported by the vpn client.
+                              The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with
+                              the use of aad_tenant, aad_audience and aad_issuer.
+  - `vpn_auth_types`        - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for
+                              the virtual network gateway. The supported values are AAD, Radius and Certificate.
+  EOF
+  default     = {}
+  nullable    = false
+  type = map(object({
+    address_space         = string
+    aad_tenant            = optional(string)
+    aad_audience          = optional(string)
+    aad_issuer            = optional(string)
+    root_certificates     = optional(map(string), {})
+    revoked_certificates  = optional(map(string), {})
+    radius_server_address = optional(string)
+    radius_server_secret  = optional(string)
+    vpn_client_protocols  = optional(list(string))
+    vpn_auth_types        = optional(list(string))
+  }))
 }
