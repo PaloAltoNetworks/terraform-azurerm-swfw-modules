@@ -522,13 +522,15 @@ explicitly). Please refer to Microsoft documentation for notes on NAT Gateway's 
 For detailed documentation on each property refer to [module documentation](../../modules/natgw/README.md).
   
 Following properties are supported:
+- `create_natgw`       - (`bool`, optional, defaults to `true`) create (`true`) or source an existing NAT Gateway (`false`),
+                         created or sourced: the NAT Gateway will be assigned to a subnet created by the `vnet` module.
 - `name`               - (`string`, required) a name of a NAT Gateway. In case `create_natgw = false` this should be a full
                          resource name, including prefixes.
 - `resource_group_name - (`string`, optional) name of a Resource Group hosting the NAT Gateway (newly created or the existing
                          one).
-- `natgw`              - (`map`, required) a map defining basic NAT Gateway configuration. For details on available options
-                         please refer to [module documentation](../../modules/natgw/README.md#natgw). One property that's worth
-                         mentioning is:
+- `zone`               - (`string`, optional) an Availability Zone in which the NAT Gateway will be placed, when skipped
+                         AzureRM will pick a zone.
+- `idle_timeout`       - (`number`, optional, defults to 4) connection IDLE timeout in minutes, for newly created resources.
 - `vnet_key`           - (`string`, required) a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this
                          NAT Gateway will be assigned to.
 - `subnet_keys`        - (`list(string)`, required) a list of subnets (key values) the NAT Gateway will be assigned to, defined
@@ -556,15 +558,13 @@ Type:
 
 ```hcl
 map(object({
+    create_natgw        = optional(bool, true)
     name                = string
     resource_group_name = optional(string)
-    natgw = object({
-      create       = optional(bool, true)
-      zone         = optional(string)
-      idle_timeout = optional(number)
-    })
-    vnet_key    = string
-    subnet_keys = list(string)
+    zone                = optional(string)
+    idle_timeout        = optional(number, 4)
+    vnet_key            = string
+    subnet_keys         = list(string)
     public_ip = optional(object({
       create              = bool
       name                = string

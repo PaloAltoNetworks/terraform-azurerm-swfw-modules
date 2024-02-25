@@ -73,13 +73,13 @@ module "natgw" {
 
   for_each = var.natgws
 
+  create_natgw        = each.value.create_natgw
   name                = each.value.natgw.create ? "${var.name_prefix}${each.value.name}" : each.value.name
   resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
   location            = var.location
-
-  natgw = each.value.natgw
-
-  subnet_ids = { for v in each.value.subnet_keys : v => module.vnet[each.value.vnet_key].subnet_ids[v] }
+  zone                = try(each.value.zone, null)
+  idle_timeout        = each.value.idle_timeout
+  subnet_ids          = { for v in each.value.subnet_keys : v => module.vnet[each.value.vnet_key].subnet_ids[v] }
 
   public_ip        = try(merge(each.value.public_ip, { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }), null)
   public_ip_prefix = try(merge(each.value.public_ip_prefix, { name = "${each.value.public_ip_prefix.create ? var.name_prefix : ""}${each.value.public_ip_prefix.name}" }), null)

@@ -19,40 +19,6 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "natgw" {
-  description = <<-EOF
-  A map defining basic NAT Gateway configuration. 
-
-  Following properties are available:
-
-  - `create`       - (`bool`, optional, defaults to `true`) controls if the NAT Gateway is created or sourced. When set the
-                     `false` the module will only bind an existing NAT Gateway to specified subnets.
-  - `zone`         - (`string`, optional, defaults to `null`) controls whether the NAT Gateway will be bound to a specific zone
-                     or not. This is a string with the zone number or `null`. Used only for newly created resources.
-  - `idle_timeout` - (`number`, optional, defaults to `4`) connection IDLE timeout in minutes (up to 120, by default 4). Only for
-                     newly created resources.
-  EOF
-  default     = {}
-  nullable    = false
-  type = object({
-    create       = optional(bool, true)
-    zone         = optional(string)
-    idle_timeout = optional(number, 4)
-  })
-  validation { # zone
-    condition     = (var.natgw.zone == null || can(regex("^[1-3]$", var.natgw.zone)))
-    error_message = <<-EOF
-    The `zone` variable should have value of either: \"1\", \"2\" or \"3\".
-    EOF
-  }
-  validation { # idle_timeout
-    condition     = (var.natgw.idle_timeout >= 1 && var.natgw.idle_timeout <= 120)
-    error_message = <<-EOF
-    The `idle_timeout` variable should be a number between 1 and 120.
-    EOF
-  }
-}
-
 variable "subnet_ids" {
   description = <<-EOF
   A map of subnet IDs what will be bound with this NAT Gateway.
@@ -60,6 +26,51 @@ variable "subnet_ids" {
   Value is the subnet ID, key value does not matter but should be unique, typically it can be a subnet name.
   EOF
   type        = map(string)
+}
+
+variable "create_natgw" {
+  description = <<-EOF
+  Triggers creation of a NAT Gateway when set to `true`.
+  
+  Set it to `false` to source an existing resource. In this 'mode' the module will only bind an existing NAT Gateway to specified
+  subnets.
+  EOF
+  default     = true
+  type        = bool
+}
+
+variable "zone" {
+  description = <<-EOF
+  Controls whether the NAT Gateway will be bound to a specific zone or not. This is a string with the zone number or `null`. Only
+  for newly created resources.
+
+  NAT Gateway is not zone-redundant. It is a zonal resource. It means that it's always deployed in a zone. It's up to the user to
+  decide if a zone will be specified during resource deployment or if Azure will take that decision for the user. Keep in mind
+  that regardless of the fact that NAT Gateway is placed in a specific zone it can serve traffic for resources in all zones. But
+  if that zone becomes unavailable, resources in other zones will lose internet connectivity.
+
+  For design considerations, limitation and examples of zone-resiliency architecture please refer to [Microsoft documentation](https://learn.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-availability-zones).
+  EOF
+  default     = null
+  type        = string
+  validation {
+    condition     = (var.zone == null || can(regex("^[1-3]$", var.zone)))
+    error_message = <<-EOF
+    The `zone` variable should have value of either: \"1\", \"2\" or \"3\".
+    EOF
+  }
+}
+
+variable "idle_timeout" {
+  description = "Connection IDLE timeout in minutes (up to 120, defaults to Azure defaults). Only for newly created resources."
+  default     = null
+  type        = number
+  validation {
+    condition     = (var.idle_timeout >= 1 && var.idle_timeout <= 120)
+    error_message = <<-EOF
+    The `idle_timeout` variable should be a number between 1 and 120.
+    EOF
+  }
 }
 
 variable "public_ip" {
