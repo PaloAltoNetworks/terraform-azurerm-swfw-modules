@@ -25,7 +25,8 @@ variable "authentication" {
 
   Following properties are available:
 
-  - `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative Panorama username.
+  - `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative Panorama
+                                        username.
   - `password`                        - (`string`, optional, defaults to `null`) the initial administrative Panorama password.
   - `disable_password_authentication` - (`bool`, optional, defaults to `true`) disables password-based authentication.
   - `ssh_keys`                        - (`list`, optional, defaults to `[]`) a list of initial administrative SSH public keys.
@@ -36,7 +37,6 @@ variable "authentication" {
   **Important!** \
   `ssh_keys` property is a list of strings, so each item should be the actual public key value.
   If you would like to load them from files use the `file` function, for example: `[ file("/path/to/public/keys/key_1.pub") ]`.
-
   EOF
   type = object({
     username                        = optional(string, "panadmin")
@@ -44,9 +44,11 @@ variable "authentication" {
     disable_password_authentication = optional(bool, true)
     ssh_keys                        = optional(list(string), [])
   })
-  validation {
+  validation { # password & ssh_keys
     condition     = var.authentication.password != null || length(var.authentication.ssh_keys) > 0
-    error_message = "Either `var.authentication.password`, `var.authentication.ssh_key` or both must be set in order to have access to the device."
+    error_message = <<-EOF
+    Either `var.authentication.password`, `var.authentication.ssh_key` or both must be set in order to have access to the device.
+    EOF
   }
 }
 
@@ -71,7 +73,6 @@ variable "image" {
 
   **Important!** \
   The `custom_id` and `version` properties are mutually exclusive.
-  
   EOF
   type = object({
     version                 = optional(string)
@@ -81,10 +82,12 @@ variable "image" {
     enable_marketplace_plan = optional(bool, true)
     custom_id               = optional(string)
   })
-  validation {
+  validation { # version & custom_id
     condition = (var.image.custom_id != null && var.image.version == null
     ) || (var.image.custom_id == null && var.image.version != null)
-    error_message = "Either `custom_id` or `version` has to be defined."
+    error_message = <<-EOF
+    Either `custom_id` or `version` has to be defined.
+    EOF
   }
 }
 
@@ -119,7 +122,6 @@ variable "virtual_machine" {
                                      "SystemAssigned, UserAssigned".
   - `identity_ids`                 - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be
                                      assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
-
   EOF
   type = object({
     size                       = optional(string, "Standard_D5_v2")
@@ -134,17 +136,27 @@ variable "virtual_machine" {
     identity_type              = optional(string, "SystemAssigned")
     identity_ids               = optional(list(string), [])
   })
-  validation {
+  validation { # disk_type
     condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.virtual_machine.disk_type)
-    error_message = "The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`."
+    error_message = <<-EOF
+    The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`.
+    EOF
   }
-  validation {
-    condition     = contains(["SystemAssigned", "UserAssigned", "SystemAssigned, UserAssigned"], var.virtual_machine.identity_type)
-    error_message = "The `identity_type` property can be one of \"SystemAssigned\", \"UserAssigned\" or \"SystemAssigned, UserAssigned\"."
+  validation { # identity_type
+    condition = contains(
+      ["SystemAssigned", "UserAssigned", "SystemAssigned, UserAssigned"], var.virtual_machine.identity_type
+    )
+    error_message = <<-EOF
+    The `identity_type` property can be one of \"SystemAssigned\", \"UserAssigned\" or \"SystemAssigned, UserAssigned\".
+    EOF
   }
-  validation {
-    condition     = var.virtual_machine.identity_type == "SystemAssigned" ? length(var.virtual_machine.identity_ids) == 0 : length(var.virtual_machine.identity_ids) >= 0
-    error_message = "The `identity_ids` property is required when `identity_type` is not \"SystemAssigned\"."
+  validation { # identity_type & identity_ids
+    condition = var.virtual_machine.identity_type == "SystemAssigned" ? length(var.virtual_machine.identity_ids) == 0 : (
+      length(var.virtual_machine.identity_ids) >= 0
+    )
+    error_message = <<-EOF
+    The `identity_ids` property is required when `identity_type` is not \"SystemAssigned\".
+    EOF
   }
 }
 
@@ -197,7 +209,6 @@ variable "interfaces" {
     },
   ]
   ```
-  
   EOF
   type = list(object({
     name                          = string
@@ -207,12 +218,14 @@ variable "interfaces" {
     public_ip_name                = optional(string)
     public_ip_resource_group_name = optional(string)
   }))
-  validation {
+  validation { # public_ip_name
     condition = alltrue([
       for v in var.interfaces : v.public_ip_name != null
       if v.create_public_ip
     ])
-    error_message = "The `public_ip_name` property is required when `create_public_ip` is `true`."
+    error_message = <<-EOF
+    The `public_ip_name` property is required when `create_public_ip` is `true`.
+    EOF
   }
 }
 
@@ -247,7 +260,6 @@ variable "logging_disks" {
     }
   }
   ```
-  
   EOF
   default     = {}
   nullable    = false
@@ -257,20 +269,26 @@ variable "logging_disks" {
     lun       = string
     disk_type = optional(string, "StandardSSD_LRS")
   }))
-  validation {
+  validation { # size
     condition     = alltrue([for _, v in var.logging_disks : contains(range(2048, 24577, 2048), parseint(v.size, 10))])
-    error_message = "The `size` property value must be a multiple of `2048` but not higher than `24576` (24 TB)."
+    error_message = <<-EOF
+    The `size` property value must be a multiple of `2048` but not higher than `24576` (24 TB).
+    EOF
   }
-  validation {
+  validation { # lun
     condition = alltrue([
       for _, v in var.logging_disks : (parseint(v.lun, 10) >= 0 && parseint(v.lun, 10) <= 63) if v.lun != null
     ])
-    error_message = "The `lun` property value must be a number between `0` and `63`."
+    error_message = <<-EOF
+    The `lun` property value must be a number between `0` and `63`.
+    EOF
   }
-  validation {
+  validation { # disk_type
     condition = alltrue([
       for _, v in var.logging_disks : contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS", "UltraSSD_LRS"], v.disk_type)
     ])
-    error_message = "The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS` or `UltraSSD_LRS`."
+    error_message = <<-EOF
+    The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS` or `UltraSSD_LRS`.
+    EOF
   }
 }

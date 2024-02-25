@@ -90,11 +90,13 @@ variable "capacity" {
       max = number
     }))
   })
-  validation { # capacity.static
+  validation { # static
     condition     = var.capacity.static >= 1 && var.capacity.static <= 125
-    error_message = "The `capacity.static` property can take values between 1 and 125."
+    error_message = <<-EOF
+    The `capacity.static` property can take values between 1 and 125.
+    EOF
   }
-  validation { # capacity.autoscale
+  validation { # autoscale
     condition = var.capacity.autoscale == null ? true : (
       (
         var.capacity.autoscale.min >= 1 && var.capacity.autoscale.min <= 125
@@ -104,7 +106,10 @@ variable "capacity" {
         var.capacity.autoscale.min < var.capacity.autoscale.max
       )
     )
-    error_message = "The `min` and `max` properties of the `capacity.autoscale` property can take values between 1 and 125 and `min` value has to be lower then `max`."
+    error_message = <<-EOF
+    The `min` and `max` properties of the `capacity.autoscale` property can take values between 1 and 125 and `min` value has to
+    be lower then `max`.
+    EOF
   }
 }
 
@@ -130,19 +135,23 @@ variable "waf" {
     rule_set_type    = optional(string, "OWASP")
     rule_set_version = optional(string)
   })
-  validation { # waf.rule_set_type
+  validation { # rule_set_type
     condition = var.waf == null ? true : contains(
       ["OWASP", "Microsoft_BotManagerRuleSet"],
       var.waf.rule_set_type
     )
-    error_message = "For `waf.rule_set_type` possible values are \"OWASP\" and \"Microsoft_BotManagerRuleSet\"."
+    error_message = <<-EOF
+    For `waf.rule_set_type` possible values are \"OWASP\" and \"Microsoft_BotManagerRuleSet\".
+    EOF
   }
-  validation { # waf.rule_set_version
+  validation { # rule_set_version
     condition = try(var.waf.rule_set_version, null) == null ? true : contains(
       ["0.1", "1.0", "2.2.9", "3.0", "3.1", "3.2"],
       var.waf.rule_set_version
     )
-    error_message = "The `waf.rule_set_version` property can be one of \"0.1\", \"1.0\", \"2.2.9\", \"3.0\", \"3.1\" or \"3.2\"."
+    error_message = <<-EOF
+    The `waf.rule_set_version` property can be one of \"0.1\", \"1.0\", \"2.2.9\", \"3.0\", \"3.1\" or \"3.2\".
+    EOF
   }
 }
 
@@ -189,17 +198,21 @@ variable "global_ssl_policy" {
     min_protocol_version = optional(string)
     cipher_suites        = optional(list(string), [])
   })
-  validation { # global_ssl_policy.type
+  validation { # type
     condition     = contains(["Predefined", "Custom", "CustomV2"], var.global_ssl_policy.type)
-    error_message = "The `global_ssl_policy.type` property can be one of: \"Predefined\", \"Custom\" and \"CustomV2\"."
+    error_message = <<-EOF
+    The `global_ssl_policy.type` property can be one of: \"Predefined\", \"Custom\" and \"CustomV2\".
+    EOF
   }
-  validation { # global_ssl_policy.min_protocol_version
+  validation { # min_protocol_version
     condition = var.global_ssl_policy.min_protocol_version == null ? true : contains(
       ["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"], var.global_ssl_policy.min_protocol_version
     )
-    error_message = "The `global_ssl_policy.min_protocol_version` property can be one of: \"TLSv1_0\", \"TLSv1_1\", \"TLSv1_2\" and \"TLSv1_3\"."
+    error_message = <<-EOF
+    The `global_ssl_policy.min_protocol_version` property can be one of: \"TLSv1_0\", \"TLSv1_1\", \"TLSv1_2\" and \"TLSv1_3\".
+    EOF
   }
-  validation { # global_ssl_policy.cipher_suites
+  validation { # cipher_suites
     condition = length(setsubtract(var.global_ssl_policy.cipher_suites,
       [
         "TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256",
@@ -255,20 +268,24 @@ variable "ssl_profiles" {
     ssl_policy_min_protocol_version = optional(string)
     ssl_policy_cipher_suites        = optional(list(string))
   }))
-  validation { # ssl_profile.name
+  validation { # name
     condition = (length(flatten([for _, ssl_profile in var.ssl_profiles : ssl_profile.name])) ==
     length(distinct(flatten([for _, ssl_profile in var.ssl_profiles : ssl_profile.name]))))
-    error_message = "The `name` property has to be unique among all SSL profiles."
+    error_message = <<-EOF
+    The `name` property has to be unique among all SSL profiles.
+    EOF
   }
-  validation { # ssl_profile.ssl_policy_min_protocol_version
+  validation { # ssl_policy_min_protocol_version
     condition = alltrue(flatten([
       for _, ssl_profile in var.ssl_profiles :
       contains(["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"], ssl_profile.ssl_policy_min_protocol_version)
       if ssl_profile.ssl_policy_min_protocol_version != null
     ]))
-    error_message = "Possible values for `ssl_policy_min_protocol_version` are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3."
+    error_message = <<-EOF
+    Possible values for `ssl_policy_min_protocol_version` are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3.
+    EOF
   }
-  validation { # ssl_profile.ssl_policy_cipher_suites
+  validation { # ssl_policy_cipher_suites
     condition = alltrue(flatten([
       for _, ssl_profile in var.ssl_profiles :
       length(setsubtract(ssl_profile.ssl_policy_cipher_suites,
@@ -341,39 +358,49 @@ variable "listeners" {
     ssl_certificate_pass     = optional(string)
     custom_error_pages       = optional(map(string), {})
   }))
-  validation { # listener.name
+  validation { # name
     condition = (length(flatten([for _, listener in var.listeners : listener.name])) ==
     length(distinct(flatten([for _, listener in var.listeners : listener.name]))))
-    error_message = "The `name` property has to be unique among all listeners."
+    error_message = <<-EOF
+    The `name` property has to be unique among all listeners.
+    EOF
   }
-  validation { # listener.port
+  validation { # port
     condition = alltrue(flatten([
       for _, listener in var.listeners : (listener.port >= 1 && listener.port <= 65535)
     ]))
-    error_message = "The listener `port` should be a valid TCP port number from 1 to 65535."
+    error_message = <<-EOF
+    The listener `port` should be a valid TCP port number from 1 to 65535.
+    EOF
   }
-  validation { # listener.protocol
+  validation { # protocol
     condition = alltrue(flatten([
       for _, listener in var.listeners : [
         contains(["Http", "Https"], listener.protocol)
     ]]))
-    error_message = "Possible values for `protocol` are `Http` and `Https`."
+    error_message = <<-EOF
+    Possible values for `protocol` are `Http` and `Https`.
+    EOF
   }
-  validation { # listener.ssl_certificate_vault_id & listener.ssl_certificate_path
+  validation { # ssl_certificate_vault_id & ssl_certificate_path
     condition = alltrue(flatten([
       for _, listener in var.listeners : (listener.protocol == "Https" ?
         try(length(coalesce(listener.ssl_certificate_vault_id, listener.ssl_certificate_path)), -1) > 0
       : true)
     ]))
-    error_message = "If `Https` protocol is used, then SSL certificate (from file or Azure Key Vault) is required."
+    error_message = <<-EOF
+    If `Https` protocol is used, then SSL certificate (from file or Azure Key Vault) is required.
+    EOF
   }
-  validation { # listener.ssl_certificate_pass
+  validation { # ssl_certificate_pass
     condition = alltrue(flatten([
       for _, listener in var.listeners : (listener.protocol == "Https" ?
         try(length(listener.ssl_certificate_pass), -1) >= 0
       : true)
     ]))
-    error_message = "If `Https` protocol is used, then SSL certificate password is required."
+    error_message = <<-EOF
+    If `Https` protocol is used, then SSL certificate password is required.
+    EOF
   }
 }
 
@@ -406,8 +433,8 @@ variable "backend_settings" {
   - `protocol`                  - (`string`, required) the Protocol which should be used. Possible values are Http and Https.
   - `path`                      - (`string`, optional, defaults to `null`) the Path which should be used as a prefix for all HTTP
                                   requests.
-  - `hostname_from_backend`     - (`bool`, optional, defaults to `false`) whether host header should be picked from the host name of
-                                  the backend server.
+  - `hostname_from_backend`     - (`bool`, optional, defaults to `false`) whether host header should be picked from the host name
+                                  of the backend server.
   - `hostname`                  - (`string`, optional, defaults to `null`) host header to be sent to the backend servers.
   - `timeout`                   - (`number`, optional, defaults to `60`) the request timeout in seconds, which must be between 1
                                   and 86400 seconds.
@@ -415,8 +442,8 @@ variable "backend_settings" {
   - `affinity_cookie_name`      - (`string`, optional, defaults to Azure defaults) the name of the affinity cookie.
   - `probe_key`                 - (`string`, optional, defaults to `null`) a key identifying a Probe definition in the 
                                   `var.probes`.
-  - `root_certs`                - (`map`, optional, defaults to `{}`) a map of objects defining paths to trusted root certificates
-                                  (`PEM` format), each map contains 2 properties:
+  - `root_certs`                - (`map`, optional, defaults to `{}`) a map of objects defining paths to trusted root 
+                                  certificates (`PEM` format), each map contains 2 properties:
     - `name` - (`string`, required) a name of the certificate.
     - `path` - (`string`, required) path to a file on a local file system containing the root cert.
   EOF
@@ -438,29 +465,39 @@ variable "backend_settings" {
       path = string
     })), {})
   }))
-  validation { # backend_settings.name
+  validation { # name
     condition = (length(flatten([for _, backend in var.backend_settings : backend.name])) ==
     length(distinct(flatten([for _, backend in var.backend_settings : backend.name]))))
-    error_message = "The `name` property has to be unique among all backends."
+    error_message = <<-EOF
+    The `name` property has to be unique among all backends.
+    EOF
   }
-  validation { # backend_settings.port
+  validation { # port
     condition = alltrue(flatten([
       for _, backend in var.backend_settings : (backend.port >= 1 && backend.port <= 65535)
     ]))
-    error_message = "The backend `port` should be a valid TCP port number from 1 to 65535."
+    error_message = <<-EOF
+    The backend `port` should be a valid TCP port number from 1 to 65535.
+    EOF
   }
-  validation { # backend_settings.protocol
+  validation { # protocol
     condition = alltrue(flatten([
       for _, backend in var.backend_settings : [
         contains(["Http", "Https"], backend.protocol)
     ]]))
-    error_message = "Possible values for `protocol` are `Http` and `Https`."
+    error_message = <<-EOF
+    Possible values for `protocol` are `Http` and `Https`.
+    EOF
   }
-  validation { # backend_settings.timeout
+  validation { # timeout
     condition = alltrue(flatten([
-      for _, backend in var.backend_settings : (backend.timeout != null ? backend.timeout >= 1 && backend.timeout <= 86400 : true)
+      for _, backend in var.backend_settings : (
+        backend.timeout != null ? backend.timeout >= 1 && backend.timeout <= 86400 : true
+      )
     ]))
-    error_message = "The backend `timeout` property should can take values between 1 and 86400 (seconds)."
+    error_message = <<-EOF
+    The backend `timeout` property should can take values between 1 and 86400 (seconds).
+    EOF
   }
 }
 
@@ -481,8 +518,8 @@ variable "probes" {
   - `threshold`  - (`number`, optional, defaults `2`) the unhealthy Threshold for this Probe, which indicates the amount of
                    retries which should be attempted before a node is deemed unhealthy.
   - `match_code` - (`list`, optional, defaults to `null`) custom list of allowed status codes for this Health Probe.
-  - `match_body` - (`string`, optional, defaults to `null`) a custom snippet from the Response Body which must be present to treat
-                   a single probe as healthy.
+  - `match_body` - (`string`, optional, defaults to `null`) a custom snippet from the Response Body which must be present to 
+                   treat a single probe as healthy.
   EOF
   default     = {}
   nullable    = false
@@ -498,41 +535,53 @@ variable "probes" {
     match_code = optional(list(number))
     match_body = optional(string)
   }))
-  validation { # probes.name
+  validation { # name
     condition = (length(flatten([for _, probe in var.probes : probe.name])) ==
     length(distinct(flatten([for _, probe in var.probes : probe.name]))))
-    error_message = "The `name` property has to be unique among all probes."
+    error_message = <<-EOF
+    The `name` property has to be unique among all probes.
+    EOF
   }
-  validation { # # probes.port
+  validation { # port
     condition = alltrue(flatten([
       for _, probe in var.probes : ((coalesce(probe.port, 80)) >= 1 && (coalesce(probe.port, 80)) <= 65535)
     ]))
-    error_message = "The probe `port` should be a valid TCP port number from 1 to 65535."
+    error_message = <<-EOF
+    The probe `port` should be a valid TCP port number from 1 to 65535.
+    EOF
   }
-  validation { # probes.protocol
+  validation { # protocol
     condition = alltrue(flatten([
       for _, probe in var.probes : [
         contains(["Http", "Https"], probe.protocol)
     ]]))
-    error_message = "Possible values for `protocol` are `Http` and `Https`."
+    error_message = <<-EOF
+    Possible values for `protocol` are `Http` and `Https`.
+    EOF
   }
-  validation { # probes.interval
+  validation { # interval
     condition = alltrue(flatten([
       for _, probe in var.probes : (probe.interval != null ? probe.interval >= 1 && probe.interval <= 86400 : true)
     ]))
-    error_message = "The probe `interval` property should can take values between 1 and 86400 (seconds)."
+    error_message = <<-EOF
+    The probe `interval` property should can take values between 1 and 86400 (seconds).
+    EOF
   }
-  validation { # probes.timeout
+  validation { # timeout
     condition = alltrue(flatten([
       for _, probe in var.probes : (probe.timeout != null ? probe.timeout >= 1 && probe.timeout <= 86400 : true)
     ]))
-    error_message = "The probe `timeout` property should can take values between 1 and 86400 (seconds)."
+    error_message = <<-EOF
+    The probe `timeout` property should can take values between 1 and 86400 (seconds).
+    EOF
   }
-  validation { # probes.threshold
+  validation { # threshold
     condition = alltrue(flatten([
       for _, probe in var.probes : (probe.threshold != null ? probe.threshold >= 1 && probe.threshold <= 20 : true)
     ]))
-    error_message = "The probe `threshold` property should can take values between 1 and 20."
+    error_message = <<-EOF
+    The probe `threshold` property should can take values between 1 and 20.
+    EOF
   }
 }
 
@@ -572,10 +621,12 @@ variable "rewrites" {
       response_headers = optional(map(string), {})
     })), {})
   }))
-  validation { #rewrites.name
+  validation { # name
     condition = (length(flatten([for _, rewrite in var.rewrites : rewrite.name])) ==
     length(distinct(flatten([for _, rewrite in var.rewrites : rewrite.name]))))
-    error_message = "The `name` property has to be unique among all rewrites."
+    error_message = <<-EOF
+    The `name` property has to be unique among all rewrites.
+    EOF
   }
 }
 
@@ -587,10 +638,10 @@ variable "redirects" {
   - `name`                 - (`string`, required) the name of redirect.
   - `type`                 - (`string`, required) the type of redirect, possible values are `Permanent`, `Temporary`, `Found` and
                              `SeeOther`.
-  - `target_listener_key`  - (`string`, optional, mutually exclusive with `target_url`) a key identifying a backend config defined
-                             in `var.listeners`.
+  - `target_listener_key`  - (`string`, optional, mutually exclusive with `target_url`) a key identifying a backend config
+                             defined in `var.listeners`.
   - `target_url`           - (`string`, optional, mutually exclusive with `target_listener`) the URL to redirect to.
-  - `include_path`         - (`bool`, optional, defaults to Azure defaults) whether or not to include the path in the redirected 
+  - `include_path`         - (`bool`, optional, defaults to Azure defaults) whether or not to include the path in the redirected
                              URL.
   - `include_query_string` - (`bool`, optional, defaults to Azure defaults) whether or not to include the query string in the
                              redirected URL.
@@ -605,24 +656,30 @@ variable "redirects" {
     include_path         = optional(bool)
     include_query_string = optional(bool)
   }))
-  validation { # redirects.name
+  validation { # name
     condition = (length(flatten([for _, redirect in var.redirects : redirect.name])) ==
     length(distinct(flatten([for _, redirect in var.redirects : redirect.name]))))
-    error_message = "The `name` property has to be unique among all redirects."
+    error_message = <<-EOF
+    The `name` property has to be unique among all redirects.
+    EOF
   }
-  validation { # redirects.type
+  validation { # type
     condition = var.redirects != null ? alltrue(flatten([
       for _, redirect in var.redirects : [
         contains(["Permanent", "Temporary", "Found", "SeeOther"], coalesce(redirect.type, "Permanent"))
     ]])) : true
-    error_message = "Possible values for `type` are \"Permanent\", \"Temporary\", \"Found\" and \"SeeOther\"."
+    error_message = <<-EOF
+    Possible values for `type` are \"Permanent\", \"Temporary\", \"Found\" and \"SeeOther\".
+    EOF
   }
-  validation { # redirects.target_listener_key & redirects.target_url
+  validation { # target_listener_key & target_url
     condition = alltrue(flatten([
       for _, r in var.redirects :
       r.target_listener_key != null && r.target_url == null || r.target_listener_key == null && r.target_url != null
     ]))
-    error_message = "At least one and only one property can be defined, either \"target_listener_key\" or \"target_url\"."
+    error_message = <<-EOF
+    At least one and only one property can be defined, either \"target_listener_key\" or \"target_url\".
+    EOF
   }
 }
 
@@ -651,19 +708,23 @@ variable "url_path_maps" {
       redirect_key = optional(string)
     })), {})
   }))
-  validation { # url_path_maps.name
+  validation { # name
     condition = (length(flatten([for _, url_path_map in var.url_path_maps : url_path_map.name])) ==
     length(distinct(flatten([for _, url_path_map in var.url_path_maps : url_path_map.name]))))
-    error_message = "The `name` property has to be unique among all URL path maps."
+    error_message = <<-EOF
+    The `name` property has to be unique among all URL path maps.
+    EOF
   }
-  validation { # url_path_maps.path_rules.backend_key & url_path_maps.path_rules.redirect_key
+  validation { # path_rules
     condition = alltrue(flatten([
       for _, url in var.url_path_maps : [
         for _, rule in url.path_rules :
         rule.backend_key != null && rule.redirect_key == null || rule.backend_key == null && rule.redirect_key != null
       ]
     ]))
-    error_message = "At least one and only one property can be defined, either \"backend_key\" or \"redirect_key\"."
+    error_message = <<-EOF
+    At least one and only one property can be defined, either \"backend_key\" or \"redirect_key\".
+    EOF
   }
 }
 
@@ -677,8 +738,8 @@ variable "rules" {
   Every rule contains following attributes:
 
   - `name`             - (`string`, required) Rule name.
-  - `priority`         - (`string`, required) Rule evaluation order can be dictated by specifying an integer value from 1 to 20000
-                         with 1 being the highest priority and 20000 being the lowest priority.
+  - `priority`         - (`string`, required) Rule evaluation order can be dictated by specifying an integer value from 1 to 
+                         20000 with 1 being the highest priority and 20000 being the lowest priority.
   - `listener_key`     - (`string`, required) a key identifying a listener config defined in `var.listeners`.
   - `backend_key`      - (`string`, optional, mutually exclusive with `url_path_map_key` and `redirect_key`) a key identifying a
                          backend config defined in `var.backend_settings`.
@@ -697,19 +758,23 @@ variable "rules" {
     url_path_map_key = optional(string)
     redirect_key     = optional(string)
   }))
-  validation { # rules.name
+  validation { # name
     condition = (length(flatten([for _, rule in var.rules : rule.name])) ==
     length(distinct(flatten([for _, rule in var.rules : rule.name]))))
-    error_message = "The `name` property has to be unique among all rules."
+    error_message = <<-EOF
+    The `name` property has to be unique among all rules.
+    EOF
   }
-  validation { # rules.priority
+  validation { # priority
     condition = alltrue(flatten([
       for _, rule in var.rules : [
         rule.priority >= 1, rule.priority <= 20000
     ]]))
-    error_message = "The `priority` property is an integer value from 1 to 20000."
+    error_message = <<-EOF
+    The `priority` property is an integer value from 1 to 20000.
+    EOF
   }
-  validation { # rules.priority
+  validation { # priority
     condition = alltrue([
       for _, v in var.rules :
       !contains(
@@ -728,14 +793,18 @@ variable "rules" {
         v.priority
       )
     ])
-    error_message = "The `priority` property has to be unique."
+    error_message = <<-EOF
+    The `priority` property has to be unique.
+    EOF
   }
-  validation { # rules.url_path_map_key
+  validation { # url_path_map_key
     condition = alltrue([for _, rule in var.rules :
       rule.backend_key != null && rule.redirect_key == null && rule.url_path_map_key == null ||
       rule.backend_key == null && rule.redirect_key != null && rule.url_path_map_key == null ||
       rule.backend_key == null && rule.redirect_key == null && rule.url_path_map_key != null
     ])
-    error_message = "Either `backend`, `redirect` or `url_path_map` is required, but not all as they are mutually exclusive."
+    error_message = <<-EOF
+    Either `backend`, `redirect` or `url_path_map` is required, but not all as they are mutually exclusive.
+    EOF
   }
 }

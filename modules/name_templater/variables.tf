@@ -1,5 +1,7 @@
 variable "resource_type" {
-  description = "A type of resource for which the name template will be created. This should follow the abbreviations resource naming standard."
+  description = <<-EOF
+  A type of resource for which the name template will be created. This should follow the abbreviations resource naming standard.
+  EOF
   type        = string
 }
 
@@ -14,17 +16,18 @@ variable "name_template" {
 
   Consist of two elements:
 
-  - `parts` - a list of elements that will form the template name
-  - `delimiter` - a string that will be used to separate the elements.
+  - `delimiter` - (`string`, required) a string that will be used to separate the elements.
+  - `parts`     - (`list`, required) a list of elements that will form the template name.
 
   There are couple of rules to be followed:
 
-  - the order **DOES** matter
-  - `parts` is a list of single element maps
-  - keys in `parts` elements will be dropped, they are only informational, only values will be used
-  - value for the `prefix` key will be replaced with the `var.name_prefix` value
-  - a value of `__default__` will be replaced with an abbreviation defined in the `var.abbrevations` and matching `var.resource_type`.
-  - since this module generates template name do **REMEMBER** to include a part with `%s` value 
+  - the order **DOES** matter.
+  - `parts` is a list of single element maps.
+  - keys in `parts` elements will be dropped, they are only informational, only values will be used.
+  - value for the `prefix` key will be replaced with the `var.name_prefix` value.
+  - a value of `__default__` will be replaced with an abbreviation defined in the `var.abbrevations` and matching
+    `var.resource_type`.
+  - since this module generates template name do **REMEMBER** to include a part with `%s` value.
 
   Example:
 
@@ -51,7 +54,6 @@ variable "name_template" {
     }
   }
   ```
-
   EOF
   type = object({
     delimiter = string

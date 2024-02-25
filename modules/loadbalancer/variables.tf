@@ -30,9 +30,9 @@ variable "load_balancer" {
 
       For:
 
-      - public IPs    - these are zones in which the public IP resource is available
+      - public IPs    - these are zones in which the public IP resource is available.
       - private IPs   - this represents Zones to which Azure will deploy paths leading to Load Balancer frontend IPs
-                        (all frontends are affected)
+                        (all frontends are affected).
 
       Setting this variable to explicit `null` disables a zonal deployment.
       This can be helpful in regions where Availability Zones are not available.
@@ -103,12 +103,12 @@ variable "frontend_ips" {
   - `floating_ip`         - (`bool`, optional, defaults to `true`) enables floating IP for this rule.
   - `session_persistence` - (`string`, optional, defaults to `Default`) controls session persistance/load distribution,
                             three values are possible:
-    - `Default`             -  this is the 5 tuple hash
-    - `SourceIP`            - a 2 tuple hash is used
-    - `SourceIPProtocol`    - a 3 tuple hash is used
+    - `Default`          - this is the 5 tuple hash.
+    - `SourceIP`         - a 2 tuple hash is used.
+    - `SourceIPProtocol` - a 3 tuple hash is used.
   - `nsg_priority`        - (number, optional, defaults to `null`) this becomes a priority of an auto-generated NSG rule,
-                            when skipped the rule priority will be auto-calculated,
-                            for more details on auto-generated NSG rules see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings)
+                            when skipped the rule priority will be auto-calculated. For more details on auto-generated NSG rules
+                            see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings).
 
   Below are the properties for `out_rules` map. 
   
@@ -219,17 +219,26 @@ variable "frontend_ips" {
         [for _, fip in var.frontend_ips : fip.subnet_id != null]
       )
     )
-    error_message = "All frontends have to be of the same type, either public or private. Please check module's documentation (Usage section) for details."
+    error_message = <<-EOF
+    All frontends have to be of the same type, either public or private. Please check module's documentation (Usage section) for
+    details.
+    EOF
   }
   validation { # name
-    condition     = length(flatten([for _, v in var.frontend_ips : v.name])) == length(distinct(flatten([for _, v in var.frontend_ips : v.name])))
-    error_message = "The `name` property has to be unique among all frontend definitions."
+    condition = length(flatten([for _, v in var.frontend_ips : v.name])) == length(
+      distinct(flatten([for _, v in var.frontend_ips : v.name]))
+    )
+    error_message = <<-EOF
+    The `name` property has to be unique among all frontend definitions.
+    EOF
   }
   validation { # private_ip_address
     condition = alltrue([
       for _, fip in var.frontend_ips : fip.private_ip_address != null if fip.subnet_id != null
     ])
-    error_message = "The `private_ip_address` id required for private Load Balancers."
+    error_message = <<-EOF
+    The `private_ip_address` id required for private Load Balancers.
+    EOF
   }
   validation { # private_ip_address
     condition = alltrue([
@@ -237,7 +246,9 @@ variable "frontend_ips" {
       can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", fip.private_ip_address))
       if fip.private_ip_address != null
     ])
-    error_message = "The `private_ip_address` property should be in IPv4 format."
+    error_message = <<-EOF
+    The `private_ip_address` property should be in IPv4 format.
+    EOF
   }
   validation { # in_rule.name
     condition = length(flatten([
@@ -247,7 +258,9 @@ variable "frontend_ips" {
         for _, fip in var.frontend_ips : [
           for _, in_rule in fip.in_rules : in_rule.name
     ]])))
-    error_message = "The `in_rule.name` property has to be unique among all in rules definitions."
+    error_message = <<-EOF
+    The `in_rule.name` property has to be unique among all in rules definitions.
+    EOF
   }
   validation { # in_rule.protocol
     condition = alltrue(flatten([
@@ -255,7 +268,9 @@ variable "frontend_ips" {
         for _, in_rule in fip.in_rules : contains(["Tcp", "Udp", "All"], in_rule.protocol)
       ]
     ]))
-    error_message = "The `in_rule.protocol` property should be one of: \"Tcp\", \"Udp\", \"All\"."
+    error_message = <<-EOF
+    The `in_rule.protocol` property should be one of: \"Tcp\", \"Udp\", \"All\".
+    EOF
   }
   validation { # in_rule.port
     condition = alltrue(flatten([
@@ -263,7 +278,9 @@ variable "frontend_ips" {
         for _, in_rule in fip.in_rules : (in_rule.port >= 0 && in_rule.port <= 65535)
       ]
     ]))
-    error_message = "The `in_rule.port` should be a valid TCP port number or `0` for all ports."
+    error_message = <<-EOF
+    The `in_rule.port` should be a valid TCP port number or `0` for all ports.
+    EOF
   }
   validation { # in_rule.backend_port
     condition = alltrue(flatten([
@@ -273,7 +290,9 @@ variable "frontend_ips" {
         if in_rule.backend_port != null
       ]
     ]))
-    error_message = "The `in_rule.backend_port` should be a valid TCP port number."
+    error_message = <<-EOF
+    The `in_rule.backend_port` should be a valid TCP port number.
+    EOF
   }
   validation { # in_rule.sessions_persistence
     condition = alltrue(flatten([
@@ -281,7 +300,9 @@ variable "frontend_ips" {
         for _, in_rule in fip.in_rules : contains(["Default", "SourceIP", "SourceIPProtocol"], in_rule.session_persistence)
       ]
     ]))
-    error_message = "The `in_rule.session_persistence` property should be one of: \"Default\", \"SourceIP\", \"SourceIPProtocol\"."
+    error_message = <<-EOF
+    The `in_rule.session_persistence` property should be one of: \"Default\", \"SourceIP\", \"SourceIPProtocol\".
+    EOF
   }
   validation { # in_rule.nsg_priority
     condition = alltrue(flatten([
@@ -291,7 +312,9 @@ variable "frontend_ips" {
         if in_rule.nsg_priority != null
       ]
     ]))
-    error_message = "The `in_rule.nsg_priority` property be a number between 100 and 4096."
+    error_message = <<-EOF
+    The `in_rule.nsg_priority` property be a number between 100 and 4096.
+    EOF
   }
   validation { # out_rule.name
     condition = length(flatten([
@@ -301,7 +324,9 @@ variable "frontend_ips" {
         for _, fip in var.frontend_ips : [
           for _, out_rule in fip.out_rules : out_rule.name
     ]])))
-    error_message = "The `out_rule.name` property has to be unique among all in rules definitions."
+    error_message = <<-EOF
+    The `out_rule.name` property has to be unique among all in rules definitions.
+    EOF
   }
   validation { # out_rule.protocol
     condition = alltrue(flatten([
@@ -309,7 +334,9 @@ variable "frontend_ips" {
         for _, out_rule in fip.out_rules : contains(["Tcp", "Udp", "All"], out_rule.protocol)
       ]
     ]))
-    error_message = "The `out_rule.protocol` property should be one of: \"Tcp\", \"Udp\", \"All\"."
+    error_message = <<-EOF
+    The `out_rule.protocol` property should be one of: \"Tcp\", \"Udp\", \"All\".
+    EOF
   }
   validation { # out_rule.allocated_outbound_ports
     condition = alltrue(flatten([
@@ -319,7 +346,10 @@ variable "frontend_ips" {
         if out_rule.allocated_outbound_ports != null
       ]
     ]))
-    error_message = "The `out_rule.allocated_outbound_ports` property should can be either `0` or a valid TCP port number with the maximum value of 64000."
+    error_message = <<-EOF
+    The `out_rule.allocated_outbound_ports` property should can be either `0` or a valid TCP port number with the maximum value
+    of 64000.
+    EOF
   }
   validation { # out_rule.idle_timeout_in_minutes
     condition = alltrue(flatten([
@@ -329,7 +359,9 @@ variable "frontend_ips" {
         if out_rule.idle_timeout_in_minutes != null
       ]
     ]))
-    error_message = "The `out_rule.idle_timeout_in_minutes` property should can take values between 4 and 120 (minutes)."
+    error_message = <<-EOF
+    The `out_rule.idle_timeout_in_minutes` property should can take values between 4 and 120 (minutes).
+    EOF
   }
 }
 
@@ -368,48 +400,76 @@ variable "health_probes" {
   }))
   validation { # keys
     condition     = var.health_probes == null ? true : !anytrue([for k, _ in var.health_probes : k == "default"])
-    error_message = "The key describing a health probe cannot be \"default\"."
+    error_message = <<-EOF
+    The key describing a health probe cannot be \"default\".
+    EOF
   }
   validation { # name
-    condition     = var.health_probes == null ? true : length([for _, v in var.health_probes : v.name]) == length(distinct([for _, v in var.health_probes : v.name]))
-    error_message = "The `name` property has to be unique among all health probe definitions."
+    condition = var.health_probes == null ? true : length([for _, v in var.health_probes : v.name]) == length(
+      distinct([for _, v in var.health_probes : v.name])
+    )
+    error_message = <<-EOF
+    The `name` property has to be unique among all health probe definitions.
+    EOF
   }
   validation { # name
-    condition     = var.health_probes == null ? true : !anytrue([for _, v in var.health_probes : v.name == "default_vmseries_probe"])
-    error_message = "The `name` property cannot be \"default_vmseries_probe\"."
+    condition = var.health_probes == null ? true : !anytrue(
+      [for _, v in var.health_probes : v.name == "default_vmseries_probe"]
+    )
+    error_message = <<-EOF
+    The `name` property cannot be \"default_vmseries_probe\".
+    EOF
   }
   validation { # protocol
-    condition     = var.health_probes == null ? true : alltrue([for k, v in var.health_probes : contains(["Tcp", "Http", "Https"], v.protocol)])
-    error_message = "The `protocol` property can be one of \"Tcp\", \"Http\", \"Https\"."
+    condition = var.health_probes == null ? true : alltrue(
+      [for k, v in var.health_probes : contains(["Tcp", "Http", "Https"], v.protocol)]
+    )
+    error_message = <<-EOF
+    The `protocol` property can be one of \"Tcp\", \"Http\", \"Https\".
+    EOF
   }
   validation { # port
-    condition     = var.health_probes == null ? true : alltrue([for k, v in var.health_probes : v.port != null if v.protocol == "Tcp"])
-    error_message = "The `port` property is required when protocol is set to \"Tcp\"."
+    condition = var.health_probes == null ? true : alltrue(
+      [for k, v in var.health_probes : v.port != null if v.protocol == "Tcp"]
+    )
+    error_message = <<-EOF
+    The `port` property is required when protocol is set to \"Tcp\".
+    EOF
   }
   validation { # port
     condition = var.health_probes == null ? true : alltrue([for k, v in var.health_probes :
       v.port >= 1 && v.port <= 65535
       if v.port != null
     ])
-    error_message = "The `port` property has to be a valid TCP port."
+    error_message = <<-EOF
+    The `port` property has to be a valid TCP port.
+    EOF
   }
   validation { # interval_in_seconds
     condition = var.health_probes == null ? true : alltrue([for k, v in var.health_probes :
       v.interval_in_seconds >= 5 && v.interval_in_seconds <= 3600
       if v.interval_in_seconds != null
     ])
-    error_message = "The `interval_in_seconds` property has to be between 5 and 3600 seconds (1 hour)."
+    error_message = <<-EOF
+    The `interval_in_seconds` property has to be between 5 and 3600 seconds (1 hour).
+    EOF
   }
   validation { # probe_threshold
     condition = var.health_probes == null ? true : alltrue([for k, v in var.health_probes :
       v.probe_threshold >= 1 && v.probe_threshold <= 100
       if v.probe_threshold != null
     ])
-    error_message = "The `probe_threshold` property has to be between 1 and 100."
+    error_message = <<-EOF
+    The `probe_threshold` property has to be between 1 and 100.
+    EOF
   }
-  validation { # request
-    condition     = var.health_probes == null ? true : alltrue([for k, v in var.health_probes : v.request_path != null if v.protocol != "Tcp"])
-    error_message = "value"
+  validation { # request_path
+    condition = var.health_probes == null ? true : alltrue(
+      [for k, v in var.health_probes : v.request_path != null if v.protocol != "Tcp"]
+    )
+    error_message = <<-EOF
+    The `request_path` property must be set if `protocol` is different than TCP.
+    EOF
   }
 }
 
@@ -439,13 +499,17 @@ variable "nsg_auto_rules_settings" {
       for ip in var.nsg_auto_rules_settings.source_ips :
       can(regex("^(\\d{1,3}\\.){3}\\d{1,3}(\\/[12]?[0-9]|\\/3[0-2])?$", ip))
     ]) : true
-    error_message = "The `source_ips` property can an IPv4 address or address space in CIDR notation."
+    error_message = <<-EOF
+    The `source_ips` property can an IPv4 address or address space in CIDR notation.
+    EOF
   }
   validation { # base_priority
     condition = try(
       var.nsg_auto_rules_settings.base_priority >= 100 && var.nsg_auto_rules_settings.base_priority <= 4000,
       true
     )
-    error_message = "The `base_priority` property can take only values between `100` and `4000`."
+    error_message = <<-EOF
+    The `base_priority` property can take only values between `100` and `4000`.
+    EOF
   }
 }

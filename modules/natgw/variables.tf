@@ -27,11 +27,10 @@ variable "natgw" {
 
   - `create`       - (`bool`, optional, defaults to `true`) controls if the NAT Gateway is created or sourced. When set the
                      `false` the module will only bind an existing NAT Gateway to specified subnets.
-  - `zone`         - (`string`, optional, defaults to `null`) controls whether the NAT Gateway will be bound to a specific zone or
-                     not. This is a string with the zone number or `null`. Used only for newly created resources.
+  - `zone`         - (`string`, optional, defaults to `null`) controls whether the NAT Gateway will be bound to a specific zone
+                     or not. This is a string with the zone number or `null`. Used only for newly created resources.
   - `idle_timeout` - (`number`, optional, defaults to `4`) connection IDLE timeout in minutes (up to 120, by default 4). Only for
                      newly created resources.
-
   EOF
   default     = {}
   nullable    = false
@@ -42,11 +41,15 @@ variable "natgw" {
   })
   validation { # zone
     condition     = (var.natgw.zone == null || can(regex("^[1-3]$", var.natgw.zone)))
-    error_message = "The `zone` variable should have value of either: \"1\", \"2\" or \"3\"."
+    error_message = <<-EOF
+    The `zone` variable should have value of either: \"1\", \"2\" or \"3\".
+    EOF
   }
   validation { # idle_timeout
     condition     = (var.natgw.idle_timeout >= 1 && var.natgw.idle_timeout <= 120)
-    error_message = "The `idle_timeout` variable should be a number between 1 and 120."
+    error_message = <<-EOF
+    The `idle_timeout` variable should be a number between 1 and 120.
+    EOF
   }
 }
 
@@ -150,9 +153,12 @@ variable "public_ip_prefix" {
     resource_group_name = optional(string)
     length              = optional(number, 28)
   })
-  validation {
-    condition = (var.public_ip_prefix == null ||
-    (try(var.public_ip_prefix.length, -1) >= 0 && try(var.public_ip_prefix.length, 32) <= 31))
-    error_message = "The `length` property should be a number between 0 and 31."
+  validation { # length
+    condition = var.public_ip_prefix == null || (
+      try(var.public_ip_prefix.length, -1) >= 0 && try(var.public_ip_prefix.length, 32) <= 31
+    )
+    error_message = <<-EOF
+    The `length` property should be a number between 0 and 31.
+    EOF
   }
 }

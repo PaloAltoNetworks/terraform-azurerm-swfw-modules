@@ -108,7 +108,8 @@ A map defining authentication settings (including username and password).
 
 Following properties are available:
 
-- `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative Panorama username.
+- `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative Panorama
+                                      username.
 - `password`                        - (`string`, optional, defaults to `null`) the initial administrative Panorama password.
 - `disable_password_authentication` - (`bool`, optional, defaults to `true`) disables password-based authentication.
 - `ssh_keys`                        - (`list`, optional, defaults to `[]`) a list of initial administrative SSH public keys.
@@ -119,7 +120,6 @@ The `password` property is required when `ssh_keys` is not specified.
 **Important!** \
 `ssh_keys` property is a list of strings, so each item should be the actual public key value.
 If you would like to load them from files use the `file` function, for example: `[ file("/path/to/public/keys/key_1.pub") ]`.
-
 
 
 Type: 
@@ -157,7 +157,6 @@ Following properties are available:
 
 **Important!** \
 The `custom_id` and `version` properties are mutually exclusive.
-  
 
 
 Type: 
@@ -207,7 +206,6 @@ List of other, optional properties:
                                    "SystemAssigned, UserAssigned".
 - `identity_ids`                 - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be
                                    assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
-
 
 
 Type: 
@@ -280,7 +278,6 @@ Example:
   },
 ]
 ```
-  
 
 
 Type: 
@@ -352,7 +349,6 @@ Example:
   }
 }
 ```
-  
 
 
 Type: 
@@ -370,6 +366,5 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

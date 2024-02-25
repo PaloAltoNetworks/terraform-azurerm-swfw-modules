@@ -165,11 +165,10 @@ Following properties are available:
 
 - `create`       - (`bool`, optional, defaults to `true`) controls if the NAT Gateway is created or sourced. When set the
                    `false` the module will only bind an existing NAT Gateway to specified subnets.
-- `zone`         - (`string`, optional, defaults to `null`) controls whether the NAT Gateway will be bound to a specific zone or
-                   not. This is a string with the zone number or `null`. Used only for newly created resources.
+- `zone`         - (`string`, optional, defaults to `null`) controls whether the NAT Gateway will be bound to a specific zone
+                   or not. This is a string with the zone number or `null`. Used only for newly created resources.
 - `idle_timeout` - (`number`, optional, defaults to `4`) connection IDLE timeout in minutes (up to 120, by default 4). Only for
                    newly created resources.
-
 
 
 Type: 
@@ -296,6 +295,5 @@ object({
 Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

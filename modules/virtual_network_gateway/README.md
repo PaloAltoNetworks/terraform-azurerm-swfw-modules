@@ -496,23 +496,22 @@ Following properties are available:
 - `ip_configurations`                - (`map`, required) a map defining the Public IPs used by the Virtual Network Gateway.
                                        Contains 2 properties:
   - `primary`   - (`map`, required) a map defining the primary Public IP address, following properties are available:
-    - `name`                          - (`string`, required) name of the IP config.
-    - `create_public_ip`              - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
-    - `public_ip_name`                - (`string`, required) name of a Public IP resource, depending on the value of 
-                                        `create_public_ip` property this will be a name of a newly create or existing resource
-                                        (for values of `true` and `false` accordingly).
+    - `name`             - (`string`, required) name of the IP config.
+    - `create_public_ip` - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
+    - `public_ip_name`   - (`string`, required) name of a Public IP resource, depending on the value of 
+                           `create_public_ip` property this will be a name of a newly create or existing resource (for values
+                           of `true` and `false` accordingly).
     - `dynamic_private_ip_allocation` - (`bool`, optional, defaults to `true`) controls if the private IP address is assigned
                                         dynamically or statically.
   - `secondary` - (`map`, optional, defaults to `null`) a map defining the secondary Public IP resource. Required only for
                   `type` set to `Vpn` and `active-active` set to `true`. Same properties available like in `primary` property.
-- `private_ip_address_enabled`       - (`bool`, optional, defaults to `false`) controls whether the private IP is enabled on the
-                                       gateway.
+- `private_ip_address_enabled`       - (`bool`, optional, defaults to `false`) controls whether the private IP is enabled on
+                                       the gateway.
 - `default_local_network_gateway_id` - (`string`, optional, defaults to `null`) the ID of the local Network Gateway. When set
                                        the outbound Internet traffic from the virtual network, in which the gateway is created,
                                        will be routed through local network gateway (forced tunnelling).
 - `edge_zone`                        - (`string`, optional, defaults to `null`) specifies the Edge Zone within the Azure Region
                                        where this Virtual Network Gateway should exist.
-
 
 
 Type: 
@@ -652,25 +651,24 @@ are not being used in the actual deployment.
 
 Following properties are available:
 
-- `address_space`           - (`string`, required) the address space out of which IP addresses for vpn clients will be taken.
-                              You can provide more than one address space, e.g. in CIDR notation.
-- `aad_tenant`              - (`string`, optional, defaults to `null`) AzureAD Tenant URL
-- `aad_audience`            - (`string`, optional, defaults to `null`) the client id of the Azure VPN application.
-                              See Create an Active Directory (AD) tenant for P2S OpenVPN protocol connections for values
-- `aad_issuer`              - (`string`, optional, defaults to `null`) the STS url for your tenant
-- `root_certificates`       - (`map`, optional, defaults to `{}`) a map defining root certificates used to sign client 
-                              certificates used by VPN clients. The key is a name of the certificate, value is the public
-                              certificate in PEM format.
-- `revoked_certificates`    - (`map`, optional, defaults to `null`) a map defining revoked certificates. The key is a name of
-                              the certificate, value is the thumbprint of the certificate.
-- `radius_server_address`   - (`string`, optional, defaults to `null`) the address of the Radius server.
-- `radius_server_secret`    - (`string`, optional, defaults to `null`) the secret used by the Radius server.
-- `vpn_client_protocols`    - (`list(string)`, optional, defaults to `null`) list of the protocols supported by the vpn client.
-                              The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with
-                              the use of aad_tenant, aad_audience and aad_issuer.
-- `vpn_auth_types`          - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for
-                              the virtual network gateway. The supported values are AAD, Radius and Certificate.
-
+- `address_space`         - (`string`, required) the address space out of which IP addresses for vpn clients will be taken.
+                            You can provide more than one address space, e.g. in CIDR notation.
+- `aad_tenant`            - (`string`, optional, defaults to `null`) AzureAD Tenant URL
+- `aad_audience`          - (`string`, optional, defaults to `null`) the client id of the Azure VPN application.
+                            See Create an Active Directory (AD) tenant for P2S OpenVPN protocol connections for values
+- `aad_issuer`            - (`string`, optional, defaults to `null`) the STS url for your tenant
+- `root_certificates`     - (`map`, optional, defaults to `{}`) a map defining root certificates used to sign client 
+                            certificates used by VPN clients. The key is a name of the certificate, value is the public
+                            certificate in PEM format.
+- `revoked_certificates`  - (`map`, optional, defaults to `null`) a map defining revoked certificates. The key is a name of
+                            the certificate, value is the thumbprint of the certificate.
+- `radius_server_address` - (`string`, optional, defaults to `null`) the address of the Radius server.
+- `radius_server_secret`  - (`string`, optional, defaults to `null`) the secret used by the Radius server.
+- `vpn_client_protocols`  - (`list(string)`, optional, defaults to `null`) list of the protocols supported by the vpn client.
+                            The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with
+                            the use of aad_tenant, aad_audience and aad_issuer.
+- `vpn_auth_types`        - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for
+                            the virtual network gateway. The supported values are AAD, Radius and Certificate.
 
 
 Type: 
@@ -735,7 +733,6 @@ Every object in the map contains following attributes:
   - `connection_mode` - (`string`, optional, defaults to `Default`) connection mode to use, can be one of: `Default`,
                         `InitiatorOnly` or `ResponderOnly`.
   - `shared_key`      - (`string`, optional, defaults to `null`) a shared IPSec key used during connection creation.
-
 
 
 Type: 

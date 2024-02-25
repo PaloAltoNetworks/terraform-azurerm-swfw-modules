@@ -172,8 +172,8 @@ Following settings are available:
 - `name`                          - (`string`, required) name of the frontend IP configuration. `var.name` by default.
 - `subnet_id`                     - (`string`, required) id of a subnet to associate with the configuration.
 - `private_ip_address`            - (`string`, optional) private IP address to assign.
-- `private_ip_address_version`    - (`string`, optional, defaults to `IPv4`) the IP version for the private IP address.
-                                    Can be one of "IPv4", "IPv6".
+- `private_ip_address_version`    - (`string`, optional, defaults to `IPv4`) the IP version for the private IP address. Can be
+                                    one of "IPv4", "IPv6".
 
 
 Type: 
@@ -235,9 +235,9 @@ Following settings are available:
 - `protocol`            - (`string`, required) protocol used by the health probe, can be one of "Tcp", "Http" or "Https".
 - `port`                - (`number`, optional) port to run the probe against.
 - `probe_threshold`     - (`number`, optional) number of consecutive probes that decide on forwarding traffic to an endpoint.
-- `interval_in_seconds` - (`number`, optional) interval in seconds between probes, with a minimal value of 5
-- `request_path`        - (`string`, optional) used only for non `Tcp` probes,
-                          the URI used to check the endpoint status when `protocol` is set to `Http(s)`.
+- `interval_in_seconds` - (`number`, optional) interval in seconds between probes, with a minimal value of 5.
+- `request_path`        - (`string`, optional) used only for non `Tcp` probes, the URI used to check the endpoint status when
+                          `protocol` is set to `Http(s)`.
 
 
 Type: 
@@ -264,7 +264,7 @@ Map with backend configurations for the Gateway Load Balancer. Azure GWLB rule c
 
 Following settings are available:
 - `name`              - (`string`, required) name of the backend.
-- `tunnel_interfaces` - (`map`, required) map with tunnel interfaces.
+- `tunnel_interfaces` - (`map`, required) map with tunnel interfaces:
   - `identifier`        - (`number`, required) interface identifier.
   - `port`              - (`number`, required) interface port.
   - `type`              - (`string`, required) either "External" or "Internal".
@@ -306,8 +306,8 @@ Load balancing rule configuration.
 
 Available options:
 - `name`              - (`string`, optional) name for the rule.
-- `load_distribution` - (`string`, optional, defaults to `Default`) specifies the load balancing distribution type
-                        to be used by the Gateway Load Balancer. Can be one of "Default", "SourceIP", "SourceIPProtocol".
+- `load_distribution` - (`string`, optional, defaults to `Default`) specifies the load balancing distribution type to be used
+                        by the Gateway Load Balancer. Can be one of "Default", "SourceIP", "SourceIPProtocol".
 
 
 Type: 
@@ -323,6 +323,5 @@ object({
 Default value: `map[name:lb_rule]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

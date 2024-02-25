@@ -214,12 +214,12 @@ Below are the properties for the `in_rules` map:
 - `floating_ip`         - (`bool`, optional, defaults to `true`) enables floating IP for this rule.
 - `session_persistence` - (`string`, optional, defaults to `Default`) controls session persistance/load distribution,
                           three values are possible:
-  - `Default`             -  this is the 5 tuple hash
-  - `SourceIP`            - a 2 tuple hash is used
-  - `SourceIPProtocol`    - a 3 tuple hash is used
+  - `Default`          - this is the 5 tuple hash.
+  - `SourceIP`         - a 2 tuple hash is used.
+  - `SourceIPProtocol` - a 3 tuple hash is used.
 - `nsg_priority`        - (number, optional, defaults to `null`) this becomes a priority of an auto-generated NSG rule,
-                          when skipped the rule priority will be auto-calculated,
-                          for more details on auto-generated NSG rules see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings)
+                          when skipped the rule priority will be auto-calculated. For more details on auto-generated NSG rules
+                          see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings).
 
 Below are the properties for `out_rules` map. 
   
@@ -362,9 +362,9 @@ Following properties are available:
 
     For:
 
-    - public IPs    - these are zones in which the public IP resource is available
+    - public IPs    - these are zones in which the public IP resource is available.
     - private IPs   - this represents Zones to which Azure will deploy paths leading to Load Balancer frontend IPs
-                      (all frontends are affected)
+                      (all frontends are affected).
 
     Setting this variable to explicit `null` disables a zonal deployment.
     This can be helpful in regions where Availability Zones are not available.
@@ -465,6 +465,5 @@ object({
 Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

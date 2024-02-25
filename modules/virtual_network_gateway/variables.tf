@@ -109,6 +109,12 @@ variable "virtual_network_gateway" {
     The `virtual_network_gateway.vpn_type` property can take one of the following values: "RouteBased" or "PolicyBased".
     EOF
   }
+  validation { # active_active
+    condition     = var.virtual_network_gateway.type == "ExpressRoute" ? !var.virtual_network_gateway.active_active : true
+    error_message = <<-EOF
+    The `active_active` property has to be set to `false` (default) type is `ExpressRoute`.
+    EOF
+  }
   validation { # generation
     condition     = contains(["Generation1", "Generation2", "None"], var.virtual_network_gateway.generation)
     error_message = <<-EOF
@@ -116,13 +122,7 @@ variable "virtual_network_gateway" {
     or "None".
     EOF
   }
-  validation { # active_active
-    condition     = var.virtual_network_gateway.type == "ExpressRoute" ? !var.virtual_network_gateway.active_active : true
-    error_message = <<-EOF
-    The `active_active` property has to be set to `false` (default) type is `ExpressRoute`.
-    EOF
-  }
-  validation { # type, generation, sku
+  validation { # type, sku & generation
     condition = var.virtual_network_gateway.generation == "Generation2" && var.virtual_network_gateway.type == "Vpn" ? contains(
       ["VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.virtual_network_gateway.sku
     ) : true
@@ -131,7 +131,7 @@ variable "virtual_network_gateway" {
     property has to be set to `Generation2` and `type` to `Vpn`.
     EOF
   }
-  validation { # type, sku
+  validation { # type & sku
     condition = (var.virtual_network_gateway.type == "Vpn" && contains(
       ["Basic", "VpnGw1", "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"],
       var.virtual_network_gateway.sku
@@ -140,7 +140,9 @@ variable "virtual_network_gateway" {
         ["Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ"], var.virtual_network_gateway.sku
       )
     )
-    error_message = "Invalid combination of `sku` and `type`. Please check documentation for `var.virtual_network_gateway`."
+    error_message = <<-EOF
+    Invalid combination of `sku` and `type`. Please check documentation for `var.virtual_network_gateway`.
+    EOF
   }
 }
 
@@ -155,23 +157,22 @@ variable "network" {
   - `ip_configurations`                - (`map`, required) a map defining the Public IPs used by the Virtual Network Gateway.
                                          Contains 2 properties:
     - `primary`   - (`map`, required) a map defining the primary Public IP address, following properties are available:
-      - `name`                          - (`string`, required) name of the IP config.
-      - `create_public_ip`              - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
-      - `public_ip_name`                - (`string`, required) name of a Public IP resource, depending on the value of 
-                                          `create_public_ip` property this will be a name of a newly create or existing resource
-                                          (for values of `true` and `false` accordingly).
+      - `name`             - (`string`, required) name of the IP config.
+      - `create_public_ip` - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
+      - `public_ip_name`   - (`string`, required) name of a Public IP resource, depending on the value of 
+                             `create_public_ip` property this will be a name of a newly create or existing resource (for values
+                             of `true` and `false` accordingly).
       - `dynamic_private_ip_allocation` - (`bool`, optional, defaults to `true`) controls if the private IP address is assigned
                                           dynamically or statically.
     - `secondary` - (`map`, optional, defaults to `null`) a map defining the secondary Public IP resource. Required only for
                     `type` set to `Vpn` and `active-active` set to `true`. Same properties available like in `primary` property.
-  - `private_ip_address_enabled`       - (`bool`, optional, defaults to `false`) controls whether the private IP is enabled on the
-                                         gateway.
+  - `private_ip_address_enabled`       - (`bool`, optional, defaults to `false`) controls whether the private IP is enabled on
+                                         the gateway.
   - `default_local_network_gateway_id` - (`string`, optional, defaults to `null`) the ID of the local Network Gateway. When set
                                          the outbound Internet traffic from the virtual network, in which the gateway is created,
                                          will be routed through local network gateway (forced tunnelling).
   - `edge_zone`                        - (`string`, optional, defaults to `null`) specifies the Edge Zone within the Azure Region
                                          where this Virtual Network Gateway should exist.
-
   EOF
   type = object({
     public_ip_zones = optional(list(string), ["1", "2", "3"])
@@ -268,12 +269,22 @@ variable "bgp" {
     }))
   })
   validation { # configuration
-    condition     = var.bgp == null ? true : (var.bgp.enable && var.bgp.configuration != null) || (!var.bgp.enable && var.bgp.configuration == null)
-    error_message = "The `configuration` property is required only when `enabled` is set to `true`."
+    condition = var.bgp == null ? true : (var.bgp.enable && var.bgp.configuration != null) || (
+      !var.bgp.enable && var.bgp.configuration == null
+    )
+    error_message = <<-EOF
+    The `configuration` property is required only when `enabled` is set to `true`.
+    EOF
   }
   validation { # configuration.peer_weight
-    condition     = var.bgp == null ? true : var.bgp.configuration.peer_weight == null ? true : var.bgp.configuration.peer_weight >= 0 && var.bgp.configuration.peer_weight <= 100
-    error_message = "Possible values for `peer_weight` are between 0 and 100."
+    condition = var.bgp == null ? true : (
+      var.bgp.configuration.peer_weight == null ? true : (
+        var.bgp.configuration.peer_weight >= 0 && var.bgp.configuration.peer_weight <= 100
+      )
+    )
+    error_message = <<-EOF
+    Possible values for `peer_weight` are between 0 and 100.
+    EOF
   }
 }
 
@@ -324,25 +335,24 @@ variable "vpn_clients" {
 
   Following properties are available:
 
-  - `address_space`           - (`string`, required) the address space out of which IP addresses for vpn clients will be taken.
-                                You can provide more than one address space, e.g. in CIDR notation.
-  - `aad_tenant`              - (`string`, optional, defaults to `null`) AzureAD Tenant URL
-  - `aad_audience`            - (`string`, optional, defaults to `null`) the client id of the Azure VPN application.
-                                See Create an Active Directory (AD) tenant for P2S OpenVPN protocol connections for values
-  - `aad_issuer`              - (`string`, optional, defaults to `null`) the STS url for your tenant
-  - `root_certificates`       - (`map`, optional, defaults to `{}`) a map defining root certificates used to sign client 
-                                certificates used by VPN clients. The key is a name of the certificate, value is the public
-                                certificate in PEM format.
-  - `revoked_certificates`    - (`map`, optional, defaults to `null`) a map defining revoked certificates. The key is a name of
-                                the certificate, value is the thumbprint of the certificate.
-  - `radius_server_address`   - (`string`, optional, defaults to `null`) the address of the Radius server.
-  - `radius_server_secret`    - (`string`, optional, defaults to `null`) the secret used by the Radius server.
-  - `vpn_client_protocols`    - (`list(string)`, optional, defaults to `null`) list of the protocols supported by the vpn client.
-                                The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with
-                                the use of aad_tenant, aad_audience and aad_issuer.
-  - `vpn_auth_types`          - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for
-                                the virtual network gateway. The supported values are AAD, Radius and Certificate.
-
+  - `address_space`         - (`string`, required) the address space out of which IP addresses for vpn clients will be taken.
+                              You can provide more than one address space, e.g. in CIDR notation.
+  - `aad_tenant`            - (`string`, optional, defaults to `null`) AzureAD Tenant URL
+  - `aad_audience`          - (`string`, optional, defaults to `null`) the client id of the Azure VPN application.
+                              See Create an Active Directory (AD) tenant for P2S OpenVPN protocol connections for values
+  - `aad_issuer`            - (`string`, optional, defaults to `null`) the STS url for your tenant
+  - `root_certificates`     - (`map`, optional, defaults to `{}`) a map defining root certificates used to sign client 
+                              certificates used by VPN clients. The key is a name of the certificate, value is the public
+                              certificate in PEM format.
+  - `revoked_certificates`  - (`map`, optional, defaults to `null`) a map defining revoked certificates. The key is a name of
+                              the certificate, value is the thumbprint of the certificate.
+  - `radius_server_address` - (`string`, optional, defaults to `null`) the address of the Radius server.
+  - `radius_server_secret`  - (`string`, optional, defaults to `null`) the secret used by the Radius server.
+  - `vpn_client_protocols`  - (`list(string)`, optional, defaults to `null`) list of the protocols supported by the vpn client.
+                              The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with
+                              the use of aad_tenant, aad_audience and aad_issuer.
+  - `vpn_auth_types`        - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for
+                              the virtual network gateway. The supported values are AAD, Radius and Certificate.
   EOF
   default     = {}
   nullable    = false
@@ -400,7 +410,6 @@ variable "local_network_gateways" {
     - `connection_mode` - (`string`, optional, defaults to `Default`) connection mode to use, can be one of: `Default`,
                           `InitiatorOnly` or `ResponderOnly`.
     - `shared_key`      - (`string`, optional, defaults to `null`) a shared IPSec key used during connection creation.
-
   EOF
   default     = {}
   nullable    = false
@@ -434,12 +443,14 @@ variable "local_network_gateways" {
       shared_key = optional(string)
     })
   }))
-  validation { # bgp
+  validation { # remote_bgp_settings & address_space
     condition = alltrue([
       for _, v in var.local_network_gateways :
       length(coalesce(v.remote_bgp_settings, {})) > 0 || length(v.address_space) > 0
     ])
-    error_message = "You have to define at least one: `remote_bpg_settings` or `address_space`."
+    error_message = <<-EOF
+    You have to define at least one: `remote_bpg_settings` or `address_space`.
+    EOF
   }
   validation { # connection.type
     condition = alltrue([

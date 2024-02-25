@@ -1004,8 +1004,8 @@ that are created for this application.
 Every rule contains following attributes:
 
 - `name`             - (`string`, required) Rule name.
-- `priority`         - (`string`, required) Rule evaluation order can be dictated by specifying an integer value from 1 to 20000
-                       with 1 being the highest priority and 20000 being the lowest priority.
+- `priority`         - (`string`, required) Rule evaluation order can be dictated by specifying an integer value from 1 to 
+                       20000 with 1 being the highest priority and 20000 being the lowest priority.
 - `listener_key`     - (`string`, required) a key identifying a listener config defined in `var.listeners`.
 - `backend_key`      - (`string`, optional, mutually exclusive with `url_path_map_key` and `redirect_key`) a key identifying a
                        backend config defined in `var.backend_settings`.
@@ -1288,8 +1288,8 @@ Every backend contains attributes:
 - `protocol`                  - (`string`, required) the Protocol which should be used. Possible values are Http and Https.
 - `path`                      - (`string`, optional, defaults to `null`) the Path which should be used as a prefix for all HTTP
                                 requests.
-- `hostname_from_backend`     - (`bool`, optional, defaults to `false`) whether host header should be picked from the host name of
-                                the backend server.
+- `hostname_from_backend`     - (`bool`, optional, defaults to `false`) whether host header should be picked from the host name
+                                of the backend server.
 - `hostname`                  - (`string`, optional, defaults to `null`) host header to be sent to the backend servers.
 - `timeout`                   - (`number`, optional, defaults to `60`) the request timeout in seconds, which must be between 1
                                 and 86400 seconds.
@@ -1297,8 +1297,8 @@ Every backend contains attributes:
 - `affinity_cookie_name`      - (`string`, optional, defaults to Azure defaults) the name of the affinity cookie.
 - `probe_key`                 - (`string`, optional, defaults to `null`) a key identifying a Probe definition in the 
                                 `var.probes`.
-- `root_certs`                - (`map`, optional, defaults to `{}`) a map of objects defining paths to trusted root certificates
-                                (`PEM` format), each map contains 2 properties:
+- `root_certs`                - (`map`, optional, defaults to `{}`) a map of objects defining paths to trusted root 
+                                certificates (`PEM` format), each map contains 2 properties:
   - `name` - (`string`, required) a name of the certificate.
   - `path` - (`string`, required) path to a file on a local file system containing the root cert.
 
@@ -1346,8 +1346,8 @@ Every probe contains attributes:
 - `threshold`  - (`number`, optional, defaults `2`) the unhealthy Threshold for this Probe, which indicates the amount of
                  retries which should be attempted before a node is deemed unhealthy.
 - `match_code` - (`list`, optional, defaults to `null`) custom list of allowed status codes for this Health Probe.
-- `match_body` - (`string`, optional, defaults to `null`) a custom snippet from the Response Body which must be present to treat
-                 a single probe as healthy.
+- `match_body` - (`string`, optional, defaults to `null`) a custom snippet from the Response Body which must be present to 
+                 treat a single probe as healthy.
 
 
 Type: 
@@ -1425,10 +1425,10 @@ Every redirect contains attributes:
 - `name`                 - (`string`, required) the name of redirect.
 - `type`                 - (`string`, required) the type of redirect, possible values are `Permanent`, `Temporary`, `Found` and
                            `SeeOther`.
-- `target_listener_key`  - (`string`, optional, mutually exclusive with `target_url`) a key identifying a backend config defined
-                           in `var.listeners`.
+- `target_listener_key`  - (`string`, optional, mutually exclusive with `target_url`) a key identifying a backend config
+                           defined in `var.listeners`.
 - `target_url`           - (`string`, optional, mutually exclusive with `target_listener`) the URL to redirect to.
-- `include_path`         - (`bool`, optional, defaults to Azure defaults) whether or not to include the path in the redirected 
+- `include_path`         - (`bool`, optional, defaults to Azure defaults) whether or not to include the path in the redirected
                            URL.
 - `include_query_string` - (`bool`, optional, defaults to Azure defaults) whether or not to include the query string in the
                            redirected URL.
