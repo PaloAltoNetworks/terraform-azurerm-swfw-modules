@@ -38,7 +38,7 @@ resource "azurerm_public_ip" "this" {
   location            = var.location
   allocation_method   = "Static"
   sku                 = "Standard"
-  zones               = var.load_balancer.zones
+  zones               = var.zones
   tags                = var.tags
 }
 
@@ -65,7 +65,7 @@ resource "azurerm_lb" "this" {
       subnet_id                     = frontend_ip.value.subnet_id
       private_ip_address_allocation = frontend_ip.value.private_ip_address != null ? "Static" : null
       private_ip_address            = frontend_ip.value.private_ip_address
-      zones                         = frontend_ip.value.subnet_id != null ? var.load_balancer.zones : null
+      zones                         = frontend_ip.value.subnet_id != null ? var.zones : null
 
       gateway_load_balancer_frontend_ip_configuration_id = frontend_ip.value.gwlb_fip_id
     }
@@ -86,7 +86,7 @@ resource "azurerm_lb" "this" {
 }
 
 resource "azurerm_lb_backend_address_pool" "this" {
-  name            = var.load_balancer.backend_name
+  name            = var.backend_name
   loadbalancer_id = azurerm_lb.this.id
 }
 

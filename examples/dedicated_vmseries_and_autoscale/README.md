@@ -212,7 +212,7 @@ Name | Type | Description
 [`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
 [`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
 [`natgws`](#natgws) | `map` | A map defining NAT Gateways.
-[`load_balancers`](#load_balancers) | `map` |   A map containing configuration for all (private and public) Load Balancers.
+[`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (private and public) Load Balancers.
 [`ngfw_metrics`](#ngfw_metrics) | `object` | A map controlling metrics-relates resources.
 [`scale_sets`](#scale_sets) | `map` | A map defining Azure Virtual Machine Scale Sets based on Palo Alto Networks Next Generation Firewall image.
 
@@ -655,52 +655,51 @@ Default value: `map[]`
 
 #### load_balancers
 
-  A map containing configuration for all (private and public) Load Balancers.
+A map containing configuration for all (private and public) Load Balancers.
 
-  This is a brief description of available properties. For a detailed one please refer to
-  [module documentation](../../modules/loadbalancer/README.md).
+This is a brief description of available properties. For a detailed one please refer to
+[module documentation](../../modules/loadbalancer/README.md).
 
-  Following properties are available:
+Following properties are available:
 
-  - `name`                    - (`string`, required) a name of the Load Balancer
-  - `load_balancer`           - (`map`, optional, defaults to `null`) a map defining basic Load Balancer configuration, for
-                                for details on available properties see
-                                [module documentation](../../modules/loadbalancer/README.md#load_balancer)
-  - `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by
-                                load balancing rules;
-                                please check [module documentation](../../modules/loadbalancer/README.md#health_probes)
-                                for more specific use cases and available properties
-  - `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule
-                                that will be populated with `Allow` rules for each load balancing rule (`in_rules`); please check 
-                                [module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings)
-                                for available properties; please note that in this example two additional properties are
-                                available:
-    - `nsg_key`         - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to an NSG definition
-                          in the `var.vnets` map
-    - `nsg_vnet_key`    - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition
-                          in the `var.vnets` map that stores the NSG described by `nsg_key`
+- `name`                    - (`string`, required) a name of the Load Balancer.
 - `vnet_key`                - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets`
-                                map that stores the Subnet described by `subnet_key`.
-  - `frontend_ips`            - (`map`, optional, defaults to `{}`) a map containing frontend IP configuration with respective
-                                `in_rules` and `out_rules`
+                              map that stores the Subnet described by `subnet_key`.
+- `zones`                   - (`list`, optional, defaults to module defaults) a list of zones for Load Balancer's fronted IP
+                              configurations.
+- `backend_name`            - (`string`, optional, defaults to module defaults) a name of the backend pool to create.
+- `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by
+                              load balancing rules; please check
+                              [module documentation](../../modules/loadbalancer/README.md#health_probes) for more specific use
+                              cases and available properties.
+- `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule
+                              that will be populated with `Allow` rules for each load balancing rule (`in_rules`); please check 
+                              [module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings)
+                              for available properties; please note that in this example two additional properties are
+                              available:
+  - `nsg_vnet_key`    - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition
+                        in the `var.vnets` map that stores the NSG described by `nsg_key`.
+  - `nsg_key`         - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to an NSG definition
+                        in the `var.vnets` map.
+- `frontend_ips`            - (`map`, optional, defaults to `{}`) a map containing frontend IP configuration with respective
+                              `in_rules` and `out_rules`
 
-    Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
+  Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
 
-    **Note!** \
-    In this example the `subnet_id` is not available directly, three other property was introduced instead:
+  **Note!** \
+  In this example the `subnet_id` is not available directly, another property has been introduced instead:
 
-    - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map.
+  - `subnet_key` - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map.
 
 
 Type: 
 
 ```hcl
 map(object({
-    name = string
-    load_balancer = optional(object({
-      zones        = optional(list(string))
-      backend_name = optional(string)
-    }))
+    name         = string
+    vnet_key     = optional(string)
+    zones        = optional(list(string))
+    backend_name = optional(string)
     health_probes = optional(map(object({
       name                = string
       protocol            = string
@@ -717,7 +716,6 @@ map(object({
       source_ips              = list(string)
       base_priority           = optional(number)
     }))
-    vnet_key = optional(string)
     frontend_ips = optional(map(object({
       name                          = string
       public_ip_name                = optional(string)

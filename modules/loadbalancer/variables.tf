@@ -19,38 +19,32 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "load_balancer" {
+variable "zones" {
   description = <<-EOF
-  A map defining basic Load Balancer configuration.
+  Controls zones for Load Balancer's fronted IP configurations.
 
-  Following properties are available:
+  For:
 
-  - `zones`        - (`list`, optional, defaults to `["1", "2", "3"]`) controls zones for Load Balancer's Fronted IP
-                     configurations.
+  - public IPs  - these are zones in which the public IP resource is available.
+  - private IPs - these are zones to which Azure will deploy paths leading to Load Balancer frontend IPs (all frontends are 
+                  affected).
 
-      For:
+  Setting this variable to explicit `null` disables a zonal deployment.
+  This can be helpful in regions where Availability Zones are not available.
 
-      - public IPs    - these are zones in which the public IP resource is available.
-      - private IPs   - this represents Zones to which Azure will deploy paths leading to Load Balancer frontend IPs
-                        (all frontends are affected).
-
-      Setting this variable to explicit `null` disables a zonal deployment.
-      This can be helpful in regions where Availability Zones are not available.
-      
-      For public Load Balancers, since this setting controls also Availability Zones for public IPs,
-      you need to specify all zones available in a region (typically 3): `["1","2","3"]`.
-
-  - `backend_name` - (`string`, optional, defaults to `vmseries_backend`) - the name of the backend pool to create. All frontends
-                     of the Load Balancer always use the same backend.
-
+  For public Load Balancers, since this setting controls also Availability Zones for public IPs, you need to specify all zones
+  available in a region (typically 3): `["1","2","3"]`.
   EOF
-  default     = {}
+  default     = ["1", "2", "3"]
   nullable    = false
-  type = object({
-    zones        = optional(list(string), ["1", "2", "3"])
-    backend_name = optional(string, "vmseries_backend")
-  })
-  validation { # backend_name
+  type        = list(string)
+}
+
+variable "backend_name" {
+  description = "The name of the backend pool to create. All frontends of the Load Balancer always use the same backend."
+  default     = "vmseries_backend"
+  type        = string
+  validation {
     condition     = can(regex("^\\w[\\w_\\.-]{0,78}(\\w|_)$", var.load_balancer.backend_name))
     error_message = <<-EOF
     The `backend_name` property can be maximum 80 chars long and most consist of word characters, dots, underscores and dashes.

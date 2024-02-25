@@ -5,8 +5,7 @@ output "backend_pool_id" {
 
 output "frontend_ip_configs" {
   description = "Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it, private IP address otherwise."
-  # value       = local.output_ips
-  value = local.frontend_addresses
+  value       = local.frontend_addresses
 }
 
 output "health_probe" {
