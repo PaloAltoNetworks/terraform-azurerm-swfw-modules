@@ -40,14 +40,14 @@ output "bootstrap_storage_urls" {
 
 output "test_vms_usernames" {
   description = "Initial administrative username to use for test VMs."
-  value = length(var.test_environments) > 0 ? {
+  value = length(var.test_infrastructure) > 0 ? {
     for k, v in local.test_vm_authentication : k => v.username
   } : null
 }
 
 output "test_vms_passwords" {
   description = "Initial administrative password to use for test VMs."
-  value = length(var.test_environments) > 0 ? {
+  value = length(var.test_infrastructure) > 0 ? {
     for k, v in local.test_vm_authentication : k => v.password
   } : null
   sensitive = true
@@ -55,5 +55,5 @@ output "test_vms_passwords" {
 
 output "test_vms_ips" {
   description = "IP Addresses of the test VMs."
-  value       = length(var.test_environments) > 0 ? { for k, v in module.test_infrastructure : k => v.vm_private_ips } : null
+  value       = length(var.test_infrastructure) > 0 ? { for k, v in module.test_infrastructure : k => v.vm_private_ips } : null
 }

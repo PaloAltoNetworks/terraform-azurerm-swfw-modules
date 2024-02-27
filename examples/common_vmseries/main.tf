@@ -1,7 +1,7 @@
 # Generate a random password.
 resource "random_password" "this" {
   count = anytrue([for _, v in var.vmseries : v.authentication.password == null]) ? (
-    anytrue([for _, v in var.test_environments : v.authentication.password == null]) ? 2 : 1
+    anytrue([for _, v in var.test_infrastructure : v.authentication.password == null]) ? 2 : 1
   ) : 0
 
   length           = 16
@@ -359,7 +359,7 @@ module "appgw" {
 
 locals {
   test_vm_authentication = {
-    for k, v in var.test_environments : k =>
+    for k, v in var.test_infrastructure : k =>
     merge(
       v.authentication,
       {
@@ -372,7 +372,7 @@ locals {
 module "test_infrastructure" {
   source = "../../modules/test_infrastructure"
 
-  for_each = var.test_environments
+  for_each = var.test_infrastructure
 
   resource_group_name = try(
     "${var.name_prefix}${each.value.resource_group_name}", "${local.resource_group.name}-testenv"

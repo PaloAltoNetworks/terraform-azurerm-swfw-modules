@@ -191,7 +191,7 @@ Name | Type | Description
 [`bootstrap_storages`](#bootstrap_storages) | `map` | A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs.
 [`vmseries`](#vmseries) | `map` | A map defining Azure Virtual Machines based on Palo Alto Networks Next Generation Firewall image.
 [`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
-[`test_environments`](#test_environments) | `map` | A map defining test environments including test VMs and Azure Bastion hosts.
+[`test_infrastructure`](#test_infrastructure) | `map` | A map defining test infrastructure including test VMs and Azure Bastion hosts.
 
 
 
@@ -1086,11 +1086,12 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### test_environments
+#### test_infrastructure
 
-A map defining test environments including test VMs and Azure Bastion hosts.
+A map defining test infrastructure including test VMs and Azure Bastion hosts.
 
-For details and defaults for available options please refer to the [`test_infrastructure`](../../modules/test_infrastructure/README.md) module.
+For details and defaults for available options please refer to the
+[`test_infrastructure`](../../modules/test_infrastructure/README.md) module.
 
 Following properties are supported:
 

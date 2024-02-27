@@ -763,11 +763,12 @@ variable "appgws" {
 }
 
 ### Test Infrastructure
-variable "test_environments" {
+variable "test_infrastructure" {
   description = <<-EOF
-  A map defining test environments including test VMs and Azure Bastion hosts.
+  A map defining test infrastructure including test VMs and Azure Bastion hosts.
 
-  For details and defaults for available options please refer to the [`test_infrastructure`](../../modules/test_infrastructure/README.md) module.
+  For details and defaults for available options please refer to the
+  [`test_infrastructure`](../../modules/test_infrastructure/README.md) module.
 
   Following properties are supported:
 

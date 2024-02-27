@@ -220,7 +220,7 @@ vmseries = {
 
 # --- TEST INFRASTRUCTURE PART --- #
 
-test_environments = {
+test_infrastructure = {
   "app1_testenv" = {
     vnets = {
       "app1" = {
