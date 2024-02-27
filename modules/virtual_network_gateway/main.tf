@@ -1,6 +1,6 @@
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
-  for_each = { for k, v in var.network.ip_configurations : k => v if try(v.create_public_ip, false) }
+  for_each = { for k, v in var.ip_configurations : k => v if try(v.create_public_ip, false) }
 
   resource_group_name = var.resource_group_name
   location            = var.location
@@ -15,7 +15,7 @@ resource "azurerm_public_ip" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
 data "azurerm_public_ip" "exists" {
-  for_each = { for k, v in var.network.ip_configurations : k => v if !try(v.create_public_ip, true) }
+  for_each = { for k, v in var.ip_configurations : k => v if !try(v.create_public_ip, true) }
 
   name                = each.value.public_ip_name
   resource_group_name = var.resource_group_name
@@ -27,21 +27,23 @@ resource "azurerm_virtual_network_gateway" "this" {
   resource_group_name = var.resource_group_name
   location            = var.location
 
-  type                             = var.type
-  vpn_type                         = var.vpn_type
-  sku                              = var.sku
-  generation                       = var.type == "VPN" ? var.generation : null
-  active_active                    = var.active_active
-  default_local_network_gateway_id = var.network.default_local_network_gateway_id
+  type                             = var.instance_settings.type
+  vpn_type                         = var.instance_settings.vpn_type
+  sku                              = var.instance_settings.sku
+  generation                       = var.instance_settings.ype == "VPN" ? var.instance_settings.generation : null
+  active_active                    = var.instance_settings.active_active
+  default_local_network_gateway_id = var.default_local_network_gateway_id
   edge_zone                        = var.edge_zone
-  private_ip_address_enabled       = var.network.private_ip_address_enabled
+  private_ip_address_enabled       = var.private_ip_address_enabled
 
   dynamic "ip_configuration" {
-    for_each = [for _, v in var.network.ip_configurations : v if v != null]
+    for_each = [for _, v in var.ip_configurations : v if v != null]
 
     content {
-      name                          = ip_configuration.value.name
-      public_ip_address_id          = ip_configuration.value.create_public_ip ? azurerm_public_ip.this[ip_configuration.value.name].id : data.azurerm_public_ip.exists[ip_configuration.value.name].id
+      name = ip_configuration.value.name
+      public_ip_address_id = ip_configuration.value.create_public_ip ? (
+        azurerm_public_ip.this[ip_configuration.value.name].id
+      ) : data.azurerm_public_ip.exists[ip_configuration.value.name].id
       private_ip_address_allocation = ip_configuration.value.private_ip_address_allocation
       subnet_id                     = var.subnet_id
     }
@@ -78,7 +80,7 @@ resource "azurerm_virtual_network_gateway" "this" {
   }
 
   dynamic "custom_route" {
-    for_each = var.custom_routes
+    for_each = var.vpn_clients.custom_routes
     content {
       address_prefixes = custom_route.value
     }
@@ -120,38 +122,43 @@ resource "azurerm_virtual_network_gateway" "this" {
 
   lifecycle {
     precondition { # bgp
-      condition     = var.type == "ExpressRoute" ? var.bgp == null : true
+      condition     = var.instance_settings.type == "ExpressRoute" ? var.bgp == null : true
       error_message = <<-EOF
       VNG Name: [${var.name}]
-      BGP configuration is supported only for Virtual Network Gateways of "VPN" type. `var.bgp` should have a value of `null`.
+      BGP configuration is supported only for Virtual Network Gateways of "VPN" type, `var.bgp` should have a value of `null`.
       EOF
     }
     precondition { # azure_bgp_peer_addresses
-      condition     = var.type == "ExpressRoute" ? length(var.azure_bgp_peer_addresses) == 0 : true
+      condition     = var.instance_settings.type == "ExpressRoute" ? length(var.azure_bgp_peer_addresses) == 0 : true
       error_message = <<-EOF
       VNG Name: [${var.name}]
-      BGP configuration is supported only for Virtual Network Gateways of "VPN" type.
-      `var.azure_bgp_peer_addresses` map should be empty.
+      BGP configuration is supported only for Virtual Network Gateways of "VPN" type, `var.azure_bgp_peer_addresses` map should
+      be empty.
       EOF
     }
-    precondition { # network.ip_configurations.secondary
-      condition     = var.active_active ? var.network.ip_configurations.secondary != null : var.network.ip_configurations.secondary == null
+    precondition { # ip_configurations.secondary
+      condition = var.instance_settings.active_active ? (
+        var.ip_configurations.secondary != null
+      ) : var.ip_configurations.secondary == null
       error_message = <<-EOF
       VNG Name: [${var.name}]
-      The `network.ip_configurations.secondary` property is required ONLY when `active_active` variable is set to `true`.
+      The `ip_configurations.secondary` property is required ONLY when `instance_settings.active_active` property is set
+      to `true`.
       EOF
     }
     precondition { # bgp.configuration.secondary_peering_addresses
-      condition     = var.active_active ? var.bgp.configuration.secondary_peering_addresses != null : try(var.bgp.configuration.secondary_peering_addresses, null) == null
+      condition = var.instance_settings.active_active ? (
+        var.bgp.configuration.secondary_peering_addresses != null
+      ) : try(var.bgp.configuration.secondary_peering_addresses, null) == null
       error_message = <<-EOF
       VNG Name: [${var.name}]
-      The `bgp.configuration.secondary_peering_addresses` property is required ONLY when `active_active` variable is set to
-      `true`.
+      The `bgp.configuration.secondary_peering_addresses` property is required ONLY when `instance_settings.active_active`
+      property is set to `true`.
       EOF
     }
     precondition { # zones
-      condition = var.type == "Vpn" && can(
-        regex("^\\w{5,6}$", var.sku)
+      condition = var.instance_settings.type == "Vpn" && can(
+        regex("^\\w{5,6}$", var.instance_settings.sku)
       ) ? length(coalesce(var.zones, [])) == 0 : true
       error_message = <<-EOF
       For Virtual Network Gateways of `Vpn` type, sku of non `AZ` type, the `zones` variable has to be an empty list.
@@ -196,7 +203,7 @@ resource "azurerm_virtual_network_gateway_connection" "this" {
   local_network_gateway_id   = azurerm_local_network_gateway.this[each.key].id
 
   enable_bgp                     = var.bgp.enable
-  local_azure_ip_address_enabled = var.network.private_ip_address_enabled
+  local_azure_ip_address_enabled = var.private_ip_address_enabled
   shared_key                     = each.value.connection.shared_key
 
   dynamic "custom_bgp_addresses" {

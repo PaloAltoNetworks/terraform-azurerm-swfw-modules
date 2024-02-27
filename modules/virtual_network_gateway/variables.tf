@@ -51,145 +51,182 @@ variable "edge_zone" {
   type        = string
 }
 
-variable "type" {
-  description = "The type of the Virtual Network Gateway."
-  default     = "Vpn"
-  nullable    = false
-  type        = string
-  validation {
-    condition     = contains(["Vpn", "ExpressRoute"], var.type)
-    error_message = <<-EOF
-    The `type` variable can take one of the following values: "Vpn" or "ExpressRoute".
-    EOF
-  }
-}
-
-variable "vpn_type" {
-  description = "The routing type of the Virtual Network Gateway."
-  default     = "RouteBased"
-  nullable    = false
-  type        = string
-  validation {
-    condition     = contains(["RouteBased", "PolicyBased"], var.vpn_type)
-    error_message = <<-EOF
-    The `vpn_type` variable can take one of the following values: "RouteBased" or "PolicyBased".
-    EOF
-  }
-}
-
-variable "generation" {
-  description = "The Generation of the Virtual Network gateway."
-  type        = string
-  default     = "Generation1"
-  nullable    = false
-  validation {
-    condition     = contains(["Generation1", "Generation2", "None"], coalesce(var.generation, "Generation1"))
-    error_message = <<-EOF
-    The `generation` variable can take one of the following values: "Generation1", "Generation2" or "None".
-    EOF
-  }
-}
-
-variable "sku" {
+variable "instance_settings" {
   description = <<-EOF
-  Configuration of the size and capacity of the virtual network gateway.
+  A map containing the basic Virtual Network Gateway instance settings.
 
-  Valid option depends on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU.
-  Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
-  EOF
-  default     = "Basic"
-  nullable    = false
-  type        = string
-  validation {
-    condition = contains(
-      ["Basic", "Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ", "VpnGw1", "VpnGw2", "VpnGw3",
-      "VpnGw4", "VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.sku
-    )
-    error_message = <<-EOF
-    The `sku` variable can take one of the following values: "Basic", "Standard", "HighPerformance", "UltraPerformance",
-    "ErGw1AZ", "ErGw2AZ", "ErGw3AZ", "VpnGw1", "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ",
-    "VpnGw4AZ" or "VpnGw5AZ". They also depend on the `type`, `vpn_type` and `generation` variables.
-    EOF
-  }
-}
+  You configure the size, capacity and capabilities with 3/4 parameters that heavily depend on each other. Please follow the
+  table below for details on available combinations:
 
-variable "active_active" {
-  description = <<-EOF
-  Active-active Virtual Network Gateway.
-
-  If set to `true`, an active-active Virtual Network Gateway will be created.
-  An active-active gateway requires a HighPerformance or an UltraPerformance SKU.
-  If set to `false`, an active-standby gateway will be created. Defaults to `false`.
-  EOF
-  default     = false
-  nullable    = false
-  type        = bool
-  validation {
-    condition     = var.type == "ExpressRoute" ? !var.active_active : true
-    error_message = <<-EOF
-    The `active_active` variable has to be set to `false` (default) when type is `ExpressRoute`.
-    EOF
-  }
-}
-
-variable "custom_routes" {
-  description = <<-EOF
-  List of custom routes.
-
-  Every object in the list contains attributes:
-  - `address_prefixes` - (`list`, optional, defaults to `null`) a list of address blocks reserved for this virtual network in
-                         CIDR notation as defined below.
-
-  EOF
-  default     = []
-  nullable    = false
-  type = list(object({
-    address_prefixes = optional(list(string))
-  }))
-}
-
-variable "network" {
-  description = <<-EOF
-  Network configuration of the Virtual Network Gateway.
+  <table>
+    <tr>
+      <th>type</th>
+      <th>generation</th>
+      <th>sku</th>
+    </tr>
+    <tr>
+      <td rowspan="6">ExpressRoute</td>
+      <td rowspan="6">N/A</td>
+      <td>Standard</td>
+    </tr>
+    <tr><td>HighPerformance</td></tr>
+    <tr><td>UltraPerformance</td></tr>
+    <tr><td>ErGw1AZ</td></tr>
+    <tr><td>ErGw2AZ</td></tr>
+    <tr><td>ErGw3AZ</td></tr>
+    <tr>
+      <td rowspan="11">Vpn</td>
+      <td rowspan="3">Generation1</td>
+      <td>Basic</td>
+    <tr><td>VpnGw1</td></tr>
+    <tr><td>VpnGw1AZ</td></tr>
+    <tr>
+      <td rowspan="8">Generation1/Generation2</td>
+      <td>VpnGw2</td>
+    </tr>
+    <tr><td>VpnGw3</td></tr>
+    <tr><td>VpnGw4</td></tr>
+    <tr><td>VpnGw5</td></tr>
+    <tr><td>VpnGw2AZ</td></tr>
+    <tr><td>VpnGw3AZ</td></tr>
+    <tr><td>VpnGw4AZ</td></tr>
+    <tr><td>VpnGw5AZ</td></tr>
+  </table>
 
   Following properties are available:
 
-  - `ip_configurations`                - (`map`, required) a map defining the Public IPs used by the Virtual Network Gateway.
-                                         Contains 2 properties:
-    - `primary`   - (`map`, required) a map defining the primary Public IP address, following properties are available:
-      - `name`                          - (`string`, required) name of the IP config.
-      - `create_public_ip`              - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
-      - `public_ip_name`                - (`string`, required) name of a Public IP resource, depending on the value of 
-                                          `create_public_ip` property this will be a name of a newly create or existing resource
-                                          (for values of `true` and `false` accordingly).
-      - `dynamic_private_ip_allocation` - (`bool`, optional, defaults to `true`) controls if the private IP address is assigned
-                                          dynamically or statically.
-    - `secondary` - (`map`, optional, defaults to `null`) a map defining the secondary Public IP resource. Required only for
-                    `type` set to `Vpn` and `active-active` set to `true`. Same properties available like in `primary` property.
-  - `private_ip_address_enabled`       - (`bool`, optional, defaults to `false`) controls whether the private IP is enabled on
-                                         the gateway.
-  - `default_local_network_gateway_id` - (`string`, optional, defaults to `null`) the ID of the local Network Gateway. When set,
-                                         the outbound Internet traffic from the virtual network, in which the gateway is created,
-                                         will be routed through local network gateway (forced tunnelling).
+  - `type`          - (`string`, optional, defaults to `Vpn`) the type of the Virtual Network Gateway, possible values are: `Vpn`
+                      or `ExpressRoute`.
+  - `vpn_type`      - (`string`, optional, defaults to `RouteBased`) the routing type of the Virtual Network Gateway, possible
+                      values are: `RouteBased` or `PolicyBased`.
+  - `generation`    - (`string`, optional, defaults to `Generation1`) the Generation of the Virtual Network gateway, possible
+                      values are: `None`, `Generation1` or `Generation2`. This property is ignored when type is set to 
+                      `ExpressRoute`.
+  - `sku`           - (`string`, optional, defaults to `Basic`) sets the size and capacity of the virtual network gateway.
+  - `active_active` - (`bool`, optional, defaults to `false`) when set to true creates an active-active Virtual Network Gateway,
+                      active-passive otherwise. Not supported for `Basic` and `Standard` SKUs.
   EOF
   type = object({
-    ip_configurations = object({
-      primary = object({
-        name                          = string
-        create_public_ip              = optional(bool, true)
-        public_ip_name                = string
-        private_ip_address_allocation = optional(string, "Dynamic")
-      })
-      secondary = optional(object({
-        name                          = string
-        create_public_ip              = optional(bool, true)
-        public_ip_name                = string
-        private_ip_address_allocation = optional(string, "Dynamic")
-      }))
-    })
-    private_ip_address_enabled       = optional(bool, false)
-    default_local_network_gateway_id = optional(string)
+    type          = optional(string, "Vpn")
+    vpn_type      = optional(string, "RouteBased")
+    generation    = optional(string, "Generation1")
+    sku           = optional(string, "Basic")
+    active_active = optional(bool, false)
+
   })
+  validation { # type
+    condition     = contains(["Vpn", "ExpressRoute"], var.virtual_network_gateway.type)
+    error_message = <<-EOF
+    The `virtual_network_gateway.type` property can take one of the following values: "Vpn" or "ExpressRoute".
+    EOF
+  }
+  validation { # vpn_type
+    condition     = contains(["RouteBased", "PolicyBased"], var.virtual_network_gateway.vpn_type)
+    error_message = <<-EOF
+    The `virtual_network_gateway.vpn_type` property can take one of the following values: "RouteBased" or "PolicyBased".
+    EOF
+  }
+  validation { # generation
+    condition     = contains(["Generation1", "Generation2", "None"], var.virtual_network_gateway.generation)
+    error_message = <<-EOF
+    The `virtual_network_gateway.generation` property can take one of the following values: "Generation1" or "Generation2"
+    or "None".
+    EOF
+  }
+  validation { # type, generation & sku
+    condition = var.virtual_network_gateway.generation == "Generation2" && var.virtual_network_gateway.type == "Vpn" ? contains(
+      ["VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.virtual_network_gateway.sku
+    ) : true
+    error_message = <<-EOF
+    For `sku` of "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ" or "VpnGw5AZ" the `generation`
+    property has to be set to `Generation2` and `type` to `Vpn`.
+    EOF
+  }
+  validation { # type & sku
+    condition = (var.virtual_network_gateway.type == "Vpn" && contains(
+      ["Basic", "VpnGw1", "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"],
+      var.virtual_network_gateway.sku
+      )) || (
+      var.virtual_network_gateway.type == "ExpressRoute" && contains(
+        ["Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ"], var.virtual_network_gateway.sku
+      )
+    )
+    error_message = <<-EOF
+    Invalid combination of `sku` and `type`. Please check documentation for `var.virtual_network_gateway`.
+    EOF
+  }
+  validation { # active_active
+    condition     = var.virtual_network_gateway.type == "ExpressRoute" ? !var.virtual_network_gateway.active_active : true
+    error_message = <<-EOF
+    The `active_active` property has to be set to `false` (default) when type is `ExpressRoute`.
+    EOF
+  }
+}
+
+variable "ip_configurations" {
+  description = <<-EOF
+  A map defining the Public IPs used by the Virtual Network Gateway.
+  
+  Following properties are available:
+  - `primary`   - (`map`, required) a map defining the primary Public IP address, following properties are available:
+    - `name`                          - (`string`, required) name of the IP config.
+    - `create_public_ip`              - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
+    - `public_ip_name`                - (`string`, required) name of a Public IP resource, depending on the value of 
+                                        `create_public_ip` property this will be a name of a newly create or existing resource
+                                        (for values of `true` and `false` accordingly).
+    - `dynamic_private_ip_allocation` - (`bool`, optional, defaults to `true`) controls if the private IP address is assigned
+                                        dynamically or statically.
+  - `secondary` - (`map`, optional, defaults to `null`) a map defining the secondary Public IP address resource. Required only
+                  for `type` set to `Vpn` and `active-active` set to `true`. Same properties available as for `primary` property.
+
+  EOF
+  type = object({
+    primary = object({
+      name                          = string
+      create_public_ip              = optional(bool, true)
+      public_ip_name                = string
+      private_ip_address_allocation = optional(string, "Dynamic")
+    })
+    secondary = optional(object({
+      name                          = string
+      create_public_ip              = optional(bool, true)
+      public_ip_name                = string
+      private_ip_address_allocation = optional(string, "Dynamic")
+    }))
+  })
+  validation { # primary/secondary.name
+    condition     = var.ip_configurations.primary.name != var.ip_configurations.secondary.name
+    error_message = <<-EOF
+    The `name` property has to be unique among all IP configurations.
+    EOF
+  }
+  validation { # primary/secondary.private_ip_address_allocation
+    condition = contains(["Dynamic", "Static"], var.ip_configurations.primary.private_ip_address_allocation) && (
+      var.ip_configurations.secondary.name != null ? (
+        contains(["Dynamic", "Static"], var.ip_configurations.secondary.private_ip_address_allocation)
+      ) : true
+    )
+    error_message = <<EOF
+    Possible values for `private_ip_address_allocation` are "Dynamic" or "Static".
+    EOF
+  }
+}
+
+variable "private_ip_address_enabled" {
+  description = "Controls whether the private IP is enabled on the Virtual Netowkr Gateway."
+  default     = false
+  type        = bool
+}
+
+variable "default_local_network_gateway_id" {
+  description = <<-EOF
+  The ID of the local network gateway.
+
+  When set, the outbound Internet traffic from the virtual network, in which the gateway is created, will be routed through local
+  network gateway (forced tunnelling).
+  EOF
+  default     = null
+  type        = string
 }
 
 variable "azure_bgp_peer_addresses" {
@@ -481,6 +518,9 @@ variable "vpn_clients" {
                               the use of aad_tenant, aad_audience and aad_issuer.
   - `vpn_auth_types`        - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for
                               the virtual network gateway. The supported values are AAD, Radius and Certificate.
+  - `custom_routes`         - (`map`, optional, defaults to `{}`) a map defining custom routes. Each route is a list of address
+                              blocks reserved for this Virtual Network (in CIDR notation). Keys in this map are only to identify
+                              the CIDR blocks, values are lists of the actual address blocks.
   EOF
   default     = {}
   nullable    = false
@@ -495,5 +535,6 @@ variable "vpn_clients" {
     radius_server_secret  = optional(string)
     vpn_client_protocols  = optional(list(string))
     vpn_auth_types        = optional(list(string))
+    custom_routes         = optional(map(list(string)), {})
   }))
 }

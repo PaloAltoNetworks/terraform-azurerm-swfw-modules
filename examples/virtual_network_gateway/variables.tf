@@ -116,36 +116,35 @@ variable "virtual_network_gateways" {
   default     = {}
   nullable    = false
   type = map(object({
-    name          = string
-    vnet_key      = string
-    subnet_key    = string
-    zones         = optional(list(string))
-    edge_zone     = optional(string)
-    type          = optional(string)
-    vpn_type      = optional(string)
-    generation    = optional(string)
-    sku           = optional(string)
-    active_active = optional(bool)
-    custom_routes = optional(map(list(string)))
-    network = object({
-      ip_configurations = object({
-        primary = object({
-          name                          = string
-          create_public_ip              = optional(bool)
-          public_ip_name                = string
-          private_ip_address_allocation = optional(string)
-        })
-        secondary = optional(object({
-          name                          = string
-          create_public_ip              = optional(bool)
-          public_ip_name                = string
-          private_ip_address_allocation = optional(string)
-        }))
-      })
-      private_ip_address_enabled       = optional(bool)
-      default_local_network_gateway_id = optional(string)
+    name       = string
+    vnet_key   = string
+    subnet_key = string
+    zones      = optional(list(string))
+    edge_zone  = optional(string)
+    instance_settings = object({
+      type          = optional(string)
+      vpn_type      = optional(string)
+      generation    = optional(string)
+      sku           = optional(string)
+      active_active = optional(bool)
     })
-    azure_bgp_peer_addresses = optional(map(string))
+    ip_configurations = object({
+      primary = object({
+        name                          = string
+        create_public_ip              = optional(bool)
+        public_ip_name                = string
+        private_ip_address_allocation = optional(string)
+      })
+      secondary = optional(object({
+        name                          = string
+        create_public_ip              = optional(bool)
+        public_ip_name                = string
+        private_ip_address_allocation = optional(string)
+      }))
+    })
+    private_ip_address_enabled       = optional(bool)
+    default_local_network_gateway_id = optional(string)
+    azure_bgp_peer_addresses         = optional(map(string))
     bgp = optional(object({
       enable = optional(bool, false)
       configuration = optional(object({
@@ -204,6 +203,7 @@ variable "virtual_network_gateways" {
       radius_server_secret  = optional(string)
       vpn_client_protocols  = optional(list(string))
       vpn_auth_types        = optional(list(string))
+      custom_routes         = optional(map(list(string)))
     })), {})
   }))
 }

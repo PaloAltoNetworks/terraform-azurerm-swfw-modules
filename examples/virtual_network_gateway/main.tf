@@ -49,17 +49,14 @@ module "vng" {
   location            = var.location
   resource_group_name = local.resource_group.name
 
-  zones         = each.value.zones
-  edge_zone     = each.value.edge_zone
-  type          = each.value.type
-  vpn_type      = each.value.vpn_type
-  generation    = each.value.generation
-  sku           = each.value.sku
-  active_active = each.value.active_active
-  custom_routes = each.value.custom_routes
-
-  network   = each.value.network
   subnet_id = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
+
+  zones                            = each.value.zones
+  edge_zone                        = each.value.edge_zone
+  instance_settings                = each.value.instance_settings
+  ip_configurations                = each.value.ip_configurations
+  private_ip_address_enabled       = each.value.private_ip_address_enabled
+  default_local_network_gateway_id = each.value.default_local_network_gateway_id
 
   azure_bgp_peer_addresses = each.value.azure_bgp_peer_addresses
   bgp                      = each.value.bgp

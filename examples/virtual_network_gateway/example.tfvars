@@ -68,18 +68,17 @@ virtual_network_gateways = {
     subnet_key = "vpn"
     zones      = ["1"]
 
-    type       = "ExpressRoute"
-    vpn_type   = "RouteBased"
-    generation = "Generation1"
-    sku        = "Standard"
-
-    network = {
-      ip_configurations = {
-        primary = {
-          create_public_ip = true
-          name             = "primary"
-          public_ip_name   = "expressroute_pip"
-        }
+    instance_settings = {
+      type       = "ExpressRoute"
+      vpn_type   = "RouteBased"
+      generation = "Generation1"
+      sku        = "Standard"
+    }
+    ip_configurations = {
+      primary = {
+        create_public_ip = true
+        name             = "primary"
+        public_ip_name   = "expressroute_pip"
       }
     }
   }
@@ -89,18 +88,17 @@ virtual_network_gateways = {
     subnet_key = "vpn"
     zones      = ["1"]
 
-    type       = "ExpressRoute"
-    vpn_type   = "PolicyBased"
-    generation = "Generation2"
-    sku        = "Standard"
-
-    network = {
-      ip_configurations = {
-        primary = {
-          create_public_ip = true
-          name             = "primary"
-          public_ip_name   = "er_policy_pip"
-        }
+    instance_settings = {
+      type       = "ExpressRoute"
+      vpn_type   = "PolicyBased"
+      generation = "Generation2"
+      sku        = "Standard"
+    }
+    ip_configurations = {
+      primary = {
+        create_public_ip = true
+        name             = "primary"
+        public_ip_name   = "er_policy_pip"
       }
     }
   }
@@ -110,18 +108,17 @@ virtual_network_gateways = {
     subnet_key = "vpn"
     zones      = []
 
-    type       = "Vpn"
-    vpn_type   = "PolicyBased"
-    generation = "Generation1"
-    sku        = "VpnGw1"
-
-    network = {
-      ip_configurations = {
-        primary = {
-          create_public_ip = true
-          name             = "primary"
-          public_ip_name   = "simple_vpn_pip"
-        }
+    instance_settings = {
+      type       = "Vpn"
+      vpn_type   = "PolicyBased"
+      generation = "Generation1"
+      sku        = "VpnGw1"
+    }
+    ip_configurations = {
+      primary = {
+        create_public_ip = true
+        name             = "primary"
+        public_ip_name   = "simple_vpn_pip"
       }
     }
   }
@@ -131,23 +128,22 @@ virtual_network_gateways = {
     subnet_key = "vpn"
     zones      = ["1", "2", "3"]
 
-    type          = "Vpn"
-    generation    = "Generation2"
-    sku           = "VpnGw2AZ"
-    active_active = true
-
-    network = {
-      ip_configurations = {
-        primary = {
-          name             = "primary"
-          create_public_ip = true
-          public_ip_name   = "vng-primary-pip"
-        }
-        secondary = {
-          name             = "secondary"
-          create_public_ip = true
-          public_ip_name   = "vng-secondary-pip"
-        }
+    instance_settings = {
+      type          = "Vpn"
+      generation    = "Generation2"
+      sku           = "VpnGw2AZ"
+      active_active = true
+    }
+    ip_configurations = {
+      primary = {
+        name             = "primary"
+        create_public_ip = true
+        public_ip_name   = "vng-primary-pip"
+      }
+      secondary = {
+        name             = "secondary"
+        create_public_ip = true
+        public_ip_name   = "vng-secondary-pip"
       }
     }
     azure_bgp_peer_addresses = {
