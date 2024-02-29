@@ -1107,8 +1107,6 @@ Following properties are supported:
                                 a full resource name, including prefixes.
   - `address_space`           - (`list(string)`, required when `create_virtual_network = `false`) a list of CIDRs for a newly
                                 created VNET.
-  - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which
-                                the VNET will reside or is sourced from.
   - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
                                 otherwise use source existing subnets.
   - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
@@ -1150,7 +1148,6 @@ map(object({
     resource_group_name   = optional(string)
     vnets = map(object({
       name                    = string
-      resource_group_name     = optional(string)
       create_virtual_network  = optional(bool, true)
       address_space           = optional(list(string))
       hub_resource_group_name = optional(string)

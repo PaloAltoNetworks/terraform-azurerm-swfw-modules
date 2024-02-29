@@ -32,11 +32,9 @@ variable "vnets" {
   - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
                                 `false` will source an existing VNET.
   - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = `false` this should be
-                                a full resource name, including prefixes.
+                                a full resource name, including prefixes and be inside RG defined in `var.resource_group_name`.
   - `address_space`           - (`list(string)`, required when `create_virtual_network = `false`) a list of CIDRs for a newly
                                 created VNET
-  - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which
-                                the VNET will reside or is sourced from
   - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
                                 otherwise use source existing subnets
   - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
@@ -48,7 +46,6 @@ variable "vnets" {
   EOF
   type = map(object({
     name                    = string
-    resource_group_name     = optional(string)
     create_virtual_network  = optional(bool, true)
     address_space           = optional(list(string))
     hub_resource_group_name = optional(string)

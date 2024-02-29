@@ -25,7 +25,7 @@ module "vnet" {
 
   name                   = each.value.name
   create_virtual_network = each.value.create_virtual_network
-  resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
+  resource_group_name    = local.resource_group.name
   location               = var.location
 
   address_space = each.value.address_space
