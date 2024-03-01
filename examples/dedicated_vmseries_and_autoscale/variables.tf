@@ -13,16 +13,17 @@ variable "location" {
 variable "name_prefix" {
   description = <<-EOF
   A prefix that will be added to all created resources.
-  There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual
-  prefix.
+  There is no default delimiter applied between the prefix and the resource name.
+  Please include the delimiter in the actual prefix.
 
   Example:
   ```
   name_prefix = "test-"
   ```
   
-  NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even
-  if it is also prefixed with the same value as the one in this property.
+  **Note!** \
+  This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name,
+  even if it is also prefixed with the same value as the one in this property.
   EOF
   default     = ""
   type        = string
@@ -30,9 +31,10 @@ variable "name_prefix" {
 
 variable "create_resource_group" {
   description = <<-EOF
-  When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by
-  `resource_group_name`. When set to `false` the `resource_group_name` parameter is used to specify a name of an existing
-  Resource Group.
+  When set to `true` it will cause a Resource Group creation.
+  Name of the newly specified RG is controlled by `resource_group_name`.
+  
+  When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
   EOF
   default     = true
   type        = bool
@@ -76,8 +78,7 @@ variable "vnets" {
     create_virtual_network = optional(bool, true)
     address_space          = optional(list(string))
     network_security_groups = optional(map(object({
-      name                          = string
-      disable_bgp_route_propagation = optional(bool)
+      name = string
       rules = optional(map(object({
         name                         = string
         priority                     = number
@@ -95,7 +96,8 @@ variable "vnets" {
       })), {})
     })), {})
     route_tables = optional(map(object({
-      name = string
+      name                          = string
+      disable_bgp_route_propagation = optional(bool)
       routes = map(object({
         name                = string
         address_prefix      = string
@@ -189,40 +191,42 @@ variable "load_balancers" {
 
   Following properties are available:
 
-  - `name`                    - (`string`, required) a name of the Load Balancer
-  - `zones`                   - (`list`, optional, defaults to `["1", "2", "3"]`) list of zones the resource will be
-                                available in, please check the
-                                [module documentation](../../modules/loadbalancer/README.md#zones) for more details
+  - `name`                    - (`string`, required) a name of the Load Balancer.
+  - `vnet_key`                - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets`
+                                map that stores the Subnet described by `subnet_key`.
+  - `zones`                   - (`list`, optional, defaults to module defaults) a list of zones for Load Balancer's fronted IP
+                                configurations.
+  - `backend_name`            - (`string`, optional, defaults to module defaults) a name of the backend pool to create.
   - `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by
-                                load balancing rules;
-                                please check [module documentation](../../modules/loadbalancer/README.md#health_probes)
-                                for more specific use cases and available properties
+                                load balancing rules; please check
+                                [module documentation](../../modules/loadbalancer/README.md#health_probes) for more specific use
+                                cases and available properties.
   - `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule
                                 that will be populated with `Allow` rules for each load balancing rule (`in_rules`); please check 
                                 [module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings)
                                 for available properties; please note that in this example two additional properties are
                                 available:
-    - `nsg_key`         - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to an NSG definition
-                          in the `var.vnets` map
     - `nsg_vnet_key`    - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition
-                          in the `var.vnets` map that stores the NSG described by `nsg_key`
+                          in the `var.vnets` map that stores the NSG described by `nsg_key`.
+    - `nsg_key`         - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to an NSG definition
+                          in the `var.vnets` map.
   - `frontend_ips`            - (`map`, optional, defaults to `{}`) a map containing frontend IP configuration with respective
                                 `in_rules` and `out_rules`
 
     Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
 
-    > [!NOTE] 
-    > In this example the `subnet_id` is not available directly, three other properties were introduced instead.
+    **Note!** \
+    In this example the `subnet_id` is not available directly, another property has been introduced instead:
 
-    - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map
-    - `vnet_key`    - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets` map
-                      that stores the Subnet described by `subnet_key`
+    - `subnet_key` - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map.
   EOF
   default     = {}
   nullable    = false
   type = map(object({
-    name  = string
-    zones = optional(list(string), ["1", "2", "3"])
+    name         = string
+    vnet_key     = optional(string)
+    zones        = optional(list(string))
+    backend_name = optional(string)
     health_probes = optional(map(object({
       name                = string
       protocol            = string
@@ -244,7 +248,6 @@ variable "load_balancers" {
       public_ip_name                = optional(string)
       create_public_ip              = optional(bool, false)
       public_ip_resource_group_name = optional(string)
-      vnet_key                      = optional(string)
       subnet_key                    = optional(string)
       private_ip_address            = optional(string)
       gwlb_key                      = optional(string)
@@ -343,8 +346,6 @@ variable "scale_sets" {
       Below we present only the most important ones, for the rest please refer to
       [module's documentation](../../modules/vmss/README.md#virtual_machine_scale_set):
 
-      - `vnet_key`              - (`string`, required) a key of a VNET defined in `var.vnets`. This is the VNET that hosts subnets
-                                  used to deploy network interfaces for VMs in this Scale Set
       - `size`                  - (`string`, optional, defaults to module defaults) Azure VM size (type). Consult the *VM-Series
                                   Deployment Guide* as only a few selected sizes are supported
       - `zones`                 - (`list`, optional, defaults to module defaults) a list of Availability Zones in which VMs from
@@ -365,6 +366,8 @@ variable "scale_sets" {
                             the scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare
                             the metrics to the thresholds
 
+  - `vnet_key`                - (`string`, required) a key of a VNET defined in `var.vnets`. This is the VNET that hosts subnets
+                                used to deploy network interfaces for VMs in this Scale Set
   - `interfaces`              - (`list`, required) configuration of all network interfaces, order does matter - the 1<sup>st</sup>
                                 interface should be the management one. Following properties are available:
     - `name`                    - (`string`, required) name of the network interface (will be prefixed with `var.name_prefix`)
@@ -404,17 +407,20 @@ variable "scale_sets" {
       custom_id               = optional(string)
     })
     virtual_machine_scale_set = optional(object({
-      vnet_key                    = string
-      bootstrap_options           = optional(string)
-      size                        = optional(string)
-      zones                       = optional(list(string))
-      disk_type                   = optional(string)
-      accelerated_networking      = optional(bool)
-      encryption_at_host_enabled  = optional(bool)
-      overprovision               = optional(bool)
-      platform_fault_domain_count = optional(number)
-      disk_encryption_set_id      = optional(string)
-      allow_extension_operations  = optional(bool)
+      size                         = optional(string)
+      bootstrap_options            = optional(string)
+      zones                        = optional(list(string))
+      disk_type                    = optional(string)
+      accelerated_networking       = optional(bool)
+      encryption_at_host_enabled   = optional(bool)
+      overprovision                = optional(bool)
+      platform_fault_domain_count  = optional(number)
+      disk_encryption_set_id       = optional(string)
+      enable_boot_diagnostics      = optional(bool, true)
+      boot_diagnostics_storage_uri = optional(string)
+      identity_type                = optional(string)
+      identity_ids                 = optional(list(string), [])
+      allow_extension_operations   = optional(bool)
     }))
     autoscaling_configuration = optional(object({
       default_count           = optional(number)
@@ -423,6 +429,7 @@ variable "scale_sets" {
       notification_emails     = optional(list(string), [])
       webhooks_uris           = optional(map(string), {})
     }), {})
+    vnet_key = string
     interfaces = list(object({
       name                    = string
       subnet_key              = string
@@ -476,105 +483,123 @@ variable "appgws" {
   description = <<-EOF
   A map defining all Application Gateways in the current deployment.
 
-  For detailed documentation on how to configure this resource, for available properties, especially for the defaults, refer to [module documentation](../../modules/appgw/README.md).
+  For detailed documentation on how to configure this resource, for available properties, especially for the defaults,
+  refer to [module documentation](../../modules/appgw/README.md).
 
-  Following properties are supported:
-  - `name`                              - (`string`, required) name of the Application Gateway.
-  - `public_ip`                         - (`string`, required) public IP address.
-  - `vnet_key`                          - (`string`, required) a key of a VNET defined in the `var.vnets` map.
-  - `subnet_key`                        - (`string`, required) a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
-  - `managed_identities`                - (`list`, optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
-  - `capacity`                          - (`number`, object) capacity configuration for Application Gateway (refer to [module documentation](../../modules/appgw/README.md) for details)
-  - `waf`                               - (`object`, required) WAF basic configuration, defining WAF rules is not supported
-  - `enable_http2`                      - (`bool`, optional) enable HTTP2 support on the Application Gateway
-  - `zones`                             - (`list`, required) for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
-  - `frontend_ip_configuration_name`    - (`string`, optional) frontend IP configuration name
-  - `vmseries_public_nic_name`          - (`string`, optional) VM-Series NIC name, for which IP address will be used in backend pool
-  - `listeners`                         - (`map`, required) map of listeners (refer to [module documentation](../../modules/appgw/README.md) for details)
-  - `backend_pool`                      - (`object`, optional) backend pool (refer to [module documentation](../../modules/appgw/README.md) for details)
-  - `backends`                          - (`map`, optional) map of backends (refer to [module documentation](../../modules/appgw/README.md) for details)
-  - `probes`                            - (`map`, optional) map of probes (refer to [module documentation](../../modules/appgw/README.md) for details)
-  - `rewrites`                          - (`map`, optional) map of rewrites (refer to [module documentation](../../modules/appgw/README.md) for details)
-  - `rules`                             - (`map`, required) map of rules (refer to [module documentation](../../modules/appgw/README.md) for details)
-  - `redirects`                         - (`map`, optional) map of redirects (refer to [module documentation](../../modules/appgw/README.md) for details)
-  - `url_path_maps`                     - (`map`, optional) map of URL path maps (refer to [module documentation](../../modules/appgw/README.md) for details)
-  - `ssl_policy_type`                   - (`string`, optional) type of an SSL policy, defaults to `Predefined`
-  - `ssl_policy_name`                   - (`string`, optional) name of an SSL policy, for `ssl_policy_type` set to `Predefined`
-  - `ssl_policy_min_protocol_version`   - (`string`, optional) minimum version of the TLS protocol for SSL Policy, for `ssl_policy_type` set to `Custom`
-  - `ssl_policy_cipher_suites`          - (`list`, optional) a list of accepted cipher suites, for `ssl_policy_type` set to `Custom`
-  - `ssl_profiles`                      - (`map`, optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property
+  **Note!** \
+  The `rules` property is meant to bind together `backend_setting`, `redirect` or `url_path_map` (all 3 are mutually exclusive). 
+  It represents the Rules section of an Application Gateway in Azure Portal.
+
+  Below you can find a brief list of most important properties:
+
+  - `name`             - (`string`, required) the name of the Application Gateway, will be prefixed with `var.name_prefix`.
+  - `vnet_key`         - (`string`, required) a key pointing to a VNET definition in the `var.vnets` map that stores the Subnet
+                         described by `subnet_key`.
+  - `subnet_key`       - (`string`, required) a key pointing to a Subnet definition in the `var.vnets` map, this has to be an
+                         Application Gateway V2 dedicated subnet.
+  - `zones`            - (`list`, optional, defaults to module defaults) parameter controlling if this is a zonal, or a non-zonal
+                         deployment.
+  - `public_ip`        - (`map`, required) defines a Public IP resource used by the Application Gateway instance, a newly created
+                         Public IP will have it's name prefixes with `var.name_prefix`.
+  - `listeners`        - (`map`, required) defines Application Gateway's Listeners, see
+                         [module's documentation](../../modules/appgw/README.md#listeners) for details.
+  - `backend_pool`     - (`map`, optional, defaults to module defaults) backend pool definition, when skipped an empty backend
+                         will be created.
+  - `backend_settings` - (`map`, optional, mutually exclusive with `redirects` and `url_path_maps`) defines HTTP backend
+                         settings, see [module's documentation](../../modules/appgw/README.md#backend_settings) for details.
+  - `probes`           - (`map`, optional, defaults to module defaults) defines backend probes used check health of backends, see
+                         [module's documentation](../../modules/appgw/README.md#probes) for details.
+  - `rewrites`         - (`map`, optional, defaults to module defaults) defines rewrite rules, see 
+                         [module's documentation](../../modules/appgw/README.md#rewrites) for details.
+  - `redirects         - (`map`, optional, mutually exclusive with `backend_settings` and `url_path_maps`) static redirects 
+                         definition, see [module's documentation](../../modules/appgw/README.md#redirects) for details.
+  - `url_path_maps     - (`map`, optional, mutually exclusive with `backend_settings` and `redirects`) URL path maps definition, 
+                         see [module's documentation](../../modules/appgw/README.md#url_path_maps) for details.
+  - `rules             - (`map`, required) Application Gateway Rules definition, bind together a `listener` with either
+                         `backend_setting`, `redirect` or `url_path_map`, see
+                         [module's documentation](../../modules/appgw/README.md#rules) for details.
   EOF
-  default     = {}
-  nullable    = false
   type = map(object({
-    name = string
+    name       = string
+    vnet_key   = string
+    subnet_key = string
+    zones      = optional(list(string))
     public_ip = object({
       name                = string
-      resource_group_name = optional(string)
       create              = optional(bool, true)
+      resource_group_name = optional(string)
     })
-    vnet_key           = string
-    subnet_key         = string
-    managed_identities = optional(list(string))
-    capacity = object({
+    domain_name_label = optional(string)
+    capacity = optional(object({
       static = optional(number)
       autoscale = optional(object({
-        min = optional(number)
-        max = optional(number)
+        min = number
+        max = number
       }))
-    })
+    }))
+    enable_http2 = optional(bool)
     waf = optional(object({
       prevention_mode  = bool
-      rule_set_type    = optional(string, "OWASP")
+      rule_set_type    = optional(string)
       rule_set_version = optional(string)
     }))
-    enable_http2                   = optional(bool)
-    zones                          = list(string)
-    frontend_ip_configuration_name = optional(string, "public_ipconfig")
-    vmseries_public_nic_name       = optional(string, "public")
+    managed_identities = optional(list(string))
+    global_ssl_policy = optional(object({
+      type                 = optional(string)
+      name                 = optional(string)
+      min_protocol_version = optional(string)
+      cipher_suites        = optional(list(string))
+    }))
+    ssl_profiles = optional(map(object({
+      name                            = string
+      ssl_policy_name                 = optional(string)
+      ssl_policy_min_protocol_version = optional(string)
+      ssl_policy_cipher_suites        = optional(list(string))
+    })))
+    frontend_ip_configuration_name = optional(string)
     listeners = map(object({
       name                     = string
       port                     = number
-      protocol                 = optional(string, "Http")
+      protocol                 = optional(string)
       host_names               = optional(list(string))
       ssl_profile_name         = optional(string)
       ssl_certificate_path     = optional(string)
       ssl_certificate_pass     = optional(string)
       ssl_certificate_vault_id = optional(string)
-      custom_error_pages       = optional(map(string), {})
+      custom_error_pages       = optional(map(string))
     }))
     backend_pool = optional(object({
-      name         = string
-      vmseries_ips = optional(list(string), [])
+      name         = optional(string)
+      vmseries_ips = optional(list(string))
     }))
-    backends = optional(map(object({
-      name                  = string
-      path                  = optional(string)
-      hostname_from_backend = optional(string)
-      hostname              = optional(string)
-      port                  = optional(number, 80)
-      protocol              = optional(string, "Http")
-      timeout               = optional(number, 60)
-      cookie_based_affinity = optional(string, "Enabled")
-      affinity_cookie_name  = optional(string)
-      probe                 = optional(string)
+    backend_settings = optional(map(object({
+      name                      = string
+      port                      = number
+      protocol                  = string
+      path                      = optional(string)
+      hostname_from_backend     = optional(string)
+      hostname                  = optional(string)
+      timeout                   = optional(number)
+      use_cookie_based_affinity = optional(bool)
+      affinity_cookie_name      = optional(string)
+      probe                     = optional(string)
       root_certs = optional(map(object({
         name = string
         path = string
-      })), {})
+      })))
     })))
     probes = optional(map(object({
       name       = string
       path       = string
       host       = optional(string)
       port       = optional(number)
-      protocol   = optional(string, "Http")
-      interval   = optional(number, 5)
-      timeout    = optional(number, 30)
-      threshold  = optional(number, 2)
+      protocol   = optional(string)
+      interval   = optional(number)
+      timeout    = optional(number)
+      threshold  = optional(number)
       match_code = optional(list(number))
       match_body = optional(string)
-    })), {})
+    })))
     rewrites = optional(map(object({
       name = optional(string)
       rules = optional(map(object({
@@ -582,50 +607,38 @@ variable "appgws" {
         sequence = number
         conditions = optional(map(object({
           pattern     = string
-          ignore_case = optional(bool, false)
-          negate      = optional(bool, false)
-        })), {})
-        request_headers  = optional(map(string), {})
-        response_headers = optional(map(string), {})
+          ignore_case = optional(bool)
+          negate      = optional(bool)
+        })))
+        request_headers  = optional(map(string))
+        response_headers = optional(map(string))
       })))
-    })), {})
-    rules = map(object({
-      name         = string
-      priority     = number
-      backend      = optional(string)
-      listener     = string
-      rewrite      = optional(string)
-      url_path_map = optional(string)
-      redirect     = optional(string)
-    }))
+    })))
     redirects = optional(map(object({
       name                 = string
       type                 = string
-      target_listener      = optional(string)
+      target_listener_key  = optional(string)
       target_url           = optional(string)
-      include_path         = optional(bool, false)
-      include_query_string = optional(bool, false)
-    })), {})
+      include_path         = optional(bool)
+      include_query_string = optional(bool)
+    })))
     url_path_maps = optional(map(object({
-      name    = string
-      backend = string
+      name        = string
+      backend_key = string
       path_rules = optional(map(object({
-        paths    = list(string)
-        backend  = optional(string)
-        redirect = optional(string)
+        paths        = list(string)
+        backend_key  = optional(string)
+        redirect_key = optional(string)
       })))
-    })), {})
-    ssl_global = optional(object({
-      ssl_policy_type                 = string
-      ssl_policy_name                 = optional(string)
-      ssl_policy_min_protocol_version = optional(string)
-      ssl_policy_cipher_suites        = optional(list(string))
+    })))
+    rules = map(object({
+      name             = string
+      priority         = number
+      backend_key      = optional(string)
+      listener_key     = string
+      rewrite_key      = optional(string)
+      url_path_map_key = optional(string)
+      redirect_key     = optional(string)
     }))
-    ssl_profiles = optional(map(object({
-      name                            = string
-      ssl_policy_name                 = optional(string)
-      ssl_policy_min_protocol_version = optional(string)
-      ssl_policy_cipher_suites        = optional(list(string))
-    })), {})
   }))
 }

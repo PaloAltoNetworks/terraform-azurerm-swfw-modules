@@ -9,7 +9,9 @@ variable "name" {
   type        = string
   validation {
     condition     = can(regex("^[a-z0-9]{3,24}$", var.name))
-    error_message = "A Storage Account name must be between 3 and 24 characters, only lower case letters and numbers are allowed."
+    error_message = <<-EOF
+    A Storage Account name must be between 3 and 24 characters, only lower case letters and numbers are allowed.
+    EOF
   }
 }
 
@@ -40,12 +42,11 @@ variable "storage_account" {
   - `replication_type` - (`string`, optional, defaults to `LRS`) only for newly created Storage Accounts, defines the replication
                          type used. Can be one of the following values: `LRS`, `GRS`, `RAGRS`, `ZRS`, `GZRS` or `RAGZRS`.
   - `kind`             - (`string`, optional, defaults to `StorageV2`) only for newly created Storage Accounts, defines the
-                         account type. Can be one of the following: `BlobStorage`, `BlockBlobStorage`, `FileStorage`, `Storage` or
-                         `StorageV2`.
-  - `tier`             - (`string`, optional, defaults to `Standard`) only for newly created Storage Accounts, defines the account
-                         tier. Can be either `Standard` or `Premium`. Note, that for `kind` set to `BlockBlobStorage` or
+                         account type. Can be one of the following: `BlobStorage`, `BlockBlobStorage`, `FileStorage`, `Storage`
+                         or `StorageV2`.
+  - `tier`             - (`string`, optional, defaults to `Standard`) only for newly created Storage Accounts, defines the
+                         account tier. Can be either `Standard` or `Premium`. Note, that for `kind` set to `BlockBlobStorage` or
                          `FileStorage` the `tier` can only be set to `Premium`.
-  
   EOF
   default     = {}
   nullable    = false
@@ -57,22 +58,31 @@ variable "storage_account" {
   })
   validation { # replication_type
     condition     = contains(["LRS", "GRS", "RAGRS", "ZRS", "GZRS", "RAGZRS"], var.storage_account.replication_type)
-    error_message = "The `replication_type` property can be one of: \"LRS\", \"GRS\", \"RAGRS\", \"ZRS\", \"GZRS\" or \"RAGZRS\"."
+    error_message = <<-EOF
+    The `replication_type` property can be one of: \"LRS\", \"GRS\", \"RAGRS\", \"ZRS\", \"GZRS\" or \"RAGZRS\".
+    EOF
   }
   validation { # kind
-    condition     = contains(["BlobStorage", "BlockBlobStorage", "FileStorage", "Storage", "StorageV2"], var.storage_account.kind)
+    condition = contains(
+      ["BlobStorage", "BlockBlobStorage", "FileStorage", "Storage", "StorageV2"], var.storage_account.kind
+    )
     error_message = <<-EOF
-    The `kind` property can be one of: \"BlobStorage\", \"BlockBlobStorage\", \"FileStorage\", \"Storage\" 
-    or \"StorageV2\"."
+    The `kind` property can be one of: \"BlobStorage\", \"BlockBlobStorage\", \"FileStorage\", \"Storage\" or \"StorageV2\"."
     EOF
   }
   validation { # tier
     condition     = contains(["Standard", "Premium"], var.storage_account.tier)
-    error_message = "The `tier` property can be one of: \"Standard\" or \"Premium\"."
+    error_message = <<-EOF
+    The `tier` property can be one of: \"Standard\" or \"Premium\".
+    EOF
   }
-  validation { # tier && kind
-    condition     = contains(["BlockBlobStorage", "FileStorage"], var.storage_account.kind) ? var.storage_account.tier == "Premium" : true
-    error_message = "If the `kind` property is set to either \"BlockBlobStorage\" or \"FileStorage\", the `tier` has to be set to \"Premium\"."
+  validation { # kind & tier
+    condition = contains(
+      ["BlockBlobStorage", "FileStorage"], var.storage_account.kind
+    ) ? var.storage_account.tier == "Premium" : true
+    error_message = <<-EOF
+    If the `kind` property is set to either \"BlockBlobStorage\" or \"FileStorage\", the `tier` has to be set to \"Premium\"."
+    EOF
   }
 }
 
@@ -88,14 +98,13 @@ variable "storage_network_security" {
 
   Following properties are available:
 
-  - `min_tls_version`     - (`string`, optional, defaults to `TLS1_2`) minimum supported TLS version
+  - `min_tls_version`     - (`string`, optional, defaults to `TLS1_2`) minimum supported TLS version.
   - `allowed_public_ips`  - (`list`, optional, defaults to `[]`) list of IP CIDR ranges that are allowed to access the Storage
                             Account. Only public IPs are allowed, RFC1918 address space is not permitted.
   - `allowed_subnet_ids`  - (`list`, optional, defaults to `[]`) list of the allowed VNet subnet ids. Note that this option
                             requires network service endpoint enabled for Microsoft Storage for the specified subnets.
                             If you are using [vnet module](../vnet/README.md), set `storage_private_access` to true for the
                             specific subnet.
-
   EOF
   default     = {}
   nullable    = false
@@ -104,9 +113,11 @@ variable "storage_network_security" {
     allowed_public_ips = optional(list(string), [])
     allowed_subnet_ids = optional(list(string), [])
   })
-  validation {
+  validation { # min_tls_version
     condition     = contains(["TLS1_0", "TLS1_1", "TLS1_2"], var.storage_network_security.min_tls_version)
-    error_message = "The `min_tls_version` property can be one of: \"TLS1_0\", \"TLS1_1\", \"TLS1_2\"."
+    error_message = <<-EOF
+    The `min_tls_version` property can be one of: \"TLS1_0\", \"TLS1_1\", \"TLS1_2\".
+    EOF
   }
 }
 
@@ -122,9 +133,9 @@ variable "file_shares_configuration" {
                                       `file_shares` variable are created or sourced, if the latter, the storage account also 
                                       has to be sourced.
   - `disable_package_dirs_creation` - (`bool`, optional, defaults to `false`) for sourced File Shares, controls if the bootstrap
-                                      package folder structure is created
+                                      package folder structure is created.
   - `quota`                         - (`number`, optional, defaults to `10`) maximum size of a File Share in GB, a value between
-                                      1 and 5120 (5TB)
+                                      1 and 5120 (5TB).
   - `access_tier`                   - (`string`, optional, defaults to `Cool`) access tier for a File Share, can be one of: 
                                       "Cool", "Hot", "Premium", "TransactionOptimized". 
   EOF
@@ -136,17 +147,25 @@ variable "file_shares_configuration" {
     quota                         = optional(number, 10)
     access_tier                   = optional(string, "Cool")
   })
-  validation {
+  validation { # disable_package_dirs_creation
+    condition = (
+      var.file_shares_configuration.create_file_shares ? !var.file_shares_configuration.disable_package_dirs_creation : true
+    )
+    error_message = <<-EOF
+    The `disable_package_dirs_creation` cannot be set to true for newly created File Shares.
+    EOF
+  }
+  validation { # quota
     condition     = var.file_shares_configuration.quota >= 1 && var.file_shares_configuration.quota <= 5120
-    error_message = "The `quota` property can take values between 1 and 5120."
+    error_message = <<-EOF
+    The `quota` property can take values between 1 and 5120.
+    EOF
   }
-  validation {
+  validation { # access_tier
     condition     = contains(["Cool", "Hot", "Premium", "TransactionOptimized"], var.file_shares_configuration.access_tier)
-    error_message = "The `access_tier` property can take one of the following values: \"Cool\", \"Hot\", \"Premium\", \"TransactionOptimized\"."
-  }
-  validation {
-    condition     = var.file_shares_configuration.create_file_shares ? !var.file_shares_configuration.disable_package_dirs_creation : true
-    error_message = "The `disable_package_dirs_creation` cannot be set to true for newly created File Shares."
+    error_message = <<-EOF
+    The `access_tier` property can take one of the following values: \"Cool\", \"Hot\", \"Premium\", \"TransactionOptimized\".
+    EOF
   }
 }
 
@@ -162,11 +181,11 @@ variable "file_shares" {
 
   Following properties are available per each File Share definition:
 
-  - `name`                    - (`string`, required) name of the File Share
+  - `name`                    - (`string`, required) name of the File Share.
   - `bootstrap_package_path`  - (`string`, optional, defaults to `null`) a path to a folder containing a full bootstrap package.
-                                For details on the bootstrap package structure see [documentation](https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-package)
-  - `bootstrap_files`         - (`map`, optional, defaults to `{}`) a map of files that will be copied to the File Share and build
-                                the bootstrap package. 
+                                For details on the bootstrap package structure see [documentation](https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-package).
+  - `bootstrap_files`         - (`map`, optional, defaults to `{}`) a map of files that will be copied to the File Share and 
+                                build the bootstrap package. 
                                 
       Keys are local paths, values - remote. Only Unix like directory separator (`/`) is supported. If `bootstrap_package_path`
       is also specified, these files will overwrite any file uploaded from that path.
@@ -184,10 +203,9 @@ variable "file_shares" {
   Additionally you can override the default `quota` and `access_tier` properties per File Share (same restrictions apply):
 
   - `quota`       - (`number`, optional, defaults to `var.file_shares_configuration.quota`) maximum size of a File Share in GB,
-                    a value between 1 and 5120 (5TB)
+                    a value between 1 and 5120 (5TB).
   - `access_tier` - (`string`, optional, defaults to `var.file_shares_configuration.access_tier`) access tier for a File Share,
-                    can be one of: "Cool", "Hot", "Premium", "TransactionOptimized". 
-
+                    can be one of: "Cool", "Hot", "Premium", "TransactionOptimized".
   EOF
   default     = {}
   nullable    = false
@@ -199,7 +217,7 @@ variable "file_shares" {
     quota                  = optional(number)
     access_tier            = optional(string)
   }))
-  validation {
+  validation { # name
     condition = alltrue([
       for _, v in var.file_shares :
       alltrue([
@@ -207,18 +225,25 @@ variable "file_shares" {
         can(regex("^([a-z0-9-]){3,63}$", v.name))
       ])
     ])
-    error_message = "A File Share name must be between 3 and 63 characters, all lowercase numbers, letters or a dash, it must follow a valid URL schema."
+    error_message = <<-EOF
+    A File Share name must be between 3 and 63 characters, all lowercase numbers, letters or a dash, it must follow a valid URL
+    schema.
+    EOF
   }
-  validation {
+  validation { # quota
     condition     = alltrue([for _, v in var.file_shares : v.quota >= 1 && v.quota <= 5120 if v.quota != null])
-    error_message = "The `quota` property can take values between 1 and 5120."
+    error_message = <<-EOF
+    The `quota` property can take values between 1 and 5120.
+    EOF
   }
-  validation {
+  validation { # access_tier
     condition = alltrue([
       for _, v in var.file_shares :
       contains(["Cool", "Hot", "Premium", "TransactionOptimized"], v.access_tier)
       if v.access_tier != null
     ])
-    error_message = "The `access_tier` property can take one of the following values: \"Cool\", \"Hot\", \"Premium\", \"TransactionOptimized\"."
+    error_message = <<-EOF
+    The `access_tier` property can take one of the following values: \"Cool\", \"Hot\", \"Premium\", \"TransactionOptimized\".
+    EOF
   }
 }

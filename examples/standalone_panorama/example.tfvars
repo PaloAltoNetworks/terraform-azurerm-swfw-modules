@@ -57,11 +57,11 @@ panoramas = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key  = "vnet"
       size      = "Standard_D5_v2"
       zone      = null
       disk_name = "panorama-os-disk"
     }
+    vnet_key = "vnet"
     interfaces = [
       {
         name               = "management"

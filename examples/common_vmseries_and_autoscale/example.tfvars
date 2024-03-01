@@ -149,11 +149,11 @@ load_balancers = {
     }
   }
   "private" = {
-    name = "private-lb"
+    name     = "private-lb"
+    vnet_key = "transit"
     frontend_ips = {
       "ha-ports" = {
         name               = "private-vmseries"
-        vnet_key           = "transit"
         subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
@@ -172,29 +172,32 @@ load_balancers = {
 
 # --- APPLICATION GATEWAYs --- #
 appgws = {
-  "public" = {
-    name = "appgw"
-    public_ip = {
-      name = "pip"
-    }
+  public = {
+    name       = "appgw"
     vnet_key   = "transit"
     subnet_key = "appgw"
-    zones      = ["1", "2", "3"]
-    capacity = {
-      static = 2
+    public_ip = {
+      name = "appgw-pip"
     }
     listeners = {
-      minimum = {
-        name = "minimum-listener"
+      "http" = {
+        name = "http"
         port = 80
       }
     }
+    backend_settings = {
+      http = {
+        name     = "http"
+        port     = 80
+        protocol = "Http"
+      }
+    }
     rewrites = {
-      minimum = {
-        name = "minimum-set"
+      xff = {
+        name = "XFF-set"
         rules = {
           "xff-strip-port" = {
-            name     = "minimum-xff-strip-port"
+            name     = "xff-strip-port"
             sequence = 100
             request_headers = {
               "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
@@ -204,12 +207,12 @@ appgws = {
       }
     }
     rules = {
-      minimum = {
-        name     = "minimum-rule"
-        priority = 1
-        backend  = "minimum"
-        listener = "minimum"
-        rewrite  = "minimum"
+      "http" = {
+        name         = "http"
+        listener_key = "http"
+        backend_key  = "http"
+        rewrite_key  = "xff"
+        priority     = 1
       }
     }
   }
@@ -230,13 +233,13 @@ scale_sets = {
       disable_password_authentication = false
     }
     virtual_machine_scale_set = {
-      vnet_key          = "transit"
       bootstrap_options = "type=dhcp-client"
       zones             = ["1", "2", "3"]
     }
     autoscaling_configuration = {
       default_count = 1
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "management"

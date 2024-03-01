@@ -271,45 +271,45 @@ Map of objects describing Network Security Groups.
 
 List of available properties:
 
-- `name`   - (`string`, required) name of the Network Security Group.
-- `rules`  - (`map`, optional, defaults to `{}`) A list of objects representing Network Security Rules.
+- `name`  - (`string`, required) name of the Network Security Group.
+- `rules` - (`map`, optional, defaults to `{}`) A list of objects representing Network Security Rules.
 
-  > [!NOTE]
-  > All port values are integers between `0` and `65535`. Port ranges can be specified as `minimum-maximum` port value,
-  > example: `21-23`.
+  **Note!** \
+  All port values are integers between `0` and `65535`. Port ranges can be specified as `minimum-maximum` port value,
+  example: `21-23`.
     
   Following attributes are available:
 
-  - `name`                          - (`string`, required) name of the rule
-  - `priority`                      - (`number`, required) numeric priority of the rule. The value can be between 100 and 4096
-                                      and must be unique for each rule in the collection. The lower the priority number,
-                                      the higher the priority of the rule.
-  - `direction`                     - (`string`, required) the direction specifies if rule will be evaluated on incoming
-                                      or outgoing traffic. Possible values are `Inbound` and `Outbound`.
-  - `access`                        - (`string`, required) specifies whether network traffic is allowed or denied.
-                                      Possible values are `Allow` and `Deny`.
-  - `protocol`                      - (`string`, required) a network protocol this rule applies to. Possible values include
-                                      `Tcp`, `Udp`, `Icmp`, or `*` (which matches all). For supported values refer to the
-                                      [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_securityrule#protocol)
-  - `source_port_range`             - (`string`, required, mutually exclusive with `source_port_ranges`) a source port or
-                                      a range of ports. This can also be an `*` to match all.
-  - `source_port_ranges`            - (`list`, required, mutually exclusive with `source_port_range`) a list of source ports
-                                      or ranges of ports.
-  - `source_address_prefix`         - (`string`, required, mutually exclusive with `source_address_prefixes`) source CIDR or IP
-                                      range or `*` to match any IP. This can also be a tag. To see all available tags for a
-                                      region use the following command (example for US West Central):
-                                      `az network list-service-tags --location westcentralus`.
-  - `source_address_prefixes`       - (`list`, required, mutually exclusive with `source_address_prefix`) a list of source
-                                      address prefixes. Tags are not allowed.
-  - `destination_port_range`        - (`string`, required, mutually exclusive with `destination_port_ranges`) destination port
-                                      or a range of ports. This can also be an `*` to match all.
-  - `destination_port_ranges`       - (`list`, required, mutually exclusive with `destination_port_range`) a list of
-                                      destination ports or a ranges of ports.
-  - `destination_address_prefix`    - (`string`, required, mutually exclusive with `destination_address_prefixes`) destination
-                                      CIDR or IP range or `*` to match any IP. Tags are allowed, see `source_address_prefix`
-                                      for details.
-  - `destination_address_prefixes`  - (`list`, required,  mutually exclusive with `destination_address_prefixes`) a list of 
-                                      destination address prefixes. Tags are not allowed.
+  - `name`                         - (`string`, required) name of the rule.
+  - `priority`                     - (`number`, required) numeric priority of the rule. The value can be between 100 and 4096
+                                     and must be unique for each rule in the collection. The lower the priority number,
+                                     the higher the priority of the rule.
+  - `direction`                    - (`string`, required) the direction specifies if rule will be evaluated on incoming
+                                     or outgoing traffic. Possible values are `Inbound` and `Outbound`.
+  - `access`                       - (`string`, required) specifies whether network traffic is allowed or denied.
+                                     Possible values are `Allow` and `Deny`.
+  - `protocol`                     - (`string`, required) a network protocol this rule applies to. Possible values include
+                                     `Tcp`, `Udp`, `Icmp`, or `*` (which matches all). For supported values refer to the
+                                     [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_securityrule#protocol).
+  - `source_port_range`            - (`string`, required, mutually exclusive with `source_port_ranges`) a source port or
+                                     a range of ports. This can also be an `*` to match all.
+  - `source_port_ranges`           - (`list`, required, mutually exclusive with `source_port_range`) a list of source ports
+                                     or ranges of ports.
+  - `source_address_prefix`        - (`string`, required, mutually exclusive with `source_address_prefixes`) source CIDR or IP
+                                     range or `*` to match any IP. This can also be a tag. To see all available tags for a
+                                     region use the following command (example for US West Central):
+                                     `az network list-service-tags --location westcentralus`.
+  - `source_address_prefixes`      - (`list`, required, mutually exclusive with `source_address_prefix`) a list of source
+                                     address prefixes. Tags are not allowed.
+  - `destination_port_range`       - (`string`, required, mutually exclusive with `destination_port_ranges`) destination port
+                                     or a range of ports. This can also be an `*` to match all.
+  - `destination_port_ranges`      - (`list`, required, mutually exclusive with `destination_port_range`) a list of
+                                     destination ports or a ranges of ports.
+  - `destination_address_prefix`   - (`string`, required, mutually exclusive with `destination_address_prefixes`) destination
+                                     CIDR or IP range or `*` to match any IP. Tags are allowed, see `source_address_prefix`
+                                     for details.
+  - `destination_address_prefixes` - (`list`, required,  mutually exclusive with `destination_address_prefixes`) a list of 
+                                     destination address prefixes. Tags are not allowed.
 
 Example:
 ```hcl
@@ -394,14 +394,14 @@ Map of objects describing a Route Tables.
 List of available properties:
 
 - `name`                          - (`string`, required) name of a Route Table.
-- `disable_bgp_route_propagation` - (`bool`, optional, defaults to `false`) controls propagation of routes learned by BGP
+- `disable_bgp_route_propagation` - (`bool`, optional, defaults to `false`) controls propagation of routes learned by BGP.
 - `routes`                        - (`map`, required) a map of Route Table entries (UDRs):
-  - `name`                    - (`string`, required) a name of a UDR.
-  - `address_prefix`          - (`string`, required) the destination CIDR to which the route applies, such as `10.1.0.0/16`.
-  - `next_hop_type`           - (`string`, required) the type of Azure hop the packet should be sent to.
-                                Possible values are: `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
-  - `next_hop_ip_address`     - (`string`, required) contains the IP address packets should be forwarded to.
-                                Used only when `next_hop_type` is set to `VirtualAppliance`, ignored otherwise.
+  - `name`                - (`string`, required) a name of a UDR.
+  - `address_prefix`      - (`string`, required) the destination CIDR to which the route applies, such as `10.1.0.0/16`.
+  - `next_hop_type`       - (`string`, required) the type of Azure hop the packet should be sent to. Possible values are:
+                            `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
+  - `next_hop_ip_address` - (`string`, required) contains the IP address packets should be forwarded to. Used only when
+                            `next_hop_type` is set to `VirtualAppliance`, ignored otherwise.
 
 Example:
 ```hcl
@@ -462,9 +462,11 @@ Controls subnet creation.
   
 Possible variants:
 
-- `true`      - create subnets described in `var.subnets`
-- `false`     - source subnets described in `var.subnets`
-- `false` and `var.subnets` is empty  - skip subnets management.
+- `true`  - create subnets described in `var.subnets`.
+- `false` - source subnets described in `var.subnets`.
+  
+**Note!** \
+When this variable is `false` and `var.subnets` variable is empty, subnets management is skipped.
 
 
 Type: bool
@@ -477,8 +479,8 @@ Default value: `true`
 
 Map of objects describing subnets to manage.
   
-By the default the described subnets will be created. 
-If however `create_subnets` is set to `false` this is just a mapping between the existing subnets and UDRs and NSGs that should be assigned to them.
+By the default the described subnets will be created. If however `create_subnets` is set to `false` this is just a mapping
+between the existing subnets and UDRs and NSGs that should be assigned to them.
   
 List of available attributes of each subnet entry:
 
@@ -531,6 +533,5 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

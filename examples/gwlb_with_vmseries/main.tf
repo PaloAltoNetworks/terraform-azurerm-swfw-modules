@@ -77,6 +77,7 @@ module "load_balancer" {
   location            = var.location
   resource_group_name = local.resource_group.name
   zones               = each.value.zones
+  backend_name        = each.value.backend_name
 
   health_probes = each.value.health_probes
 
@@ -101,7 +102,7 @@ module "load_balancer" {
     for k, v in each.value.frontend_ips : k => merge(
       v,
       {
-        public_ip_name = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : "${v.public_ip_name}",
+        public_ip_name = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : v.public_ip_name,
         subnet_id      = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
         gwlb_fip_id    = try(module.gwlb[v.gwlb_key].frontend_ip_config_id, null)
       }

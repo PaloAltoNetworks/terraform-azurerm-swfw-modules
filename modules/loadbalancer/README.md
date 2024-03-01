@@ -98,7 +98,7 @@ Name | Type | Description
 Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
-[`zones`](#zones) | `list` | Controls zones for Load Balancer's Fronted IP configurations.
+[`zones`](#zones) | `list` | Controls zones for Load Balancer's fronted IP configurations.
 [`backend_name`](#backend_name) | `string` | The name of the backend pool to create.
 [`health_probes`](#health_probes) | `map` | Backend's health probe definition.
 [`nsg_auto_rules_settings`](#nsg_auto_rules_settings) | `object` | Controls automatic creation of NSG rules for all defined inbound rules.
@@ -171,6 +171,7 @@ Type: string
 
 
 
+
 #### frontend_ips
 
 A map of objects describing Load Balancer Frontend IP configurations with respective inbound and outbound rules.
@@ -215,12 +216,12 @@ Below are the properties for the `in_rules` map:
 - `floating_ip`         - (`bool`, optional, defaults to `true`) enables floating IP for this rule.
 - `session_persistence` - (`string`, optional, defaults to `Default`) controls session persistance/load distribution,
                           three values are possible:
-  - `Default`             -  this is the 5 tuple hash
-  - `SourceIP`            - a 2 tuple hash is used
-  - `SourceIPProtocol`    - a 3 tuple hash is used
+  - `Default`          - this is the 5 tuple hash.
+  - `SourceIP`         - a 2 tuple hash is used.
+  - `SourceIPProtocol` - a 3 tuple hash is used.
 - `nsg_priority`        - (number, optional, defaults to `null`) this becomes a priority of an auto-generated NSG rule,
-                          when skipped the rule priority will be auto-calculated,
-                          for more details on auto-generated NSG rules see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings)
+                          when skipped the rule priority will be auto-calculated. For more details on auto-generated NSG rules
+                          see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings).
 
 Below are the properties for `out_rules` map. 
   
@@ -336,7 +337,6 @@ map(object({
 
 
 
-
 ### Optional Inputs
 
 
@@ -355,19 +355,19 @@ Default value: `map[]`
 
 #### zones
 
-Controls zones for Load Balancer's Fronted IP configurations.
+Controls zones for Load Balancer's fronted IP configurations.
 
 For:
 
-- public IPs    - these are zones in which the public IP resource is available
-- private IPs   - this represents Zones to which Azure will deploy paths leading to Load Balancer frontend IPs
-                  (all frontends are affected)
+- public IPs  - these are zones in which the public IP resource is available.
+- private IPs - these are zones to which Azure will deploy paths leading to Load Balancer frontend IPs (all frontends are 
+                affected).
 
 Setting this variable to explicit `null` disables a zonal deployment.
 This can be helpful in regions where Availability Zones are not available.
-  
-For public Load Balancers, since this setting controls also Availability Zones for public IPs,
-you need to specify all zones available in a region (typically 3): `["1","2","3"]`.
+
+For public Load Balancers, since this setting controls also Availability Zones for public IPs, you need to specify all zones
+available in a region (typically 3): `["1","2","3"]`.
 
 
 Type: list(string)
@@ -375,7 +375,6 @@ Type: list(string)
 Default value: `[1 2 3]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 #### backend_name
 
@@ -386,6 +385,7 @@ Type: string
 Default value: `vmseries_backend`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 #### health_probes
 
@@ -460,6 +460,5 @@ object({
 Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

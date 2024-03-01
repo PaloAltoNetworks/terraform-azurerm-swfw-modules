@@ -74,7 +74,7 @@ module "natgw" {
   for_each = var.natgws
 
   create_natgw        = each.value.create_natgw
-  name                = each.value.create_natgw ? "${var.name_prefix}${each.value.name}" : each.value.name
+  name                = each.value.natgw.create ? "${var.name_prefix}${each.value.name}" : each.value.name
   resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
   location            = var.location
   zone                = try(each.value.zone, null)
@@ -98,6 +98,7 @@ module "load_balancer" {
   location            = var.location
   resource_group_name = local.resource_group.name
   zones               = each.value.zones
+  backend_name        = each.value.backend_name
 
   health_probes = each.value.health_probes
 
@@ -122,8 +123,8 @@ module "load_balancer" {
     for k, v in each.value.frontend_ips : k => merge(
       v,
       {
-        public_ip_name = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : "${v.public_ip_name}",
-        subnet_id      = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
+        public_ip_name = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : v.public_ip_name,
+        subnet_id      = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
       }
     )
   }
@@ -162,29 +163,32 @@ module "appgw" {
 
   for_each = var.appgws
 
-  name                = each.value.name
-  public_ip           = each.value.public_ip
+  name                = "${var.name_prefix}${each.value.name}"
   resource_group_name = local.resource_group.name
   location            = var.location
   subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
-  managed_identities = each.value.managed_identities
-  capacity           = each.value.capacity
-  waf                = each.value.waf
-  enable_http2       = each.value.enable_http2
-  zones              = each.value.zones
-
+  zones = each.value.zones
+  public_ip = merge(
+    each.value.public_ip,
+    { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }
+  )
+  domain_name_label              = each.value.domain_name_label
+  capacity                       = each.value.capacity
+  enable_http2                   = each.value.enable_http2
+  waf                            = each.value.waf
+  managed_identities             = each.value.managed_identities
+  global_ssl_policy              = each.value.global_ssl_policy
+  ssl_profiles                   = each.value.ssl_profiles
   frontend_ip_configuration_name = each.value.frontend_ip_configuration_name
   listeners                      = each.value.listeners
-  backends                       = each.value.backends
+  backend_pool                   = each.value.backend_pool
+  backend_settings               = each.value.backend_settings
   probes                         = each.value.probes
   rewrites                       = each.value.rewrites
-  rules                          = each.value.rules
   redirects                      = each.value.redirects
   url_path_maps                  = each.value.url_path_maps
-
-  ssl_global   = each.value.ssl_global
-  ssl_profiles = each.value.ssl_profiles
+  rules                          = each.value.rules
 
   tags       = var.tags
   depends_on = [module.vnet]
@@ -206,7 +210,7 @@ module "vmss" {
   interfaces = [
     for v in each.value.interfaces : {
       name                   = v.name
-      subnet_id              = module.vnet[each.value.virtual_machine_scale_set.vnet_key].subnet_ids[v.subnet_key]
+      subnet_id              = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
       create_public_ip       = v.create_public_ip
       pip_domain_name_label  = v.pip_domain_name_label
       lb_backend_pool_ids    = try([module.load_balancer[v.load_balancer_key].backend_pool_id], [])
@@ -220,5 +224,6 @@ module "vmss" {
   )
   autoscaling_profiles = each.value.autoscaling_profiles
 
-  tags = var.tags
+  tags       = var.tags
+  depends_on = [module.vnet, module.load_balancer, module.appgw]
 }

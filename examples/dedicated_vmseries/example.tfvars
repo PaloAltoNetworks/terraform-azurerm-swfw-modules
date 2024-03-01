@@ -47,11 +47,6 @@ vnets = {
             address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
-          "appgw_blackhole" = {
-            name           = "appgw-blackhole-udr"
-            address_prefix = "10.0.0.48/28"
-            next_hop_type  = "None"
-          }
         }
       }
       "private" = {
@@ -71,11 +66,6 @@ vnets = {
           "public_blackhole" = {
             name           = "public-blackhole-udr"
             address_prefix = "10.0.0.32/28"
-            next_hop_type  = "None"
-          }
-          "appgw_blackhole" = {
-            name           = "appgw-blackhole-udr"
-            address_prefix = "10.0.0.48/28"
             next_hop_type  = "None"
           }
         }
@@ -115,10 +105,6 @@ vnets = {
         network_security_group_key = "public"
         route_table_key            = "public"
       }
-      "appgw" = {
-        name             = "appgw-snet"
-        address_prefixes = ["10.0.0.48/28"]
-      }
     }
   }
 }
@@ -149,11 +135,11 @@ load_balancers = {
     }
   }
   "private" = {
-    name = "private-lb"
+    name     = "private-lb"
+    vnet_key = "transit"
     frontend_ips = {
       "ha-ports" = {
         name               = "private-vmseries"
-        vnet_key           = "transit"
         subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
@@ -167,55 +153,6 @@ load_balancers = {
     }
   }
 }
-
-
-
-# --- APPLICATION GATEWAYs --- #
-appgws = {
-  "public" = {
-    name = "appgw"
-    public_ip = {
-      name = "pip"
-    }
-    vnet_key   = "transit"
-    subnet_key = "appgw"
-    zones      = ["1", "2", "3"]
-    capacity = {
-      static = 2
-    }
-    listeners = {
-      minimum = {
-        name = "minimum-listener"
-        port = 80
-      }
-    }
-    rewrites = {
-      minimum = {
-        name = "minimum-set"
-        rules = {
-          "xff-strip-port" = {
-            name     = "minimum-xff-strip-port"
-            sequence = 100
-            request_headers = {
-              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
-            }
-          }
-        }
-      }
-    }
-    rules = {
-      minimum = {
-        name     = "minimum-rule"
-        priority = 1
-        backend  = "minimum"
-        listener = "minimum"
-        rewrite  = "minimum"
-      }
-    }
-  }
-}
-
-
 
 # --- VMSERIES PART --- #
 ngfw_metrics = {
@@ -240,9 +177,8 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 1
+      size = "Standard_DS3_v2"
+      zone = 1
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
@@ -251,6 +187,7 @@ vmseries = {
         public_snet_key        = "public"
       }
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-in-01-mgmt"
@@ -275,9 +212,8 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 2
+      size = "Standard_DS3_v2"
+      zone = 2
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
@@ -286,6 +222,7 @@ vmseries = {
         public_snet_key        = "public"
       }
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-in-02-mgmt"
@@ -309,9 +246,8 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 1
+      size = "Standard_DS3_v2"
+      zone = 1
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
@@ -320,6 +256,7 @@ vmseries = {
         public_snet_key        = "public"
       }
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-obew-01-mgmt"
@@ -344,9 +281,8 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 2
+      size = "Standard_DS3_v2"
+      zone = 2
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
@@ -355,6 +291,7 @@ vmseries = {
         public_snet_key        = "public"
       }
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-obew-02-mgmt"

@@ -1,7 +1,7 @@
+<!-- BEGIN_TF_DOCS -->
 # Name Templater module
 
 A module to generate resource name template.
-
 
 ## Purpose
 
@@ -40,9 +40,7 @@ As you can see:
 * the `prefix` key is just a placeholder that eventually is replaced with the value of `name_prefix`
 * the `__random__` string is replaced with a name of a [random pet](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/pet) (in case you need to randomize some name, for testing purposes for example)
 * the `__default__` string is replaced with a resource abbreviation.
-  
   This abbreviations are defined with `var.abbreviations` variable. The module contains basic abbreviations following Microsoft suggestions, but they can be overriden with custom definitions.
-  
   The important part is that the `resource_type` has to match an entry in `abbreviations` variable, otherwise the abbreviation will be replaced with an empty string.
 
 To create the actual resource name the following code can be used:
@@ -53,44 +51,149 @@ vnet_name = format(module.name_templates.template, "transit")
 
 Following the values above the actual resource name would be `"a_prefix-rnd-crediblefrog-prd-transit-vnet"`.
 
-## Reference
+## Module's Required Inputs
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-### Requirements
+Name | Type | Description
+--- | --- | ---
+[`resource_type`](#resource_type) | `string` | A type of resource for which the name template will be created.
+[`name_prefix`](#name_prefix) | `string` | Prefix used in names for the resources.
+[`name_template`](#name_template) | `object` | A name template definition.
 
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.2, < 2.0 |
-| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.5 |
 
-### Providers
+## Module's Optional Inputs
 
-| Name | Version |
-|------|---------|
-| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.5 |
+Name | Type | Description
+--- | --- | ---
+[`abbreviations`](#abbreviations) | `map` | Map of abbreviations used for resources (placed in place of "__default__").
 
-### Modules
 
-No modules.
 
-### Resources
+## Module's Outputs
 
-| Name | Type |
-|------|------|
-| [random_pet.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/pet) | resource |
+Name |  Description
+--- | ---
+`template` | A template string that can be used with `format` function to generate a resource name.
 
-### Inputs
+## Module's Nameplate
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_resource_type"></a> [resource\_type](#input\_resource\_type) | A type of resource for which the name template will be created. This should follow the abbreviations resource naming standard. | `string` | n/a | yes |
-| <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix used in names for the resources. | `string` | n/a | yes |
-| <a name="input_name_template"></a> [name\_template](#input\_name\_template) | A name template definition.<br><br>Consist of two elements:<br><br>- `parts` - a list of elements that will form the template name<br>- `delimiter` - a string that will be used to separate the elements.<br><br>There are couple of rules to be followed:<br><br>- the order **DOES** matter<br>- `parts` is a list of single element maps<br>- keys in `parts` elements will be dropped, they are only informational, only values will be used<br>- value for the `prefix` key will be replaced with the `var.name_prefix` value<br>- a value of `__default__` will be replaced with an abbreviation defined in the `var.abbrevations` and matching `var.resource_type`.<br>- since this module generates template name do **REMEMBER** to include a part with `%s` value <br><br>Example:<pre>default = {<br>  default = {<br>    delimiter = "-"<br>    parts = [<br>      { prefix = null },<br>      { bu = "rnd" },<br>      { env = "prd" },<br>      { name = "%s" },<br>      { abbreviation = "__default__" },<br>    ]<br>  }<br>  storage = {<br>    delimiter = ""<br>    parts = [<br>      { prefix = null },<br>      { org = "palo" },<br>      { env = "prd" },<br>      { name = "%s" },<br>    ]<br>  }<br>}</pre> | <pre>object({<br>    delimiter = string<br>    parts     = list(map(string))<br>  })</pre> | n/a | yes |
-| <a name="input_abbreviations"></a> [abbreviations](#input\_abbreviations) | Map of abbreviations used for resources (placed in place of "\_\_default\_\_").<br><br>These abbreviations are based on [Microsoft suggestions](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-abbreviations). | `map(string)` | <pre>{<br>  "application_gw": "agw",<br>  "application_insights": "appi",<br>  "availability_set": "avail",<br>  "bastion": "bas",<br>  "data_disk": "disk",<br>  "file_share": "share",<br>  "load_balancer": "lb",<br>  "log_analytics_workspace": "log",<br>  "managed_identity": "id",<br>  "nat_gw": "ng",<br>  "network_interface": "nic",<br>  "nsg": "nsg",<br>  "nsg_rule": "nsgsr",<br>  "os_disk": "osdisk",<br>  "public_ip": "pip",<br>  "public_ip_prefix": "ippre",<br>  "resource_group": "rg",<br>  "route_table": "rt",<br>  "service_endpoint": "se",<br>  "storage_account": "st",<br>  "subnet": "snet",<br>  "udr": "udr",<br>  "virtual_machine": "vm",<br>  "virtual_machine_scale_set": "vmss",<br>  "virtual_network_gateway": "vgw",<br>  "vnet": "vnet",<br>  "vnet_peering": "peer"<br>}</pre> | no |
 
-### Outputs
+Requirements needed by this module:
 
-| Name | Description |
-|------|-------------|
-| <a name="output_template"></a> [template](#output\_template) | A template string that can be used with `format` function to generate a resource name. |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+- `terraform`, version: >= 1.5, < 2.0
+- `random`, version: ~> 3.5
+
+
+Providers used in this module:
+
+- `random`, version: ~> 3.5
+
+
+
+
+Resources used in this module:
+
+- `pet` (managed)
+
+## Inputs/Outpus details
+
+### Required Inputs
+
+
+#### resource_type
+
+A type of resource for which the name template will be created. This should follow the abbreviations resource naming standard.
+
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### name_prefix
+
+Prefix used in names for the resources.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### name_template
+
+A name template definition.
+
+Consist of two elements:
+
+- `delimiter` - (`string`, required) a string that will be used to separate the elements.
+- `parts`     - (`list`, required) a list of elements that will form the template name.
+
+There are couple of rules to be followed:
+
+- the order **DOES** matter.
+- `parts` is a list of single element maps.
+- keys in `parts` elements will be dropped, they are only informational, only values will be used.
+- value for the `prefix` key will be replaced with the `var.name_prefix` value.
+- a value of `__default__` will be replaced with an abbreviation defined in the `var.abbrevations` and matching
+  `var.resource_type`.
+- since this module generates template name do **REMEMBER** to include a part with `%s` value.
+
+Example:
+
+```
+default = {
+  default = {
+    delimiter = "-"
+    parts = [
+      { prefix = null },
+      { bu = "rnd" },
+      { env = "prd" },
+      { name = "%s" },
+      { abbreviation = "__default__" },
+    ]
+  }
+  storage = {
+    delimiter = ""
+    parts = [
+      { prefix = null },
+      { org = "palo" },
+      { env = "prd" },
+      { name = "%s" },
+    ]
+  }
+}
+```
+
+
+Type: 
+
+```hcl
+object({
+    delimiter = string
+    parts     = list(map(string))
+  })
+```
+
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+
+
+
+### Optional Inputs
+
+
+
+
+
+#### abbreviations
+
+Map of abbreviations used for resources (placed in place of "__default__").
+
+These abbreviations are based on [Microsoft suggestions](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-abbreviations).
+
+
+Type: map(string)
+
+Default value: `map[application_gw:agw application_insights:appi availability_set:avail bastion:bas data_disk:disk file_share:share load_balancer:lb log_analytics_workspace:log managed_identity:id nat_gw:ng network_interface:nic nsg:nsg nsg_rule:nsgsr os_disk:osdisk public_ip:pip public_ip_prefix:ippre resource_group:rg route_table:rt service_endpoint:se storage_account:st subnet:snet udr:udr virtual_machine:vm virtual_machine_scale_set:vmss virtual_network_gateway:vgw vnet:vnet vnet_peering:peer]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+<!-- END_TF_DOCS -->

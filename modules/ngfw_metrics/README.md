@@ -142,7 +142,7 @@ A map defining Application Insights instances.
 
 Following properties are available:
 
-- `name`                      - (`string`, required) the name of the Application Insights instance
+- `name`                      - (`string`, required) the name of the Application Insights instance.
 - `resource_group_name`       - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that will
                                 host the Application Insights instance.
 
@@ -201,9 +201,9 @@ Configuration of the log analytics workspace.
 Following properties are available:
 
 - `sku`                       - (`string`, optional, defaults to Azure defaults) the SKU of the Log Analytics Workspace.
-
-    As of API version `2018-04-03` the Azure default value is `PerGB2018`, other possible values are:
-    `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation`.
+    
+  As of API version `2018-04-03` the Azure default value is `PerGB2018`, other possible values are:
+  `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation`.
 
 - `metrics_retention_in_days` - (`number`, optional, defaults to Azure defaults) workspace data retention in days, 
                                 possible values are between 30 and 730.
@@ -222,7 +222,6 @@ object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 
 <!-- END_TF_DOCS -->

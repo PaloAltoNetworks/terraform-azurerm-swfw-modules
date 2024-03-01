@@ -33,9 +33,9 @@ variable "log_analytics_workspace" {
   Following properties are available:
 
   - `sku`                       - (`string`, optional, defaults to Azure defaults) the SKU of the Log Analytics Workspace.
-
-      As of API version `2018-04-03` the Azure default value is `PerGB2018`, other possible values are:
-      `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation`.
+    
+    As of API version `2018-04-03` the Azure default value is `PerGB2018`, other possible values are:
+    `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation`.
 
   - `metrics_retention_in_days` - (`number`, optional, defaults to Azure defaults) workspace data retention in days, 
                                   possible values are between 30 and 730.
@@ -46,7 +46,7 @@ variable "log_analytics_workspace" {
     sku                       = optional(string)
     metrics_retention_in_days = optional(number)
   })
-  validation {
+  validation { # sku
     condition = var.log_analytics_workspace.sku != null ? contains([
       "Free",
       "PerNode",
@@ -58,11 +58,18 @@ variable "log_analytics_workspace" {
       "PerGB2018"],
       var.log_analytics_workspace.sku
     ) : true
-    error_message = "The `var.log_analytics_workspace.sku` property has to have a value of either: `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation` or `PerGB2018`."
+    error_message = <<-EOF
+    The `var.log_analytics_workspace.sku` property has to have a value of either: `Free`, `PerNode`, `Premium`, `Standard`,
+    `Standalone`, `Unlimited`, `CapacityReservation` or `PerGB2018`.
+    EOF
   }
-  validation {
-    condition     = var.log_analytics_workspace.metrics_retention_in_days != null ? var.log_analytics_workspace.metrics_retention_in_days >= 30 && var.log_analytics_workspace.metrics_retention_in_days <= 730 : true
-    error_message = "The `var.log_analytics_workspace.metrics_retention_in_days` property can take values between 30 and 730 (both inclusive)."
+  validation { # metrics_retention_in_days
+    condition = var.log_analytics_workspace.metrics_retention_in_days != null ? (
+      var.log_analytics_workspace.metrics_retention_in_days >= 30 && var.log_analytics_workspace.metrics_retention_in_days <= 730
+    ) : true
+    error_message = <<-EOF
+    The `var.log_analytics_workspace.metrics_retention_in_days` property can take values between 30 and 730 (both inclusive).
+    EOF
   }
 }
 
@@ -72,7 +79,7 @@ variable "application_insights" {
 
   Following properties are available:
 
-  - `name`                      - (`string`, required) the name of the Application Insights instance
+  - `name`                      - (`string`, required) the name of the Application Insights instance.
   - `resource_group_name`       - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that will
                                   host the Application Insights instance.
 
@@ -87,12 +94,14 @@ variable "application_insights" {
     resource_group_name       = optional(string)
     metrics_retention_in_days = optional(number)
   }))
-  validation {
+  validation { # metrics_retention_in_days
     condition = alltrue([
       for _, v in var.application_insights :
       v.metrics_retention_in_days >= 30 && v.metrics_retention_in_days <= 730
       if v.metrics_retention_in_days != null
     ])
-    error_message = "The `metrics_retention_in_days` property can take values between 30 and 730 (both inclusive)."
+    error_message = <<-EOF
+    The `metrics_retention_in_days` property can take values between 30 and 730 (both inclusive).
+    EOF
   }
 }

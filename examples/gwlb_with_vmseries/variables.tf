@@ -126,40 +126,42 @@ variable "load_balancers" {
 
   Following properties are available:
 
-  - `name`                    - (`string`, required) a name of the Load Balancer
-  - `zones`                   - (`list`, optional, defaults to `["1", "2", "3"]`) list of zones the resource will be
-                                available in, please check the
-                                [module documentation](../../modules/loadbalancer/README.md#zones) for more details
+  - `name`                    - (`string`, required) a name of the Load Balancer.
+  - `vnet_key`                - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets`
+                                map that stores the Subnet described by `subnet_key`.
+  - `zones`                   - (`list`, optional, defaults to module defaults) a list of zones for Load Balancer's fronted IP
+                                configurations.
+  - `backend_name`            - (`string`, optional, defaults to module defaults) a name of the backend pool to create.
   - `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by
-                                load balancing rules;
-                                please check [module documentation](../../modules/loadbalancer/README.md#health_probes)
-                                for more specific use cases and available properties
+                                load balancing rules; please check
+                                [module documentation](../../modules/loadbalancer/README.md#health_probes) for more specific use
+                                cases and available properties.
   - `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule
-                                that will be populated with `Allow` rules for each load balancing rule (`in_rules`); please check
+                                that will be populated with `Allow` rules for each load balancing rule (`in_rules`); please check 
                                 [module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings)
                                 for available properties; please note that in this example two additional properties are
                                 available:
-    - `nsg_key`         - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to an NSG definition
-                          in the `var.vnets` map
     - `nsg_vnet_key`    - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition
-                          in the `var.vnets` map that stores the NSG described by `nsg_key`
+                          in the `var.vnets` map that stores the NSG described by `nsg_key`.
+    - `nsg_key`         - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to an NSG definition
+                          in the `var.vnets` map.
   - `frontend_ips`            - (`map`, optional, defaults to `{}`) a map containing frontend IP configuration with respective
                                 `in_rules` and `out_rules`
 
     Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
 
-      **Note** \
-      In this example the `subnet_id` is not available directly, two other properties were introduced instead.
+    **Note!** \
+    In this example the `subnet_id` is not available directly, another property has been introduced instead:
 
-      - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map
-      - `vnet_key`    - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets` map
-                        that stores the Subnet described by `subnet_key`
+    - `subnet_key` - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map.
   EOF
   default     = {}
   nullable    = false
   type = map(object({
-    name  = string
-    zones = optional(list(string), ["1", "2", "3"])
+    name         = string
+    vnet_key     = optional(string)
+    zones        = optional(list(string))
+    backend_name = optional(string)
     health_probes = optional(map(object({
       name                = string
       protocol            = string
@@ -181,7 +183,6 @@ variable "load_balancers" {
       public_ip_name                = optional(string)
       create_public_ip              = optional(bool, false)
       public_ip_resource_group_name = optional(string)
-      vnet_key                      = optional(string)
       subnet_key                    = optional(string)
       private_ip_address            = optional(string)
       gwlb_key                      = optional(string)

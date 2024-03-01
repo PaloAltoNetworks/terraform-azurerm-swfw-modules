@@ -47,6 +47,11 @@ vnets = {
             address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
+          "appgw_blackhole" = {
+            name           = "appgw-blackhole-udr"
+            address_prefix = "10.0.0.48/28"
+            next_hop_type  = "None"
+          }
         }
       }
       "private" = {
@@ -66,6 +71,11 @@ vnets = {
           "public_blackhole" = {
             name           = "public-blackhole-udr"
             address_prefix = "10.0.0.32/28"
+            next_hop_type  = "None"
+          }
+          "appgw_blackhole" = {
+            name           = "appgw-blackhole-udr"
+            address_prefix = "10.0.0.48/28"
             next_hop_type  = "None"
           }
         }
@@ -105,6 +115,10 @@ vnets = {
         network_security_group_key = "public"
         route_table_key            = "public"
       }
+      "appgw" = {
+        name             = "appgw-snet"
+        address_prefixes = ["10.0.0.48/28"]
+      }
     }
   }
 }
@@ -135,11 +149,11 @@ load_balancers = {
     }
   }
   "private" = {
-    name = "private-lb"
+    name     = "private-lb"
+    vnet_key = "transit"
     frontend_ips = {
       "ha-ports" = {
         name               = "private-vmseries"
-        vnet_key           = "transit"
         subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
@@ -162,11 +176,11 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key          = "transit"
       size              = "Standard_DS3_v2"
       zone              = 1
       bootstrap_options = "type=dhcp-client"
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm01-mgmt"
@@ -179,10 +193,11 @@ vmseries = {
         load_balancer_key = "private"
       },
       {
-        name              = "vm01-public"
-        subnet_key        = "public"
-        create_public_ip  = true
-        load_balancer_key = "public"
+        name                    = "vm01-public"
+        subnet_key              = "public"
+        create_public_ip        = true
+        load_balancer_key       = "public"
+        application_gateway_key = "public"
       }
     ]
   }
@@ -192,11 +207,11 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key          = "transit"
       size              = "Standard_DS3_v2"
       zone              = 2
       bootstrap_options = "type=dhcp-client"
     }
+    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm02-mgmt"
@@ -209,11 +224,61 @@ vmseries = {
         load_balancer_key = "private"
       },
       {
-        name              = "vm02-public"
-        subnet_key        = "public"
-        create_public_ip  = true
-        load_balancer_key = "public"
+        name                    = "vm02-public"
+        subnet_key              = "public"
+        create_public_ip        = true
+        load_balancer_key       = "public"
+        application_gateway_key = "public"
       }
     ]
+  }
+}
+
+
+# --- APPLICATION GATEWAYs --- #
+appgws = {
+  public = {
+    name       = "appgw"
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    public_ip = {
+      name = "appgw-pip"
+    }
+    listeners = {
+      "http" = {
+        name = "http"
+        port = 80
+      }
+    }
+    backend_settings = {
+      http = {
+        name     = "http"
+        port     = 80
+        protocol = "Http"
+      }
+    }
+    rewrites = {
+      xff = {
+        name = "XFF-set"
+        rules = {
+          "xff-strip-port" = {
+            name     = "xff-strip-port"
+            sequence = 100
+            request_headers = {
+              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
+            }
+          }
+        }
+      }
+    }
+    rules = {
+      "http" = {
+        name         = "http"
+        listener_key = "http"
+        backend_key  = "http"
+        rewrite_key  = "xff"
+        priority     = 1
+      }
+    }
   }
 }

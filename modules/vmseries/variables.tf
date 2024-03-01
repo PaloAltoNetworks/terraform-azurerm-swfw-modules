@@ -37,7 +37,6 @@ variable "authentication" {
   **Important!** \
   `ssh_keys` property is a list of strings, so each item should be the actual public key value.
   If you would like to load them from files use the `file` function, for example: `[ file("/path/to/public/keys/key_1.pub") ]`.
-
   EOF
   type = object({
     username                        = optional(string, "panadmin")
@@ -53,22 +52,21 @@ variable "image" {
 
   Following properties are available:
 
-  - `version`                 - (`string`, optional, defaults to `null`) VM-Series PAN-OS version; list available with 
-                                `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`
+  - `version`                 - (`string`, optional, defaults to `null`) VM-Series PAN-OS version; list available with
+                                `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`.
   - `publisher`               - (`string`, optional, defaults to `paloaltonetworks`) the Azure Publisher identifier for a image
-                                which should be deployed
+                                which should be deployed.
   - `offer`                   - (`string`, optional, defaults to `vmseries-flex`) the Azure Offer identifier corresponding to a
-                                published image
+                                published image.
   - `sku`                     - (`string`, optional, defaults to `byol`) VM-Series SKU; list available with
-                                `az vm image list -o table --all --publisher paloaltonetworks`
+                                `az vm image list -o table --all --publisher paloaltonetworks`.
   - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
-                                on Azure Market Place
+                                on Azure Market Place.
   - `custom_id`               - (`string`, optional, defaults to `null`) absolute ID of your own custom PAN-OS image to be used
-                                for creating new Virtual Machines
+                                for creating new Virtual Machines.
 
   **Important!** \
   `custom_id` and `version` properties are mutually exclusive.
-
   EOF
   type = object({
     version                 = optional(string)
@@ -78,12 +76,14 @@ variable "image" {
     enable_marketplace_plan = optional(bool, true)
     custom_id               = optional(string)
   })
-  validation {
+  validation { # version & custom_id
     condition = (var.image.custom_id != null && var.image.version == null
       ) || (
       var.image.custom_id == null && var.image.version != null
     )
-    error_message = "Either `custom_id` or `version` has to be defined."
+    error_message = <<-EOF
+    Either `custom_id` or `version` has to be defined.
+    EOF
   }
 }
 
@@ -97,12 +97,12 @@ variable "virtual_machine" {
   List of either required or important properties: 
 
   - `size`              - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
-                          Deployment Guide* as only a few selected sizes are supported
+                          Deployment Guide* as only a few selected sizes are supported.
   - `zone`              - (`string`, required) Availability Zone to place the VM in, `null` value means a non-zonal deployment.
   - `disk_type`         - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
                           possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
-                          `vm_size` values)
-  - `disk_name`         - (`string`, optional, defaults to VM name + `-disk` suffix) name od the OS disk
+                          `vm_size` values).
+  - `disk_name`         - (`string`, optional, defaults to VM name + `-disk` suffix) name od the OS disk.
   - `bootstrap_options` - bootstrap options to pass to VM-Series instance.
 
       Proper syntax is a string of semicolon separated properties, for example:
@@ -115,50 +115,61 @@ variable "virtual_machine" {
 
   List of other, optional properties: 
 
-  - `avset_key`                     - (`string`, optional, default to `null`) identifier of the Availability Set to use
+  - `avset_key`                     - (`string`, optional, default to `null`) identifier of the Availability Set to use.
   - `accelerated_networking`        - (`bool`, optional, defaults to `true`) when set to `true`  enables Azure accelerated
                                       networking (SR-IOV) for all dataplane network interfaces, this does not affect the
-                                      management interface (always disabled)
+                                      management interface (always disabled).
   - `disk_encryption_set_id`        - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
-                                      used to encrypt this VM's disk
+                                      used to encrypt this VM's disk.
   - `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted
-                                      by enabling Encryption at Host
-  - `diagnostics_storage_uri`       - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold
-                                      diagnostic files
+                                      by enabling Encryption at Host.
+  - `enable_boot_diagnostics`       - (`bool`, optional, defaults to `false`) enables boot diagnostics for a VM.
+  - `boot_diagnostics_storage_uri`  - (`string`, optional, defaults to `null`) Storage Account's Blob endpoint to hold
+                                      diagnostic files, when skipped a managed Storage Account will be used (preferred).
   - `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
                                       should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
                                       "SystemAssigned, UserAssigned".
   - `identity_ids`                  - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
-                                      assigned to this VM. Required only if `identity_type` is not "SystemAssigned"
-  - `allow_extension_operations`    - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM
-
+                                      assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
+  - `allow_extension_operations`    - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM.
   EOF
   type = object({
-    size                       = optional(string, "Standard_D3_v2")
-    bootstrap_options          = optional(string)
-    zone                       = string
-    disk_type                  = optional(string, "StandardSSD_LRS")
-    disk_name                  = string
-    avset_id                   = optional(string)
-    accelerated_networking     = optional(bool, true)
-    encryption_at_host_enabled = optional(bool)
-    disk_encryption_set_id     = optional(string)
-    diagnostics_storage_uri    = optional(string)
-    identity_type              = optional(string, "SystemAssigned")
-    identity_ids               = optional(list(string), [])
-    allow_extension_operations = optional(bool, false)
+    size                         = optional(string, "Standard_D3_v2")
+    bootstrap_options            = optional(string)
+    zone                         = string
+    disk_type                    = optional(string, "StandardSSD_LRS")
+    disk_name                    = string
+    avset_id                     = optional(string)
+    accelerated_networking       = optional(bool, true)
+    encryption_at_host_enabled   = optional(bool)
+    disk_encryption_set_id       = optional(string)
+    enable_boot_diagnostics      = optional(bool, false)
+    boot_diagnostics_storage_uri = optional(string)
+    identity_type                = optional(string, "SystemAssigned")
+    identity_ids                 = optional(list(string), [])
+    allow_extension_operations   = optional(bool, false)
   })
-  validation {
+  validation { # disk_type
     condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.virtual_machine.disk_type)
-    error_message = "The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`."
+    error_message = <<-EOF
+    The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`.
+    EOF
   }
-  validation {
-    condition     = contains(["SystemAssigned", "UserAssigned", "SystemAssigned, UserAssigned"], var.virtual_machine.identity_type)
-    error_message = "The `identity_type` property can be one of \"SystemAssigned\", \"UserAssigned\" or \"SystemAssigned, UserAssigned\"."
+  validation { # identity_type
+    condition = contains(
+      ["SystemAssigned", "UserAssigned", "SystemAssigned, UserAssigned"], var.virtual_machine.identity_type
+    )
+    error_message = <<-EOF
+    The `identity_type` property can be one of \"SystemAssigned\", \"UserAssigned\" or \"SystemAssigned, UserAssigned\".
+    EOF
   }
-  validation {
-    condition     = var.virtual_machine.identity_type == "SystemAssigned" ? length(var.virtual_machine.identity_ids) == 0 : length(var.virtual_machine.identity_ids) > 0
-    error_message = "The `identity_ids` property is required when `identity_type` is not \"SystemAssigned\"."
+  validation { # identity_type & identity_ids
+    condition = var.virtual_machine.identity_type == "SystemAssigned" ? (
+      length(var.virtual_machine.identity_ids) == 0
+    ) : length(var.virtual_machine.identity_ids) > 0
+    error_message = <<-EOF
+    The `identity_ids` property is required when `identity_type` is not \"SystemAssigned\".
+    EOF
   }
 }
 
@@ -176,13 +187,13 @@ variable "interfaces" {
   
   Following configuration options are available:
 
-  - `name`                          - (`string`, required) the interface name
-  - `subnet_id`                     - (`string`, required) ID of an existing subnet to create the interface in
+  - `name`                          - (`string`, required) the interface name.
+  - `subnet_id`                     - (`string`, required) ID of an existing subnet to create the interface in.
   - `private_ip_address`            - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
                                       skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
                                       to change as long as the VM is running. Any stop/deallocate/restart operation might cause
                                       the IP to change.
-  - `create_public_ip`              - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface
+  - `create_public_ip`              - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface.
   - `public_ip_name`                - (`string`, optional, defaults to `null`) name of the public IP to associate with the
                                       interface. When `create_public_ip` is set to `true` this will become a name of a newly
                                       created Public IP interface. Otherwise this is a name of an existing interfaces that will
@@ -217,7 +228,6 @@ variable "interfaces" {
     },
   ]
   ```
-
   EOF
   type = list(object({
     name                          = string
@@ -229,16 +239,20 @@ variable "interfaces" {
     lb_backend_pool_id            = optional(string)
     attach_to_lb_backend_pool     = optional(bool, false)
   }))
-  validation {
+  validation { # create_public_ip & public_ip_name
     condition = alltrue([
       for v in var.interfaces : v.public_ip_name != null if v.create_public_ip
     ])
-    error_message = "The `public_ip_name` property is required when `create_public_ip` is set to `true`."
+    error_message = <<-EOF
+    The `public_ip_name` property is required when `create_public_ip` is set to `true`.
+    EOF
   }
-  validation {
+  validation { # lb_backend_pool_id & attach_to_lb_backend_pool
     condition = alltrue([
       for v in var.interfaces : v.lb_backend_pool_id != null if v.attach_to_lb_backend_pool
     ])
-    error_message = "The `lb_backend_pool_id` cannot be `null` when `attach_to_lb_backend_pool` is set to `true`."
+    error_message = <<-EOF
+    The `lb_backend_pool_id` cannot be `null` when `attach_to_lb_backend_pool` is set to `true`.
+    EOF
   }
 }

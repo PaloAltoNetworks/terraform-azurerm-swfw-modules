@@ -71,14 +71,6 @@ locals {
   pip = try(azurerm_public_ip.this[0], data.azurerm_public_ip.this[0], null)
 
   pip_prefix = try(azurerm_public_ip_prefix.this[0], data.azurerm_public_ip_prefix.this[0], null)
-
-  /*   pip = var.create_natgw ? (
-    try(var.public_ip.create, false) ? azurerm_public_ip.this[0] : try(data.azurerm_public_ip.this[0], null)
-  ) : null
-
-  pip_prefix = var.create_natgw ? (
-    try(var.public_ip_prefix.create, false) ? azurerm_public_ip_prefix.this[0] : try(data.azurerm_public_ip_prefix.this[0], null)
-  ) : null */
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/nat_gateway_public_ip_association
