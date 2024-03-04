@@ -1,4 +1,5 @@
 # Generate a random password.
+# https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password
 resource "random_password" "this" {
   count = var.password == null ? 1 : 0
 
@@ -15,6 +16,7 @@ locals {
 }
 
 # Create or source the Resource Group.
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
   name     = "${var.name_prefix}${var.resource_group_name}"
@@ -23,6 +25,7 @@ resource "azurerm_resource_group" "this" {
   tags = var.tags
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group
 data "azurerm_resource_group" "this" {
   count = var.create_resource_group ? 0 : 1
   name  = var.resource_group_name

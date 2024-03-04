@@ -1,4 +1,5 @@
 # Create or source the Resource Group.
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
   name     = "${var.name_prefix}${var.resource_group_name}"
@@ -7,6 +8,7 @@ resource "azurerm_resource_group" "this" {
   tags = var.tags
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group
 data "azurerm_resource_group" "this" {
   count = var.create_resource_group ? 0 : 1
   name  = var.resource_group_name
@@ -17,6 +19,7 @@ locals {
 }
 
 # Create public IP in order to reuse it in 1 of the application gateways
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
   name                = "pip-existing"
   resource_group_name = local.resource_group.name

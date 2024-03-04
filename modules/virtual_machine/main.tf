@@ -5,6 +5,7 @@ locals {
   disable_password_authentication = var.password == null ? true : false
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.interfaces : k => v if try(v.create_public_ip, false) }
 
@@ -17,6 +18,7 @@ resource "azurerm_public_ip" "this" {
   tags                = try(each.value.tags, var.tags)
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface
 resource "azurerm_network_interface" "this" {
   count = length(var.interfaces)
 
@@ -36,6 +38,7 @@ resource "azurerm_network_interface" "this" {
   }
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_backend_address_pool_association
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
   for_each = { for k, v in var.interfaces : k => v if try(v.enable_backend_pool, false) }
 
@@ -49,6 +52,7 @@ resource "azurerm_network_interface_backend_address_pool_association" "this" {
   ]
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine
 resource "azurerm_virtual_machine" "this" {
   name                         = var.name
   location                     = var.location
