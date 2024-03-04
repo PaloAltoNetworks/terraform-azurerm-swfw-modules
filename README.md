@@ -1,17 +1,17 @@
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/PaloAltoNetworks/terraform-azurerm-vmseries-modules?style=flat-square)
-![GitHub](https://img.shields.io/github/license/PaloAltoNetworks/terraform-modules-vmseries-ci-workflows?style=flat-square)
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/PaloAltoNetworks/terraform-azurerm-vmseries-modules/release_ci.yml?style=flat-square)
-![GitHub issues](https://img.shields.io/github/issues/PaloAltoNetworks/terraform-azurerm-vmseries-modules?style=flat-square)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/PaloAltoNetworks/terraform-azurerm-vmseries-modules?style=flat-square)
-![Terraform registry downloads total](https://img.shields.io/badge/dynamic/json?color=green&label=downloads%20total&query=data.attributes.total&url=https%3A%2F%2Fregistry.terraform.io%2Fv2%2Fmodules%2FPaloAltoNetworks%2Fvmseries-modules%2Fazurerm%2Fdownloads%2Fsummary&style=flat-square)
-![Terraform registry download month](https://img.shields.io/badge/dynamic/json?color=green&label=downloads%20this%20month&query=data.attributes.month&url=https%3A%2F%2Fregistry.terraform.io%2Fv2%2Fmodules%2FPaloAltoNetworks%2Fvmseries-modules%2Fazurerm%2Fdownloads%2Fsummary&style=flat-square)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/PaloAltoNetworks/terraform-azurerm-swfw-modules?style=flat-square)
+![GitHub](https://img.shields.io/github/license/PaloAltoNetworks/terraform-modules-swfw-ci-workflows?style=flat-square)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/PaloAltoNetworks/terraform-azurerm-swfw-modules/release_ci.yml?style=flat-square)
+![GitHub issues](https://img.shields.io/github/issues/PaloAltoNetworks/terraform-azurerm-swfw-modules?style=flat-square)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/PaloAltoNetworks/terraform-azurerm-swfw-modules?style=flat-square)
+![Terraform registry downloads total](https://img.shields.io/badge/dynamic/json?color=green&label=downloads%20total&query=data.attributes.total&url=https%3A%2F%2Fregistry.terraform.io%2Fv2%2Fmodules%2FPaloAltoNetworks%2Fswfw-modules%2Fazurerm%2Fdownloads%2Fsummary&style=flat-square)
+![Terraform registry download month](https://img.shields.io/badge/dynamic/json?color=green&label=downloads%20this%20month&query=data.attributes.month&url=https%3A%2F%2Fregistry.terraform.io%2Fv2%2Fmodules%2FPaloAltoNetworks%2Fswfw-modules%2Fazurerm%2Fdownloads%2Fsummary&style=flat-square)
 
-# Terraform Modules for Palo Alto Networks VM-Series on Azure Cloud
+# Terraform Modules for Palo Alto Networks Software Firewalls on Azure Cloud
 
 ## Overview
 
-A set of modules for using **Palo Alto Networks VM-Series firewalls** to provide control and protection
-to your applications running on Azure Cloud. It deploys VM-Series as virtual machines and it configures
+A set of modules for using **Palo Alto Networks Software Firewalls** to provide control and protection
+to your applications running on Azure Cloud. It deploys Software Firewalls and it configures
 aspects such as virtual networks, subnets, network security groups, storage accounts, service principals,
 Panorama virtual machine instances, and more.
 
@@ -44,11 +44,11 @@ Terraform version to be 1.0.0 across most of the modules.
 ## Versioning
 
 These modules follow the principles of [Semantic Versioning](http://semver.org/). You can find each new release,
-along with the changelog, on the GitHub [Releases](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/releases) page.
+along with the changelog, on the GitHub [Releases](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/releases) page.
 
 ## Getting Help
 
-If you have found a bug, please report it. The preferred way is to create a new issue on the [GitHub issue page](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/issues).
+If you have found a bug, please report it. The preferred way is to create a new issue on the [GitHub issue page](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/issues).
 
 For consulting support, please contact services-sales@paloaltonetworks.com or your Palo Alto Networks account manager.
 

@@ -23,7 +23,7 @@ but a [dedicated one exists](../standalone\\_panorama/README.md).
 
 ## Reference Architecture Design
 
-![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6574404/a7c2452d-f926-49da-bf21-9d840282a0a2)
+![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/aa2ae33a-fb46-4a1c-9811-98ea3b132297)
 
 This code implements:
 
@@ -48,7 +48,8 @@ and may present scale limitations with all traffic flowing through a single set 
 that occurs when traffic crosses virtual routers. This option is suitable for smaller scale deployments because inbound and
 outbound traffic flows occur on the same set of firewalls. However, the technical integration complexity is high.
 
-![Common-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6500664/b10403f9-795a-4501-a189-3c21d44fc9e7)
+![Common-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/7d363d6a-b394-4851-99b9-03ce8abf379a)
+
 
 This reference architecture consists of:
 
