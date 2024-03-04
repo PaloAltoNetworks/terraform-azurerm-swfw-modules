@@ -30,6 +30,7 @@ locals {
   out_rules = { for v in local.out_flat_rules : "${v.fipkey}-${v.rulekey}" => v }
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.frontend_ips : k => v if v.create_public_ip }
 
@@ -42,6 +43,7 @@ resource "azurerm_public_ip" "this" {
   tags                = var.tags
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
 data "azurerm_public_ip" "this" {
   for_each = { for k, v in var.frontend_ips : k => v if !v.create_public_ip && v.public_ip_name != null }
 
@@ -49,6 +51,7 @@ data "azurerm_public_ip" "this" {
   resource_group_name = coalesce(each.value.public_ip_resource_group, var.resource_group_name)
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb
 resource "azurerm_lb" "this" {
   name                = var.name
   resource_group_name = var.resource_group_name
@@ -85,6 +88,7 @@ resource "azurerm_lb" "this" {
   }
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_backend_address_pool
 resource "azurerm_lb_backend_address_pool" "this" {
   name            = var.backend_name
   loadbalancer_id = azurerm_lb.this.id
@@ -113,6 +117,7 @@ locals {
   } : {}
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_probe
 resource "azurerm_lb_probe" "this" {
   for_each = merge(coalesce(var.health_probes, {}), local.default_probe)
 
@@ -130,6 +135,7 @@ resource "azurerm_lb_probe" "this" {
   number_of_probes = 1
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_rule
 resource "azurerm_lb_rule" "this" {
   for_each = local.in_rules
 
@@ -147,6 +153,7 @@ resource "azurerm_lb_rule" "this" {
   load_distribution              = each.value.rule.session_persistence
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_outbound_rule
 resource "azurerm_lb_outbound_rule" "this" {
   for_each = local.out_rules
 
@@ -179,7 +186,7 @@ locals {
   }
 }
 
-# Optional NSG rules. Each corresponds to one azurerm_lb_rule.
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule
 resource "azurerm_network_security_rule" "this" {
   for_each = { for k, v in local.in_rules : k => v if var.nsg_auto_rules_settings != null }
 
