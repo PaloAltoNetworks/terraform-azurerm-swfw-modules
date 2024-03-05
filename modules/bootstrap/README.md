@@ -49,7 +49,7 @@ This code will create a storage account for 3 NGFWs. Please **note** that:
 
 ```hcl
 module "bootstrap" {
-  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/bootstrap"
+  source = "../../modules/bootstrap"
 
   name                = "samplebootstrapstorage"
   resource_group_name = "rg-name"
@@ -402,5 +402,6 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 <!-- END_TF_DOCS -->

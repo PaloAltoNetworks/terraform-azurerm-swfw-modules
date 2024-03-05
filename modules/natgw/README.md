@@ -26,7 +26,7 @@ and Subnets):
 
 ```hcl
 module "natgw" {
-  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/natgw"
+  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/natgw"
 
   name                = "NATGW_name"
   resource_group_name = "resource_group_name"
@@ -313,5 +313,6 @@ object({
 Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 <!-- END_TF_DOCS -->

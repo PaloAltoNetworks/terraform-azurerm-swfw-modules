@@ -9,8 +9,9 @@ In order to use module `appgw`, you need to deploy `azurerm_resource_group` and 
 Then you can use below code as an example of calling module to create Application Gateway:
 
 ```hcl
-module "Application Gateway" {
-  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/appgw"
+# Create Application Gateay
+module "appgw" {
+  source = "../../modules/appgw"
 
   for_each = var.appgws
 
@@ -1484,6 +1485,7 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 
 <!-- END_TF_DOCS -->
