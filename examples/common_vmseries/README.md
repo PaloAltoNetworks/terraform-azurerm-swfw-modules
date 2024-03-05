@@ -17,8 +17,7 @@ common VM-Series for all traffic; for a discussion of other options, please see 
 
 ## Reference Architecture Design
 
-![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/aa2ae33a-fb46-4a1c-9811-98ea3b132297)
-
+![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6574404/a7c2452d-f926-49da-bf21-9d840282a0a2)
 
 This code implements:
 
@@ -41,8 +40,7 @@ and may present scale limitations with all traffic flowing through a single set 
 that occurs when traffic crosses virtual routers. This option is suitable for proof-of-concepts and smaller scale deployments
 because the number of firewalls low. However, the technical integration complexity is high.
 
-![Detailed Topology Diagram](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/8e8da6e0-afba-4bb5-b2c7-a95c7250dab3)
-
+![Detailed Topology Diagram](https://user-images.githubusercontent.com/2110772/234920647-c7dc77c1-d86c-42ac-ba5a-59a95439ef23.png)
 
 This reference architecture consists of:
 
@@ -212,7 +210,7 @@ Name |  Description
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.2, < 2.0
+- `terraform`, version: >= 1.5, < 2.0
 
 
 Providers used in this module:

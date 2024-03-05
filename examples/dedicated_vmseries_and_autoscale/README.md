@@ -23,7 +23,7 @@ Panorama instance is not covered in this example, but a [dedicated one exists](.
 
 ## Reference Architecture Design
 
-![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/aa2ae33a-fb46-4a1c-9811-98ea3b132297)
+![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6574404/a7c2452d-f926-49da-bf21-9d840282a0a2)
 
 This code implements:
 
@@ -49,8 +49,7 @@ set of VM-Series firewalls services all outbound, east-west, and enterprise netw
 increased scale and operational resiliency and reduces the chances of high bandwidth use from the inbound traffic flows affecting
 other traffic flows within the deployment.
 
-![Dedicated-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/757005dc-3e24-4b39-8a69-7b3fbf9819cb)
-
+![Dedicated-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/2110772/be84d4cb-c4c0-4e62-8bd7-8f5050215876)
 
 This reference architecture consists of:
 
@@ -231,6 +230,9 @@ Name |  Description
 ## Module's Nameplate
 
 
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.5, < 2.0
 
 
 Providers used in this module:

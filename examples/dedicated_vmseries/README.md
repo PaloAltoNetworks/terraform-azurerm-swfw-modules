@@ -17,7 +17,7 @@ dedicated-inbound VM-Series; for a discussion of other options, please see the d
 
 ## Reference Architecture Design
 
-![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/aa2ae33a-fb46-4a1c-9811-98ea3b132297)
+![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6574404/a7c2452d-f926-49da-bf21-9d840282a0a2)
 
 This code implements:
 
@@ -41,8 +41,7 @@ The second set of VM-Series firewalls services all outbound, east-west, and ente
 choice offers increased scale and operational resiliency and reduces the chances of high bandwidth use from the inbound traffic
 flows affecting other traffic flows within the deployment.
 
-![Detailed Topology Diagram](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/3644469f-5f0f-44f9-8990-010c8bcf1cec)
-
+![Detailed Topology Diagram](https://user-images.githubusercontent.com/2110772/234920818-44e4082d-b445-4ffc-b0cb-174ef1e3c2ae.png)
 
 This reference architecture consists of:
 
@@ -215,7 +214,7 @@ Name |  Description
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.2, < 2.0
+- `terraform`, version: >= 1.5, < 2.0
 
 
 Providers used in this module:
