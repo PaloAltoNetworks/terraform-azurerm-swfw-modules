@@ -61,7 +61,7 @@ Below you can find a simple example deploying a Scale Set w/o autoscaling, using
 
 ```hcl
 module "vmss" {
-  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/vmss"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/vmss"
 
   name                = "ngfw-vmss"
   resource_group_name = "hub-rg"

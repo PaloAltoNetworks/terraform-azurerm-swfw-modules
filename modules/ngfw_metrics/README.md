@@ -42,7 +42,7 @@ The following snippet deploys Log Analytics Workspace and two Application Insigh
 
 ```hcl
 module "ngfw_metrics" {
-  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/ngfw_metrics"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/ngfw_metrics"
 
   name                = "ngfw-law"
   resource_group_name = "ngfw-rg"
