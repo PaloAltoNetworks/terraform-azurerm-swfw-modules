@@ -1,4 +1,5 @@
-# --- GENERAL --- #
+### GENERAL ###
+
 location              = "North Europe"
 resource_group_name   = "panorama"
 name_prefix           = "example-"
@@ -9,9 +10,8 @@ tags = {
 }
 enable_zones = false
 
+### NETWORK ###
 
-
-# --- VNET PART --- #
 vnets = {
   "vnet" = {
     name          = "panorama-vnet"
@@ -44,11 +44,12 @@ vnets = {
   }
 }
 
-# --- PANORAMA PART --- #
+### PANORAMA ###
 
 panoramas = {
   "pn-1" = {
-    name = "panorama01"
+    name     = "panorama01"
+    vnet_key = "vnet"
     authentication = {
       disable_password_authentication = false
       #ssh_keys                       = ["~/.ssh/id_rsa.pub"]
@@ -61,7 +62,6 @@ panoramas = {
       zone      = null
       disk_name = "panorama-os-disk"
     }
-    vnet_key = "vnet"
     interfaces = [
       {
         name               = "management"

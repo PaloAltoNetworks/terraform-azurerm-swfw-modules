@@ -1,4 +1,5 @@
-# Generate a random password.
+### Generate a random password ###
+
 # https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password
 resource "random_password" "this" {
   count = anytrue([
@@ -26,7 +27,8 @@ locals {
   }
 }
 
-# Create or source the Resource Group.
+### Create or source a Resource Group ###
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
@@ -46,7 +48,8 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
-# Manage the network required for the topology.
+### Manage the network required for the topology ###
+
 module "vnet" {
   source = "../../modules/vnet"
 
@@ -62,14 +65,15 @@ module "vnet" {
   create_subnets = each.value.create_subnets
   subnets        = each.value.subnets
 
-  network_security_groups = { for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  network_security_groups = {
+    for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
-  route_tables = { for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  route_tables = {
+    for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
 
   tags = var.tags
 }
-
 
 module "natgw" {
   source = "../../modules/natgw"
@@ -84,15 +88,19 @@ module "natgw" {
   idle_timeout        = each.value.idle_timeout
   subnet_ids          = { for v in each.value.subnet_keys : v => module.vnet[each.value.vnet_key].subnet_ids[v] }
 
-  public_ip        = try(merge(each.value.public_ip, { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }), null)
-  public_ip_prefix = try(merge(each.value.public_ip_prefix, { name = "${each.value.public_ip_prefix.create ? var.name_prefix : ""}${each.value.public_ip_prefix.name}" }), null)
+  public_ip = try(merge(each.value.public_ip, {
+    name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}"
+  }), null)
+  public_ip_prefix = try(merge(each.value.public_ip_prefix, {
+    name = "${each.value.public_ip_prefix.create ? var.name_prefix : ""}${each.value.public_ip_prefix.name}"
+  }), null)
 
   tags       = var.tags
   depends_on = [module.vnet]
 }
 
+### Create Load Balancers, both internal and external ###
 
-# create load balancers, both internal and external
 module "load_balancer" {
   source = "../../modules/loadbalancer"
 
@@ -109,7 +117,8 @@ module "load_balancer" {
   nsg_auto_rules_settings = try(
     {
       nsg_name = try(
-        "${var.name_prefix}${var.vnets[each.value.nsg_auto_rules_settings.nsg_vnet_key].network_security_groups[each.value.nsg_auto_rules_settings.nsg_key].name}",
+        "${var.name_prefix}${var.vnets[each.value.nsg_auto_rules_settings.nsg_vnet_key].network_security_groups[
+        each.value.nsg_auto_rules_settings.nsg_key].name}",
         each.value.nsg_auto_rules_settings.nsg_name
       )
       nsg_resource_group_name = try(
@@ -137,9 +146,65 @@ module "load_balancer" {
   depends_on = [module.vnet]
 }
 
+### Create Application Gateways ###
 
+locals {
+  nics_with_appgw_key = flatten([
+    for k, v in var.vmseries : [
+      for nic in v.interfaces : {
+        vm_key    = k
+        nic_name  = nic.name
+        appgw_key = nic.application_gateway_key
+      } if nic.application_gateway_key != null
+  ]])
 
-# create the actual VM-Series VMs and resources
+  ips_4_nics_with_appgw_key = {
+    for v in local.nics_with_appgw_key :
+    v.appgw_key => module.vmseries[v.vm_key].interfaces["${var.name_prefix}${v.nic_name}"].private_ip_address...
+  }
+}
+
+module "appgw" {
+  source = "../../modules/appgw"
+
+  for_each = var.appgws
+
+  name                = "${var.name_prefix}${each.value.name}"
+  resource_group_name = local.resource_group.name
+  location            = var.location
+  subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
+
+  zones = each.value.zones
+  public_ip = merge(
+    each.value.public_ip,
+    { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }
+  )
+  domain_name_label              = each.value.domain_name_label
+  capacity                       = each.value.capacity
+  enable_http2                   = each.value.enable_http2
+  waf                            = each.value.waf
+  managed_identities             = each.value.managed_identities
+  global_ssl_policy              = each.value.global_ssl_policy
+  ssl_profiles                   = each.value.ssl_profiles
+  frontend_ip_configuration_name = each.value.frontend_ip_configuration_name
+  listeners                      = each.value.listeners
+  backend_pool = merge(
+    each.value.backend_pool,
+    length(local.ips_4_nics_with_appgw_key) == 0 ? {} : { vmseries_ips = local.ips_4_nics_with_appgw_key[each.key] }
+  )
+  backend_settings = each.value.backend_settings
+  probes           = each.value.probes
+  rewrites         = each.value.rewrites
+  redirects        = each.value.redirects
+  url_path_maps    = each.value.url_path_maps
+  rules            = each.value.rules
+
+  tags       = var.tags
+  depends_on = [module.vnet, module.vmseries]
+}
+
+### Create VM-Series VMs and closely associated resources ###
+
 module "ngfw_metrics" {
   source = "../../modules/ngfw_metrics"
 
@@ -147,9 +212,11 @@ module "ngfw_metrics" {
 
   create_workspace = var.ngfw_metrics.create_workspace
 
-  name                = "${var.ngfw_metrics.create_workspace ? var.name_prefix : ""}${var.ngfw_metrics.name}"
-  resource_group_name = var.ngfw_metrics.create_workspace ? local.resource_group.name : coalesce(var.ngfw_metrics.resource_group_name, local.resource_group.name)
-  location            = var.location
+  name = "${var.ngfw_metrics.create_workspace ? var.name_prefix : ""}${var.ngfw_metrics.name}"
+  resource_group_name = var.ngfw_metrics.create_workspace ? local.resource_group.name : (
+    coalesce(var.ngfw_metrics.resource_group_name, local.resource_group.name)
+  )
+  location = var.location
 
   log_analytics_workspace = {
     sku                       = var.ngfw_metrics.sku
@@ -161,10 +228,11 @@ module "ngfw_metrics" {
   tags = var.tags
 }
 
+# https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file
 resource "local_file" "bootstrap_xml" {
   for_each = {
     for k, v in var.vmseries :
-    k => v.virtual_machine
+    k => merge(v.virtual_machine, { vnet_key = v.vnet_key })
     if try(v.virtual_machine.bootstrap_package.bootstrap_xml_template != null, false)
   }
 
@@ -254,6 +322,7 @@ module "bootstrap" {
   tags = var.tags
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/availability_set
 resource "azurerm_availability_set" "this" {
   for_each = var.availability_sets
 
@@ -286,8 +355,10 @@ module "vmseries" {
         coalesce(
           each.value.virtual_machine.bootstrap_options,
           join(",", [
-            "storage-account=${module.bootstrap[each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_name}",
-            "access-key=${module.bootstrap[each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_primary_access_key}",
+            "storage-account=${module.bootstrap[
+            each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_name}",
+            "access-key=${module.bootstrap[
+            each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_primary_access_key}",
             "file-share=${each.key}",
             "share-directory=None"
           ]),
@@ -298,10 +369,12 @@ module "vmseries" {
   )
 
   interfaces = [for v in each.value.interfaces : {
-    name                          = "${var.name_prefix}${v.name}"
-    subnet_id                     = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
-    create_public_ip              = v.create_public_ip
-    public_ip_name                = v.create_public_ip ? "${var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")}" : v.public_ip_name
+    name             = "${var.name_prefix}${v.name}"
+    subnet_id        = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
+    create_public_ip = v.create_public_ip
+    public_ip_name = v.create_public_ip ? "${
+      var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")
+    }" : v.public_ip_name
     public_ip_resource_group_name = v.public_ip_resource_group_name
     private_ip_address            = v.private_ip_address
     attach_to_lb_backend_pool     = v.load_balancer_key != null
@@ -316,61 +389,4 @@ module "vmseries" {
     module.load_balancer,
     module.bootstrap,
   ]
-}
-
-# Create Application Gateway
-
-locals {
-  nics_with_appgw_key = flatten([
-    for k, v in var.vmseries : [
-      for nic in v.interfaces : {
-        vm_key    = k
-        nic_name  = nic.name
-        appgw_key = nic.application_gateway_key
-      } if nic.application_gateway_key != null
-  ]])
-
-  ips_4_nics_with_appgw_key = {
-    for v in local.nics_with_appgw_key :
-    v.appgw_key => module.vmseries[v.vm_key].interfaces["${var.name_prefix}${v.nic_name}"].private_ip_address...
-  }
-}
-
-module "appgw" {
-  source = "../../modules/appgw"
-
-  for_each = var.appgws
-
-  name                = "${var.name_prefix}${each.value.name}"
-  resource_group_name = local.resource_group.name
-  location            = var.location
-  subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
-
-  zones = each.value.zones
-  public_ip = merge(
-    each.value.public_ip,
-    { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }
-  )
-  domain_name_label              = each.value.domain_name_label
-  capacity                       = each.value.capacity
-  enable_http2                   = each.value.enable_http2
-  waf                            = each.value.waf
-  managed_identities             = each.value.managed_identities
-  global_ssl_policy              = each.value.global_ssl_policy
-  ssl_profiles                   = each.value.ssl_profiles
-  frontend_ip_configuration_name = each.value.frontend_ip_configuration_name
-  listeners                      = each.value.listeners
-  backend_pool = merge(
-    each.value.backend_pool,
-    length(local.ips_4_nics_with_appgw_key) == 0 ? {} : { vmseries_ips = local.ips_4_nics_with_appgw_key[each.key] }
-  )
-  backend_settings = each.value.backend_settings
-  probes           = each.value.probes
-  rewrites         = each.value.rewrites
-  redirects        = each.value.redirects
-  url_path_maps    = each.value.url_path_maps
-  rules            = each.value.rules
-
-  tags       = var.tags
-  depends_on = [module.vnet, module.vmseries]
 }

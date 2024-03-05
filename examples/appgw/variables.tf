@@ -69,7 +69,6 @@ variable "vnets" {
   - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
                                 [VNET module documentation](../../modules/vnet/README.md#route_tables)
   EOF
-
   type = map(object({
     name                   = string
     create_virtual_network = optional(bool, true)

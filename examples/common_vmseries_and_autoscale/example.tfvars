@@ -1,4 +1,5 @@
-# --- GENERAL --- #
+### GENERAL ###
+
 location            = "North Europe"
 resource_group_name = "autoscale-common"
 name_prefix         = "example-"
@@ -7,7 +8,8 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-# --- VNET PART --- #
+### NETWORK ###
+
 vnets = {
   "transit" = {
     name          = "transit"
@@ -123,8 +125,8 @@ vnets = {
   }
 }
 
+### LOAD BALANCING ###
 
-# --- LOAD BALANCING PART --- #
 load_balancers = {
   "public" = {
     name = "public-lb"
@@ -168,9 +170,6 @@ load_balancers = {
   }
 }
 
-
-
-# --- APPLICATION GATEWAYs --- #
 appgws = {
   public = {
     name       = "appgw"
@@ -218,14 +217,16 @@ appgws = {
   }
 }
 
-# --- VMSERIES PART --- #
+### VM-SERIES ###
+
 ngfw_metrics = {
   name = "ngwf-log-analytics-wrksp"
 }
 
 scale_sets = {
   common = {
-    name = "common-vmss"
+    name     = "common-vmss"
+    vnet_key = "transit"
     image = {
       version = "10.2.4"
     }
@@ -239,7 +240,6 @@ scale_sets = {
     autoscaling_configuration = {
       default_count = 1
     }
-    vnet_key = "transit"
     interfaces = [
       {
         name             = "management"

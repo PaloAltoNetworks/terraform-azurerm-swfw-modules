@@ -1,4 +1,5 @@
-# --- GENERAL --- #
+### GENERAL ###
+
 location            = "North Europe"
 resource_group_name = "gwlb"
 name_prefix         = "example-"
@@ -7,7 +8,8 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-# --- VNET PART --- #
+### NETWORK ###
+
 vnets = {
   "transit" = {
     name          = "transit"
@@ -102,7 +104,8 @@ vnets = {
   }
 }
 
-# --- LOAD BALANCING PART --- #
+### LOAD BALANCING ###
+
 load_balancers = {
   "app1" = {
     name = "app1-lb"
@@ -142,7 +145,6 @@ load_balancers = {
   }
 }
 
-# --- GWLB PART --- #
 gateway_load_balancers = {
   gwlb = {
     name = "vmseries-gwlb"
@@ -184,7 +186,8 @@ gateway_load_balancers = {
   }
 }
 
-# --- VMSERIES PART --- #
+### VM-SERIES ###
+
 bootstrap_storages = {
   "bootstrap" = {
     name = "examplegwlbbootstrap"
@@ -198,14 +201,14 @@ bootstrap_storages = {
 
 vmseries = {
   "fw-1" = {
-    name = "firewall01"
+    name     = "firewall01"
+    vnet_key = "transit"
     image = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 1
+      size = "Standard_DS3_v2"
+      zone = 1
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
@@ -228,14 +231,14 @@ vmseries = {
     ]
   }
   "fw-2" = {
-    name = "firewall02"
+    name     = "firewall02"
+    vnet_key = "transit"
     image = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 2
+      size = "Standard_DS3_v2"
+      zone = 2
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
@@ -259,7 +262,8 @@ vmseries = {
   }
 }
 
-# --- APPLICATION VM PART --- #
+### TEST INFRASTRUCTURE ###
+
 appvms = {
   app1vm01 = {
     name              = "app1-vm01"

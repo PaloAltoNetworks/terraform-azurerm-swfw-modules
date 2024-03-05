@@ -42,8 +42,8 @@ Providers used in this module:
 Modules used in this module:
 Name | Version | Source | Description
 --- | --- | --- | ---
-`vnet` | - | ../../modules/vnet | Manage the network required for the topology.
-`appgw` | - | ../../modules/appgw | Create Application Gateway
+`vnet` | - | ../../modules/vnet | 
+`appgw` | - | ../../modules/appgw | 
 
 
 Resources used in this module:

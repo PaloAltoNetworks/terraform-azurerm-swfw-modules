@@ -9,8 +9,8 @@ The `README` is also in new, document-style format.
 
 Name | Type | Description
 --- | --- | ---
-[`location`](#location) | `string` | The Azure region to use.
 [`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group.
+[`location`](#location) | `string` | The Azure region to use.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 
 
@@ -18,10 +18,10 @@ Name | Type | Description
 
 Name | Type | Description
 --- | --- | ---
-[`tags`](#tags) | `map` | Map of tags to assign to the created resources.
 [`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
 [`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
-[`virtual_network_gateways`](#virtual_network_gateways) | `map` | Map of virtual_network_gateways to create.
+[`tags`](#tags) | `map` | Map of tags to assign to the created resources.
+[`virtual_network_gateways`](#virtual_network_gateways) | `map` | Map of Virtual Network Gateways to create.
 
 
 
@@ -46,7 +46,7 @@ Modules used in this module:
 Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | 
-`vng` | - | ../../modules/virtual_network_gateway | Create virtual network gateway
+`vng` | - | ../../modules/virtual_network_gateway | 
 
 
 Resources used in this module:
@@ -60,15 +60,6 @@ Resources used in this module:
 
 
 
-#### location
-
-The Azure region to use.
-
-Type: string
-
-<sup>[back to list](#modules-required-inputs)</sup>
-
-
 
 #### resource_group_name
 
@@ -78,28 +69,36 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
+#### location
+
+The Azure region to use.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+
 #### vnets
 
 A map defining VNETs.
   
 For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-- `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
-                              `false` will source an existing VNET.
-- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be
-                              a full resource name, including prefixes.
-- `address_space`           - (`list(string)`, required when `create_virtual_network = false`) a list of CIDRs for a newly
-                              created VNET
-- `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which
-                              the VNET will reside or is sourced from
+- `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, `false` will source
+                              an existing VNET.
+- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a
+                              full resource name, including prefixes.
+- `address_space`           - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET.
+- `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
+                              VNET will reside or is sourced from.
 - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
-                              otherwise use source existing subnets
+                              otherwise use source existing subnets.
 - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
-                              [VNET module documentation](../../modules/vnet/README.md#subnets)
+                              [VNET module documentation](../../modules/vnet/README.md#subnets).
 - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
-                              [VNET module documentation](../../modules/vnet/README.md#network_security_groups)
+                              [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
 - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
-                              [VNET module documentation](../../modules/vnet/README.md#route_tables)
+                              [VNET module documentation](../../modules/vnet/README.md#route_tables).
 
 
 Type: 
@@ -158,28 +157,20 @@ map(object({
 ### Optional Inputs
 
 
-#### tags
-
-Map of tags to assign to the created resources.
-
-Type: map(string)
-
-Default value: `map[]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-
 #### name_prefix
 
 A prefix that will be added to all created resources.
-There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
+There is no default delimiter applied between the prefix and the resource name.
+Please include the delimiter in the actual prefix.
 
 Example:
-```hcl
+```
 name_prefix = "test-"
 ```
   
-NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property.
+**Note!** \
+This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name,
+even if it is also prefixed with the same value as the one in this property.
 
 
 Type: string
@@ -190,7 +181,9 @@ Default value: ``
 
 #### create_resource_group
 
-When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
+When set to `true` it will cause a Resource Group creation.
+Name of the newly specified RG is controlled by `resource_group_name`.
+  
 When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
 
 
@@ -202,9 +195,20 @@ Default value: `true`
 
 
 
+#### tags
+
+Map of tags to assign to the created resources.
+
+Type: map(string)
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+
 #### virtual_network_gateways
 
-Map of virtual_network_gateways to create.
+Map of Virtual Network Gateways to create.
 
 Type: 
 

@@ -1,4 +1,5 @@
-# --- GENERAL --- #
+### GENERAL ###
+
 location            = "North Europe"
 resource_group_name = "vmseries-standalone"
 name_prefix         = "example-"
@@ -7,7 +8,8 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-# --- VNET PART --- #
+### NETWORK ###
+
 vnets = {
   "transit" = {
     name          = "transit"
@@ -40,11 +42,12 @@ vnets = {
   }
 }
 
+### VM-SERIES ###
 
-# --- VMSERIES PART --- #
 vmseries = {
   "fw-1" = {
-    name = "firewall01"
+    name     = "firewall01"
+    vnet_key = "transit"
     image = {
       version = "10.2.3"
     }
@@ -52,7 +55,6 @@ vmseries = {
       bootstrap_options = "type=dhcp-client"
       zone              = null
     }
-    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-mgmt"

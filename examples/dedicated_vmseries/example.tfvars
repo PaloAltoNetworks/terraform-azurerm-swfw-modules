@@ -1,4 +1,5 @@
-# --- GENERAL --- #
+### GENERAL ###
+
 location            = "North Europe"
 resource_group_name = "transit-vnet-dedicated"
 name_prefix         = "example-"
@@ -7,7 +8,8 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-# --- VNET PART --- #
+### NETWORK ###
+
 vnets = {
   "transit" = {
     name          = "transit"
@@ -109,8 +111,8 @@ vnets = {
   }
 }
 
+### LOAD BALANCING ###
 
-# --- LOAD BALANCING PART --- #
 load_balancers = {
   "public" = {
     name = "public-lb"
@@ -154,7 +156,8 @@ load_balancers = {
   }
 }
 
-# --- VMSERIES PART --- #
+### VM-SERIES ###
+
 ngfw_metrics = {
   name = "metrics"
 }
@@ -172,7 +175,8 @@ bootstrap_storages = {
 
 vmseries = {
   "fw-in-1" = {
-    name = "inbound-firewall01"
+    name     = "inbound-firewall01"
+    vnet_key = "transit"
     image = {
       version = "10.2.3"
     }
@@ -187,7 +191,6 @@ vmseries = {
         public_snet_key        = "public"
       }
     }
-    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-in-01-mgmt"
@@ -207,7 +210,8 @@ vmseries = {
     ]
   }
   "fw-in-2" = {
-    name = "inbound-firewall02"
+    name     = "inbound-firewall02"
+    vnet_key = "transit"
     image = {
       version = "10.2.3"
     }
@@ -222,7 +226,6 @@ vmseries = {
         public_snet_key        = "public"
       }
     }
-    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-in-02-mgmt"
@@ -241,7 +244,8 @@ vmseries = {
     ]
   }
   "fw-obew-1" = {
-    name = "obew-firewall01"
+    name     = "obew-firewall01"
+    vnet_key = "transit"
     image = {
       version = "10.2.3"
     }
@@ -256,7 +260,6 @@ vmseries = {
         public_snet_key        = "public"
       }
     }
-    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-obew-01-mgmt"
@@ -276,7 +279,8 @@ vmseries = {
     ]
   }
   "fw-obew-2" = {
-    name = "obew-firewall02"
+    name     = "obew-firewall02"
+    vnet_key = "transit"
     image = {
       version = "10.2.3"
     }
@@ -291,7 +295,6 @@ vmseries = {
         public_snet_key        = "public"
       }
     }
-    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm-obew-02-mgmt"

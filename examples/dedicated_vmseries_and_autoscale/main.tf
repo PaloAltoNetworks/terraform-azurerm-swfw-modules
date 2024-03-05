@@ -1,4 +1,5 @@
-# Generate a random password.
+### Generate a random password ###
+
 # https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password
 resource "random_password" "this" {
   count = anytrue([
@@ -27,7 +28,8 @@ locals {
   }
 }
 
-# Create or source the Resource Group.
+### Create or source a Resource Group ###
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
@@ -47,7 +49,8 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
-# Manage the network required for the topology.
+### Manage the network required for the topology ###
+
 module "vnet" {
   source = "../../modules/vnet"
 
@@ -63,9 +66,11 @@ module "vnet" {
   create_subnets = each.value.create_subnets
   subnets        = each.value.subnets
 
-  network_security_groups = { for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  network_security_groups = {
+    for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
-  route_tables = { for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  route_tables = {
+    for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
 
   tags = var.tags
@@ -84,14 +89,19 @@ module "natgw" {
   idle_timeout        = each.value.idle_timeout
   subnet_ids          = { for v in each.value.subnet_keys : v => module.vnet[each.value.vnet_key].subnet_ids[v] }
 
-  public_ip        = try(merge(each.value.public_ip, { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }), null)
-  public_ip_prefix = try(merge(each.value.public_ip_prefix, { name = "${each.value.public_ip_prefix.create ? var.name_prefix : ""}${each.value.public_ip_prefix.name}" }), null)
+  public_ip = try(merge(each.value.public_ip, {
+    name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}"
+  }), null)
+  public_ip_prefix = try(merge(each.value.public_ip_prefix, {
+    name = "${each.value.public_ip_prefix.create ? var.name_prefix : ""}${each.value.public_ip_prefix.name}"
+  }), null)
 
   tags       = var.tags
   depends_on = [module.vnet]
 }
 
-# create load balancers, both internal and external
+### Create Load Balancers, both internal and external ###
+
 module "load_balancer" {
   source = "../../modules/loadbalancer"
 
@@ -108,7 +118,8 @@ module "load_balancer" {
   nsg_auto_rules_settings = try(
     {
       nsg_name = try(
-        "${var.name_prefix}${var.vnets[each.value.nsg_auto_rules_settings.nsg_vnet_key].network_security_groups[each.value.nsg_auto_rules_settings.nsg_key].name}",
+        "${var.name_prefix}${var.vnets[each.value.nsg_auto_rules_settings.nsg_vnet_key].network_security_groups[
+        each.value.nsg_auto_rules_settings.nsg_key].name}",
         each.value.nsg_auto_rules_settings.nsg_name
       )
       nsg_resource_group_name = try(
@@ -136,30 +147,7 @@ module "load_balancer" {
   depends_on = [module.vnet]
 }
 
-module "ngfw_metrics" {
-  source = "../../modules/ngfw_metrics"
-
-  count = var.ngfw_metrics != null ? 1 : 0
-
-  create_workspace = var.ngfw_metrics.create_workspace
-
-  name                = "${var.ngfw_metrics.create_workspace ? var.name_prefix : ""}${var.ngfw_metrics.name}"
-  resource_group_name = var.ngfw_metrics.create_workspace ? local.resource_group.name : coalesce(var.ngfw_metrics.resource_group_name, local.resource_group.name)
-  location            = var.location
-
-  log_analytics_workspace = {
-    sku                       = var.ngfw_metrics.sku
-    metrics_retention_in_days = var.ngfw_metrics.metrics_retention_in_days
-  }
-
-  application_insights = {
-    for k, v in var.scale_sets :
-    k => { name = "${var.name_prefix}${v.name}-ai" }
-    if length(v.autoscaling_profiles) > 0
-  }
-
-  tags = var.tags
-}
+### Create Application Gateways ###
 
 module "appgw" {
   source = "../../modules/appgw"
@@ -195,6 +183,35 @@ module "appgw" {
 
   tags       = var.tags
   depends_on = [module.vnet]
+}
+
+### Create VM-Series VM Scale Sets and closely associated resources ###
+
+module "ngfw_metrics" {
+  source = "../../modules/ngfw_metrics"
+
+  count = var.ngfw_metrics != null ? 1 : 0
+
+  create_workspace = var.ngfw_metrics.create_workspace
+
+  name = "${var.ngfw_metrics.create_workspace ? var.name_prefix : ""}${var.ngfw_metrics.name}"
+  resource_group_name = var.ngfw_metrics.create_workspace ? local.resource_group.name : (
+    coalesce(var.ngfw_metrics.resource_group_name, local.resource_group.name)
+  )
+  location = var.location
+
+  log_analytics_workspace = {
+    sku                       = var.ngfw_metrics.sku
+    metrics_retention_in_days = var.ngfw_metrics.metrics_retention_in_days
+  }
+
+  application_insights = {
+    for k, v in var.scale_sets :
+    k => { name = "${var.name_prefix}${v.name}-ai" }
+    if length(v.autoscaling_profiles) > 0
+  }
+
+  tags = var.tags
 }
 
 module "vmss" {

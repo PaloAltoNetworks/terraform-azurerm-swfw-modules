@@ -1,4 +1,5 @@
-# --- GENERAL --- #
+### GENERAL ###
+
 location            = "North Europe"
 resource_group_name = "transit-vnet-common"
 name_prefix         = "example-"
@@ -7,7 +8,8 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-# --- VNET PART --- #
+### NETWORK ###
+
 vnets = {
   "transit" = {
     name          = "transit"
@@ -123,8 +125,8 @@ vnets = {
   }
 }
 
+### LOAD BALANCING ###
 
-# --- LOAD BALANCING PART --- #
 load_balancers = {
   "public" = {
     name = "public-lb"
@@ -168,10 +170,59 @@ load_balancers = {
   }
 }
 
-# --- VMSERIES PART --- #
+appgws = {
+  public = {
+    name       = "appgw"
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    public_ip = {
+      name = "appgw-pip"
+    }
+    listeners = {
+      "http" = {
+        name = "http"
+        port = 80
+      }
+    }
+    backend_settings = {
+      http = {
+        name     = "http"
+        port     = 80
+        protocol = "Http"
+      }
+    }
+    rewrites = {
+      xff = {
+        name = "XFF-set"
+        rules = {
+          "xff-strip-port" = {
+            name     = "xff-strip-port"
+            sequence = 100
+            request_headers = {
+              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
+            }
+          }
+        }
+      }
+    }
+    rules = {
+      "http" = {
+        name         = "http"
+        listener_key = "http"
+        backend_key  = "http"
+        rewrite_key  = "xff"
+        priority     = 1
+      }
+    }
+  }
+}
+
+### VM-SERIES ###
+
 vmseries = {
   "fw-1" = {
-    name = "firewall01"
+    name     = "firewall01"
+    vnet_key = "transit"
     image = {
       version = "10.2.3"
     }
@@ -180,7 +231,6 @@ vmseries = {
       zone              = 1
       bootstrap_options = "type=dhcp-client"
     }
-    vnet_key = "transit"
     interfaces = [
       {
         name             = "vm01-mgmt"
@@ -231,54 +281,5 @@ vmseries = {
         application_gateway_key = "public"
       }
     ]
-  }
-}
-
-
-# --- APPLICATION GATEWAYs --- #
-appgws = {
-  public = {
-    name       = "appgw"
-    vnet_key   = "transit"
-    subnet_key = "appgw"
-    public_ip = {
-      name = "appgw-pip"
-    }
-    listeners = {
-      "http" = {
-        name = "http"
-        port = 80
-      }
-    }
-    backend_settings = {
-      http = {
-        name     = "http"
-        port     = 80
-        protocol = "Http"
-      }
-    }
-    rewrites = {
-      xff = {
-        name = "XFF-set"
-        rules = {
-          "xff-strip-port" = {
-            name     = "xff-strip-port"
-            sequence = 100
-            request_headers = {
-              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
-            }
-          }
-        }
-      }
-    }
-    rules = {
-      "http" = {
-        name         = "http"
-        listener_key = "http"
-        backend_key  = "http"
-        rewrite_key  = "xff"
-        priority     = 1
-      }
-    }
   }
 }

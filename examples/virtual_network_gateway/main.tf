@@ -1,4 +1,5 @@
-# Create or source the Resource Group.
+### Generate a random password ###
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
@@ -7,6 +8,8 @@ resource "azurerm_resource_group" "this" {
 
   tags = var.tags
 }
+
+### Create or source a Resource Group ###
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group
 data "azurerm_resource_group" "this" {
@@ -17,6 +20,8 @@ data "azurerm_resource_group" "this" {
 locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
+
+### Manage the network required for the topology ###
 
 module "vnet" {
   source = "../../modules/vnet"
@@ -33,15 +38,18 @@ module "vnet" {
   create_subnets = each.value.create_subnets
   subnets        = each.value.subnets
 
-  network_security_groups = { for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  network_security_groups = {
+    for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
-  route_tables = { for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  route_tables = {
+    for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
 
   tags = var.tags
 }
 
-# Create virtual network gateway
+### Create Virtual Network Gateways ###
+
 module "vng" {
   source = "../../modules/virtual_network_gateway"
 

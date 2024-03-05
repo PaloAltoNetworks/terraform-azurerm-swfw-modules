@@ -1,4 +1,5 @@
-# Create or source the Resource Group.
+### Create or source a Resource Group ###
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
@@ -18,7 +19,8 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
-# Create public IP in order to reuse it in 1 of the application gateways
+### Create a public IP in order to reuse it in one of the Application Gateways ###
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
   name                = "pip-existing"
@@ -31,7 +33,8 @@ resource "azurerm_public_ip" "this" {
   tags              = var.tags
 }
 
-# Manage the network required for the topology.
+### Manage the network required for the topology ###
+
 module "vnet" {
   source = "../../modules/vnet"
 
@@ -47,15 +50,18 @@ module "vnet" {
   create_subnets = each.value.create_subnets
   subnets        = each.value.subnets
 
-  network_security_groups = { for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  network_security_groups = {
+    for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
-  route_tables = { for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  route_tables = {
+    for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
 
   tags = var.tags
 }
 
-# Create Application Gateway
+### Create Application Gateways ###
+
 module "appgw" {
   source = "../../modules/appgw"
 
