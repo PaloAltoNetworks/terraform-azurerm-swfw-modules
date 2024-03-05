@@ -28,9 +28,13 @@ resource "azurerm_application_insights" "this" {
   resource_group_name = coalesce(each.value.resource_group_name, var.resource_group_name)
   location            = var.location
 
-  workspace_id      = var.create_workspace ? azurerm_log_analytics_workspace.this[0].id : data.azurerm_log_analytics_workspace.this[0].id
-  application_type  = "other"
-  retention_in_days = each.value.metrics_retention_in_days == null ? var.log_analytics_workspace.metrics_retention_in_days : each.value.metrics_retention_in_days
+  workspace_id = var.create_workspace ? (
+    azurerm_log_analytics_workspace.this[0].id
+  ) : data.azurerm_log_analytics_workspace.this[0].id
+  application_type = "other"
+  retention_in_days = each.value.metrics_retention_in_days == null ? (
+    var.log_analytics_workspace.metrics_retention_in_days
+  ) : each.value.metrics_retention_in_days
 
   tags = var.tags
 }

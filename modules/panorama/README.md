@@ -45,6 +45,7 @@ Name | Type | Description
 Name |  Description
 --- | ---
 `mgmt_ip_address` | Panorama management IP address. If `public_ip` was `true`, it is a public IP address, otherwise a private IP address.
+
 `interfaces` | Map of VM-Series network interfaces. Keys are equal to var.interfaces `name` properties.
 
 ## Module's Nameplate

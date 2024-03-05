@@ -406,7 +406,7 @@ Type: string
 
 An ID of a Subnet in which the Virtual Network Gateway will be created.
 
-This has to be a dedicated Subnet names `GatewaySubnet`.
+This has to be a dedicated Subnet named `GatewaySubnet`.
 
 
 Type: string

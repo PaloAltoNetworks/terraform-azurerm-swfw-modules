@@ -110,7 +110,9 @@ Name | Type | Description
 Name |  Description
 --- | ---
 `backend_pool_id` | The identifier of the backend pool.
-`frontend_ip_configs` | Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it, private IP address otherwise.
+`frontend_ip_configs` | Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it,
+private IP address otherwise.
+
 `health_probe` | The health probe object.
 
 ## Module's Nameplate
