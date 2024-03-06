@@ -31,7 +31,7 @@ Name | Type | Description
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.2, < 2.0
+- `terraform`, version: >= 1.5, < 2.0
 
 
 Providers used in this module:

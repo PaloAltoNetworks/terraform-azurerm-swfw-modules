@@ -28,7 +28,7 @@ Example of a private Load Balancer with HA ports rule:
 
 ```hcl
 module "lbi" {
-  source = "../../modules/loadbalancer"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/loadbalancer"
 
   name                = "private-lb"
   location            = "West Europe"
@@ -60,7 +60,7 @@ Example of a private Load Balancer with a single rule for port `80`:
 
 ```hcl
 module "lbe" {
-  source = "../../modules/loadbalancer"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/loadbalancer"
 
   name                = "public-lb"
   location            = "West Europe"
@@ -120,13 +120,13 @@ private IP address otherwise.
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.3, < 2.0
-- `azurerm`, version: ~> 3.25
+- `terraform`, version: >= 1.5, < 2.0
+- `azurerm`, version: ~> 3.80
 
 
 Providers used in this module:
 
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 
@@ -461,5 +461,6 @@ object({
 Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 <!-- END_TF_DOCS -->

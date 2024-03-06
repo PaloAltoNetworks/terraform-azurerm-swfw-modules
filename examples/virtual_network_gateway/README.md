@@ -35,6 +35,9 @@ Name |  Description
 ## Module's Nameplate
 
 
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.5, < 2.0
 
 
 Providers used in this module:
@@ -310,5 +313,6 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 <!-- END_TF_DOCS -->

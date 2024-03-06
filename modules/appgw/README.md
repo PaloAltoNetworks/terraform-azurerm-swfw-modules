@@ -11,7 +11,7 @@ Then you can use below code as an example of calling module to create Applicatio
 ```hcl
 # Create Application Gateay
 module "appgw" {
-  source = "../../modules/appgw"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/appgw"
 
   for_each = var.appgws
 
@@ -1485,6 +1485,7 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 
 <!-- END_TF_DOCS -->
