@@ -14,7 +14,7 @@ A simple module invocation might look like the following:
 
 ```hcl
 module "name_templates" {
-  source = "../../modules/name_templater"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/name_templater"
 
   resource_type = "vnet"
   name_template = {

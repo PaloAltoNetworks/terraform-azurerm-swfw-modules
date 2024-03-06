@@ -28,7 +28,7 @@ The module is used only to create a Storage Account with module defaults where p
 
 ```hcl
 module "empty_storage" {
-  source = "../../modules/bootstrap"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/bootstrap"
 
   name                = "someemptystorage"
   resource_group_name = "rg-name"
@@ -49,7 +49,7 @@ This code will create a storage account for 3 NGFWs. Please **note** that:
 
 ```hcl
 module "bootstrap" {
-  source = "../../modules/bootstrap"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/bootstrap"
 
   name                = "samplebootstrapstorage"
   resource_group_name = "rg-name"
@@ -97,7 +97,7 @@ structure already present.
 
 ```hcl
 module "existing_storage" {
-  source = "../../modules/bootstrap"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/bootstrap"
 
   storage_account = {
     create = false
@@ -163,12 +163,12 @@ Name |  Description
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 Providers used in this module:
 
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 

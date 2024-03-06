@@ -11,7 +11,7 @@ Then you can use below code as an example of calling module to create VNG:
 
 ```hcl
 module "vng" {
-  source = "../../modules/virtual_network_gateway"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/virtual_network_gateway"
 
   for_each = var.virtual_network_gateways
 
