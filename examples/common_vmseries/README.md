@@ -171,8 +171,8 @@ terraform destroy
 
 Name | Type | Description
 --- | --- | ---
-[`location`](#location) | `string` | The Azure region to use.
 [`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group.
+[`location`](#location) | `string` | The Azure region to use.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 [`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
 
@@ -181,11 +181,11 @@ Name | Type | Description
 
 Name | Type | Description
 --- | --- | ---
-[`tags`](#tags) | `map` | Map of tags to assign to the created resources.
 [`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
 [`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
+[`tags`](#tags) | `map` | Map of tags to assign to the created resources.
 [`natgws`](#natgws) | `map` | A map defining NAT Gateways.
-[`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (private and public) Load Balancers.
+[`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (both private and public) Load Balancers.
 [`availability_sets`](#availability_sets) | `map` | A map defining availability sets.
 [`ngfw_metrics`](#ngfw_metrics) | `object` | A map controlling metrics-relates resources.
 [`bootstrap_storages`](#bootstrap_storages) | `map` | A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs.
@@ -223,13 +223,13 @@ Providers used in this module:
 Modules used in this module:
 Name | Version | Source | Description
 --- | --- | --- | ---
-`vnet` | - | ../../modules/vnet | Manage the network required for the topology.
+`vnet` | - | ../../modules/vnet | 
 `natgw` | - | ../../modules/natgw | 
-`load_balancer` | - | ../../modules/loadbalancer | create load balancers, both internal and external
-`ngfw_metrics` | - | ../../modules/ngfw_metrics | create the actual VM-Series VMs and resources
+`load_balancer` | - | ../../modules/loadbalancer | 
+`appgw` | - | ../../modules/appgw | 
+`ngfw_metrics` | - | ../../modules/ngfw_metrics | 
 `bootstrap` | - | ../../modules/bootstrap | 
 `vmseries` | - | ../../modules/vmseries | 
-`appgw` | - | ../../modules/appgw | 
 
 
 Resources used in this module:
@@ -246,15 +246,6 @@ Resources used in this module:
 
 
 
-#### location
-
-The Azure region to use.
-
-Type: string
-
-<sup>[back to list](#modules-required-inputs)</sup>
-
-
 
 #### resource_group_name
 
@@ -264,28 +255,36 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
+#### location
+
+The Azure region to use.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+
 #### vnets
 
 A map defining VNETs.
   
 For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-- `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
-                              `false` will source an existing VNET.
-- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be
-                              a full resource name, including prefixes.
-- `address_space`           - (`list(string)`, required when `create_virtual_network = false`) a list of CIDRs for a newly
-                              created VNET
-- `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which
-                              the VNET will reside or is sourced from
+- `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, `false` will source
+                              an existing VNET.
+- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a
+                              full resource name, including prefixes.
+- `address_space`           - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET.
+- `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
+                              VNET will reside or is sourced from.
 - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
-                              otherwise use source existing subnets
+                              otherwise use source existing subnets.
 - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
-                              [VNET module documentation](../../modules/vnet/README.md#subnets)
+                              [VNET module documentation](../../modules/vnet/README.md#subnets).
 - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
-                              [VNET module documentation](../../modules/vnet/README.md#network_security_groups)
+                              [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
 - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
-                              [VNET module documentation](../../modules/vnet/README.md#route_tables)
+                              [VNET module documentation](../../modules/vnet/README.md#route_tables).
 
 
 Type: 
@@ -340,10 +339,6 @@ map(object({
 
 
 
-
-
-
-
 #### appgws
 
 A map defining all Application Gateways in the current deployment.
@@ -362,25 +357,25 @@ Below you can find a brief list of most important properties:
                        described by `subnet_key`.
 - `subnet_key`       - (`string`, required) a key pointing to a Subnet definition in the `var.vnets` map, this has to be an
                        Application Gateway V2 dedicated subnet.
-- `zones`            - (`list`, optional, defaults to module defaults) parameter controlling if this is a zonal, or a non-zonal
+- `zones`            - (`list`, optional, defaults to module default) parameter controlling if this is a zonal, or a non-zonal
                        deployment.
 - `public_ip`        - (`map`, required) defines a Public IP resource used by the Application Gateway instance, a newly created
                        Public IP will have it's name prefixes with `var.name_prefix`.
 - `listeners`        - (`map`, required) defines Application Gateway's Listeners, see
                        [module's documentation](../../modules/appgw/README.md#listeners) for details.
-- `backend_pool`     - (`map`, optional, defaults to module defaults) backend pool definition, when skipped an empty backend
+- `backend_pool`     - (`map`, optional, defaults to module default) backend pool definition, when skipped an empty backend
                        will be created.
 - `backend_settings` - (`map`, optional, mutually exclusive with `redirects` and `url_path_maps`) defines HTTP backend
                        settings, see [module's documentation](../../modules/appgw/README.md#backend_settings) for details.
-- `probes`           - (`map`, optional, defaults to module defaults) defines backend probes used check health of backends, see
+- `probes`           - (`map`, optional, defaults to module default) defines backend probes used check health of backends, see
                        [module's documentation](../../modules/appgw/README.md#probes) for details.
-- `rewrites`         - (`map`, optional, defaults to module defaults) defines rewrite rules, see 
+- `rewrites`         - (`map`, optional, defaults to module default) defines rewrite rules, see 
                        [module's documentation](../../modules/appgw/README.md#rewrites) for details.
-- `redirects         - (`map`, optional, mutually exclusive with `backend_settings` and `url_path_maps`) static redirects 
+- `redirects`        - (`map`, optional, mutually exclusive with `backend_settings` and `url_path_maps`) static redirects 
                        definition, see [module's documentation](../../modules/appgw/README.md#redirects) for details.
-- `url_path_maps     - (`map`, optional, mutually exclusive with `backend_settings` and `redirects`) URL path maps definition, 
+- `url_path_maps`    - (`map`, optional, mutually exclusive with `backend_settings` and `redirects`) URL path maps definition, 
                        see [module's documentation](../../modules/appgw/README.md#url_path_maps) for details.
-- `rules             - (`map`, required) Application Gateway Rules definition, bind together a `listener` with either
+- `rules`            - (`map`, required) Application Gateway Rules definition, bind together a `listener` with either
                        `backend_setting`, `redirect` or `url_path_map`, see
                        [module's documentation](../../modules/appgw/README.md#rules) for details.
 
@@ -517,18 +512,11 @@ map(object({
 
 
 
+
+
+
+
 ### Optional Inputs
-
-
-#### tags
-
-Map of tags to assign to the created resources.
-
-Type: map(string)
-
-Default value: `map[]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
 
 
 #### name_prefix
@@ -569,6 +557,17 @@ Default value: `true`
 
 
 
+#### tags
+
+Map of tags to assign to the created resources.
+
+Type: map(string)
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+
 #### natgws
 
 A map defining NAT Gateways. 
@@ -578,21 +577,21 @@ explicitly). Please refer to Microsoft documentation for notes on NAT Gateway's 
 For detailed documentation on each property refer to [module documentation](../../modules/natgw/README.md).
   
 Following properties are supported:
-- `create_natgw`       - (`bool`, optional, defaults to `true`) create (`true`) or source an existing NAT Gateway (`false`),
-                         created or sourced: the NAT Gateway will be assigned to a subnet created by the `vnet` module.
-- `name`               - (`string`, required) a name of a NAT Gateway. In case `create_natgw = false` this should be a full
-                         resource name, including prefixes.
-- `resource_group_name - (`string`, optional) name of a Resource Group hosting the NAT Gateway (newly created or the existing
-                         one).
-- `zone`               - (`string`, optional) an Availability Zone in which the NAT Gateway will be placed, when skipped
-                         AzureRM will pick a zone.
-- `idle_timeout`       - (`number`, optional, defults to 4) connection IDLE timeout in minutes, for newly created resources.
-- `vnet_key`           - (`string`, required) a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this
-                         NAT Gateway will be assigned to.
-- `subnet_keys`        - (`list(string)`, required) a list of subnets (key values) the NAT Gateway will be assigned to, defined
-                         in `var.vnets` for a VNET described by `vnet_name`.
-- `public_ip`          - (`object`, optional) an object defining a public IP resource attached to the NAT Gateway.
-- `public_ip_prefix`   - (`object`, optional) an object defining a public IP prefix resource attached to the NAT Gatway.
+- `name`                - (`string`, required) a name of a NAT Gateway. In case `create_natgw = false` this should be a full
+                          resource name, including prefixes.
+- `vnet_key`            - (`string`, required) a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this
+                          NAT Gateway will be assigned to.
+- `subnet_keys`         - (`list(string)`, required) a list of subnets (key values) the NAT Gateway will be assigned to,
+                          defined in `var.vnets` for a VNET described by `vnet_name`.
+- `create_natgw`        - (`bool`, optional, defaults to `true`) create (`true`) or source an existing NAT Gateway (`false`),
+                          created or sourced: the NAT Gateway will be assigned to a subnet created by the `vnet` module.
+- `resource_group_name` - (`string`, optional) name of a Resource Group hosting the NAT Gateway (newly created or the existing
+                          one).
+- `zone`                - (`string`, optional) an Availability Zone in which the NAT Gateway will be placed, when skipped
+                          Azure will pick a zone.
+- `idle_timeout`        - (`number`, optional, defults to 4) connection IDLE timeout in minutes, for newly created resources.
+- `public_ip`           - (`object`, optional) an object defining a public IP resource attached to the NAT Gateway.
+- `public_ip_prefix`    - (`object`, optional) an object defining a public IP prefix resource attached to the NAT Gatway.
 
 Example:
 ```
@@ -614,13 +613,13 @@ Type:
 
 ```hcl
 map(object({
-    create_natgw        = optional(bool, true)
     name                = string
+    vnet_key            = string
+    subnet_keys         = list(string)
+    create_natgw        = optional(bool, true)
     resource_group_name = optional(string)
     zone                = optional(string)
     idle_timeout        = optional(number, 4)
-    vnet_key            = string
-    subnet_keys         = list(string)
     public_ip = optional(object({
       create              = bool
       name                = string
@@ -642,7 +641,7 @@ Default value: `map[]`
 
 #### load_balancers
 
-A map containing configuration for all (private and public) Load Balancers.
+A map containing configuration for all (both private and public) Load Balancers.
 
 This is a brief description of available properties. For a detailed one please refer to
 [module documentation](../../modules/loadbalancer/README.md).
@@ -652,26 +651,29 @@ Following properties are available:
 - `name`                    - (`string`, required) a name of the Load Balancer.
 - `vnet_key`                - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets`
                               map that stores the Subnet described by `subnet_key`.
-- `zones`                   - (`list`, optional, defaults to module defaults) a list of zones for Load Balancer's fronted IP
+- `zones`                   - (`list`, optional, defaults to module default) a list of zones for Load Balancer's frontend IP
                               configurations.
-- `backend_name`            - (`string`, optional, defaults to module defaults) a name of the backend pool to create.
-- `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by
-                              load balancing rules; please check
+- `backend_name`            - (`string`, optional, defaults to module default) a name of the backend pool to create.
+- `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by load
+                              balancing rules, please refer to
                               [module documentation](../../modules/loadbalancer/README.md#health_probes) for more specific use
                               cases and available properties.
-- `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule
-                              that will be populated with `Allow` rules for each load balancing rule (`in_rules`); please check 
-                              [module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings)
-                              for available properties; please note that in this example two additional properties are
-                              available:
-  - `nsg_vnet_key`    - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition
-                        in the `var.vnets` map that stores the NSG described by `nsg_key`.
-  - `nsg_key`         - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to an NSG definition
-                        in the `var.vnets` map.
-- `frontend_ips`            - (`map`, optional, defaults to `{}`) a map containing frontend IP configuration with respective
-                              `in_rules` and `out_rules`
+- `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule that will
+                              be populated with `Allow` rules for each load balancing rule (`in_rules`), please refer to
+                              [module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings) for
+                              available properties. 
+                                
+  Please note that in this example two additional properties are available:
 
-  Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
+  - `nsg_vnet_key` - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition in the
+                     `var.vnets` map that stores the NSG described by `nsg_key`.
+  - `nsg_key`      - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to an NSG definition in the
+                     `var.vnets` map.
+
+- `frontend_ips`            - (`map`, optional, defaults to `{}`) a map containing frontend IP configuration with respective
+                              `in_rules` and `out_rules`, please refer to
+                              [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available
+                              properties.
 
   **Note!** \
   In this example the `subnet_id` is not available directly, another property has been introduced instead:
@@ -705,10 +707,10 @@ map(object({
     }))
     frontend_ips = optional(map(object({
       name                          = string
+      subnet_key                    = optional(string)
       public_ip_name                = optional(string)
       create_public_ip              = optional(bool, false)
       public_ip_resource_group_name = optional(string)
-      subnet_key                    = optional(string)
       private_ip_address            = optional(string)
       gwlb_key                      = optional(string)
       in_rules = optional(map(object({
@@ -737,17 +739,20 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+
 #### availability_sets
 
 A map defining availability sets. Can be used to provide infrastructure high availability when zones cannot be used.
 
 Following properties are supported:
-- `name` - name of the Application Insights.
-- `update_domain_count` - specifies the number of update domains that are used, defaults to 5 (Azure defaults).
-- `fault_domain_count` - specifies the number of fault domains that are used, defaults to 3 (Azure defaults).
 
-Please keep in mind that Azure defaults are not working for each region (especially the small ones, w/o any Availability Zones).
-Please verify how many update and fault domain are supported in a region before deploying this resource.
+- `name`                - (`string`, required) name of the Application Insights.
+- `update_domain_count` - (`number`, optional, defaults to Azure default) specifies the number of update domains that are used.
+- `fault_domain_count`  - (`number`, optional, defaults to Azure default) specifies the number of fault domains that are used.
+  
+**Note!** \
+Please keep in mind that Azure defaults are not working for every region (especially the small ones, without any Availability
+Zones). Please verify how many update and fault domain are supported in a region before deploying this resource.
 
 
 Type: 
@@ -755,8 +760,8 @@ Type:
 ```hcl
 map(object({
     name                = string
-    update_domain_count = optional(number, 5)
-    fault_domain_count  = optional(number, 3)
+    update_domain_count = optional(number)
+    fault_domain_count  = optional(number)
   }))
 ```
 
@@ -772,22 +777,22 @@ A map controlling metrics-relates resources.
 When set to explicit `null` (default) it will disable any metrics resources in this deployment.
 
 When defined it will either create or source a Log Analytics Workspace and create Application Insights instances (one per each
-Scale Set). All instances will be automatically connected to the workspace.
-The name of the Application Insights instance will be derived from the Scale Set name and suffixed with `-ai`.
+Scale Set). All instances will be automatically connected to the workspace. The name of the Application Insights instance will
+be derived from the Scale Set name and suffixed with `-ai`.
 
 All the settings available below are common to the Log Analytics Workspace and Application Insight instances.
 
 Following properties are available:
 
-- `name`                      - (`string`, required) name of the (common) Log Analytics Workspace
+- `name`                      - (`string`, required) name of the (common) Log Analytics Workspace.
 - `create_workspace`          - (`bool`, optional, defaults to `true`) controls whether we create or source an existing Log
-                                Analytics Workspace
+                                Analytics Workspace.
 - `resource_group_name`       - (`string`, optional, defaults to `var.resource_group_name`) name of the Resource Group hosting
-                                the Log Analytics Workspace
-- `sku`                       - (`string`, optional, defaults to module defaults) the SKU of the Log Analytics Workspace.
-- `metrics_retention_in_days` - (`number`, optional, defaults to module defaults) workspace and insights data retention in
-                                days, possible values are between 30 and 730. For sourced Workspaces this applies only to 
-                                the Application Insights instances.
+                                the Log Analytics Workspace.
+- `sku`                       - (`string`, optional, defaults to module default) the SKU of the Log Analytics Workspace.
+- `metrics_retention_in_days` - (`number`, optional, defaults to module default) workspace and insights data retention in days,
+                                possible values are between 30 and 730. For sourced Workspaces this applies only to the
+                                Application Insights instances.
 
 
 Type: 
@@ -816,41 +821,50 @@ You can create or re-use an existing Storage Account and/or File Share. For deta
 
 - `name`                      - (`string`, required) name of the Storage Account that will be created or sourced.
 
-    **Note** \
-    For new Storage Accounts this name will not be prefixed with `var.name_prefix`. \
-    Please note the limitations on naming. This has to be a globally unique name, between 3 and 63 chars, only lower-case
-    letters and numbers.
+  **Note** \
+  For new Storage Accounts this name will not be prefixed with `var.name_prefix`. \
+  Please note the limitations on naming. This has to be a globally unique name, between 3 and 63 chars, only lower-case letters
+  and numbers.
 
-- `resource_group_name`       - (`string`, optional, defaults to `null`) name of the Resource Group that hosts (sourced) or will
-                                host (created) a Storage Account. When skipped the code will fall back to
+- `resource_group_name`       - (`string`, optional, defaults to `null`) name of the Resource Group that hosts (sourced) or
+                                will host (created) a Storage Account. When skipped the code will fall back to
                                 `var.resource_group_name`.
-- `storage_account`           - (`map`, optional, defaults to `{}`) a map controlling basic Storage Account configuration, for
-                                detailed documentation see 
-                                [module's documentation](../../modules/bootstrap/README.md#storage_account). The property you
-                                should pay attention to is:
-  - `create`                    - (`bool`, optional, defaults to module defaults) controls if the Storage Account specified in
-                                the `name` property will be created or sourced.
+- `storage_account`           - (`map`, optional, defaults to `{}`) a map controlling basic Storage Account configuration.
+                                  
+  The property you should pay attention to is:
+
+  - `create` - (`bool`, optional, defaults to module default) controls if the Storage Account specified in the `name` property
+               will be created or sourced.
+
+  For detailed documentation see [module's documentation](../../modules/bootstrap/README.md#storage_account).
+
 - `storage_network_security`  - (`map`, optional, defaults to `{}`) a map defining network security settings for a **new**
-                                storage account, for details see
-                                [module's documentation](../../modules/bootstrap/README.md#storage_network_security). Properties
-                                worth mentioning are:
-  - `allowed_subnet_keys`       - (`list`, optional, defaults to `[]`) a list of keys pointing to Subnet definitions in the
-                                  `var.vnets` map. These Subnets will have dedicated access to the Storage Account. For this to
-                                  work they also need to have the Storage Account Service Endpoint enabled.
-  - `vnet_key`                  - a key pointing to a VNET definition in the `var.vnets` map that stores the Subnets described 
-                                  in `allowed_subnet_keys`.
-- `file_shares_configuration` - (`map`, optional, defaults to `{}`) a map defining common File Share setting. For detailed
-                                documentation see
-                                [module's documentation](../../modules/bootstrap/README.md#file_shares_configuration). The
-                                properties you should pay your attention to are:
-  - `create_file_shares`            - (`bool`, optional, defaults to module defaults) controls if the File Shares defined in the
+                                storage account. 
+                                  
+  The properties you should pay attention to are:
+
+  - `allowed_subnet_keys` - (`list`, optional, defaults to `[]`) a list of keys pointing to Subnet definitions in the
+                            `var.vnets` map. These Subnets will have dedicated access to the Storage Account. For this to work
+                            they also need to have the Storage Account Service Endpoint enabled.
+  - `vnet_key`            - (`string`, optional) a key pointing to a VNET definition in the `var.vnets` map that stores the
+                            Subnets described in `allowed_subnet_keys`.
+
+  For detailed documentation see [module's documentation](../../modules/bootstrap/README.md#storage_network_security).
+                            
+- `file_shares_configuration` - (`map`, optional, defaults to `{}`) a map defining common File Share setting.
+                                  
+  The properties you should pay attention to are:
+
+  - `create_file_shares`            - (`bool`, optional, defaults to module default) controls if the File Shares defined in the
                                       `file_shares` property will be created or sourced.
-  - `disable_package_dirs_creation` - (`bool`, optional, defaults to module defaults) for sourced File Shares, controls if the
+  - `disable_package_dirs_creation` - (`bool`, optional, defaults to module default) for sourced File Shares, controls if the
                                       bootstrap package folder structure will be created.
+
+  For detailed documentation see [module's documentation](../../modules/bootstrap/README.md#file_shares_configuration).
+
 - `file_shares`               - (`map`, optional, defaults to `{}`) a map that holds File Shares and bootstrap package
                                 configuration. For detailed description see
                                 [module's documentation](../../modules/bootstrap/README.md#file_shares).
-
 
 
 Type: 
@@ -895,129 +909,121 @@ Default value: `map[]`
 
 #### vmseries
 
-A map defining Azure Virtual Machines based on Palo Alto Networks Next Generation Firewall image..
+A map defining Azure Virtual Machines based on Palo Alto Networks Next Generation Firewall image.
 
 For details and defaults for available options please refer to the [`vmseries`](../../modules/vmseries/README.md) module.
 
 The most basic properties are as follows:
 
 - `name`            - (`string`, required) name of the VM, will be prefixed with the value of `var.name_prefix`.
-- `authentication`  - (`map`, optional, defaults to example defaults) authentication settings for the deployed VM.
-
-    The `authentication` property is optional and holds the firewall admin access details. By default, standard username
-    `panadmin` will be set and a random password will be auto-generated for you (available in Terraform outputs).
-
-    **Note!** \
-    The `disable_password_authentication` property is by default `false` in this example. When using this value, you don't have
-    to specify anything but you can still additionally pass SSH keys for authentication. You can however set this property to 
-    `true`, then you have to specify `ssh_keys` property.
-
-    For all properties and their default values see [module's documentation](../../modules/vmseries/README.md#authentication).
-
-- `image`           - (`map`, required) properties defining a base image used by the deployed VM.
-
-    The `image` property is required but there are only 2 properties (mutually exclusive) that have to be set, either:
-
-    - `version`   - (`string`) describes the PAN-OS image version from Azure Marketplace.
-    - `custom_id` - (`string`) absolute ID of your own custom PAN-OS image.
-
-    For details on the other properties refer to [module's documentation](../../modules/vmseries/README.md#image).
-
-- `virtual_machine` - (`map`, optional, defaults to module defaults) a map that groups most common VM configuration options.
-
-    The most often used option are as follows:
-
-    - `size`      - (`string`, optional, defaults to module defaults) Azure VM size (type). Consult the *VM-Series Deployment
-                    Guide* as only a few selected sizes are supported.
-    - `zone`      - (`string`, optional, defaults to module defaults) the Availability Zone in which the VM and (if deployed)
-                    public IP addresses will be created.
-    - `disk_type` - (`string`, optional, defaults to module defaults) type of a Managed Disk which should be created, possible
-                    values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected `size` values).
-    - `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
-                            when launched for the 1st time, for details see module documentation.
-    - `bootstrap_package` - (`map`, optional, mutually exclusive with `bootstrap_options`) a map defining content of the
-                            bootstrap package.
-
-        **Note!** \
-        At least one of `static_files`, `bootstrap_xml_template` or `bootstrap_package_path` is required. You can use a
-        combination of all 3. The `bootstrap_package_path` is the less important. For details on this mechanism and for details
-        on the other properties see the [`bootstrap` module documentation](../../modules/bootstrap/README.md).
-
-        Following properties are available:
-
-        - `bootstrap_storage_key`  - (`string`, required) a key of a bootstrap storage defined in `var.bootstrap_storages` that
-                                     will host bootstrap packages. Each package will be hosted on a separate File Share.
-                                     The File Shares will be created automatically, one for each firewall.
-        - `static_files`           - (`map`, optional, defaults to `{}`) a map containing files that will be copied to a File
-                                     Share, see [`file_shares.bootstrap_files`](../../modules/bootstrap/README.md#file_shares)
-                                     property documentation for details.
-        - `bootstrap_package_path` - (`string`, optional, defaults to `null`) a path to a folder containing a full bootstrap
-                                     package.
-        - `bootstrap_xml_template` - (`string`, optional, defaults to `null`) a path to a `bootstrap.xml` template. If this
-                                     example is using full bootstrap method, the sample templates are in
-                                     [`templates`](./templates) folder.
-
-            The templates are used to provide `day0` like configuration which consists of:
-
-            - network interfaces configuration.
-            - one or more (depending on the architecture) Virtual Routers configurations. This config contains static routes
-              required for the Load Balancer (and Application Gateway, if defined) health checks to work and routes that allow
-              Inbound and OBEW traffic.
-            - *any-any* security rule.
-            - an outbound NAT rule that will allow the Outbound traffic to flow to the internet.
-
-            **Note!** \
-            Day0 configuration is **not meant** to be **secure**. It's here marly to help with the basic firewall setup.
-
-            When `bootstrap_xml_template` is set, one of the following properties might be required.
-
-        - `private_snet_key`       - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
-                                     pointing to a private Subnet definition in `var.vnets` (the `vnet_key` property is used to
-                                     identify a VNET). The Subnet definition is used to calculate static routes for a private
-                                     Load Balancer health checks and for Inbound traffic.
-        - `public_snet_key`        - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
-                                     pointing to a public Subnet definition in `var.vnets` (the `vnet_key` property is used to
-                                     identify a VNET). The Subnet definition is used to calculate static routes for a public
-                                     Load Balancer health checks and for Outbound traffic.
-        - `ai_update_interval`     - (`number`, optional, defaults to `5`) Application Insights update interval, used only when
-                                     `ngfw_metrics` module is defined and used in this example. The Application Insights
-                                     Instrumentation Key will be populated automatically.
-        - `intranet_cidr`          - (`string`, optional, defaults to `null`) a CIDR of the Intranet - combined CIDR of all
-                                     private networks. When set it will override the private Subnet CIDR for inbound traffic
-                                     static routes.
-      
-    For details on the other properties refer to [module's documentation](../../modules/panorama/README.md#virtual_machine).
-
 - `vnet_key`        - (`string`, required) a key of a VNET defined in `var.vnets`. This is the VNET that hosts subnets used to
                       deploy network interfaces for deployed VM.
+- `authentication`  - (`map`, optional, defaults to example defaults) authentication settings for the deployed VM.
 
-- `interfaces`      - (`list`, required) configuration of all network interfaces
-  
+  The `authentication` property is optional and holds the firewall admin access details. By default, standard username
+  `panadmin` will be set and a random password will be auto-generated for you (available in Terraform outputs).
+
+  **Note!** \
+  The `disable_password_authentication` property is by default `false` in this example. When using this value, you don't have
+  to specify anything but you can still additionally pass SSH keys for authentication. You can however set this property to 
+  `true`, then you have to specify `ssh_keys` property.
+
+  For all properties and their default values see [module's documentation](../../modules/vmseries/README.md#authentication).
+
+- `image`           - (`map`, required) properties defining a base image used by the deployed VM. The `image` property is
+                      required but there are only 2 properties (mutually exclusive) that have to be set, either:
+
+  - `version`   - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
+  - `custom_id` - (`string`, optional) absolute ID of your own custom PAN-OS image.
+
+  For details on all properties refer to [module's documentation](../../modules/vmseries/README.md#image).
+
+- `virtual_machine` - (`map`, optional, defaults to module default) a map that groups most common VM configuration options. 
+                      Most common properties are:
+
+  - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
+                          Deployment Guide* as only a few selected sizes are supported.
+  - `zone`              - (`string`, optional, defaults to module default) the Availability Zone in which the VM and (if
+                          deployed) public IP addresses will be created.
+  - `disk_type`         - (`string`, optional, defaults to module default) type of a Managed Disk which should be created,
+                          possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
+                          `size` values).
+  - `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
+                          when launched for the 1st time, for details see module documentation.
+  - `bootstrap_package` - (`map`, optional, mutually exclusive with `bootstrap_options`) a map defining content of the
+                          bootstrap package.
+
     **Note!** \
-    Order of the interfaces does matter - the 1<sup>st</sup> interface is the management one. 
+    At least one of `static_files`, `bootstrap_xml_template` or `bootstrap_package_path` is required. You can use a combination
+    of all 3. The `bootstrap_package_path` is the less important. For details on this mechanism and for details on the other
+    properties see the [`bootstrap` module documentation](../../modules/bootstrap/README.md).
 
-    For details on available properties please see [module's documentation](../../modules/panorama/README.md#interfaces).
+    Following properties are available:
 
-    The most important ones are listed below:
+    - `bootstrap_storage_key`  - (`string`, required) a key of a bootstrap storage defined in `var.bootstrap_storages` that
+                                 will host bootstrap packages. Each package will be hosted on a separate File Share. The File
+                                 Shares will be created automatically, one for each firewall.
+    - `static_files`           - (`map`, optional, defaults to `{}`) a map containing files that will be copied to a File
+                                 Share, see [`file_shares.bootstrap_files`](../../modules/bootstrap/README.md#file_shares)
+                                 property documentation for details.
+    - `bootstrap_package_path` - (`string`, optional, defaults to `null`) a path to a folder containing a full bootstrap
+                                 package.
+    - `bootstrap_xml_template` - (`string`, optional, defaults to `null`) a path to a `bootstrap.xml` template. If this example
+                                 is using full bootstrap method, the sample templates are in [`templates`](./templates) folder.
 
-    - `name`                    - (`string`, required) name of the network interface (will be prefixed with `var.name_prefix`).
-    - `subnet_key`              - (`string`, required) a key of a subnet to which the interface will be assigned as defined in
-                                  `var.vnets`. Key identifying the VNET is defined in `virtual_machine.vnet_key` property.
-    - `create_public_ip`        - (`bool`, optional, defaults to `false`) create a Public IP for an interface.
-    - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in `var.loadbalancers`
-                                  variable, network interface that has this property defined will be added to the Load
-                                  Balancer's backend pool.
-    - `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in `var.appgws`
-                                  variable, network interface that has this property defined will be added to the Application
-                                  Gateway's backend pool.
+      The templates are used to provide `day0` like configuration which consists of:
 
+      - network interfaces configuration.
+      - one or more (depending on the architecture) Virtual Routers configurations. This config contains static routes
+        required for the Load Balancer (and Application Gateway, if defined) health checks to work and routes that allow
+        Inbound and OBEW traffic.
+      - *any-any* security rule.
+      - an outbound NAT rule that will allow the Outbound traffic to flow to the Internet.
+
+      **Note!** \
+      Day0 configuration is **not meant** to be **secure**. It's here merely to help with the basic firewall setup. When
+      `bootstrap_xml_template` is set, one of the following properties might be required.
+
+    - `private_snet_key`       - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
+                                 pointing to a private Subnet definition in `var.vnets` (the `vnet_key` property is used to
+                                 identify a VNET). The Subnet definition is used to calculate static routes for a private
+                                 Load Balancer health checks and for Inbound traffic.
+    - `public_snet_key`        - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
+                                 pointing to a public Subnet definition in `var.vnets` (the `vnet_key` property is used to
+                                 identify a VNET). The Subnet definition is used to calculate static routes for a public
+                                 Load Balancer health checks and for Outbound traffic.
+    - `ai_update_interval`     - (`number`, optional, defaults to `5`) Application Insights update interval, used only when
+                                 `ngfw_metrics` module is defined and used in this example. The Application Insights
+                                 Instrumentation Key will be populated automatically.
+    - `intranet_cidr`          - (`string`, optional, defaults to `null`) a CIDR of the Intranet - combined CIDR of all
+                                 private networks. When set it will override the private Subnet CIDR for inbound traffic
+                                 static routes.
+      
+    For details on all properties refer to [module's documentation](../../modules/panorama/README.md#virtual_machine).
+
+- `interfaces`      - (`list`, required) configuration of all network interfaces. Order of the interfaces does matter - the
+                      1<sup>st</sup> interface is the management one. Most common properties are:
+
+  - `name`                    - (`string`, required) name of the network interface (will be prefixed with `var.name_prefix`).
+  - `subnet_key`              - (`string`, required) a key of a subnet to which the interface will be assigned as defined in
+                                `var.vnets`. Key identifying the VNET is defined in `virtual_machine.vnet_key` property.
+  - `create_public_ip`        - (`bool`, optional, defaults to `false`) create a Public IP for an interface.
+  - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in `var.loadbalancers`
+                                variable, network interface that has this property defined will be added to the Load Balancer's
+                                backend pool.
+  - `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in `var.appgws`
+                                variable, network interface that has this property defined will be added to the Application
+                                Gateway's backend pool.
+
+  For details on all properties refer to [module's documentation](../../modules/panorama/README.md#interfaces).
 
 
 Type: 
 
 ```hcl
 map(object({
-    name = string
+    name     = string
+    vnet_key = string
     authentication = optional(object({
       username                        = optional(string, "panadmin")
       password                        = optional(string)
@@ -1058,7 +1064,6 @@ map(object({
       identity_ids                 = optional(list(string))
       allow_extension_operations   = optional(bool)
     })
-    vnet_key = string
     interfaces = list(object({
       name                          = string
       subnet_key                    = string
@@ -1076,7 +1081,5 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-
 
 <!-- END_TF_DOCS -->

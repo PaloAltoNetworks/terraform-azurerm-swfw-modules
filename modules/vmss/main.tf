@@ -50,16 +50,18 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   source_image_id = var.image.custom_id
   os_disk {
     caching                = "ReadWrite"
-    disk_encryption_set_id = var.virtual_machine_scale_set.disk_encryption_set_id #  The Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault - in addition to an Access Policy to the Key Vault.
+    disk_encryption_set_id = var.virtual_machine_scale_set.disk_encryption_set_id # the Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault, in addition to an Access Policy to the Key Vault
     storage_account_type   = var.virtual_machine_scale_set.disk_type
   }
 
 
   instances = var.autoscaling_configuration.default_count
 
-  upgrade_mode = "Manual" # See README for more details no this setting.
+  upgrade_mode = "Manual" # see README for more details no this setting
 
-  custom_data = var.virtual_machine_scale_set.bootstrap_options == null ? null : base64encode(var.virtual_machine_scale_set.bootstrap_options)
+  custom_data = var.virtual_machine_scale_set.bootstrap_options == null ? (
+    null
+  ) : base64encode(var.virtual_machine_scale_set.bootstrap_options)
 
   scale_in {
     rule                   = var.autoscaling_configuration.scale_in_policy
@@ -230,23 +232,33 @@ resource "azurerm_monitor_autoscale_setting" "this" {
         for_each = profile.value.scale_rules
         content {
           metric_trigger {
-            metric_name        = rule.value.name
-            metric_resource_id = contains(local.panos_metrics, rule.value.name) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
-            metric_namespace   = contains(local.panos_metrics, rule.value.name) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
-            operator           = local.operator[rule.value.scale_out_config.operator]
+            metric_name = rule.value.name
+            metric_resource_id = contains(local.panos_metrics, rule.value.name) ? (
+              var.autoscaling_configuration.application_insights_id
+            ) : azurerm_linux_virtual_machine_scale_set.this.id
+            metric_namespace = contains(local.panos_metrics, rule.value.name) ? (
+              "Azure.ApplicationInsights"
+            ) : "microsoft.compute/virtualmachinescalesets"
+            operator = local.operator[rule.value.scale_out_config.operator]
 
             threshold        = rule.value.scale_out_config.threshold
             statistic        = rule.value.scale_out_config.grain_aggregation_type
             time_aggregation = rule.value.scale_out_config.aggregation_window_type
-            time_grain       = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"].dt_string
-            time_window      = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"].dt_string
+            time_grain = module.ptd_time[
+              "${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"
+            ].dt_string
+            time_window = module.ptd_time[
+              "${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"
+            ].dt_string
           }
 
           scale_action {
             direction = "Increase"
             value     = rule.value.scale_out_config.change_count_by
             type      = "ChangeCount"
-            cooldown  = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-cooldown_window_minutes"].dt_string
+            cooldown = module.ptd_time[
+              "${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-cooldown_window_minutes"
+            ].dt_string
           }
         }
       }
@@ -256,21 +268,33 @@ resource "azurerm_monitor_autoscale_setting" "this" {
         for_each = profile.value.scale_rules
         content {
           metric_trigger {
-            metric_name        = rule.value.name
-            metric_resource_id = contains(local.panos_metrics, rule.value.name) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
-            metric_namespace   = contains(local.panos_metrics, rule.value.name) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
-            operator           = local.operator[rule.value.scale_in_config.operator]
+            metric_name = rule.value.name
+            metric_resource_id = contains(local.panos_metrics, rule.value.name) ? (
+              var.autoscaling_configuration.application_insights_id
+            ) : azurerm_linux_virtual_machine_scale_set.this.id
+            metric_namespace = contains(local.panos_metrics, rule.value.name) ? (
+              "Azure.ApplicationInsights"
+            ) : "microsoft.compute/virtualmachinescalesets"
+            operator = local.operator[rule.value.scale_in_config.operator]
 
             threshold        = rule.value.scale_in_config.threshold
             statistic        = rule.value.scale_in_config.grain_aggregation_type
             time_aggregation = rule.value.scale_in_config.aggregation_window_type
             time_grain = try(
-              module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-grain_window_minutes"].dt_string,
-              module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"].dt_string
+              module.ptd_time[
+                "${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-grain_window_minutes"
+              ].dt_string,
+              module.ptd_time[
+                "${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"
+              ].dt_string
             )
             time_window = try(
-              module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-aggregation_window_minutes"].dt_string,
-              module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"].dt_string
+              module.ptd_time[
+                "${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-aggregation_window_minutes"
+              ].dt_string,
+              module.ptd_time[
+                "${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"
+              ].dt_string
             )
           }
 
@@ -278,7 +302,9 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             direction = "Decrease"
             value     = rule.value.scale_in_config.change_count_by
             type      = "ChangeCount"
-            cooldown  = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-cooldown_window_minutes"].dt_string
+            cooldown = module.ptd_time[
+              "${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-cooldown_window_minutes"
+            ].dt_string
           }
         }
       }
@@ -313,23 +339,36 @@ resource "azurerm_monitor_autoscale_setting" "this" {
         for_each = var.autoscaling_profiles[0].scale_rules
         content {
           metric_trigger {
-            metric_name        = rule.value.name
-            metric_resource_id = contains(local.panos_metrics, rule.value.name) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
-            metric_namespace   = contains(local.panos_metrics, rule.value.name) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
-            operator           = local.operator[rule.value.scale_out_config.operator]
+            metric_name = rule.value.name
+            metric_resource_id = contains(local.panos_metrics, rule.value.name) ? (
+              var.autoscaling_configuration.application_insights_id
+            ) : azurerm_linux_virtual_machine_scale_set.this.id
+            metric_namespace = contains(local.panos_metrics, rule.value.name) ? (
+              "Azure.ApplicationInsights"
+            ) : "microsoft.compute/virtualmachinescalesets"
+            operator = local.operator[rule.value.scale_out_config.operator]
 
             threshold        = rule.value.scale_out_config.threshold
             statistic        = rule.value.scale_out_config.grain_aggregation_type
             time_aggregation = rule.value.scale_out_config.aggregation_window_type
-            time_grain       = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"].dt_string
-            time_window      = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"].dt_string
+            time_grain = module.ptd_time[
+              "${var.autoscaling_profiles[0].name}-${replace(
+              lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"
+            ].dt_string
+            time_window = module.ptd_time[
+              "${var.autoscaling_profiles[0].name}-${replace(
+              lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"
+            ].dt_string
           }
 
           scale_action {
             direction = "Increase"
             value     = rule.value.scale_out_config.change_count_by
             type      = "ChangeCount"
-            cooldown  = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-cooldown_window_minutes"].dt_string
+            cooldown = module.ptd_time[
+              "${var.autoscaling_profiles[0].name}-${replace(
+              lower(rule.value.name), " ", "_")}-scale_out-cooldown_window_minutes"
+            ].dt_string
           }
         }
       }
@@ -339,21 +378,35 @@ resource "azurerm_monitor_autoscale_setting" "this" {
         for_each = var.autoscaling_profiles[0].scale_rules
         content {
           metric_trigger {
-            metric_name        = rule.value.name
-            metric_resource_id = contains(local.panos_metrics, rule.value.name) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
-            metric_namespace   = contains(local.panos_metrics, rule.value.name) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
-            operator           = local.operator[rule.value.scale_in_config.operator]
+            metric_name = rule.value.name
+            metric_resource_id = contains(local.panos_metrics, rule.value.name) ? (
+              var.autoscaling_configuration.application_insights_id
+            ) : azurerm_linux_virtual_machine_scale_set.this.id
+            metric_namespace = contains(local.panos_metrics, rule.value.name) ? (
+              "Azure.ApplicationInsights"
+            ) : "microsoft.compute/virtualmachinescalesets"
+            operator = local.operator[rule.value.scale_in_config.operator]
 
             threshold        = rule.value.scale_in_config.threshold
             statistic        = rule.value.scale_in_config.grain_aggregation_type
             time_aggregation = rule.value.scale_in_config.aggregation_window_type
             time_grain = try(
-              module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-grain_window_minutes"].dt_string,
-              module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"].dt_string
+              module.ptd_time[
+                "${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-grain_window_minutes"
+              ].dt_string,
+              module.ptd_time[
+                "${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"
+              ].dt_string
             )
             time_window = try(
-              module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-aggregation_window_minutes"].dt_string,
-              module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"].dt_string
+              module.ptd_time[
+                "${var.autoscaling_profiles[0].name}-${replace(
+                lower(rule.value.name), " ", "_")}-scale_in-aggregation_window_minutes"
+              ].dt_string,
+              module.ptd_time[
+                "${var.autoscaling_profiles[0].name}-${replace(
+                lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"
+              ].dt_string
             )
           }
 
@@ -361,7 +414,9 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             direction = "Decrease"
             value     = rule.value.scale_in_config.change_count_by
             type      = "ChangeCount"
-            cooldown  = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-cooldown_window_minutes"].dt_string
+            cooldown = module.ptd_time[
+              "${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-cooldown_window_minutes"
+            ].dt_string
           }
         }
       }

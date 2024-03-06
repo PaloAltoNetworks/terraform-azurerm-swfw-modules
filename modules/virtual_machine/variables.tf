@@ -14,13 +14,19 @@ variable "name" {
 }
 
 variable "enable_zones" {
-  description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
+  description = <<-EOF
+  If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the
+  `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones.
+  EOF
   default     = true
   type        = bool
 }
 
 variable "avzone" {
-  description = "The availability zone to use, for example \"1\", \"2\", \"3\". Ignored if `enable_zones` is false. Conflicts with `avset_id`, in which case use `avzone = null`."
+  description = <<-EOF
+  The availability zone to use, for example \"1\", \"2\", \"3\". Ignored if `enable_zones` is false. Conflicts with `avset_id`,
+  in which case use `avzone = null`.
+  EOF
   default     = "1"
   type        = string
 }
@@ -49,12 +55,19 @@ variable "interfaces" {
   - `subnet_id`            - (required|string) Identifier of an existing subnet to create interface in.
   - `private_ip_address`   - (optional|string) Static private IP to asssign to the interface. If null, dynamic one is allocated.
   - `public_ip_address_id` - (optional|string) Identifier of an existing public IP to associate.
-  - `create_public_ip`     - (optional|bool) If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
-  - `availability_zone`    - (optional|string) Availability zone to create public IP in. If not specified, set based on `avzone` and `enable_zones`.
-  - `enable_ip_forwarding` - (optional|bool) If true, the network interface will not discard packets sent to an IP address other than the one assigned. If false, the network interface only accepts traffic destined to its IP address.
-  - `enable_backend_pool`  - (optional|bool) If true, associate interface with backend pool specified with `lb_backend_pool_id`. Default is false.
-  - `lb_backend_pool_id`   - (optional|string) Identifier of an existing backend pool to associate interface with. Required if `enable_backend_pool` is true.
-  - `tags`                 - (optional|map) Tags to assign to the interface and public IP (if created). Overrides contents of `tags` variable.
+  - `create_public_ip`     - (optional|bool) If true, create a public IP for the interface and ignore the `public_ip_address_id`. 
+                             Default is false.
+  - `availability_zone`    - (optional|string) Availability zone to create public IP in. If not specified, set based on `avzone`
+                             and `enable_zones`.
+  - `enable_ip_forwarding` - (optional|bool) If true, the network interface will not discard packets sent to an IP address other
+                             than the one assigned. If false, the network interface only accepts traffic destined to its IP
+                             address.
+  - `enable_backend_pool`  - (optional|bool) If true, associate interface with backend pool specified with `lb_backend_pool_id`.
+                             Default is false.
+  - `lb_backend_pool_id`   - (optional|string) Identifier of an existing backend pool to associate interface with. Required if
+                             `enable_backend_pool` is true.
+  - `tags`                 - (optional|map) Tags to assign to the interface and public IP (if created). Overrides contents of
+                             `tags` variable.
 
   Example:
 
@@ -78,24 +91,36 @@ variable "interfaces" {
 }
 
 variable "bootstrap_storage_account" {
-  description = "Existing storage account object for bootstrapping and for holding small-sized boot diagnostics. Usually the object is passed from a bootstrap module's output."
+  description = <<-EOF
+  Existing storage account object for bootstrapping and for holding small-sized boot diagnostics. Usually the object is passed
+  from a bootstrap module's output.
+  EOF
   default     = null
   type        = any
 }
 
 variable "bootstrap_share_name" {
-  description = "Azure File Share holding the bootstrap data. Should reside on `bootstrap_storage_account`. Bootstrapping is omitted if `bootstrap_share_name` is left at null."
+  description = <<-EOF
+  Azure File Share holding the bootstrap data. Should reside on `bootstrap_storage_account`. Bootstrapping is omitted if
+  `bootstrap_share_name` is left at null.
+  EOF
   default     = null
   type        = string
 }
 
 variable "username" {
-  description = "Initial administrative username to use for the virtual machine. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm)."
+  description = <<-EOF
+  Initial administrative username to use for the virtual machine. Mind the
+  [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm).
+  EOF
   type        = string
 }
 
 variable "password" {
-  description = "Initial administrative password to use for the virtual machine. If not defined the `ssh_key` variable must be specified. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm)."
+  description = <<-EOF
+  Initial administrative password to use for the virtual machine. If not defined the `ssh_key` variable must be specified. Mind
+  the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm).
+  EOF
   default     = null
   type        = string
   sensitive   = true
@@ -103,9 +128,11 @@ variable "password" {
 
 variable "ssh_keys" {
   description = <<-EOF
-  A list of initial administrative SSH public keys that allow key-pair authentication. If not defined the `password` variable must be specified.
+  A list of initial administrative SSH public keys that allow key-pair authentication. If not defined the `password` variable
+  must be specified.
   
-  This is a list of strings, so each item should be the actual public key value. If you would like to load them from files instead, following method is available:
+  This is a list of strings, so each item should be the actual public key value. If you would like to load them from files
+  instead, following method is available:
 
   ```
   [
@@ -119,7 +146,10 @@ variable "ssh_keys" {
 }
 
 variable "managed_disk_type" {
-  description = "Type of OS Managed Disk to create for the virtual machine. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs."
+  description = <<-EOF
+  Type of OS Managed Disk to create for the virtual machine. Possible values are `Standard_LRS`, `StandardSSD_LRS` or
+  `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs.
+  EOF
   default     = "StandardSSD_LRS"
   type        = string
 }
@@ -137,7 +167,11 @@ variable "vm_size" {
 }
 
 variable "custom_image_id" {
-  description = "Absolute ID of your own Custom Image to be used for creating a new virtual machine. If set, the `username`, `password`, `img_version`, `img_publisher`, `img_offer`, `img_sku` inputs are all ignored (these are used only for published images, not custom ones)."
+  description = <<-EOF
+  Absolute ID of your own Custom Image to be used for creating a new virtual machine. If set, the `username`, `password`,
+  `img_version`, `img_publisher`, `img_offer`, `img_sku` inputs are all ignored (these are used only for published images, not
+  custom ones).
+  EOF
   default     = null
   type        = string
 }
@@ -161,19 +195,27 @@ variable "img_sku" {
 }
 
 variable "img_version" {
-  description = "Virtual machine image version - list available for a default `img_offer` with `az vm image list -o table --publisher foo --offer bar --all`"
+  description = <<-EOF
+  Virtual machine image version - list available for a default `img_offer` with
+  `az vm image list -o table --publisher foo --offer bar --all`.
+  EOF
   default     = "latest"
   type        = string
 }
 
 variable "enable_plan" {
-  description = "Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku \"byol\", which means \"bring your own license\", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image."
+  description = <<-EOF
+  Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku \"byol\", which means \"bring your own license\", still
+  requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image.
+  EOF
   default     = false
   type        = bool
 }
 
 variable "vm_os_simple" {
-  description = "Allows user to specify a simple name for the OS required and auto populate the publisher, offer, sku parameters"
+  description = <<-EOF
+  Allows user to specify a simple name for the OS required and auto populate the publisher, offer, sku parameters.
+  EOF
   default     = "UbuntuServer"
   type        = string
 }
@@ -181,7 +223,7 @@ variable "vm_os_simple" {
 
 variable "standard_os" {
   description = <<-EOF
-  Definition of the standard OS with "SimpleName" = "publisher,offer,sku"
+  Definition of the standard OS with "SimpleName" = "publisher,offer,sku".
   EOF
   default = {
     "UbuntuServer"  = "Canonical,UbuntuServer,18.04-LTS"
@@ -202,19 +244,23 @@ variable "tags" {
 }
 
 variable "identity_type" {
-  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#identity_type)."
+  description = <<-EOF
+  See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#identity_type).
+  EOF
   default     = "SystemAssigned"
   type        = string
 }
 
 variable "identity_ids" {
-  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#identity_ids)."
+  description = <<-EOF
+  See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#identity_ids).
+  EOF
   default     = null
   type        = list(string)
 }
 
 variable "accelerated_networking" {
-  description = "Enable Azure accelerated networking (SR-IOV) for all network interfaces"
+  description = "Enable Azure accelerated networking (SR-IOV) for all network interfaces."
   default     = true
   type        = bool
 }

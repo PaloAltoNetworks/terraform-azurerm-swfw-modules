@@ -21,7 +21,8 @@ variable "name_prefix" {
   name_prefix = "test-"
   ```
 
-  NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name,
+  **Note!** \
+  This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name,
   even if it is also prefixed with the same value as the one in this property.
   EOF
   default     = ""
@@ -68,7 +69,6 @@ variable "vnets" {
   - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
                                 [VNET module documentation](../../modules/vnet/README.md#route_tables)
   EOF
-
   type = map(object({
     name                   = string
     create_virtual_network = optional(bool, true)

@@ -106,11 +106,10 @@ variable "frontend_ips" {
 
   Below are the properties for `out_rules` map. 
   
-  > [!Warning]
-  > Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules.
-  > Keep in mind that since we use a single backend,
-  > and you cannot mix SNAT and outbound rules traffic in rules using the same backend,
-  > setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`.
+  **Warning!** \
+  Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules. Keep in mind that since we use a
+  single backend, and you cannot mix SNAT and outbound rules traffic in rules using the same backend, setting one `out_rule`
+  switches the outgoing traffic route for **ALL** `in_rules`.
 
   - `name`                      - (`string`, required) a name of an outbound rule
   - `protocol`                  - (`string`, required) protocol used by the rule. One of `All`, `Tcp` or `Udp` is accepted

@@ -91,7 +91,7 @@ resource "azurerm_application_gateway" "this" {
     public_ip_address_id = try(azurerm_public_ip.this[0].id, data.azurerm_public_ip.this[0].id)
   }
 
-  # There is only a single backend - the VMSeries private IPs assigned to untrusted NICs
+  # There is only a single backend - the VM-Series private IPs assigned to untrusted NICs
   backend_address_pool {
     name         = var.backend_pool.name
     ip_addresses = var.backend_pool.vmseries_ips
@@ -285,11 +285,15 @@ resource "azurerm_application_gateway" "this" {
         for_each = url_path_map.value.path_rules
 
         content {
-          name                        = path_rule.key
-          paths                       = path_rule.value.paths
-          backend_address_pool_name   = path_rule.value.backend_key != null ? var.backend_pool.name : null
-          backend_http_settings_name  = path_rule.value.backend_key != null ? var.backend_settings[path_rule.value.backend_key].name : null
-          redirect_configuration_name = path_rule.value.redirect_key != null ? var.redirects[path_rule.value.redirect_key].name : null
+          name                      = path_rule.key
+          paths                     = path_rule.value.paths
+          backend_address_pool_name = path_rule.value.backend_key != null ? var.backend_pool.name : null
+          backend_http_settings_name = path_rule.value.backend_key != null ? (
+            var.backend_settings[path_rule.value.backend_key].name
+          ) : null
+          redirect_configuration_name = path_rule.value.redirect_key != null ? (
+            var.redirects[path_rule.value.redirect_key].name
+          ) : null
         }
       }
     }
@@ -317,7 +321,9 @@ resource "azurerm_application_gateway" "this" {
         request_routing_rule.value.rewrite_key != null ? var.rewrites[request_routing_rule.value.rewrite_key].name : null
       )
       url_path_map_name = (
-        request_routing_rule.value.url_path_map_key != null ? var.url_path_maps[request_routing_rule.value.url_path_map_key].name : null
+        request_routing_rule.value.url_path_map_key != null ? (
+          var.url_path_maps[request_routing_rule.value.url_path_map_key].name
+        ) : null
       )
     }
   }
@@ -326,7 +332,9 @@ resource "azurerm_application_gateway" "this" {
     precondition {
       condition = var.probes != null ? alltrue(flatten([
         for k, probe in var.probes : probe.host != null || alltrue(flatten([
-          for b, backend in var.backend_settings : backend.probe_key == k ? backend.hostname != null || backend.hostname_from_backend : true
+          for b, backend in var.backend_settings : backend.probe_key == k ? (
+            backend.hostname != null || backend.hostname_from_backend
+          ) : true
         ]))
       ])) : true
       error_message = <<EOF

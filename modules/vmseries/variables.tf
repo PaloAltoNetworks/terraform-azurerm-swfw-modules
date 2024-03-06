@@ -105,13 +105,13 @@ variable "virtual_machine" {
   - `disk_name`         - (`string`, optional, defaults to VM name + `-disk` suffix) name od the OS disk.
   - `bootstrap_options` - bootstrap options to pass to VM-Series instance.
 
-      Proper syntax is a string of semicolon separated properties, for example:
+    Proper syntax is a string of semicolon separated properties, for example:
 
-      ```hcl
-      bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"
-      ```
+    ```hcl
+    bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"
+    ```
 
-      For more details on bootstrapping [see documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components).
+    For more details on bootstrapping [see documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components).
 
   List of other, optional properties: 
 

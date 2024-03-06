@@ -110,7 +110,9 @@ Name | Type | Description
 Name |  Description
 --- | ---
 `backend_pool_id` | The identifier of the backend pool.
-`frontend_ip_configs` | Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it, private IP address otherwise.
+`frontend_ip_configs` | Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it,
+private IP address otherwise.
+
 `health_probe` | The health probe object.
 
 ## Module's Nameplate
@@ -225,11 +227,10 @@ Below are the properties for the `in_rules` map:
 
 Below are the properties for `out_rules` map. 
   
-> [!Warning]
-> Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules.
-> Keep in mind that since we use a single backend,
-> and you cannot mix SNAT and outbound rules traffic in rules using the same backend,
-> setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`.
+**Warning!** \
+Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules. Keep in mind that since we use a
+single backend, and you cannot mix SNAT and outbound rules traffic in rules using the same backend, setting one `out_rule`
+switches the outgoing traffic route for **ALL** `in_rules`.
 
 - `name`                      - (`string`, required) a name of an outbound rule
 - `protocol`                  - (`string`, required) protocol used by the rule. One of `All`, `Tcp` or `Udp` is accepted

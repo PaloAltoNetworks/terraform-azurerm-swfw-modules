@@ -1,4 +1,5 @@
-# --- GENERAL --- #
+### GENERAL ###
+
 location            = "North Europe"
 resource_group_name = "appgw-example"
 name_prefix         = "fosix-"
@@ -7,8 +8,8 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
+### NETWORK ###
 
-# --- VNET PART --- #
 vnets = {
   transit = {
     name                    = "transit"
@@ -36,7 +37,7 @@ vnets = {
   }
 }
 
-# --- APPGW PART --- #
+### LOAD BALANCING ###
 
 appgws = {
   "public-empty" = {

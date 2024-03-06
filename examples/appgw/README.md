@@ -42,8 +42,8 @@ Providers used in this module:
 Modules used in this module:
 Name | Version | Source | Description
 --- | --- | --- | ---
-`vnet` | - | ../../modules/vnet | Manage the network required for the topology.
-`appgw` | - | ../../modules/appgw | Create Application Gateway
+`vnet` | - | ../../modules/vnet | 
+`appgw` | - | ../../modules/appgw | 
 
 
 Resources used in this module:
@@ -349,7 +349,8 @@ Example:
 name_prefix = "test-"
 ```
 
-NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name,
+**Note!** \
+This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name,
 even if it is also prefixed with the same value as the one in this property.
 
 
@@ -371,7 +372,6 @@ Type: bool
 Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 
 

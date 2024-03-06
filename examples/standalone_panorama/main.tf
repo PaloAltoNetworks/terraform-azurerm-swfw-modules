@@ -1,4 +1,5 @@
-# Generate a random password.
+### Generate a random password ###
+
 # https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password
 resource "random_password" "this" {
   count = anytrue([
@@ -26,7 +27,8 @@ locals {
   }
 }
 
-# Create or source the Resource Group.
+### Create or source a Resource Group ###
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
@@ -46,7 +48,8 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
-# Manage the network required for the topology.
+### Manage the network required for the topology ###
+
 module "vnet" {
   source = "../../modules/vnet"
 
@@ -62,15 +65,17 @@ module "vnet" {
   create_subnets = each.value.create_subnets
   subnets        = each.value.subnets
 
-  network_security_groups = { for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  network_security_groups = {
+    for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
-  route_tables = { for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  route_tables = {
+    for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
 
   tags = var.tags
 }
 
-# Create Panorama virtual appliance
+### Create Panorama VMs and closely associated resources ###
 
 resource "azurerm_availability_set" "this" {
   for_each = var.availability_sets
@@ -104,10 +109,12 @@ module "panorama" {
   )
 
   interfaces = [for v in each.value.interfaces : {
-    name                          = "${var.name_prefix}${v.name}"
-    subnet_id                     = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
-    create_public_ip              = v.create_public_ip
-    public_ip_name                = v.create_public_ip ? "${var.name_prefix}${coalesce(v.public_ip_name, "${each.value.name}-pip")}" : v.public_ip_name
+    name             = "${var.name_prefix}${v.name}"
+    subnet_id        = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
+    create_public_ip = v.create_public_ip
+    public_ip_name = v.create_public_ip ? "${var.name_prefix}${
+      coalesce(v.public_ip_name, "${each.value.name}-pip")
+    }" : v.public_ip_name
     public_ip_resource_group_name = v.public_ip_resource_group_name
     private_ip_address            = v.private_ip_address
   }]
