@@ -14,7 +14,7 @@ A simple module invocation might look like the following:
 
 ```hcl
 module "name_templates" {
-  source = "../../modules/name_templater"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/name_templater"
 
   resource_type = "vnet"
   name_template = {
@@ -195,5 +195,6 @@ Type: map(string)
 Default value: `map[application_gw:agw application_insights:appi availability_set:avail bastion:bas data_disk:disk file_share:share load_balancer:lb log_analytics_workspace:log managed_identity:id nat_gw:ng network_interface:nic nsg:nsg nsg_rule:nsgsr os_disk:osdisk public_ip:pip public_ip_prefix:ippre resource_group:rg route_table:rt service_endpoint:se storage_account:st subnet:snet udr:udr virtual_machine:vm virtual_machine_scale_set:vmss virtual_network_gateway:vgw vnet:vnet vnet_peering:peer]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 <!-- END_TF_DOCS -->

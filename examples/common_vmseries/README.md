@@ -19,7 +19,6 @@ common VM-Series for all traffic; for a discussion of other options, please see 
 
 ![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/aa2ae33a-fb46-4a1c-9811-98ea3b132297)
 
-
 This code implements:
 
 - a *centralized design*, a hub-and-spoke topology with a Transit VNet containing VM-Series to inspect all inbound, outbound,
@@ -42,7 +41,6 @@ that occurs when traffic crosses virtual routers. This option is suitable for pr
 because the number of firewalls low. However, the technical integration complexity is high.
 
 ![Detailed Topology Diagram](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/8e8da6e0-afba-4bb5-b2c7-a95c7250dab3)
-
 
 This reference architecture consists of:
 
@@ -212,7 +210,7 @@ Name |  Description
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.2, < 2.0
+- `terraform`, version: >= 1.5, < 2.0
 
 
 Providers used in this module:

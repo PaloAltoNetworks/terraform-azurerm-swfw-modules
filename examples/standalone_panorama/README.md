@@ -26,7 +26,6 @@ This is a non zonal deployment. The deployed infrastructure consists of:
 
 ![standalone-panorama](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/b2dadd69-f5b5-4ac4-b356-467ef79cbb0b)
 
-
 ## Prerequisites
 
 A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
@@ -156,7 +155,7 @@ Name |  Description
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.2, < 2.0
+- `terraform`, version: >= 1.5, < 2.0
 
 
 Providers used in this module:

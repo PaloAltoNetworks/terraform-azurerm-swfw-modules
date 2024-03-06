@@ -50,7 +50,6 @@ outbound traffic flows occur on the same set of firewalls. However, the technica
 
 ![Common-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/7d363d6a-b394-4851-99b9-03ce8abf379a)
 
-
 This reference architecture consists of:
 
 - a VNET containing:
@@ -235,6 +234,9 @@ Name |  Description
 ## Module's Nameplate
 
 
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.5, < 2.0
 
 
 Providers used in this module:

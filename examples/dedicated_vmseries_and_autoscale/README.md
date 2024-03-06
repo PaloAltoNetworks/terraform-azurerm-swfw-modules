@@ -51,7 +51,6 @@ other traffic flows within the deployment.
 
 ![Dedicated-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/757005dc-3e24-4b39-8a69-7b3fbf9819cb)
 
-
 This reference architecture consists of:
 
 - a VNET containing:
@@ -231,6 +230,9 @@ Name |  Description
 ## Module's Nameplate
 
 
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.5, < 2.0
 
 
 Providers used in this module:

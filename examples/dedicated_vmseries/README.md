@@ -43,7 +43,6 @@ flows affecting other traffic flows within the deployment.
 
 ![Detailed Topology Diagram](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/3644469f-5f0f-44f9-8990-010c8bcf1cec)
 
-
 This reference architecture consists of:
 
 - a VNET containing:
@@ -215,7 +214,7 @@ Name |  Description
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.2, < 2.0
+- `terraform`, version: >= 1.5, < 2.0
 
 
 Providers used in this module:
