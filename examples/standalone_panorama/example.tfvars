@@ -1,6 +1,6 @@
 ### GENERAL ###
 
-location              = "North Europe"
+region                = "North Europe"
 resource_group_name   = "panorama"
 name_prefix           = "example-"
 create_resource_group = true

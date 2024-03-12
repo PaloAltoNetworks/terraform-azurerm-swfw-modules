@@ -9,7 +9,7 @@ locals {
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.interfaces : k => v if try(v.create_public_ip, false) }
 
-  location            = var.location
+  location            = var.region
   resource_group_name = var.resource_group_name
   name                = "${each.value.name}-pip"
   allocation_method   = "Static"
@@ -23,7 +23,7 @@ resource "azurerm_network_interface" "this" {
   count = length(var.interfaces)
 
   name                          = var.interfaces[count.index].name
-  location                      = var.location
+  location                      = var.region
   resource_group_name           = var.resource_group_name
   enable_accelerated_networking = var.accelerated_networking
   enable_ip_forwarding          = true
@@ -57,7 +57,7 @@ resource "azurerm_network_interface_backend_address_pool_association" "this" {
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine
 resource "azurerm_virtual_machine" "this" {
   name                         = var.name
-  location                     = var.location
+  location                     = var.region
   resource_group_name          = var.resource_group_name
   tags                         = var.tags
   vm_size                      = var.vm_size

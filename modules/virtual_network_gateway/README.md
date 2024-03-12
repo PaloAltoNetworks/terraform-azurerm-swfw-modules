@@ -16,7 +16,7 @@ module "vng" {
   for_each = var.virtual_network_gateways
 
   name                = "${var.name_prefix}${each.value.name}"
-  location            = var.location
+  location            = var.region
   resource_group_name = local.resource_group.name
 
   network   = each.value.network
@@ -319,7 +319,7 @@ Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Virtual Network Gateway.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
-[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`subnet_id`](#subnet_id) | `string` | An ID of a Subnet in which the Virtual Network Gateway will be created.
 [`instance_settings`](#instance_settings) | `object` | A map containing the basic Virtual Network Gateway instance settings.
 [`ip_configurations`](#ip_configurations) | `object` | A map defining the Public IPs used by the Virtual Network Gateway.
@@ -393,7 +393,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 The name of the Azure region to deploy the resources in.
 

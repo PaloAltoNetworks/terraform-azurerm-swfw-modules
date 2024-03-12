@@ -3,7 +3,7 @@ resource "azurerm_virtual_network" "this" {
   count = var.create_virtual_network ? 1 : 0
 
   name                = var.name
-  location            = var.location
+  location            = var.region
   resource_group_name = var.resource_group_name
   address_space       = var.address_space
   tags                = var.tags
@@ -57,7 +57,7 @@ resource "azurerm_network_security_group" "this" {
   for_each = var.network_security_groups
 
   name                = each.value.name
-  location            = var.location
+  location            = var.region
   resource_group_name = var.resource_group_name
   tags                = var.tags
 }
@@ -105,7 +105,7 @@ resource "azurerm_route_table" "this" {
   for_each = var.route_tables
 
   name                          = each.value.name
-  location                      = var.location
+  location                      = var.region
   resource_group_name           = var.resource_group_name
   tags                          = var.tags
   disable_bgp_route_propagation = each.value.disable_bgp_route_propagation

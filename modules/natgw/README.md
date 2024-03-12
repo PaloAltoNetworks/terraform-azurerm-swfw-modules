@@ -45,7 +45,7 @@ Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | Name of a NAT Gateway.
 [`resource_group_name`](#resource_group_name) | `string` | Name of a Resource Group hosting the NAT Gateway (either the existing one or the one that will be created).
-[`location`](#location) | `string` | Azure region.
+[`region`](#region) | `string` | Azure region.
 [`subnet_ids`](#subnet_ids) | `map` | A map of subnet IDs what will be bound with this NAT Gateway.
 
 
@@ -118,7 +118,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 Azure region. Only for newly created resources.
 

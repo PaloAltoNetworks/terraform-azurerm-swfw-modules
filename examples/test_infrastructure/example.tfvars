@@ -1,5 +1,5 @@
 # --- GENERAL --- #
-location            = "North Europe"
+region              = "North Europe"
 resource_group_name = "vmseries-test-infra"
 name_prefix         = "example-"
 tags = {

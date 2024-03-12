@@ -3,7 +3,7 @@ resource "azurerm_storage_account" "this" {
   count = var.storage_account.create ? 1 : 0
 
   name                     = var.name
-  location                 = var.location
+  location                 = var.region
   resource_group_name      = var.resource_group_name
   min_tls_version          = var.storage_network_security.min_tls_version
   account_replication_type = var.storage_account.replication_type
@@ -13,7 +13,7 @@ resource "azurerm_storage_account" "this" {
 
   lifecycle {
     precondition {
-      condition     = var.location != null
+      condition     = var.region != null
       error_message = "When creating a storage account the `location` variable cannot be null."
     }
   }

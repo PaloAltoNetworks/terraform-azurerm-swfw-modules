@@ -2,7 +2,7 @@
 resource "azurerm_public_ip" "this" {
   for_each = { for v in var.interfaces : v.name => v if v.create_public_ip }
 
-  location            = var.location
+  location            = var.region
   resource_group_name = var.resource_group_name
   name                = each.value.public_ip_name
   allocation_method   = "Static"
@@ -24,7 +24,7 @@ resource "azurerm_network_interface" "this" {
   for_each = { for k, v in var.interfaces : v.name => merge(v, { index = k }) }
 
   name                          = each.value.name
-  location                      = var.location
+  location                      = var.region
   resource_group_name           = var.resource_group_name
   enable_accelerated_networking = false
   enable_ip_forwarding          = false
@@ -48,7 +48,7 @@ locals {
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine
 resource "azurerm_linux_virtual_machine" "this" {
   name                = var.name
-  location            = var.location
+  location            = var.region
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
@@ -118,7 +118,7 @@ resource "azurerm_managed_disk" "this" {
   for_each = var.logging_disks
 
   name                 = each.value.name
-  location             = var.location
+  location             = var.region
   resource_group_name  = var.resource_group_name
   storage_account_type = each.value.disk_type
   create_option        = "Empty"

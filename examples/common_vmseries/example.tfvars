@@ -1,6 +1,6 @@
 ### GENERAL ###
 
-location            = "North Europe"
+region              = "North Europe"
 resource_group_name = "transit-vnet-common"
 name_prefix         = "example-"
 tags = {

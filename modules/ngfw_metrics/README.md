@@ -46,7 +46,7 @@ module "ngfw_metrics" {
 
   name                = "ngfw-law"
   resource_group_name = "ngfw-rg"
-  location            = "West US"
+  region              = "West US"
 
   application_insights = {
     ai1 = { name = "fw1-ai" }
@@ -61,7 +61,7 @@ Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Azure Log Analytics Workspace.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
-[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`application_insights`](#application_insights) | `map` | A map defining Application Insights instances.
 
 
@@ -125,7 +125,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 The name of the Azure region to deploy the resources in.
 

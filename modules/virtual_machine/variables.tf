@@ -1,4 +1,4 @@
-variable "location" {
+variable "region" {
   description = "Region where to deploy and dependencies."
   type        = string
 }

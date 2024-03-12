@@ -2,7 +2,7 @@
 resource "azurerm_public_ip" "this" {
   for_each = { for v in var.interfaces : v.name => v if v.create_public_ip }
 
-  location            = var.location
+  location            = var.region
   resource_group_name = var.resource_group_name
   name                = each.value.public_ip_name
   allocation_method   = "Static"
@@ -25,7 +25,7 @@ resource "azurerm_network_interface" "this" {
   for_each = { for k, v in var.interfaces : v.name => merge(v, { index = k }) }
 
   name                          = each.value.name
-  location                      = var.location
+  location                      = var.region
   resource_group_name           = var.resource_group_name
   enable_accelerated_networking = each.value.index == 0 ? false : var.virtual_machine.accelerated_networking
   enable_ip_forwarding          = each.value.index == 0 ? false : true
@@ -51,7 +51,7 @@ locals {
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine
 resource "azurerm_linux_virtual_machine" "this" {
   name                = var.name
-  location            = var.location
+  location            = var.region
   resource_group_name = var.resource_group_name
   tags                = var.tags
 

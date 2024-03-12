@@ -6,7 +6,7 @@ locals {
 resource "azurerm_linux_virtual_machine_scale_set" "this" {
   name                 = var.name
   computer_name_prefix = null
-  location             = var.location
+  location             = var.region
   resource_group_name  = var.resource_group_name
 
   admin_username                  = var.authentication.username
@@ -175,7 +175,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
   count = length(var.autoscaling_profiles) > 0 ? 1 : 0
 
   name                = var.name
-  location            = var.location
+  location            = var.region
   resource_group_name = var.resource_group_name
   target_resource_id  = azurerm_linux_virtual_machine_scale_set.this.id
 

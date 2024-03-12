@@ -32,7 +32,7 @@ module "empty_storage" {
 
   name                = "someemptystorage"
   resource_group_name = "rg-name"
-  location            = "North Europe"
+  region          = "North Europe"
 }
 ```
 
@@ -49,11 +49,11 @@ This code will create a storage account for 3 NGFWs. Please **note** that:
 
 ```hcl
 module "bootstrap" {
-  source = "../../modules/bootstrap"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/bootstrap"
 
   name                = "samplebootstrapstorage"
   resource_group_name = "rg-name"
-  location            = "North Europe"
+  region          = "North Europe"
 
   file_shares_configuration = {
     access_tier = "Hot"
@@ -140,7 +140,7 @@ Name | Type | Description
 
 Name | Type | Description
 --- | --- | ---
-[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`storage_account`](#storage_account) | `object` | A map controlling basic Storage Account configuration.
 [`storage_network_security`](#storage_network_security) | `object` | A map defining network security settings for a new storage account.
@@ -222,7 +222,7 @@ Type: string
 
 
 
-#### location
+#### region
 
 The name of the Azure region to deploy the resources in.
 

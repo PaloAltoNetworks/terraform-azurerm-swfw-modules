@@ -20,7 +20,7 @@ Please correct the values marked with `TODO` markers at minimum.
 
 Name | Type | Description
 --- | --- | ---
-[`location`](#location) | `string` | The Azure region to use.
+[`region`](#region) | `string` | The Azure region to use.
 [`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 
@@ -87,7 +87,7 @@ Resources used in this module:
 
 
 
-#### location
+#### region
 
 The Azure region to use.
 

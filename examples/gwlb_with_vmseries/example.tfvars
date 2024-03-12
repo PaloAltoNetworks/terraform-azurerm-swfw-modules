@@ -1,6 +1,6 @@
 ### GENERAL ###
 
-location            = "North Europe"
+region              = "North Europe"
 resource_group_name = "gwlb"
 name_prefix         = "example-"
 tags = {

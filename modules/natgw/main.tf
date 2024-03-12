@@ -4,7 +4,7 @@ resource "azurerm_public_ip" "this" {
 
   name                = var.public_ip.name
   resource_group_name = var.resource_group_name
-  location            = var.location
+  location            = var.region
   allocation_method   = "Static"
   sku                 = "Standard"
   zones               = var.zone != null ? [var.zone] : null
@@ -26,7 +26,7 @@ resource "azurerm_public_ip_prefix" "this" {
 
   name                = var.public_ip_prefix.name
   resource_group_name = var.resource_group_name
-  location            = var.location
+  location            = var.region
   ip_version          = "IPv4"
   prefix_length       = var.public_ip_prefix.length
   sku                 = "Standard"
@@ -49,7 +49,7 @@ resource "azurerm_nat_gateway" "this" {
 
   name                    = var.name
   resource_group_name     = var.resource_group_name
-  location                = var.location
+  location                = var.region
   sku_name                = "Standard"
   idle_timeout_in_minutes = var.idle_timeout
   zones                   = var.zone != null ? [var.zone] : null

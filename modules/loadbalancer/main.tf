@@ -36,7 +36,7 @@ resource "azurerm_public_ip" "this" {
 
   name                = each.value.public_ip_name
   resource_group_name = var.resource_group_name
-  location            = var.location
+  location            = var.region
   allocation_method   = "Static"
   sku                 = "Standard"
   zones               = var.zones
@@ -55,7 +55,7 @@ data "azurerm_public_ip" "this" {
 resource "azurerm_lb" "this" {
   name                = var.name
   resource_group_name = var.resource_group_name
-  location            = var.location
+  location            = var.region
   sku                 = "Standard"
   tags                = var.tags
 

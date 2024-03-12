@@ -33,7 +33,7 @@ locals {
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
   name     = "${var.name_prefix}${var.resource_group_name}"
-  location = var.location
+  location = var.region
 
   tags = var.tags
 }
@@ -58,7 +58,7 @@ module "vnet" {
   name                   = each.value.create_virtual_network ? "${var.name_prefix}${each.value.name}" : each.value.name
   create_virtual_network = each.value.create_virtual_network
   resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
-  location               = var.location
+  region                 = var.region
 
   address_space = each.value.address_space
 
@@ -83,7 +83,7 @@ module "load_balancer" {
   for_each = var.load_balancers
 
   name                = "${var.name_prefix}${each.value.name}"
-  location            = var.location
+  region              = var.region
   resource_group_name = local.resource_group.name
   zones               = each.value.zones
   backend_name        = each.value.backend_name
@@ -131,7 +131,7 @@ module "gwlb" {
 
   name                = "${var.name_prefix}${each.value.name}"
   resource_group_name = try(each.value.resource_group_name, local.resource_group.name)
-  location            = var.location
+  region              = var.region
 
   backends     = try(each.value.backends, null)
   health_probe = try(each.value.health_probe, null)
@@ -162,7 +162,7 @@ module "ngfw_metrics" {
   resource_group_name = var.ngfw_metrics.create_workspace ? local.resource_group.name : (
     coalesce(var.ngfw_metrics.resource_group_name, local.resource_group.name)
   )
-  location = var.location
+  region = var.region
 
   log_analytics_workspace = {
     sku                       = var.ngfw_metrics.sku
@@ -238,7 +238,7 @@ module "bootstrap" {
   storage_account     = each.value.storage_account
   name                = each.value.name
   resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
-  location            = var.location
+  region              = var.region
 
   storage_network_security = merge(
     each.value.storage_network_security,
@@ -260,7 +260,7 @@ resource "azurerm_availability_set" "this" {
 
   name                         = "${var.name_prefix}${each.value.name}"
   resource_group_name          = local.resource_group.name
-  location                     = var.location
+  location                     = var.region
   platform_update_domain_count = each.value.update_domain_count
   platform_fault_domain_count  = each.value.fault_domain_count
 
@@ -273,7 +273,7 @@ module "vmseries" {
   for_each = var.vmseries
 
   name                = "${var.name_prefix}${each.value.name}"
-  location            = var.location
+  region              = var.region
   resource_group_name = local.resource_group.name
 
   authentication = local.authentication[each.key]
@@ -335,7 +335,7 @@ module "appvm" {
   source   = "../../modules/virtual_machine"
 
   name                = "${var.name_prefix}${each.value.name}"
-  location            = var.location
+  region              = var.region
   resource_group_name = local.resource_group.name
   avzone              = each.value.avzone
 
