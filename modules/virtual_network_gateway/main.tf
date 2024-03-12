@@ -30,7 +30,7 @@ resource "azurerm_virtual_network_gateway" "this" {
   type                             = var.instance_settings.type
   vpn_type                         = var.instance_settings.vpn_type
   sku                              = var.instance_settings.sku
-  generation                       = var.instance_settings.ype == "VPN" ? var.instance_settings.generation : null
+  generation                       = var.instance_settings.type == "VPN" ? var.instance_settings.generation : null
   active_active                    = var.instance_settings.active_active
   default_local_network_gateway_id = var.default_local_network_gateway_id
   edge_zone                        = var.edge_zone

@@ -115,27 +115,27 @@ variable "instance_settings" {
 
   })
   validation { # type
-    condition     = contains(["Vpn", "ExpressRoute"], var.virtual_network_gateway.type)
+    condition     = contains(["Vpn", "ExpressRoute"], var.instance_settings.type)
     error_message = <<-EOF
     The `virtual_network_gateway.type` property can take one of the following values: "Vpn" or "ExpressRoute".
     EOF
   }
   validation { # vpn_type
-    condition     = contains(["RouteBased", "PolicyBased"], var.virtual_network_gateway.vpn_type)
+    condition     = contains(["RouteBased", "PolicyBased"], var.instance_settings.vpn_type)
     error_message = <<-EOF
     The `virtual_network_gateway.vpn_type` property can take one of the following values: "RouteBased" or "PolicyBased".
     EOF
   }
   validation { # generation
-    condition     = contains(["Generation1", "Generation2", "None"], var.virtual_network_gateway.generation)
+    condition     = contains(["Generation1", "Generation2", "None"], var.instance_settings.generation)
     error_message = <<-EOF
     The `virtual_network_gateway.generation` property can take one of the following values: "Generation1" or "Generation2"
     or "None".
     EOF
   }
   validation { # type, generation & sku
-    condition = var.virtual_network_gateway.generation == "Generation2" && var.virtual_network_gateway.type == "Vpn" ? contains(
-      ["VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.virtual_network_gateway.sku
+    condition = var.instance_settings.generation == "Generation2" && var.instance_settings.type == "Vpn" ? contains(
+      ["VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.instance_settings.sku
     ) : true
     error_message = <<-EOF
     For `sku` of "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ" or "VpnGw5AZ" the `generation`
@@ -143,12 +143,12 @@ variable "instance_settings" {
     EOF
   }
   validation { # type & sku
-    condition = (var.virtual_network_gateway.type == "Vpn" && contains(
+    condition = (var.instance_settings.type == "Vpn" && contains(
       ["Basic", "VpnGw1", "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"],
-      var.virtual_network_gateway.sku
+      var.instance_settings.sku
       )) || (
-      var.virtual_network_gateway.type == "ExpressRoute" && contains(
-        ["Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ"], var.virtual_network_gateway.sku
+      var.instance_settings.type == "ExpressRoute" && contains(
+        ["Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ"], var.instance_settings.sku
       )
     )
     error_message = <<-EOF
@@ -156,7 +156,7 @@ variable "instance_settings" {
     EOF
   }
   validation { # active_active
-    condition     = var.virtual_network_gateway.type == "ExpressRoute" ? !var.virtual_network_gateway.active_active : true
+    condition     = var.instance_settings.type == "ExpressRoute" ? !var.instance_settings.active_active : true
     error_message = <<-EOF
     The `active_active` property has to be set to `false` (default) when type is `ExpressRoute`.
     EOF
