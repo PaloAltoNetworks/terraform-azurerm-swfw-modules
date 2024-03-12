@@ -9,7 +9,7 @@ The `README` is also in new, document-style format.
 
 Name | Type | Description
 --- | --- | ---
-[`location`](#location) | `string` | The Azure region to use.
+[`region`](#region) | `string` | The Azure region to use.
 [`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 [`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
@@ -58,7 +58,7 @@ Resources used in this module:
 
 
 
-#### location
+#### region
 
 The Azure region to use.
 
@@ -372,6 +372,7 @@ Type: bool
 Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 
 

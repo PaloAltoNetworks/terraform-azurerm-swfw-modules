@@ -28,7 +28,7 @@ resource "azurerm_public_ip" "this" {
 
   name                = var.public_ip.name
   resource_group_name = var.resource_group_name
-  location            = var.location
+  location            = var.region
 
   sku               = "Standard"
   allocation_method = "Static"
@@ -41,7 +41,7 @@ resource "azurerm_public_ip" "this" {
 resource "azurerm_application_gateway" "this" {
   name                = var.name
   resource_group_name = var.resource_group_name
-  location            = var.location
+  location            = var.region
   zones               = var.zones
   enable_http2        = var.enable_http2
   tags                = var.tags

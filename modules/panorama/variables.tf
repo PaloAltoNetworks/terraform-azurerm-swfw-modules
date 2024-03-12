@@ -8,7 +8,7 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "location" {
+variable "region" {
   description = "The name of the Azure region to deploy the resources in."
   type        = string
 }

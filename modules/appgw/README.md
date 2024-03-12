@@ -18,7 +18,7 @@ module "appgw" {
   name                = each.value.name
   public_ip           = each.value.public_ip
   resource_group_name = local.resource_group.name
-  location            = var.location
+  location            = var.region
   subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
   managed_identities = each.value.managed_identities
@@ -816,7 +816,7 @@ Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Application Gateway.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
-[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`subnet_id`](#subnet_id) | `string` | An ID of a subnet (must be dedicated to Application Gateway v2) that will host the Application Gateway.
 [`public_ip`](#public_ip) | `object` | A map defining listener's public IP configuration.
 [`listeners`](#listeners) | `map` | A map of listeners for the Application Gateway.
@@ -897,7 +897,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 The name of the Azure region to deploy the resources in.
 

@@ -3,7 +3,7 @@ resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.ip_configurations : k => v if try(v.create_public_ip, false) }
 
   resource_group_name = var.resource_group_name
-  location            = var.location
+  location            = var.region
   name                = each.value.public_ip_name
 
   allocation_method = "Static"
@@ -25,12 +25,12 @@ data "azurerm_public_ip" "exists" {
 resource "azurerm_virtual_network_gateway" "this" {
   name                = var.name
   resource_group_name = var.resource_group_name
-  location            = var.location
+  location            = var.region
 
   type                             = var.instance_settings.type
   vpn_type                         = var.instance_settings.vpn_type
   sku                              = var.instance_settings.sku
-  generation                       = var.instance_settings.ype == "VPN" ? var.instance_settings.generation : null
+  generation                       = var.instance_settings.type == "VPN" ? var.instance_settings.generation : null
   active_active                    = var.instance_settings.active_active
   default_local_network_gateway_id = var.default_local_network_gateway_id
   edge_zone                        = var.edge_zone
@@ -173,7 +173,7 @@ resource "azurerm_local_network_gateway" "this" {
 
   name                = each.value.name
   resource_group_name = var.resource_group_name
-  location            = var.location
+  location            = var.region
   gateway_address     = each.value.gateway_address
   address_space       = each.value.address_space
 
@@ -195,7 +195,7 @@ resource "azurerm_virtual_network_gateway_connection" "this" {
   for_each = var.local_network_gateways
 
   name                = each.value.connection.name
-  location            = var.location
+  location            = var.region
   resource_group_name = var.resource_group_name
 
   type                       = each.value.connection.type

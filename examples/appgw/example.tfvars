@@ -1,6 +1,6 @@
 ### GENERAL ###
 
-location            = "North Europe"
+region              = "North Europe"
 resource_group_name = "appgw-example"
 name_prefix         = "fosix-"
 tags = {

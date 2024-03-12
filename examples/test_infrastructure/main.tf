@@ -20,7 +20,7 @@ locals {
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
   name     = "${var.name_prefix}${var.resource_group_name}"
-  location = var.location
+  location = var.region
 
   tags = var.tags
 }
@@ -44,7 +44,7 @@ module "vnet" {
   name                   = each.value.create_virtual_network ? "${var.name_prefix}${each.value.name}" : each.value.name
   create_virtual_network = each.value.create_virtual_network
   resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
-  location               = var.location
+  region                 = var.region
 
   address_space = each.value.address_space
 
@@ -83,7 +83,7 @@ resource "azurerm_network_interface" "vm" {
   for_each = var.test_vms
 
   name                = "${var.name_prefix}${each.value.name}-nic"
-  location            = var.location
+  location            = var.region
   resource_group_name = local.resource_group.name
 
   ip_configuration {
@@ -101,7 +101,7 @@ resource "azurerm_linux_virtual_machine" "this" {
 
   name                            = "${var.name_prefix}${each.value.name}"
   resource_group_name             = local.resource_group.name
-  location                        = var.location
+  location                        = var.region
   size                            = var.vm_size
   admin_username                  = var.username
   admin_password                  = local.password
@@ -133,7 +133,7 @@ resource "azurerm_public_ip" "bastion" {
   for_each = var.bastions
 
   name                = "${var.name_prefix}${each.value.name}-nic"
-  location            = var.location
+  location            = var.region
   resource_group_name = local.resource_group.name
   allocation_method   = "Static"
   sku                 = "Standard"
@@ -143,7 +143,7 @@ resource "azurerm_bastion_host" "this" {
   for_each = var.bastions
 
   name                = "${var.name_prefix}${each.value.name}"
-  location            = var.location
+  location            = var.region
   resource_group_name = local.resource_group.name
 
   ip_configuration {

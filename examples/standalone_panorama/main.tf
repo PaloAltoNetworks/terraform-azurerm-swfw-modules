@@ -33,7 +33,7 @@ locals {
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
   name     = "${var.name_prefix}${var.resource_group_name}"
-  location = var.location
+  location = var.region
 
   tags = var.tags
 }
@@ -58,7 +58,7 @@ module "vnet" {
   name                   = each.value.create_virtual_network ? "${var.name_prefix}${each.value.name}" : each.value.name
   create_virtual_network = each.value.create_virtual_network
   resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
-  location               = var.location
+  region                 = var.region
 
   address_space = each.value.address_space
 
@@ -82,7 +82,7 @@ resource "azurerm_availability_set" "this" {
 
   name                         = "${var.name_prefix}${each.value.name}"
   resource_group_name          = local.resource_group.name
-  location                     = var.location
+  location                     = var.region
   platform_update_domain_count = each.value.update_domain_count
   platform_fault_domain_count  = each.value.fault_domain_count
 
@@ -95,7 +95,7 @@ module "panorama" {
   for_each = var.panoramas
 
   name                = "${var.name_prefix}${each.value.name}"
-  location            = var.location
+  region              = var.region
   resource_group_name = local.resource_group.name
 
   authentication = local.authentication[each.key]

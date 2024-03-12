@@ -4,7 +4,7 @@
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
   name     = "${var.name_prefix}${var.resource_group_name}"
-  location = var.location
+  location = var.region
 
   tags = var.tags
 }
@@ -25,7 +25,7 @@ locals {
 resource "azurerm_public_ip" "this" {
   name                = "pip-existing"
   resource_group_name = local.resource_group.name
-  location            = var.location
+  location            = var.region
 
   sku               = "Standard"
   allocation_method = "Static"
@@ -43,7 +43,7 @@ module "vnet" {
   name                   = each.value.create_virtual_network ? "${var.name_prefix}${each.value.name}" : each.value.name
   create_virtual_network = each.value.create_virtual_network
   resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
-  location               = var.location
+  region                 = var.region
 
   address_space = each.value.address_space
 
@@ -69,7 +69,7 @@ module "appgw" {
 
   name                = "${var.name_prefix}${each.value.name}"
   resource_group_name = local.resource_group.name
-  location            = var.location
+  region              = var.region
   subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
   zones = each.value.zones

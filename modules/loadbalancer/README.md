@@ -31,7 +31,7 @@ module "lbi" {
   source = "PaloAltoNetworks/swfw-modules/azurerm//modules/loadbalancer"
 
   name                = "private-lb"
-  location            = "West Europe"
+  region              = "West Europe"
   resource_group_name = "existing-rg"
 
   frontend_ips = {
@@ -63,7 +63,7 @@ module "lbe" {
   source = "PaloAltoNetworks/swfw-modules/azurerm//modules/loadbalancer"
 
   name                = "public-lb"
-  location            = "West Europe"
+  region              = "West Europe"
   resource_group_name = "existing-rg"
 
   frontend_ips = {
@@ -89,7 +89,7 @@ Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Azure Load Balancer.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
-[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`frontend_ips`](#frontend_ips) | `map` | A map of objects describing Load Balancer Frontend IP configurations with respective inbound and outbound rules.
 
 
@@ -163,7 +163,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 The name of the Azure region to deploy the resources in.
 

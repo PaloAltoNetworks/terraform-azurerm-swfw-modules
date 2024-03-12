@@ -4,7 +4,7 @@ resource "azurerm_log_analytics_workspace" "this" {
 
   name                = var.name
   resource_group_name = var.resource_group_name
-  location            = var.location
+  location            = var.region
 
   retention_in_days = var.log_analytics_workspace.metrics_retention_in_days
   sku               = var.log_analytics_workspace.sku
@@ -26,7 +26,7 @@ resource "azurerm_application_insights" "this" {
 
   name                = each.value.name
   resource_group_name = coalesce(each.value.resource_group_name, var.resource_group_name)
-  location            = var.location
+  location            = var.region
 
   workspace_id = var.create_workspace ? (
     azurerm_log_analytics_workspace.this[0].id

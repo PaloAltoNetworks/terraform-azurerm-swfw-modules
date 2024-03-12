@@ -1,6 +1,6 @@
 ### GENERAL ###
 
-location            = "North Europe"
+region              = "North Europe"
 resource_group_name = "vmseries-standalone"
 name_prefix         = "example-"
 tags = {

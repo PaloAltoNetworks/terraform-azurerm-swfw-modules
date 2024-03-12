@@ -125,7 +125,7 @@ terraform destroy
 Name | Type | Description
 --- | --- | ---
 [`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group.
-[`location`](#location) | `string` | The Azure region to use.
+[`region`](#region) | `string` | The Azure region to use.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 
 
@@ -192,7 +192,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 The Azure region to use.
 
@@ -474,5 +474,6 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 <!-- END_TF_DOCS -->

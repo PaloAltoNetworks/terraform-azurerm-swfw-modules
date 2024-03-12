@@ -35,7 +35,7 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "location" {
+variable "region" {
   description = "The Azure region to use."
   type        = string
 }

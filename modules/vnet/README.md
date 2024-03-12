@@ -128,7 +128,7 @@ Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Azure Virtual Network.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
-[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 
 
 ## Module's Optional Inputs
@@ -206,7 +206,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 The name of the Azure region to deploy the resources in.
 

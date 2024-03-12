@@ -61,11 +61,11 @@ Below you can find a simple example deploying a Scale Set w/o autoscaling, using
 
 ```hcl
 module "vmss" {
-  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/vmss"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/vmss"
 
   name                = "ngfw-vmss"
   resource_group_name = "hub-rg"
-  location            = "West Europe"
+  region              = "West Europe"
 
   authentication = {
     username                        = "panadmin"
@@ -105,7 +105,7 @@ Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Azure Virtual Machine Scale Set.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
-[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`authentication`](#authentication) | `object` | A map defining authentication settings (including username and password).
 [`image`](#image) | `object` | Basic Azure VM configuration.
 [`interfaces`](#interfaces) | `list` | List of the network interfaces specifications.
@@ -176,7 +176,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 The name of the Azure region to deploy the resources in.
 
