@@ -41,7 +41,7 @@ variable "zones" {
     condition = var.zones == null || (var.zones != null ? (
       length(var.zones) == 3 && length(setsubtract(var.zones, ["1", "2", "3"])) == 0
     ) : true)
-    error_message = "No zones or all 3 zones are expected."
+    error_message = "No zones (for non-AZ SKU) or all 3 zones (for AZ SKU) are expected."
   }
 }
 
@@ -195,14 +195,16 @@ variable "ip_configurations" {
     }))
   })
   validation { # primary/secondary.name
-    condition     = var.ip_configurations.primary.name != var.ip_configurations.secondary.name
+    condition = var.ip_configurations.secondary != null ? (
+      var.ip_configurations.primary.name != var.ip_configurations.secondary.name
+    ) : true
     error_message = <<-EOF
     The `name` property has to be unique among all IP configurations.
     EOF
   }
   validation { # primary/secondary.private_ip_address_allocation
     condition = contains(["Dynamic", "Static"], var.ip_configurations.primary.private_ip_address_allocation) && (
-      var.ip_configurations.secondary.name != null ? (
+      var.ip_configurations.secondary != null ? (
         contains(["Dynamic", "Static"], var.ip_configurations.secondary.private_ip_address_allocation)
       ) : true
     )

@@ -68,7 +68,6 @@ virtual_network_gateways = {
     name       = "expressroute"
     vnet_key   = "transit"
     subnet_key = "vpn"
-    zones      = ["1"]
 
     instance_settings = {
       type       = "ExpressRoute"
@@ -88,7 +87,6 @@ virtual_network_gateways = {
     name       = "er_policy"
     vnet_key   = "er"
     subnet_key = "vpn"
-    zones      = ["1"]
 
     instance_settings = {
       type       = "ExpressRoute"
@@ -108,7 +106,6 @@ virtual_network_gateways = {
     name       = "simple-vpn"
     vnet_key   = "er"
     subnet_key = "vpn"
-    zones      = []
 
     instance_settings = {
       type       = "Vpn"
