@@ -193,7 +193,7 @@ variable "load_balancers" {
                                 map that stores the Subnet described by `subnet_key`.
   - `zones`                   - (`list`, optional, defaults to module default) a list of zones for Load Balancer's frontend IP
                                 configurations.
-  - `backend_name`            - (`string`, optional, defaults to module default) a name of the backend pool to create.
+  - `backend_name`            - (`string`, optional, defaults to "vmseries_backend") a name of the backend pool to create.
   - `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by load
                                 balancing rules, please refer to
                                 [module documentation](../../modules/loadbalancer/README.md#health_probes) for more specific use
@@ -226,7 +226,7 @@ variable "load_balancers" {
     name         = string
     vnet_key     = optional(string)
     zones        = optional(list(string))
-    backend_name = optional(string)
+    backend_name = optional(string, "vmseries_backend")
     health_probes = optional(map(object({
       name                = string
       protocol            = string
@@ -312,6 +312,8 @@ variable "appgws" {
                          `backend_setting`, `redirect` or `url_path_map`, see
                          [module's documentation](../../modules/appgw/README.md#rules) for details.
   EOF
+  default     = {}
+  nullable    = false
   type = map(object({
     name       = string
     vnet_key   = string
@@ -349,7 +351,7 @@ variable "appgws" {
       ssl_policy_min_protocol_version = optional(string)
       ssl_policy_cipher_suites        = optional(list(string))
     })))
-    frontend_ip_configuration_name = optional(string)
+    frontend_ip_configuration_name = optional(string, "public_ipconfig")
     listeners = map(object({
       name                     = string
       port                     = number

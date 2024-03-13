@@ -322,7 +322,6 @@ variable "ssl_profiles" {
 
 variable "frontend_ip_configuration_name" {
   description = "A frontend IP configuration name."
-  default     = "public_ipconfig"
   type        = string
 }
 

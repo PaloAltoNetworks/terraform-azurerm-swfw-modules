@@ -192,7 +192,7 @@ variable "appgws" {
       ssl_policy_min_protocol_version = optional(string)
       ssl_policy_cipher_suites        = optional(list(string))
     })))
-    frontend_ip_configuration_name = optional(string)
+    frontend_ip_configuration_name = optional(string, "public_ipconfig")
     listeners = map(object({
       name                     = string
       port                     = number

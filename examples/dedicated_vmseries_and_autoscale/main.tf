@@ -82,7 +82,7 @@ module "natgw" {
   for_each = var.natgws
 
   create_natgw        = each.value.create_natgw
-  name                = each.value.natgw.create ? "${var.name_prefix}${each.value.name}" : each.value.name
+  name                = each.value.create_natgw ? "${var.name_prefix}${each.value.name}" : each.value.name
   resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
   region              = var.region
   zone                = try(each.value.zone, null)

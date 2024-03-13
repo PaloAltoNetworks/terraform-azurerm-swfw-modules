@@ -819,6 +819,7 @@ Name | Type | Description
 [`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`subnet_id`](#subnet_id) | `string` | An ID of a subnet (must be dedicated to Application Gateway v2) that will host the Application Gateway.
 [`public_ip`](#public_ip) | `object` | A map defining listener's public IP configuration.
+[`frontend_ip_configuration_name`](#frontend_ip_configuration_name) | `string` | A frontend IP configuration name.
 [`listeners`](#listeners) | `map` | A map of listeners for the Application Gateway.
 [`rules`](#rules) | `map` | A map of rules for the Application Gateway.
 
@@ -836,7 +837,6 @@ Name | Type | Description
 [`managed_identities`](#managed_identities) | `list` | A list of existing User-Assigned Managed Identities.
 [`global_ssl_policy`](#global_ssl_policy) | `object` | A map defining global SSL settings.
 [`ssl_profiles`](#ssl_profiles) | `map` | A map of SSL profiles.
-[`frontend_ip_configuration_name`](#frontend_ip_configuration_name) | `string` | A frontend IP configuration name.
 [`backend_pool`](#backend_pool) | `object` | A map defining a backend pool, when skipped will create an empty backend.
 [`backend_settings`](#backend_settings) | `map` | A map of backend settings for the Application Gateway.
 [`probes`](#probes) | `map` | A map of probes for the Application Gateway.
@@ -946,6 +946,13 @@ object({
 
 
 
+#### frontend_ip_configuration_name
+
+A frontend IP configuration name.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
 
 #### listeners
 
@@ -1241,15 +1248,6 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### frontend_ip_configuration_name
-
-A frontend IP configuration name.
-
-Type: string
-
-Default value: `public_ipconfig`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
 
 
 #### backend_pool
@@ -1485,7 +1483,6 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 
 <!-- END_TF_DOCS -->

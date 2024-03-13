@@ -211,7 +211,7 @@ vmseries = {
       zone = 1
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
-        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+        static_files           = { "files/init-cfg.sample.txt" = "config/init-cfg.txt" }
         bootstrap_xml_template = "templates/bootstrap-gwlb.tftpl"
         data_snet_key          = "data"
       }
@@ -241,7 +241,7 @@ vmseries = {
       zone = 2
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
-        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+        static_files           = { "files/init-cfg.sample.txt" = "config/init-cfg.txt" }
         bootstrap_xml_template = "templates/bootstrap-gwlb.tftpl"
         data_snet_key          = "data"
       }

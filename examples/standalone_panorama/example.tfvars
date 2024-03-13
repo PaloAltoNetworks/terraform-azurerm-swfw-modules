@@ -8,7 +8,6 @@ tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
 }
-enable_zones = false
 
 ### NETWORK ###
 

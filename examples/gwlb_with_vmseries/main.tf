@@ -178,16 +178,15 @@ module "ngfw_metrics" {
 resource "local_file" "bootstrap_xml" {
   for_each = {
     for k, v in var.vmseries :
-    k => v.virtual_machine
-    if try(v.virtual_machine.bootstrap_package.bootstrap_xml_template != null, false)
+    k => v if try(v.virtual_machine.bootstrap_package.bootstrap_xml_template != null, false)
   }
 
   filename = "files/${each.key}-bootstrap.xml"
   content = templatefile(
-    each.value.bootstrap_package.bootstrap_xml_template,
+    each.value.virtual_machine.bootstrap_package.bootstrap_xml_template,
     {
       data_gateway_ip = cidrhost(
-        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.data_snet_key],
+        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.virtual_machine.bootstrap_package.data_snet_key],
         1
       )
 
@@ -196,7 +195,7 @@ resource "local_file" "bootstrap_xml" {
         null
       )
 
-      ai_update_interval = each.value.bootstrap_package.ai_update_interval
+      ai_update_interval = each.value.virtual_machine.bootstrap_package.ai_update_interval
     }
   )
 
@@ -302,7 +301,7 @@ module "vmseries" {
 
   interfaces = [for v in each.value.interfaces : {
     name             = "${var.name_prefix}${v.name}"
-    subnet_id        = module.vnet[each.value.virtual_machine.vnet_key].subnet_ids[v.subnet_key]
+    subnet_id        = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
     create_public_ip = v.create_public_ip
     public_ip_name = v.create_public_ip ? "${var.name_prefix}${
       coalesce(v.public_ip_name, "${v.name}-pip")

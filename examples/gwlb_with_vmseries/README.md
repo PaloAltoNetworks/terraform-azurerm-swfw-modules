@@ -322,7 +322,7 @@ Following properties are available:
                               map that stores the Subnet described by `subnet_key`.
 - `zones`                   - (`list`, optional, defaults to module default) a list of zones for Load Balancer's frontend IP
                               configurations.
-- `backend_name`            - (`string`, optional, defaults to module default) a name of the backend pool to create.
+- `backend_name`            - (`string`, optional, defaults to "vmseries_backend") a name of the backend pool to create.
 - `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by load
                               balancing rules, please refer to
                               [module documentation](../../modules/loadbalancer/README.md#health_probes) for more specific use
@@ -357,7 +357,7 @@ map(object({
     name         = string
     vnet_key     = optional(string)
     zones        = optional(list(string))
-    backend_name = optional(string)
+    backend_name = optional(string, "vmseries_backend")
     health_probes = optional(map(object({
       name                = string
       protocol            = string
@@ -713,15 +713,11 @@ The most basic properties are as follows:
       **Note!** \
       Day0 configuration is **not meant** to be **secure**. It's here merely to help with the basic firewall setup. When
       `bootstrap_xml_template` is set, one of the following properties might be required.
-
-    - `private_snet_key`       - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
-                                 pointing to a private Subnet definition in `var.vnets` (the `vnet_key` property is used to
-                                 identify a VNET). The Subnet definition is used to calculate static routes for a private
-                                 Load Balancer health checks and for Inbound traffic.
-    - `public_snet_key`        - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
-                                 pointing to a public Subnet definition in `var.vnets` (the `vnet_key` property is used to
-                                 identify a VNET). The Subnet definition is used to calculate static routes for a public
-                                 Load Balancer health checks and for Outbound traffic.
+        
+    - `data_snet_key`          - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
+                                 pointing to a data Subnet definition in `var.vnets` (the `vnet_key` property is used to
+                                 identify a VNET). The Subnet definition is used to calculate static routes for a data
+                                 Load Balancer health checks.
     - `ai_update_interval`     - (`number`, optional, defaults to `5`) Application Insights update interval, used only when
                                  `ngfw_metrics` module is defined and used in this example. The Application Insights
                                  Instrumentation Key will be populated automatically.
@@ -776,8 +772,7 @@ map(object({
         static_files           = optional(map(string), {})
         bootstrap_package_path = optional(string)
         bootstrap_xml_template = optional(string)
-        private_snet_key       = optional(string)
-        public_snet_key        = optional(string)
+        data_snet_key          = optional(string)
         ai_update_interval     = optional(number, 5)
         intranet_cidr          = optional(string)
       }))
@@ -802,6 +797,8 @@ map(object({
       public_ip_resource_group_name = optional(string)
       private_ip_address            = optional(string)
       load_balancer_key             = optional(string)
+      gwlb_key                      = optional(string)
+      gwlb_backend_key              = optional(string)
       application_gateway_key       = optional(string)
     }))
   }))
@@ -822,6 +819,5 @@ Type: any
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->
