@@ -1,4 +1,4 @@
-### GENERAL ###
+# GENERAL
 
 region              = "North Europe"
 resource_group_name = "vng"
@@ -8,7 +8,7 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-### NETWORK ###
+# NETWORK
 
 vnets = {
   transit = {
@@ -61,7 +61,7 @@ vnets = {
   }
 }
 
-### VIRTUAL NETWORK GATEWAY ###
+# VIRTUAL NETWORK GATEWAY
 
 virtual_network_gateways = {
   expressroute = {

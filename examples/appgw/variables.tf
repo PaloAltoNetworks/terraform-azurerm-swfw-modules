@@ -1,4 +1,5 @@
-### GENERAL
+# GENERAL
+
 variable "tags" {
   description = "Map of tags to assign to the created resources."
   default     = {}
@@ -44,8 +45,8 @@ variable "resource_group_name" {
   type        = string
 }
 
+# VNET
 
-### VNET
 variable "vnets" {
   description = <<-EOF
   A map defining VNETs.
@@ -114,7 +115,8 @@ variable "vnets" {
   }))
 }
 
-### Application Gateway
+# LOAD BALANCING
+
 variable "appgws" {
   description = <<-EOF
   A map defining all Application Gateways in the current deployment.

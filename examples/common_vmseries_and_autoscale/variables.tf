@@ -1,4 +1,4 @@
-### GENERAL ###
+# GENERAL
 
 variable "name_prefix" {
   description = <<-EOF
@@ -46,7 +46,7 @@ variable "tags" {
   type        = map(string)
 }
 
-### NETWORK ###
+# NETWORK
 
 variable "vnets" {
   description = <<-EOF
@@ -177,7 +177,7 @@ variable "natgws" {
   }))
 }
 
-### LOAD BALANCING ###
+# LOAD BALANCING
 
 variable "load_balancers" {
   description = <<-EOF
@@ -438,7 +438,7 @@ variable "appgws" {
   }))
 }
 
-### VM-SERIES ###
+# VM-SERIES
 
 variable "ngfw_metrics" {
   description = <<-EOF

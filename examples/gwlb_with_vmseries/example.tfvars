@@ -1,4 +1,4 @@
-### GENERAL ###
+# GENERAL
 
 region              = "North Europe"
 resource_group_name = "gwlb"
@@ -8,7 +8,7 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-### NETWORK ###
+# NETWORK
 
 vnets = {
   "transit" = {
@@ -104,7 +104,7 @@ vnets = {
   }
 }
 
-### LOAD BALANCING ###
+# LOAD BALANCING
 
 load_balancers = {
   "app1" = {
@@ -186,7 +186,7 @@ gateway_load_balancers = {
   }
 }
 
-### VM-SERIES ###
+# VM-SERIES
 
 bootstrap_storages = {
   "bootstrap" = {
@@ -262,7 +262,7 @@ vmseries = {
   }
 }
 
-### TEST INFRASTRUCTURE ###
+# TEST INFRASTRUCTURE
 
 appvms = {
   app1vm01 = {

@@ -1,4 +1,4 @@
-### GENERAL ###
+# GENERAL
 
 variable "name_prefix" {
   description = <<-EOF
@@ -46,7 +46,7 @@ variable "tags" {
   type        = map(string)
 }
 
-### NETWORK ###
+# NETWORK
 
 variable "vnets" {
   description = <<-EOF
@@ -114,7 +114,7 @@ variable "vnets" {
   }))
 }
 
-### PANORAMA ###
+# PANORAMA
 
 variable "availability_sets" {
   description = <<-EOF

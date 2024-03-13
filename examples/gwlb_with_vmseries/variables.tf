@@ -1,4 +1,4 @@
-### GENERAL ###
+# GENERAL
 
 variable "name_prefix" {
   description = <<-EOF
@@ -46,7 +46,7 @@ variable "tags" {
   type        = map(string)
 }
 
-### NETWORK ###
+# NETWORK
 
 variable "vnets" {
   description = <<-EOF
@@ -114,7 +114,7 @@ variable "vnets" {
   }))
 }
 
-### LOAD BALANCING ###
+# LOAD BALANCING
 
 variable "load_balancers" {
   description = <<-EOF
@@ -263,7 +263,7 @@ variable "gateway_load_balancers" {
   }))
 }
 
-### VM-SERIES ###
+# VM-SERIES
 
 variable "availability_sets" {
   description = <<-EOF
@@ -596,7 +596,7 @@ variable "vmseries" {
   }
 }
 
-### TEST INFRASTRUCTURE ###
+# TEST INFRASTRUCTURE
 
 variable "appvms" {
   description = <<-EOF

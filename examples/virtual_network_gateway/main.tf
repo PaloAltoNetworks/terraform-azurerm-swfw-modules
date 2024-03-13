@@ -1,4 +1,4 @@
-### Generate a random password ###
+# Generate a random password
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
@@ -9,7 +9,7 @@ resource "azurerm_resource_group" "this" {
   tags = var.tags
 }
 
-### Create or source a Resource Group ###
+# Create or source a Resource Group
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group
 data "azurerm_resource_group" "this" {
@@ -21,7 +21,7 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
-### Manage the network required for the topology ###
+# Manage the network required for the topology
 
 module "vnet" {
   source = "../../modules/vnet"
@@ -48,7 +48,7 @@ module "vnet" {
   tags = var.tags
 }
 
-### Create Virtual Network Gateways ###
+# Create Virtual Network Gateways
 
 module "vng" {
   source = "../../modules/virtual_network_gateway"

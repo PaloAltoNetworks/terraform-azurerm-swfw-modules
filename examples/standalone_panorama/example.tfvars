@@ -1,4 +1,4 @@
-### GENERAL ###
+# GENERAL
 
 region                = "North Europe"
 resource_group_name   = "panorama"
@@ -9,7 +9,7 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-### NETWORK ###
+# NETWORK
 
 vnets = {
   "vnet" = {
@@ -43,7 +43,7 @@ vnets = {
   }
 }
 
-### PANORAMA ###
+# PANORAMA
 
 panoramas = {
   "pn-1" = {

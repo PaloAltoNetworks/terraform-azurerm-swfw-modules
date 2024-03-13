@@ -1,4 +1,4 @@
-### GENERAL ###
+# GENERAL
 
 variable "name_prefix" {
   description = <<-EOF
@@ -46,7 +46,7 @@ variable "tags" {
   type        = map(string)
 }
 
-### NETWORK ###
+# NETWORK
 
 variable "vnets" {
   description = <<-EOF
@@ -114,7 +114,7 @@ variable "vnets" {
   }))
 }
 
-### VIRTUAL NETWORK GATEWAY ###
+# VIRTUAL NETWORK GATEWAY
 
 variable "virtual_network_gateways" {
   description = "Map of Virtual Network Gateways to create."

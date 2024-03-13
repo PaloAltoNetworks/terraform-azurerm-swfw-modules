@@ -1,4 +1,4 @@
-### GENERAL ###
+# GENERAL
 
 region              = "North Europe"
 resource_group_name = "autoscale-dedicated"
@@ -8,7 +8,7 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-### NETWORK ###
+# NETWORK
 
 vnets = {
   "transit" = {
@@ -124,7 +124,7 @@ natgws = {
   }
 }
 
-### LOAD BALANCING ###
+# LOAD BALANCING
 
 load_balancers = {
   "public" = {
@@ -175,7 +175,7 @@ load_balancers = {
   }
 }
 
-### VM-SERIES ###
+# VM-SERIES
 
 ngfw_metrics = {
   name = "ngwf-log-analytics-wrksp"

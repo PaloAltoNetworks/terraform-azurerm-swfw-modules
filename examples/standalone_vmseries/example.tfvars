@@ -1,4 +1,4 @@
-### GENERAL ###
+# GENERAL
 
 region              = "North Europe"
 resource_group_name = "vmseries-standalone"
@@ -8,7 +8,7 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-### NETWORK ###
+# NETWORK
 
 vnets = {
   "transit" = {
@@ -42,7 +42,7 @@ vnets = {
   }
 }
 
-### VM-SERIES ###
+# VM-SERIES
 
 vmseries = {
   "fw-1" = {
