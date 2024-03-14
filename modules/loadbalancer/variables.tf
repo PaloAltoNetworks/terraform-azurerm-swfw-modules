@@ -42,12 +42,11 @@ variable "zones" {
 
 variable "backend_name" {
   description = "The name of the backend pool to create. All frontends of the Load Balancer always use the same backend."
-  default     = "vmseries_backend"
   type        = string
   validation {
-    condition     = can(regex("^\\w[\\w_\\.-]{0,78}(\\w|_)$", var.backend_name))
+    condition     = can(regex("^\\w[\\w\\_\\.\\-]{0,78}(\\w|\\_)$", var.backend_name))
     error_message = <<-EOF
-    The `backend_name` property can be maximum 80 chars long and most consist of word characters, dots, underscores and dashes.
+    The `backend_name` property can be maximum 80 chars long and must consist of word characters, dots, underscores and dashes.
     It has to start with a word character and end with one or with an underscore.
     EOF
   }

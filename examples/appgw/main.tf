@@ -1,4 +1,4 @@
-### Create or source a Resource Group ###
+# Create or source a Resource Group
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
@@ -19,7 +19,7 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
-### Create a public IP in order to reuse it in one of the Application Gateways ###
+# Create a public IP in order to reuse it in one of the Application Gateways
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
@@ -33,7 +33,7 @@ resource "azurerm_public_ip" "this" {
   tags              = var.tags
 }
 
-### Manage the network required for the topology ###
+# Manage the network required for the topology
 
 module "vnet" {
   source = "../../modules/vnet"
@@ -60,7 +60,7 @@ module "vnet" {
   tags = var.tags
 }
 
-### Create Application Gateways ###
+# Create Application Gateways
 
 module "appgw" {
   source = "../../modules/appgw"

@@ -1,4 +1,4 @@
-### GENERAL ###
+# GENERAL
 
 region              = "North Europe"
 resource_group_name = "vng"
@@ -8,7 +8,7 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-### NETWORK ###
+# NETWORK
 
 vnets = {
   transit = {
@@ -61,14 +61,13 @@ vnets = {
   }
 }
 
-### VIRTUAL NETWORK GATEWAY ###
+# VIRTUAL NETWORK GATEWAY
 
 virtual_network_gateways = {
   expressroute = {
     name       = "expressroute"
     vnet_key   = "transit"
     subnet_key = "vpn"
-    zones      = ["1"]
 
     instance_settings = {
       type       = "ExpressRoute"
@@ -88,7 +87,6 @@ virtual_network_gateways = {
     name       = "er_policy"
     vnet_key   = "er"
     subnet_key = "vpn"
-    zones      = ["1"]
 
     instance_settings = {
       type       = "ExpressRoute"
@@ -108,7 +106,6 @@ virtual_network_gateways = {
     name       = "simple-vpn"
     vnet_key   = "er"
     subnet_key = "vpn"
-    zones      = []
 
     instance_settings = {
       type       = "Vpn"

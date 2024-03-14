@@ -80,7 +80,7 @@ resource "azurerm_virtual_network_gateway" "this" {
   }
 
   dynamic "custom_route" {
-    for_each = var.vpn_clients.custom_routes
+    for_each = try(var.vpn_clients.custom_routes, false) ? [1] : []
     content {
       address_prefixes = custom_route.value
     }

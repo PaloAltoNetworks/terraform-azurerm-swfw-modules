@@ -1,4 +1,4 @@
-### GENERAL ###
+# GENERAL
 
 variable "name_prefix" {
   description = <<-EOF
@@ -46,7 +46,7 @@ variable "tags" {
   type        = map(string)
 }
 
-### NETWORK ###
+# NETWORK
 
 variable "vnets" {
   description = <<-EOF
@@ -114,7 +114,7 @@ variable "vnets" {
   }))
 }
 
-### LOAD BALANCING ###
+# LOAD BALANCING
 
 variable "load_balancers" {
   description = <<-EOF
@@ -130,7 +130,7 @@ variable "load_balancers" {
                                 map that stores the Subnet described by `subnet_key`.
   - `zones`                   - (`list`, optional, defaults to module default) a list of zones for Load Balancer's frontend IP
                                 configurations.
-  - `backend_name`            - (`string`, optional, defaults to module default) a name of the backend pool to create.
+  - `backend_name`            - (`string`, optional, defaults to "vmseries_backend") a name of the backend pool to create.
   - `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by load
                                 balancing rules, please refer to
                                 [module documentation](../../modules/loadbalancer/README.md#health_probes) for more specific use
@@ -163,7 +163,7 @@ variable "load_balancers" {
     name         = string
     vnet_key     = optional(string)
     zones        = optional(list(string))
-    backend_name = optional(string)
+    backend_name = optional(string, "vmseries_backend")
     health_probes = optional(map(object({
       name                = string
       protocol            = string
@@ -263,7 +263,7 @@ variable "gateway_load_balancers" {
   }))
 }
 
-### VM-SERIES ###
+# VM-SERIES
 
 variable "availability_sets" {
   description = <<-EOF
@@ -486,15 +486,11 @@ variable "vmseries" {
         **Note!** \
         Day0 configuration is **not meant** to be **secure**. It's here merely to help with the basic firewall setup. When
         `bootstrap_xml_template` is set, one of the following properties might be required.
-
-      - `private_snet_key`       - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
-                                   pointing to a private Subnet definition in `var.vnets` (the `vnet_key` property is used to
-                                   identify a VNET). The Subnet definition is used to calculate static routes for a private
-                                   Load Balancer health checks and for Inbound traffic.
-      - `public_snet_key`        - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
-                                   pointing to a public Subnet definition in `var.vnets` (the `vnet_key` property is used to
-                                   identify a VNET). The Subnet definition is used to calculate static routes for a public
-                                   Load Balancer health checks and for Outbound traffic.
+        
+      - `data_snet_key`          - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
+                                   pointing to a data Subnet definition in `var.vnets` (the `vnet_key` property is used to
+                                   identify a VNET). The Subnet definition is used to calculate static routes for a data
+                                   Load Balancer health checks.
       - `ai_update_interval`     - (`number`, optional, defaults to `5`) Application Insights update interval, used only when
                                    `ngfw_metrics` module is defined and used in this example. The Application Insights
                                    Instrumentation Key will be populated automatically.
@@ -547,8 +543,7 @@ variable "vmseries" {
         static_files           = optional(map(string), {})
         bootstrap_package_path = optional(string)
         bootstrap_xml_template = optional(string)
-        private_snet_key       = optional(string)
-        public_snet_key        = optional(string)
+        data_snet_key          = optional(string)
         ai_update_interval     = optional(number, 5)
         intranet_cidr          = optional(string)
       }))
@@ -573,6 +568,8 @@ variable "vmseries" {
       public_ip_resource_group_name = optional(string)
       private_ip_address            = optional(string)
       load_balancer_key             = optional(string)
+      gwlb_key                      = optional(string)
+      gwlb_backend_key              = optional(string)
       application_gateway_key       = optional(string)
     }))
   }))
@@ -590,17 +587,16 @@ variable "vmseries" {
     condition = alltrue([
       for _, v in var.vmseries :
       v.virtual_machine.bootstrap_package.bootstrap_xml_template != null ? (
-        v.virtual_machine.bootstrap_package.private_snet_key != null &&
-        v.virtual_machine.bootstrap_package.public_snet_key != null
+        v.virtual_machine.bootstrap_package.data_snet_key != null
       ) : true if v.virtual_machine.bootstrap_package != null
     ])
     error_message = <<-EOF
-    The `private_snet_key` and `public_snet_key` are required when `bootstrap_xml_template` is set.
+    The `data_snet_key` is required when `bootstrap_xml_template` is set.
     EOF
   }
 }
 
-### TEST INFRASTRUCTURE ###
+# TEST INFRASTRUCTURE
 
 variable "appvms" {
   description = <<-EOF

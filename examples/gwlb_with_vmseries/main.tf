@@ -1,4 +1,4 @@
-### Generate a random password ###
+# Generate a random password
 
 # https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password
 resource "random_password" "this" {
@@ -27,7 +27,7 @@ locals {
   }
 }
 
-### Create or source a Resource Group ###
+# Create or source a Resource Group
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
@@ -48,7 +48,7 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
-### Manage the network required for the topology ###
+# Manage the network required for the topology
 
 module "vnet" {
   source = "../../modules/vnet"
@@ -75,7 +75,7 @@ module "vnet" {
   tags = var.tags
 }
 
-### Create Load Balancers, both internal and external ###
+# Create Load Balancers, both internal and external
 
 module "load_balancer" {
   source = "../../modules/loadbalancer"
@@ -123,7 +123,7 @@ module "load_balancer" {
   depends_on = [module.vnet]
 }
 
-### Create Gateway Load Balancers ###
+# Create Gateway Load Balancers
 
 module "gwlb" {
   for_each = var.gateway_load_balancers
@@ -148,8 +148,7 @@ module "gwlb" {
   tags = var.tags
 }
 
-
-### Create VM-Series VMs and closely associated resources ###
+# Create VM-Series VMs and closely associated resources
 
 module "ngfw_metrics" {
   source = "../../modules/ngfw_metrics"
@@ -178,16 +177,15 @@ module "ngfw_metrics" {
 resource "local_file" "bootstrap_xml" {
   for_each = {
     for k, v in var.vmseries :
-    k => v.virtual_machine
-    if try(v.virtual_machine.bootstrap_package.bootstrap_xml_template != null, false)
+    k => v if try(v.virtual_machine.bootstrap_package.bootstrap_xml_template != null, false)
   }
 
   filename = "files/${each.key}-bootstrap.xml"
   content = templatefile(
-    each.value.bootstrap_package.bootstrap_xml_template,
+    each.value.virtual_machine.bootstrap_package.bootstrap_xml_template,
     {
       data_gateway_ip = cidrhost(
-        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.data_snet_key],
+        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.virtual_machine.bootstrap_package.data_snet_key],
         1
       )
 
@@ -196,7 +194,7 @@ resource "local_file" "bootstrap_xml" {
         null
       )
 
-      ai_update_interval = each.value.bootstrap_package.ai_update_interval
+      ai_update_interval = each.value.virtual_machine.bootstrap_package.ai_update_interval
     }
   )
 
@@ -302,7 +300,7 @@ module "vmseries" {
 
   interfaces = [for v in each.value.interfaces : {
     name             = "${var.name_prefix}${v.name}"
-    subnet_id        = module.vnet[each.value.virtual_machine.vnet_key].subnet_ids[v.subnet_key]
+    subnet_id        = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
     create_public_ip = v.create_public_ip
     public_ip_name = v.create_public_ip ? "${var.name_prefix}${
       coalesce(v.public_ip_name, "${v.name}-pip")
@@ -328,7 +326,7 @@ module "vmseries" {
   ]
 }
 
-### Create test infrastructure ###
+# Create test infrastructure
 
 module "appvm" {
   for_each = var.appvms

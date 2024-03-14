@@ -1,4 +1,4 @@
-### Generate a random password ###
+# Generate a random password
 
 # https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password
 resource "random_password" "this" {
@@ -27,7 +27,7 @@ locals {
   }
 }
 
-### Create or source a Resource Group ###
+# Create or source a Resource Group
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
@@ -48,7 +48,7 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
-### Manage the network required for the topology ###
+# Manage the network required for the topology
 
 module "vnet" {
   source = "../../modules/vnet"
@@ -75,7 +75,7 @@ module "vnet" {
   tags = var.tags
 }
 
-### Create Panorama VMs and closely associated resources ###
+# Create Panorama VMs and closely associated resources
 
 resource "azurerm_availability_set" "this" {
   for_each = var.availability_sets

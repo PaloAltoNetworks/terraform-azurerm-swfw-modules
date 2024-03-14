@@ -1,4 +1,4 @@
-### GENERAL ###
+# GENERAL
 
 region                = "North Europe"
 resource_group_name   = "panorama"
@@ -8,9 +8,8 @@ tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
 }
-enable_zones = false
 
-### NETWORK ###
+# NETWORK
 
 vnets = {
   "vnet" = {
@@ -44,7 +43,7 @@ vnets = {
   }
 }
 
-### PANORAMA ###
+# PANORAMA
 
 panoramas = {
   "pn-1" = {

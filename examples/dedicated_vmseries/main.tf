@@ -1,4 +1,4 @@
-### Generate a random password ###
+# Generate a random password
 
 # https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password
 resource "random_password" "this" {
@@ -27,7 +27,7 @@ locals {
   }
 }
 
-### Create or source a Resource Group ###
+# Create or source a Resource Group
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
@@ -48,7 +48,7 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
-### Manage the network required for the topology ###
+# Manage the network required for the topology
 
 module "vnet" {
   source = "../../modules/vnet"
@@ -99,7 +99,7 @@ module "natgw" {
   depends_on = [module.vnet]
 }
 
-### Create Load Balancers, both internal and external ###
+# Create Load Balancers, both internal and external
 
 module "load_balancer" {
   source = "../../modules/loadbalancer"
@@ -146,7 +146,7 @@ module "load_balancer" {
   depends_on = [module.vnet]
 }
 
-### Create Application Gateways ###
+# Create Application Gateways
 
 locals {
   nics_with_appgw_key = flatten([
@@ -203,7 +203,7 @@ module "appgw" {
   depends_on = [module.vnet, module.vmseries]
 }
 
-### Create VM-Series VMs and closely associated resources ###
+# Create VM-Series VMs and closely associated resources
 
 module "ngfw_metrics" {
   source = "../../modules/ngfw_metrics"

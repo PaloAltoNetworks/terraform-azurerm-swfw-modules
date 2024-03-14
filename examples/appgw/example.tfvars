@@ -1,4 +1,4 @@
-### GENERAL ###
+# GENERAL
 
 region              = "North Europe"
 resource_group_name = "appgw-example"
@@ -8,7 +8,7 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-### NETWORK ###
+# NETWORK
 
 vnets = {
   transit = {
@@ -37,7 +37,7 @@ vnets = {
   }
 }
 
-### LOAD BALANCING ###
+# LOAD BALANCING
 
 appgws = {
   "public-empty" = {

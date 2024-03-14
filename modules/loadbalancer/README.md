@@ -90,6 +90,7 @@ Name | Type | Description
 [`name`](#name) | `string` | The name of the Azure Load Balancer.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
+[`backend_name`](#backend_name) | `string` | The name of the backend pool to create.
 [`frontend_ips`](#frontend_ips) | `map` | A map of objects describing Load Balancer Frontend IP configurations with respective inbound and outbound rules.
 
 
@@ -99,7 +100,6 @@ Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`zones`](#zones) | `list` | Controls zones for Load Balancer's fronted IP configurations.
-[`backend_name`](#backend_name) | `string` | The name of the backend pool to create.
 [`health_probes`](#health_probes) | `map` | Backend's health probe definition.
 [`nsg_auto_rules_settings`](#nsg_auto_rules_settings) | `object` | Controls automatic creation of NSG rules for all defined inbound rules.
 
@@ -173,6 +173,13 @@ Type: string
 
 
 
+#### backend_name
+
+The name of the backend pool to create. All frontends of the Load Balancer always use the same backend.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
 
 #### frontend_ips
 
@@ -377,15 +384,6 @@ Default value: `[1 2 3]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### backend_name
-
-The name of the backend pool to create. All frontends of the Load Balancer always use the same backend.
-
-Type: string
-
-Default value: `vmseries_backend`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
 
 
 #### health_probes
@@ -461,6 +459,5 @@ object({
 Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->
