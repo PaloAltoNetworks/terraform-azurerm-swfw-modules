@@ -185,7 +185,7 @@ vmseries = {
       zone = 1
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
-        static_files           = { "files/init-cfg.sample.txt" = "config/init-cfg.txt" }
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
         bootstrap_xml_template = "templates/bootstrap_inbound.tmpl"
         private_snet_key       = "private"
         public_snet_key        = "public"
@@ -220,7 +220,7 @@ vmseries = {
       zone = 2
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
-        static_files           = { "files/init-cfg.sample.txt" = "config/init-cfg.txt" }
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
         bootstrap_xml_template = "templates/bootstrap_inbound.tmpl"
         private_snet_key       = "private"
         public_snet_key        = "public"
@@ -254,7 +254,7 @@ vmseries = {
       zone = 1
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
-        static_files           = { "files/init-cfg.sample.txt" = "config/init-cfg.txt" }
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
         bootstrap_xml_template = "templates/bootstrap_obew.tmpl"
         private_snet_key       = "private"
         public_snet_key        = "public"
@@ -289,7 +289,7 @@ vmseries = {
       zone = 2
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
-        static_files           = { "files/init-cfg.sample.txt" = "config/init-cfg.txt" }
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
         bootstrap_xml_template = "templates/bootstrap_obew.tmpl"
         private_snet_key       = "private"
         public_snet_key        = "public"
