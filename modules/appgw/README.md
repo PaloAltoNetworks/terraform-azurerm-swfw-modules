@@ -11,14 +11,14 @@ Then you can use below code as an example of calling module to create Applicatio
 ```hcl
 # Create Application Gateay
 module "appgw" {
-  source = "../../modules/appgw"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/appgw"
 
   for_each = var.appgws
 
   name                = each.value.name
   public_ip           = each.value.public_ip
   resource_group_name = local.resource_group.name
-  location            = var.location
+  location            = var.region
   subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
   managed_identities = each.value.managed_identities
@@ -55,6 +55,7 @@ application gateways definitions.
 ### Example 1
 
 Application Gateway with:
+
 * new public IP
 * HTTP listener
 * static capacity
@@ -109,6 +110,7 @@ appgws = {
 ### Example 2
 
 Application Gateway with:
+
 * existing public IP
 * HTTP listener
 * static capacity
@@ -173,6 +175,7 @@ appgws = {
 ### Example 3
 
 Application Gateway with:
+
 * new public IP
 * HTTP listener
 * autoscaling
@@ -223,6 +226,7 @@ appgws = {
 ### Example 4
 
 Application Gateway with:
+
 * new public IP
 * WAF enabled
 * HTTP listener
@@ -295,18 +299,23 @@ If you need to test example for Application Gateway with SSL, you need to create
 and create keys and certs using commands:
 
 1. Create CA private key and certificate:
+
 ```bash
    openssl genrsa 2048 > ca-key1.pem
    openssl req -new -x509 -nodes -days 365000 -key ca-key1.pem -out ca-cert1.pem
    openssl genrsa 2048 > ca-key2.pem
    openssl req -new -x509 -nodes -days 365000 -key ca-key2.pem -out ca-cert2.pem
 ```
+
 2. Create server certificate:
+
 ```bash
    openssl req -newkey rsa:2048 -nodes -keyout test1.key -x509 -days 365 -CA ca-cert1.pem -CAkey ca-key1.pem -out test1.crt
    openssl req -newkey rsa:2048 -nodes -keyout test2.key -x509 -days 365 -CA ca-cert2.pem -CAkey ca-key2.pem -out test2.crt
 ```
+
 3. Create PFX file with key and certificate:
+
 ```bash
    openssl pkcs12 -inkey test1.key -in test1.crt -export -out test1.pfx
    openssl pkcs12 -inkey test2.key -in test2.crt -export -out test2.pfx
@@ -315,6 +324,7 @@ and create keys and certs using commands:
 ### Example 5
 
 Application Gateway with:
+
 * new public IP
 * multi site HTTPS listener (many host names on port 443)
 * static capacity
@@ -463,6 +473,7 @@ appgws = {
 ### Example 6
 
 Application Gateway with:
+
 * new public IP
 * multiple listener:
   * HTTP
@@ -805,16 +816,12 @@ Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Application Gateway.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
-[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
-[`public_ip`](#public_ip) | `object` | A map defining a Public IP address resource that the Application Gateway will use to listen for incoming requests.
-[`subnet_id`](#subnet_id) | `string` | An ID of a subnet that will host the Application Gateway.
-[`ssl_profiles`](#ssl_profiles) | `map` | A map of SSL profiles.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
+[`subnet_id`](#subnet_id) | `string` | An ID of a subnet (must be dedicated to Application Gateway v2) that will host the Application Gateway.
+[`public_ip`](#public_ip) | `object` | A map defining listener's public IP configuration.
+[`frontend_ip_configuration_name`](#frontend_ip_configuration_name) | `string` | A frontend IP configuration name.
 [`listeners`](#listeners) | `map` | A map of listeners for the Application Gateway.
-[`probes`](#probes) | `map` | A map of probes for the Application Gateway.
-[`rewrites`](#rewrites) | `map` | A map of rewrites for the Application Gateway.
 [`rules`](#rules) | `map` | A map of rules for the Application Gateway.
-[`redirects`](#redirects) | `map` | A map of redirects for the Application Gateway.
-[`url_path_maps`](#url_path_maps) | `map` | A map of URL path maps for the Application Gateway.
 
 
 ## Module's Optional Inputs
@@ -823,15 +830,19 @@ Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`zones`](#zones) | `list` | A list of zones the Application Gateway should be available in.
-[`domain_name_label`](#domain_name_label) | `string` | Label for the Domain Name.
+[`domain_name_label`](#domain_name_label) | `string` | A label for the Domain Name.
+[`capacity`](#capacity) | `object` | A map defining whether static or autoscale configuration is used.
 [`enable_http2`](#enable_http2) | `bool` | Enable HTTP2 on the Application Gateway.
-[`waf`](#waf) | `object` | Object sets only the SKU and provide basic WAF (Web Application Firewall) configuration for Application Gateway.
-[`capacity`](#capacity) | `object` | Capacity configuration for Application Gateway.
+[`waf`](#waf) | `object` | A map defining only the SKU and providing basic WAF (Web Application Firewall) configuration for Application Gateway.
 [`managed_identities`](#managed_identities) | `list` | A list of existing User-Assigned Managed Identities.
-[`ssl_global`](#ssl_global) | `object` | Global SSL settings.
-[`frontend_ip_configuration_name`](#frontend_ip_configuration_name) | `string` | Frontend IP configuration name.
-[`backend_pool`](#backend_pool) | `object` | Backend pool.
-[`backends`](#backends) | `map` | A map of backend settings for the Application Gateway.
+[`global_ssl_policy`](#global_ssl_policy) | `object` | A map defining global SSL settings.
+[`ssl_profiles`](#ssl_profiles) | `map` | A map of SSL profiles.
+[`backend_pool`](#backend_pool) | `object` | A map defining a backend pool, when skipped will create an empty backend.
+[`backend_settings`](#backend_settings) | `map` | A map of backend settings for the Application Gateway.
+[`probes`](#probes) | `map` | A map of probes for the Application Gateway.
+[`rewrites`](#rewrites) | `map` | A map of rewrites for the Application Gateway.
+[`redirects`](#redirects) | `map` | A map of redirects for the Application Gateway.
+[`url_path_maps`](#url_path_maps) | `map` | A map of URL path maps for the Application Gateway.
 
 
 
@@ -849,12 +860,12 @@ Name |  Description
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 Providers used in this module:
 
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 
@@ -886,7 +897,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 The name of the Azure region to deploy the resources in.
 
@@ -895,17 +906,24 @@ Type: string
 <sup>[back to list](#modules-required-inputs)</sup>
 
 
+#### subnet_id
+
+An ID of a subnet (must be dedicated to Application Gateway v2) that will host the Application Gateway.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
 
 #### public_ip
 
-A map defining a Public IP address resource that the Application Gateway will use to listen for incoming requests.
+A map defining listener's public IP configuration.
 
 Following properties are available:
-
-- `name`                - (`string`, required) name of the created or source Public IP resource
-- `create`              - (`bool`, optional, defaults to `true`) controls if the public IP is created or sourced.
-- `resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group hosting the
-                          existing Public IP resource
+- `name`                - (`string`, required) name of the Public IP resource.
+- `create`              - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or sourced.
+- `resource_group_name` - (`string`, optional, defaults to `null`) name of the Resource Group hosting the Public IP resource, 
+                          used only for sourced resources.
 
 
 Type: 
@@ -926,66 +944,35 @@ object({
 
 
 
-#### subnet_id
 
-An ID of a subnet that will host the Application Gateway.
 
-Keep in mind that this subnet can contain only AppGWs and only of the same type.
+#### frontend_ip_configuration_name
 
+A frontend IP configuration name.
 
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
-
-#### ssl_profiles
-
-A map of SSL profiles.
-
-SSL profiles can be later on referenced in HTTPS listeners by providing a name of the profile in the `name` property.
-For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites`
-variables as SSL profile is a named SSL policy - same properties apply.
-The only difference is that you cannot name an SSL policy inside an SSL profile.
-
-Every SSL profile contains attributes:
-- `name`                            - (`string`, required) name of the SSL profile
-- `ssl_policy_name`                 - (`string`, optional) name of predefined policy
-- `ssl_policy_min_protocol_version` - (`string`, optional) the minimal TLS version.
-- `ssl_policy_cipher_suites`        - (`list`, optional) a list of accepted cipher suites.
-
-
-Type: 
-
-```hcl
-map(object({
-    name                            = string
-    ssl_policy_name                 = optional(string)
-    ssl_policy_min_protocol_version = optional(string)
-    ssl_policy_cipher_suites        = optional(list(string))
-  }))
-```
-
-
-<sup>[back to list](#modules-required-inputs)</sup>
-
 
 #### listeners
 
 A map of listeners for the Application Gateway.
 
 Every listener contains attributes:
-- `name`                     - (`string`, required) The name for this Frontend Port.
-- `port`                     - (`string`, required) The port used for this Frontend Port.
-- `protocol`                 - (`string`, optional) The Protocol to use for this HTTP Listener.
-- `host_names`               - (`list`, optional) A list of Hostname(s) should be used for this HTTP Listener.
-                               It allows special wildcard characters.
-- `ssl_profile_name`         - (`string`, optional) The name of the associated SSL Profile which should be used
-                               for this HTTP Listener.
-- `ssl_certificate_path`     - (`string`, optional) Path to the file with tThe base64-encoded PFX certificate data.
-- `ssl_certificate_pass`     - (`string`, optional) Password for the pfx file specified in data.
-- `ssl_certificate_vault_id` - (`string`, optional) Secret Id of (base-64 encoded unencrypted pfx) Secret
+
+- `name`                     - (`string`, required) the name for this Frontend Port.
+- `port`                     - (`string`, required) the port used for this Frontend Port.
+- `protocol`                 - (`string`, optional, defaults to `Https`) the Protocol to use for this HTTP Listener.
+- `host_names`               - (`list`, optional, defaults to `null`) A list of Hostname(s) should be used for this HTTP 
+                               Listener, it allows special wildcard characters.
+- `ssl_profile_name`         - (`string`, optional, defaults to `null`) the name of the associated SSL Profile which should be
+                               used for this HTTP Listener.
+- `ssl_certificate_vault_id` - (`string`, optional, defaults to `null`) Secret Id of (base-64 encoded unencrypted pfx) Secret
                                or Certificate object stored in Azure KeyVault.
-- `custom_error_pages`       - (`map`, optional) Map of string, where key is HTTP status code and value is
+- `ssl_certificate_path`     - (`string`, optional, defaults to `null`) Path to the file with tThe base64-encoded PFX
+                               certificate data.
+- `ssl_certificate_pass`     - (`string`, optional, defaults to `null`) Password for the pfx file specified in data.
+- `custom_error_pages`       - (`map`, optional, defaults to `{}`) Map of string, where key is HTTP status code and value is
                                error page URL of the application gateway customer error.
 
 
@@ -998,9 +985,9 @@ map(object({
     protocol                 = optional(string, "Http")
     host_names               = optional(list(string))
     ssl_profile_name         = optional(string)
+    ssl_certificate_vault_id = optional(string)
     ssl_certificate_path     = optional(string)
     ssl_certificate_pass     = optional(string)
-    ssl_certificate_vault_id = optional(string)
     custom_error_pages       = optional(map(string), {})
   }))
 ```
@@ -1010,178 +997,43 @@ map(object({
 
 
 
-#### probes
-
-A map of probes for the Application Gateway.
-
-Every probe contains attributes:
-- `name`       - (`string`, required) The name used for this Probe
-- `path`       - (`string`, required) The path used for this Probe
-- `host`       - (`string`, optional) The hostname used for this Probe
-- `port`       - (`number`, optional) Custom port which will be used for probing the backend servers.
-- `protocol`   - (`string`, optional, defaults `Http`) The protocol which should be used.
-- `interval`   - (`number`, optional, defaults `5`) The interval between two consecutive probes in seconds.
-- `timeout`    - (`number`, optional, defaults `30`) The timeout used for this Probe,
-                 which indicates when a probe becomes unhealthy.
-- `threshold`  - (`number`, optional, defaults `2`) The unhealthy Threshold for this Probe, which indicates
-                 the amount of retries which should be attempted before a node is deemed unhealthy.
-- `match_code` - (`list`, optional) The list of allowed status codes for this Health Probe.
-- `match_body` - (`string`, optional) A snippet from the Response Body which must be present in the Response.
 
 
-Type: 
 
-```hcl
-map(object({
-    name       = string
-    path       = string
-    host       = optional(string)
-    port       = optional(number)
-    protocol   = optional(string, "Http")
-    interval   = optional(number, 5)
-    timeout    = optional(number, 30)
-    threshold  = optional(number, 2)
-    match_code = optional(list(number))
-    match_body = optional(string)
-  }))
-```
-
-
-<sup>[back to list](#modules-required-inputs)</sup>
-
-#### rewrites
-
-A map of rewrites for the Application Gateway.
-
-Every rewrite contains attributes:
-- `name`                - (`string`) Rewrite Rule Set name
-- `rules`               - (`object`, optional) Rewrite Rule Set defined with attributes:
-    - `name`            - (`string`, required) Rewrite Rule name.
-    - `sequence`        - (`number`, required) Rule sequence of the rewrite rule that determines
-                          the order of execution in a set.
-    - `conditions`      - (`map`, optional) One or more condition blocks as defined below:
-      - `pattern`       - (`string`, required) The pattern, either fixed string or regular expression,
-                          that evaluates the truthfulness of the condition.
-      - `ignore_case`   - (`string`, optional, defaults to `false`) Perform a case in-sensitive comparison.
-      - `negate`        - (`bool`, optional, defaults to `false`) Negate the result of the condition evaluation.
-    - `request_headers` - (`map`, optional) Map of request header, where header name is the key,
-                          header value is the value of the object in the map.
-    - `response_headers`- (`map`, optional) Map of response header, where header name is the key,
-                          header value is the value of the object in the map.
-
-
-Type: 
-
-```hcl
-map(object({
-    name = string
-    rules = optional(map(object({
-      name     = string
-      sequence = number
-      conditions = optional(map(object({
-        pattern     = string
-        ignore_case = optional(bool, false)
-        negate      = optional(bool, false)
-      })), {})
-      request_headers  = optional(map(string), {})
-      response_headers = optional(map(string), {})
-    })))
-  }))
-```
-
-
-<sup>[back to list](#modules-required-inputs)</sup>
 
 #### rules
 
-A map of rules for the Application Gateway.
+A map of rules for the Application Gateway. A rule combines backend's, listener's, rewrites' and redirects' configurations.
 
-A rule combines, backend, listener, rewrites and redirects configurations.
-A key is an application name that is used to prefix all components inside Application Gateway
+A key is an application name that is used to prefix all components inside an Application Gateway
 that are created for this application.
 
-Every rule contains attributes:
-- `name`         - (`string`, required) Rule name.
-- `priority`     - (`string`, required) Rule evaluation order can be dictated by specifying an integer value
-                   from 1 to 20000 with 1 being the highest priority and 20000 being the lowest priority.
-- `backend`      - (`string`, optional) Backend settings` key
-- `listener`     - (`string`, required) Listener's key
-- `rewrite`      - (`string`, optional) Rewrite's key
-- `url_path_map` - (`string`, optional) URL Path Map's key
-- `redirect`     - (`string`, optional) Redirect's key
+Every rule contains following attributes:
+
+- `name`             - (`string`, required) Rule name.
+- `priority`         - (`string`, required) Rule evaluation order can be dictated by specifying an integer value from 1 to 
+                       20000 with 1 being the highest priority and 20000 being the lowest priority.
+- `listener_key`     - (`string`, required) a key identifying a listener config defined in `var.listeners`.
+- `backend_key`      - (`string`, optional, mutually exclusive with `url_path_map_key` and `redirect_key`) a key identifying a
+                       backend config defined in `var.backend_settings`.
+- `rewrite_key`      - (`string`, optional, defaults to `null`) a key identifying a rewrite config defined in `var.rewrites`.
+- `url_path_map_key` - (`string`, optional, mutually exclusive with `backend_key` and `redirect_key`) a key identifying a
+                       url_path_map config defined in `var.url_path_maps`.
+- `redirect_key`     - (`string`, optional, mutually exclusive with `url_path_map_key` and `backend_key`) a key identifying a
+                       redirect config defined in `var.redirects`.
 
 
 Type: 
 
 ```hcl
 map(object({
-    name         = string
-    priority     = number
-    backend      = optional(string)
-    listener     = string
-    rewrite      = optional(string)
-    url_path_map = optional(string)
-    redirect     = optional(string)
-  }))
-```
-
-
-<sup>[back to list](#modules-required-inputs)</sup>
-
-#### redirects
-
-A map of redirects for the Application Gateway.
-
-Every redirect contains attributes:
-- `name`                 - (`string`, required) The name of redirect.
-- `type`                 - (`string`, required) The type of redirect.
-                           Possible values are Permanent, Temporary, Found and SeeOther
-- `target_listener`      - (`string`, optional) The name of the listener to redirect to.
-- `target_url`           - (`string`, optional) The URL to redirect the request to.
-- `include_path`         - (`bool`, optional) Whether or not to include the path in the redirected URL.
-- `include_query_string` - (`bool`, optional) Whether or not to include the query string in the redirected URL.
-
-
-Type: 
-
-```hcl
-map(object({
-    name                 = string
-    type                 = string
-    target_listener      = optional(string)
-    target_url           = optional(string)
-    include_path         = optional(bool, false)
-    include_query_string = optional(bool, false)
-  }))
-```
-
-
-<sup>[back to list](#modules-required-inputs)</sup>
-
-#### url_path_maps
-
-A map of URL path maps for the Application Gateway.
-
-Every URL path map contains attributes:
-- `name`         - (`string`, required) The name of redirect.
-- `backend`      - (`string`, required) The default backend for redirect.
-- `path_rules`   - (`map`, optional) The map of rules, where every object has attributes:
-    - `paths`    - (`list`, required) List of paths
-    - `backend`  - (`string`, optional) Backend's key
-    - `redirect` - (`string`, optional) Redirect's key
-
-
-Type: 
-
-```hcl
-map(object({
-    name    = string
-    backend = string
-    path_rules = optional(map(object({
-      paths    = list(string)
-      backend  = optional(string)
-      redirect = optional(string)
-    })))
+    name             = string
+    priority         = number
+    backend_key      = optional(string)
+    listener_key     = string
+    rewrite_key      = optional(string)
+    url_path_map_key = optional(string)
+    redirect_key     = optional(string)
   }))
 ```
 
@@ -1206,24 +1058,22 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+
 #### zones
 
-A list of zones the Application Gateway should be available in.
+A list of zones the Application Gateway should be available in. For non-zonal deployments this should be set to an empty list,
+as `null` will enforce the default value.
 
 **Note!** \
-This is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal,
-pinned to a single zone or zone-redundant (so available in all zones in a region).
-Therefore make sure that if you specify more than one zone you specify all available in a region. You can use a subset,
-but the Public IP will be created in all zones anyway. This fact will cause terraform to recreate the IP resource during
-next `terraform apply` as there will be difference between the state and the actual configuration.
+This is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal, pinned to
+a single zone or zone-redundant (so available in all zones in a region).
+
+Therefore make sure that if you specify more than one zone you specify all available in a region. You can use a subset, but the
+Public IP will be created in all zones anyway. This fact will cause Terraform to recreate the IP resource during next 
+`terraform apply` as there will be difference between the state and the actual configuration.
 
 For details on zones currently available in a region of your choice refer to
 [Microsoft's documentation](https://docs.microsoft.com/en-us/azure/availability-zones/az-region).
-
-Example:
-```
-zones = ["1","2","3"]
-```
 
 
 Type: list(string)
@@ -1235,15 +1085,42 @@ Default value: `[1 2 3]`
 
 #### domain_name_label
 
-Label for the Domain Name.
-
-Will be used to make up the FQDN. If a domain name label is specified, an A DNS record is created
-for the public IP in the Microsoft Azure DNS system."
+A label for the Domain Name. Will be used to make up the FQDN. 
+If a domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure DNS system.
 
 
 Type: string
 
 Default value: `&{}`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### capacity
+
+A map defining whether static or autoscale configuration is used.
+  
+Following properties are available:
+- `static`    - (`number`, optional, defaults to `2`) static number of Application Gateway instances, takes values bewteen 1 
+                and 125.
+- `autoscale` - (`map`, optional, defaults to `null`) autoscaling configuration, when specified `static` is being ignored:
+  - `min` - (`number`, required) minimum number of instances during autoscaling.
+  - `max` - (`number`, required) maximum number of instances during autoscaling.
+
+
+Type: 
+
+```hcl
+object({
+    static = optional(number, 2)
+    autoscale = optional(object({
+      min = number
+      max = number
+    }))
+  })
+```
+
+
+Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
@@ -1259,13 +1136,13 @@ Default value: `false`
 
 #### waf
 
-Object sets only the SKU and provide basic WAF (Web Application Firewall) configuration for Application Gateway.
+A map defining only the SKU and providing basic WAF (Web Application Firewall) configuration for Application Gateway. This
+module does not support WAF rules configuration and advanced WAF settings.
 
-This module does not support WAF rules configuration and advanced WAF settings.
-Only below attributes are allowed:
-- `prevention_mode`    - (`bool`, required) `true` if WAF mode is Prevention, `false` for Detection mode
-- `rule_set_type`    - (`string`, optional, defaults to `OWASP`) The Type of the Rule Set used for this Web Application Firewall
-- `rule_set_version` - (`string`, optional) The Version of the Rule Set used for this Web Application Firewall
+Following properties are available:
+- `prevention_mode`  - (`bool`, required) `true` sets WAF mode to `Prevention` mode, `false` to `Detection` mode.
+- `rule_set_type`    - (`string`, optional, defaults to `OWASP`) the type of the Rule Set used for this WAF.
+- `rule_set_version` - (`string`, optional, defaults to Azure defaults) the version of the Rule Set used for this WAF.
 
 
 Type: 
@@ -1283,42 +1160,13 @@ Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### capacity
-
-Capacity configuration for Application Gateway.
-
-Object defines static or autoscale configuration using attributes:
-- `static`    - (`number`, optional) A static number of Application Gateway instances. A value bewteen 1 and 125
-                or null, if autoscale configuration is provided
-- `autoscale` - (`object`, optional) Autoscaling configuration (used only, if static is null) with attributes:
-  - `min`     - (`number`, optional) Minimum capacity for autoscaling.
-  - `max`     - (`number`, optional) Maximum capacity for autoscaling.
-
-
-Type: 
-
-```hcl
-object({
-    static = optional(number)
-    autoscale = optional(object({
-      min = optional(number)
-      max = optional(number)
-    }))
-  })
-```
-
-
-Default value: `map[static:2]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
 #### managed_identities
 
 A list of existing User-Assigned Managed Identities.
-
-Application Gateway uses Managed Identities to retrieve certificates from Key Vault.
-These identities have to have at least `GET` access to Key Vault's secrets.
-Otherwise Application Gateway will not be able to use certificates stored in the Vault.
+  
+**Note!** \
+Application Gateway uses Managed Identities to retrieve certificates from a Key Vault. These identities have to have at least
+`GET` access to Key Vault's secrets. Otherwise Application Gateway will not be able to use certificates stored in the Vault.
 
 
 Type: list(string)
@@ -1327,116 +1175,146 @@ Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+#### global_ssl_policy
 
-#### ssl_global
+A map defining global SSL settings.
 
-Global SSL settings.
+Following properties are available:
+- `type`                 - (`string`, required, but defaults to `Predefined`) type of an SSL policy, possible values include:
+                           `Predefined`, `Custom` or `CustomV2`.
+- `name`                 - (`string`, optional, defaults to `AppGwSslPolicy20220101S`) name of an SSL policy, supported only
+                           for `type` set to `Predefined`.
+    
+  **Note!** \
+  Normally you can set it also for `Custom` policies but the name is discarded on Azure side causing an update to Application
+  Gateway each time Terraform code is run. Therefore this property is omitted in the code for `Custom` policies.
 
-SSL settings are defined by attributes:
-- `ssl_policy_type`                 - (`string`, required) type of an SSL policy. Possible values are `Predefined`
-                                      or `Custom` or `CustomV2`. If the value is `Custom` the following values are mandatory:
-                                      `ssl_policy_cipher_suites` and `ssl_policy_min_protocol_version`.
-- `ssl_policy_name`                 - (`string`, optional) name of an SSL policy.
-                                      Supported only for `ssl_policy_type` set to `Predefined`.
-                                      Normally you can set it also for `Custom` policies but the name is discarded
-                                      on Azure side causing an update to Application Gateway each time terraform code is run.
-                                      Therefore this property is omitted in the code for `Custom` policies.
-                                      For the `Predefined` policies, check the Microsoft documentation
-                                      https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview
-                                      for possible values as they tend to change over time.
-                                      The default value is currently (Q1 2023) a Microsoft's default.
-- `ssl_policy_min_protocol_version` - (`string`, optional) minimum version of the TLS protocol for SSL Policy.
-                                      Required only for `ssl_policy_type` set to `Custom`.
-- `ssl_policy_cipher_suites`        - (`list`, optional) a list of accepted cipher suites.
-                                      Required only for `ssl_policy_type` set to `Custom`.
-                                      For possible values see documentation:
-                                      https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites
+  For the `Predefined` policies, check the
+  [Microsoft documentation](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview)
+  for possible values as they tend to change over time. The default value is currently (Q1 2023) is also Microsoft's default.
+
+- `min_protocol_version` - (`string`, optional, defaults to `null`) minimum version of the TLS protocol for SSL Policy, 
+                           required only for `type` set to `Custom`.
+- `cipher_suites`        - (`list`, optional, defaults to `[]`) a list of accepted cipher suites, required only for `type` set
+                           to `Custom`. For possible values see [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites).
 
 
 Type: 
 
 ```hcl
 object({
-    ssl_policy_type                 = string
-    ssl_policy_name                 = optional(string)
-    ssl_policy_min_protocol_version = optional(string)
-    ssl_policy_cipher_suites        = optional(list(string))
+    type                 = optional(string, "Predefined")
+    name                 = optional(string, "AppGwSslPolicy20220101S")
+    min_protocol_version = optional(string)
+    cipher_suites        = optional(list(string), [])
   })
 ```
 
 
-Default value: `map[ssl_policy_cipher_suites:[] ssl_policy_min_protocol_version:<nil> ssl_policy_name:AppGwSslPolicy20220101S ssl_policy_type:Predefined]`
+Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+#### ssl_profiles
 
-#### frontend_ip_configuration_name
+A map of SSL profiles.
 
-Frontend IP configuration name
+SSL profiles can be later on referenced in HTTPS listeners by providing a name of the profile in the `name` property.
+For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites` properties
+as SSL profile is a named SSL policy - same properties apply.
+The only difference is that you cannot name an SSL policy inside an SSL profile.
 
-Type: string
+Every SSL profile contains following attributes:
 
-Default value: `public_ipconfig`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-
-#### backend_pool
-
-Backend pool.
-
-Object contains attributes:
-- `name`         - (`string`, required) name of the backend pool.
-- `vmseries_ips` - (`list`, optional, defaults to `[]`) IP addresses of VM-Series' interfaces that will serve as backends
-                   for the Application Gateway.
-
-
-Type: 
-
-```hcl
-object({
-    name         = string
-    vmseries_ips = optional(list(string), [])
-  })
-```
-
-
-Default value: `map[name:vmseries]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### backends
-
-A map of backend settings for the Application Gateway.
-
-Every backend contains attributes:
-- `name`                  - (`string`, optional) The name of the backend settings
-- `path`                  - (`string`, optional) The Path which should be used as a prefix for all HTTP requests.
-- `hostname_from_backend` - (`bool`, optional) Whether host header should be picked from the host name of the backend server.
-- `hostname`              - (`string`, optional) Host header to be sent to the backend servers.
-- `port`                  - (`number`, optional) The port which should be used for this Backend HTTP Settings Collection.
-- `protocol`              - (`string`, optional) The Protocol which should be used. Possible values are Http and Https.
-- `timeout`               - (`number`, optional) The request timeout in seconds, which must be between 1 and 86400 seconds.
-- `cookie_based_affinity` - (`string`, optional) Is Cookie-Based Affinity enabled? Possible values are Enabled and Disabled.
-- `affinity_cookie_name`  - (`string`, optional) The name of the affinity cookie.
-- `probe`                 - (`string`, optional) Probe's key.
-- `root_certs`            - (`map`, optional) A list of trusted_root_certificate names.
+- `name`                            - (`string`, required) name of the SSL profile.
+- `ssl_policy_name`                 - (`string`, optional, defaults to `null`) name of predefined policy.
+- `ssl_policy_min_protocol_version` - (`string`, optional, defaults to `null`) the minimal TLS version.
+- `ssl_policy_cipher_suites`        - (`list`, optional, defaults to `null`) a list of accepted cipher suites.
 
 
 Type: 
 
 ```hcl
 map(object({
-    name                  = optional(string)
-    path                  = optional(string)
-    hostname_from_backend = optional(bool, false)
-    hostname              = optional(string)
-    port                  = optional(number, 80)
-    protocol              = optional(string, "Http")
-    timeout               = optional(number, 60)
-    cookie_based_affinity = optional(string, "Enabled")
-    affinity_cookie_name  = optional(string)
-    probe                 = optional(string)
+    name                            = string
+    ssl_policy_name                 = optional(string)
+    ssl_policy_min_protocol_version = optional(string)
+    ssl_policy_cipher_suites        = optional(list(string))
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+
+
+#### backend_pool
+
+A map defining a backend pool, when skipped will create an empty backend.
+  
+Following properties are available:
+- `name`         - (`string`, optional, defaults to `vmseries`) name of the backend pool.
+- `vmseries_ips` - (`list`, optional, defaults to `[]`) IP addresses of VM-Series' interfaces that will serve as backend nodes
+                   for the Application Gateway.
+
+
+
+Type: 
+
+```hcl
+object({
+    name         = optional(string, "vmseries")
+    vmseries_ips = optional(list(string), [])
+  })
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### backend_settings
+
+A map of backend settings for the Application Gateway.
+
+Every backend contains attributes:
+
+- `name`                      - (`string`, required) the name of the backend settings.
+- `port`                      - (`number`, required) the port which should be used for this Backend HTTP Settings Collection.
+- `protocol`                  - (`string`, required) the Protocol which should be used. Possible values are Http and Https.
+- `path`                      - (`string`, optional, defaults to `null`) the Path which should be used as a prefix for all HTTP
+                                requests.
+- `hostname_from_backend`     - (`bool`, optional, defaults to `false`) whether host header should be picked from the host name
+                                of the backend server.
+- `hostname`                  - (`string`, optional, defaults to `null`) host header to be sent to the backend servers.
+- `timeout`                   - (`number`, optional, defaults to `60`) the request timeout in seconds, which must be between 1
+                                and 86400 seconds.
+- `use_cookie_based_affinity` - (`bool`, optional, defaults to `true`) when set to `true` enables Cookie-Based Affinity.
+- `affinity_cookie_name`      - (`string`, optional, defaults to Azure defaults) the name of the affinity cookie.
+- `probe_key`                 - (`string`, optional, defaults to `null`) a key identifying a Probe definition in the 
+                                `var.probes`.
+- `root_certs`                - (`map`, optional, defaults to `{}`) a map of objects defining paths to trusted root 
+                                certificates (`PEM` format), each map contains 2 properties:
+  - `name` - (`string`, required) a name of the certificate.
+  - `path` - (`string`, required) path to a file on a local file system containing the root cert.
+
+
+Type: 
+
+```hcl
+map(object({
+    name                      = string
+    port                      = number
+    protocol                  = string
+    path                      = optional(string)
+    hostname_from_backend     = optional(bool, false)
+    hostname                  = optional(string)
+    timeout                   = optional(number, 60)
+    use_cookie_based_affinity = optional(bool, true)
+    affinity_cookie_name      = optional(string)
+    probe_key                 = optional(string)
     root_certs = optional(map(object({
       name = string
       path = string
@@ -1445,14 +1323,166 @@ map(object({
 ```
 
 
-Default value: `map[minimum:map[name:minimum]]`
+Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+#### probes
+
+A map of probes for the Application Gateway.
+
+Every probe contains attributes:
+
+- `name`       - (`string`, required) the name used for this Probe.
+- `path`       - (`string`, required) the path used for this Probe.
+- `host`       - (`string`, optional, defaults to `null`) the hostname used for this Probe.
+- `port`       - (`number`, optional, defaults to `null`) custom port which will be used for probing the backend servers, when
+                 skipped a default port for `protocol` will be used.
+- `protocol`   - (`string`, optional, defaults `Http`) the protocol which should be used, possible values are `Http` or `Https`.
+- `interval`   - (`number`, optional, defaults `5`) the interval between two consecutive probes in seconds.
+- `timeout`    - (`number`, optional, defaults `30`) the timeout after which a single probe is marked unhealthy.
+- `threshold`  - (`number`, optional, defaults `2`) the unhealthy Threshold for this Probe, which indicates the amount of
+                 retries which should be attempted before a node is deemed unhealthy.
+- `match_code` - (`list`, optional, defaults to `null`) custom list of allowed status codes for this Health Probe.
+- `match_body` - (`string`, optional, defaults to `null`) a custom snippet from the Response Body which must be present to 
+                 treat a single probe as healthy.
 
 
+Type: 
+
+```hcl
+map(object({
+    name       = string
+    path       = string
+    host       = optional(string)
+    port       = optional(number)
+    protocol   = optional(string, "Http")
+    interval   = optional(number, 5)
+    timeout    = optional(number, 30)
+    threshold  = optional(number, 2)
+    match_code = optional(list(number))
+    match_body = optional(string)
+  }))
+```
 
 
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### rewrites
+
+A map of rewrites for the Application Gateway.
+
+Every rewrite contains attributes:
+
+- `name`  - (`string`, required) Rewrite Rule Set name.
+- `rules` - (`map`, required) rewrite Rule Set defined with following attributes available:
+  - `name`             - (`string`, required) Rewrite Rule name.
+  - `sequence`         - (`number`, required) determines the order of rule execution in a set.
+  - `conditions`       - (`map`, optional, defaults to `{}`) one or more condition blocks as defined below:
+    - `pattern`     - (`string`, required) the pattern, either fixed string or regular expression, that evaluates the
+                      truthfulness of the condition.
+    - `ignore_case` - (`string`, optional, defaults to `false`) perform a case in-sensitive comparison.
+    - `negate`      - (`bool`, optional, defaults to `false`) negate the result of the condition evaluation.
+  - `request_headers`  - (`map`, optional, defaults to `{}`) map of request headers, where header name is the key, header value
+                         is the value.
+  - `response_headers` - (`map`, optional, defaults to `{}`) map of response header, where header name is the key, header value
+                         is the value.
+
+
+Type: 
+
+```hcl
+map(object({
+    name = string
+    rules = optional(map(object({
+      name     = string
+      sequence = number
+      conditions = optional(map(object({
+        pattern     = string
+        ignore_case = optional(bool, false)
+        negate      = optional(bool, false)
+      })), {})
+      request_headers  = optional(map(string), {})
+      response_headers = optional(map(string), {})
+    })), {})
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### redirects
+
+A map of redirects for the Application Gateway.
+
+Every redirect contains attributes:
+- `name`                 - (`string`, required) the name of redirect.
+- `type`                 - (`string`, required) the type of redirect, possible values are `Permanent`, `Temporary`, `Found` and
+                           `SeeOther`.
+- `target_listener_key`  - (`string`, optional, mutually exclusive with `target_url`) a key identifying a backend config
+                           defined in `var.listeners`.
+- `target_url`           - (`string`, optional, mutually exclusive with `target_listener`) the URL to redirect to.
+- `include_path`         - (`bool`, optional, defaults to Azure defaults) whether or not to include the path in the redirected
+                           URL.
+- `include_query_string` - (`bool`, optional, defaults to Azure defaults) whether or not to include the query string in the
+                           redirected URL.
+
+
+Type: 
+
+```hcl
+map(object({
+    name                 = string
+    type                 = string
+    target_listener_key  = optional(string)
+    target_url           = optional(string)
+    include_path         = optional(bool)
+    include_query_string = optional(bool)
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### url_path_maps
+
+A map of URL path maps for the Application Gateway.
+
+Every URL path map contains attributes:
+- `name`         - (`string`, required) the name of redirect.
+- `backend_key`  - (`string`, required) a key identifying the default backend for redirect defined in `var.backend_settings`.
+- `path_rules`   - (`map`, optional, defaults to `{}`) the map of rules, where every object has attributes:
+  - `paths`        - (`list`, required) a list of paths.
+  - `backend_key`  - (`string`, optional, mutually exclusive with `redirect_key`) a key identifying a backend config defined
+                     in `var.backend_settings`.
+  - `redirect_key` - (`string`, optional, mutually exclusive with `backend_key`) a key identifying a redirect config defined
+                     in `var.redirects`.
+
+
+Type: 
+
+```hcl
+map(object({
+    name        = string
+    backend_key = string
+    path_rules = optional(map(object({
+      paths        = list(string)
+      backend_key  = optional(string)
+      redirect_key = optional(string)
+    })), {})
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
 <!-- END_TF_DOCS -->

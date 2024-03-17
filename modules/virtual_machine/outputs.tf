@@ -4,11 +4,18 @@ output "public_ips" {
 }
 
 output "interfaces" {
-  description = "List of interfaces. The elements of the list are `azurerm_network_interface` objects. The order is the same as `interfaces` input."
+  description = <<-EOF
+  List of interfaces. The elements of the list are `azurerm_network_interface` objects. The order is the same as `interfaces`
+  input.
+  EOF
   value       = azurerm_network_interface.this
 }
 
 output "principal_id" {
-  description = "The oid of Azure Service Principal of the created virtual machine. Usable only if `identity_type` contains SystemAssigned."
-  value       = var.identity_type != null && var.identity_type != "" ? azurerm_virtual_machine.this.identity[0].principal_id : null
+  description = <<-EOF
+  The oid of Azure Service Principal of the created virtual machine. Usable only if `identity_type` contains SystemAssigned.
+  EOF
+  value = var.identity_type != null && var.identity_type != "" ? (
+    azurerm_virtual_machine.this.identity[0].principal_id
+  ) : null
 }

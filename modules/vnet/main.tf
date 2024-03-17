@@ -1,8 +1,9 @@
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network
 resource "azurerm_virtual_network" "this" {
   count = var.create_virtual_network ? 1 : 0
 
   name                = var.name
-  location            = var.location
+  location            = var.region
   resource_group_name = var.resource_group_name
   address_space       = var.address_space
   tags                = var.tags
@@ -15,6 +16,7 @@ resource "azurerm_virtual_network" "this" {
   }
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/virtual_network
 data "azurerm_virtual_network" "this" {
   count = var.create_virtual_network == false ? 1 : 0
 
@@ -26,6 +28,7 @@ locals {
   virtual_network = var.create_virtual_network ? azurerm_virtual_network.this[0] : data.azurerm_virtual_network.this[0]
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet
 resource "azurerm_subnet" "this" {
   for_each = { for k, v in var.subnets : k => v if var.create_subnets }
 
@@ -36,6 +39,7 @@ resource "azurerm_subnet" "this" {
   service_endpoints    = each.value.enable_storage_service_endpoint ? ["Microsoft.Storage"] : null
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subnet
 data "azurerm_subnet" "this" {
   for_each = { for k, v in var.subnets : k => v if var.create_subnets == false }
 
@@ -48,11 +52,12 @@ locals {
   subnets = var.create_subnets ? azurerm_subnet.this : data.azurerm_subnet.this
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group
 resource "azurerm_network_security_group" "this" {
   for_each = var.network_security_groups
 
   name                = each.value.name
-  location            = var.location
+  location            = var.region
   resource_group_name = var.resource_group_name
   tags                = var.tags
 }
@@ -70,6 +75,7 @@ locals {
   ])
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule
 resource "azurerm_network_security_rule" "this" {
   for_each = {
     for nsg in local.nsg_rules : "${nsg.nsg_key}-${nsg.rule_name}" => nsg
@@ -94,11 +100,12 @@ resource "azurerm_network_security_rule" "this" {
   depends_on = [azurerm_network_security_group.this]
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/route_table
 resource "azurerm_route_table" "this" {
   for_each = var.route_tables
 
   name                          = each.value.name
-  location                      = var.location
+  location                      = var.region
   resource_group_name           = var.resource_group_name
   tags                          = var.tags
   disable_bgp_route_propagation = each.value.disable_bgp_route_propagation
@@ -117,6 +124,7 @@ locals {
   ])
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/route
 resource "azurerm_route" "this" {
   for_each = {
     for route in local.route : "${route.route_table_key}-${route.route_name}" => route
@@ -130,6 +138,7 @@ resource "azurerm_route" "this" {
   next_hop_in_ip_address = each.value.route.next_hop_type == "VirtualAppliance" ? each.value.route.next_hop_ip_address : null
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_network_security_group_association
 resource "azurerm_subnet_network_security_group_association" "this" {
   for_each = { for k, v in var.subnets : k => v if v.network_security_group_key != null }
 
@@ -137,6 +146,7 @@ resource "azurerm_subnet_network_security_group_association" "this" {
   network_security_group_id = azurerm_network_security_group.this[each.value.network_security_group_key].id
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_route_table_association
 resource "azurerm_subnet_route_table_association" "this" {
   for_each = { for k, v in var.subnets : k => v if v.route_table_key != null }
 

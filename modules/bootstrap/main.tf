@@ -3,7 +3,7 @@ resource "azurerm_storage_account" "this" {
   count = var.storage_account.create ? 1 : 0
 
   name                     = var.name
-  location                 = var.location
+  location                 = var.region
   resource_group_name      = var.resource_group_name
   min_tls_version          = var.storage_network_security.min_tls_version
   account_replication_type = var.storage_account.replication_type
@@ -13,7 +13,7 @@ resource "azurerm_storage_account" "this" {
 
   lifecycle {
     precondition {
-      condition     = var.location != null
+      condition     = var.region != null
       error_message = "When creating a storage account the `location` variable cannot be null."
     }
   }
@@ -23,8 +23,10 @@ resource "azurerm_storage_account" "this" {
 resource "azurerm_storage_account_network_rules" "this" {
   count = var.storage_account.create ? 1 : 0
 
-  storage_account_id         = azurerm_storage_account.this[0].id
-  default_action             = length(var.storage_network_security.allowed_public_ips) > 0 || length(var.storage_network_security.allowed_subnet_ids) > 0 ? "Deny" : "Allow"
+  storage_account_id = azurerm_storage_account.this[0].id
+  default_action = length(var.storage_network_security.allowed_public_ips) > 0 || (
+    length(var.storage_network_security.allowed_subnet_ids) > 0
+  ) ? "Deny" : "Allow"
   ip_rules                   = var.storage_network_security.allowed_public_ips
   virtual_network_subnet_ids = var.storage_network_security.allowed_subnet_ids
 }
@@ -67,7 +69,9 @@ data "azurerm_storage_share" "this" {
 }
 
 locals {
-  file_shares     = var.file_shares_configuration.create_file_shares ? azurerm_storage_share.this : data.azurerm_storage_share.this
+  file_shares = var.file_shares_configuration.create_file_shares ? (
+    azurerm_storage_share.this
+  ) : data.azurerm_storage_share.this
   package_folders = ["content", "config", "software", "plugins", "license"]
 }
 
@@ -127,8 +131,8 @@ locals {
     }
   }
 
-  # 3. Compare both packages using destinations. There is no real comparison being made. We simply merge both maps, the latter one
-  #    takes precedence (we simply use the mechanism of the `merge` function).
+  # 3. Compare both packages using destinations. There is no real comparison being made. We simply merge both maps, the latter
+  #    one takes precedence (we simply use the mechanism of the `merge` function).
   inverted_filenames = {
     for k, _ in var.file_shares : k => merge(local.bootstrap_filenames[k], local.inverted_files[k])
   }

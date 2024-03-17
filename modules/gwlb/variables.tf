@@ -8,7 +8,7 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "location" {
+variable "region" {
   description = "The name of the Azure region to deploy the resources in."
   type        = string
 }
@@ -39,8 +39,8 @@ variable "frontend_ip" {
   - `name`                          - (`string`, required) name of the frontend IP configuration. `var.name` by default.
   - `subnet_id`                     - (`string`, required) id of a subnet to associate with the configuration.
   - `private_ip_address`            - (`string`, optional) private IP address to assign.
-  - `private_ip_address_version`    - (`string`, optional, defaults to `IPv4`) the IP version for the private IP address.
-                                      Can be one of "IPv4", "IPv6".
+  - `private_ip_address_version`    - (`string`, optional, defaults to `IPv4`) the IP version for the private IP address. Can be
+                                      one of "IPv4", "IPv6".
   EOF
   nullable    = false
   type = object({
@@ -52,11 +52,15 @@ variable "frontend_ip" {
   validation { # private_ip_address
     condition = (var.frontend_ip.private_ip_address != null ?
     can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", var.frontend_ip.private_ip_address)) : true)
-    error_message = "The `private_ip_address` property should be in IPv4 format."
+    error_message = <<-EOF
+    The `private_ip_address` property should be in IPv4 format.
+    EOF
   }
   validation { # private_ip_address_version
     condition     = contains(["IPv4", "IPv6"], var.frontend_ip.private_ip_address_version)
-    error_message = "The `private_ip_address_version` property can be one of \"IPv4\", \"IPv6\"."
+    error_message = <<-EOF
+    The `private_ip_address_version` property can be one of \"IPv4\", \"IPv6\".
+    EOF
   }
 }
 
@@ -69,9 +73,9 @@ variable "health_probe" {
   - `protocol`            - (`string`, required) protocol used by the health probe, can be one of "Tcp", "Http" or "Https".
   - `port`                - (`number`, optional) port to run the probe against.
   - `probe_threshold`     - (`number`, optional) number of consecutive probes that decide on forwarding traffic to an endpoint.
-  - `interval_in_seconds` - (`number`, optional) interval in seconds between probes, with a minimal value of 5
-  - `request_path`        - (`string`, optional) used only for non `Tcp` probes,
-                            the URI used to check the endpoint status when `protocol` is set to `Http(s)`.
+  - `interval_in_seconds` - (`number`, optional) interval in seconds between probes, with a minimal value of 5.
+  - `request_path`        - (`string`, optional) used only for non `Tcp` probes, the URI used to check the endpoint status when
+                            `protocol` is set to `Http(s)`.
   EOF
   default = {
     name     = "health_probe"
@@ -87,31 +91,43 @@ variable "health_probe" {
     interval_in_seconds = optional(number)
     request_path        = optional(string, "/")
   })
+  validation { # protocol
+    condition     = contains(["Tcp", "Http", "Https"], var.health_probe.protocol)
+    error_message = <<-EOF
+    The `protocol` property can be one of \"Tcp\", \"Http\", \"Https\".
+    EOF
+  }
   validation { # port
     condition     = var.health_probe.protocol == "Tcp" ? var.health_probe.port != null : true
-    error_message = "The `port` property is required when protocol is set to \"Tcp\"."
+    error_message = <<-EOF
+    The `port` property is required when protocol is set to \"Tcp\".
+    EOF
   }
   validation { # port
     condition     = var.health_probe.port != null ? var.health_probe.port >= 1 && var.health_probe.port <= 65535 : true
-    error_message = "The `port` property has to be a valid TCP port."
-  }
-  validation { # protocol
-    condition     = contains(["Tcp", "Http", "Https"], var.health_probe.protocol)
-    error_message = "The `protocol` property can be one of \"Tcp\", \"Http\", \"Https\"."
-  }
-  validation { # interval_in_seconds
-    condition = (var.health_probe.interval_in_seconds != null ?
-    var.health_probe.interval_in_seconds >= 5 && var.health_probe.interval_in_seconds <= 3600 : true)
-    error_message = "The `interval_in_seconds` property has to be between 5 and 3600 seconds (1 hour)."
+    error_message = <<-EOF
+    The `port` property has to be a valid TCP port.
+    EOF
   }
   validation { # probe_threshold
     condition = (var.health_probe.probe_threshold != null ?
     var.health_probe.probe_threshold >= 1 && var.health_probe.probe_threshold <= 100 : true)
-    error_message = "The `probe_threshold` property has to be between 1 and 100."
+    error_message = <<-EOF
+    The `probe_threshold` property has to be between 1 and 100.
+    EOF
+  }
+  validation { # interval_in_seconds
+    condition = (var.health_probe.interval_in_seconds != null ?
+    var.health_probe.interval_in_seconds >= 5 && var.health_probe.interval_in_seconds <= 3600 : true)
+    error_message = <<-EOF
+    The `interval_in_seconds` property has to be between 5 and 3600 seconds (1 hour).
+    EOF
   }
   validation { # request_path
     condition     = var.health_probe.protocol != "Tcp" ? var.health_probe.request_path != null : true
-    error_message = "The `request_path` property is required when protocol is set to \"Http\" or \"Https\"."
+    error_message = <<-EOF
+    The `request_path` property is required when protocol is set to \"Http\" or \"Https\".
+    EOF
   }
 }
 
@@ -121,7 +137,7 @@ variable "backends" {
 
   Following settings are available:
   - `name`              - (`string`, required) name of the backend.
-  - `tunnel_interfaces` - (`map`, required) map with tunnel interfaces.
+  - `tunnel_interfaces` - (`map`, required) map with tunnel interfaces:
     - `identifier`        - (`number`, required) interface identifier.
     - `port`              - (`number`, required) interface port.
     - `type`              - (`string`, required) either "External" or "Internal".
@@ -166,21 +182,27 @@ variable "backends" {
       type       = string
     }))
   }))
+  validation { # backends
+    condition     = (var.backends == null ? true : length(var.backends) <= 2)
+    error_message = <<-EOF
+    Maximum allowed number of `backends` is 2.
+    EOF
+  }
   validation { # protocol
     condition = (var.backends == null ?
       true : alltrue(flatten([for k, v in var.backends :
     [for p, r in v.tunnel_interfaces : contains(["VXLAN"], r.protocol)]])))
-    error_message = "The `protocol` property can be only \"VXLAN\"."
+    error_message = <<-EOF
+    The `protocol` property can be only \"VXLAN\".
+    EOF
   }
   validation { # type
     condition = (var.backends == null ?
       true : alltrue(flatten([for k, v in var.backends :
     [for p, r in v.tunnel_interfaces : contains(["Internal", "External"], r.type)]])))
-    error_message = "The `type` property can be one of \"Internal\", \"External\"."
-  }
-  validation { # backends
-    condition     = (var.backends == null ? true : length(var.backends) <= 2)
-    error_message = "Maximum allowed number of `backends` is 2."
+    error_message = <<-EOF
+    The `type` property can be one of \"Internal\", \"External\".
+    EOF
   }
 }
 
@@ -190,8 +212,8 @@ variable "lb_rule" {
 
   Available options:
   - `name`              - (`string`, optional) name for the rule.
-  - `load_distribution` - (`string`, optional, defaults to `Default`) specifies the load balancing distribution type
-                          to be used by the Gateway Load Balancer. Can be one of "Default", "SourceIP", "SourceIPProtocol".
+  - `load_distribution` - (`string`, optional, defaults to `Default`) specifies the load balancing distribution type to be used
+                          by the Gateway Load Balancer. Can be one of "Default", "SourceIP", "SourceIPProtocol".
   EOF
   default = {
     name = "lb_rule"
@@ -203,6 +225,8 @@ variable "lb_rule" {
   })
   validation { # load_distribution
     condition     = contains(["Default", "SourceIP", "SourceIPProtocol"], var.lb_rule.load_distribution)
-    error_message = "The `load_distribution` property can be one of \"Default\", \"SourceIP\", \"SourceIPProtocol\"."
+    error_message = <<-EOF
+    The `load_distribution` property can be one of \"Default\", \"SourceIP\", \"SourceIPProtocol\".
+    EOF
   }
 }

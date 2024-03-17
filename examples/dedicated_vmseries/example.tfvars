@@ -1,5 +1,6 @@
-# --- GENERAL --- #
-location            = "North Europe"
+# GENERAL
+
+region              = "North Europe"
 resource_group_name = "transit-vnet-dedicated"
 name_prefix         = "example-"
 tags = {
@@ -7,7 +8,8 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-# --- VNET PART --- #
+# NETWORK
+
 vnets = {
   "transit" = {
     name          = "transit"
@@ -47,11 +49,6 @@ vnets = {
             address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
-          "appgw_blackhole" = {
-            name           = "appgw-blackhole-udr"
-            address_prefix = "10.0.0.48/28"
-            next_hop_type  = "None"
-          }
         }
       }
       "private" = {
@@ -71,11 +68,6 @@ vnets = {
           "public_blackhole" = {
             name           = "public-blackhole-udr"
             address_prefix = "10.0.0.32/28"
-            next_hop_type  = "None"
-          }
-          "appgw_blackhole" = {
-            name           = "appgw-blackhole-udr"
-            address_prefix = "10.0.0.48/28"
             next_hop_type  = "None"
           }
         }
@@ -115,16 +107,12 @@ vnets = {
         network_security_group_key = "public"
         route_table_key            = "public"
       }
-      "appgw" = {
-        name             = "appgw-snet"
-        address_prefixes = ["10.0.0.48/28"]
-      }
     }
   }
 }
 
+# LOAD BALANCING
 
-# --- LOAD BALANCING PART --- #
 load_balancers = {
   "public" = {
     name = "public-lb"
@@ -149,11 +137,11 @@ load_balancers = {
     }
   }
   "private" = {
-    name = "private-lb"
+    name     = "private-lb"
+    vnet_key = "transit"
     frontend_ips = {
       "ha-ports" = {
         name               = "private-vmseries"
-        vnet_key           = "transit"
         subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
@@ -168,56 +156,8 @@ load_balancers = {
   }
 }
 
+# VM-SERIES
 
-
-# --- APPLICATION GATEWAYs --- #
-appgws = {
-  "public" = {
-    name = "appgw"
-    public_ip = {
-      name = "pip"
-    }
-    vnet_key   = "transit"
-    subnet_key = "appgw"
-    zones      = ["1", "2", "3"]
-    capacity = {
-      static = 2
-    }
-    listeners = {
-      minimum = {
-        name = "minimum-listener"
-        port = 80
-      }
-    }
-    rewrites = {
-      minimum = {
-        name = "minimum-set"
-        rules = {
-          "xff-strip-port" = {
-            name     = "minimum-xff-strip-port"
-            sequence = 100
-            request_headers = {
-              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
-            }
-          }
-        }
-      }
-    }
-    rules = {
-      minimum = {
-        name     = "minimum-rule"
-        priority = 1
-        backend  = "minimum"
-        listener = "minimum"
-        rewrite  = "minimum"
-      }
-    }
-  }
-}
-
-
-
-# --- VMSERIES PART --- #
 ngfw_metrics = {
   name = "metrics"
 }
@@ -235,14 +175,14 @@ bootstrap_storages = {
 
 vmseries = {
   "fw-in-1" = {
-    name = "inbound-firewall01"
+    name     = "inbound-firewall01"
+    vnet_key = "transit"
     image = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 1
+      size = "Standard_DS3_v2"
+      zone = 1
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
@@ -270,14 +210,14 @@ vmseries = {
     ]
   }
   "fw-in-2" = {
-    name = "inbound-firewall02"
+    name     = "inbound-firewall02"
+    vnet_key = "transit"
     image = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 2
+      size = "Standard_DS3_v2"
+      zone = 2
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
@@ -304,14 +244,14 @@ vmseries = {
     ]
   }
   "fw-obew-1" = {
-    name = "obew-firewall01"
+    name     = "obew-firewall01"
+    vnet_key = "transit"
     image = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 1
+      size = "Standard_DS3_v2"
+      zone = 1
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
@@ -339,14 +279,14 @@ vmseries = {
     ]
   }
   "fw-obew-2" = {
-    name = "obew-firewall02"
+    name     = "obew-firewall02"
+    vnet_key = "transit"
     image = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 2
+      size = "Standard_DS3_v2"
+      zone = 2
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }

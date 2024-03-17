@@ -1,7 +1,7 @@
 name: Bug Report
 description: Create an issue to help us improve
-title: '[Bug Report] <Short title of the bug>'
-assignees: aws-vmseries-modules-codeowners
+title: "[Bug Report] <Short title of the bug>"
+assignees: azure-vmseries-modules-codeowners
 body:
   - type: textarea
     attributes:

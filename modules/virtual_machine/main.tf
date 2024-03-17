@@ -5,10 +5,11 @@ locals {
   disable_password_authentication = var.password == null ? true : false
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.interfaces : k => v if try(v.create_public_ip, false) }
 
-  location            = var.location
+  location            = var.region
   resource_group_name = var.resource_group_name
   name                = "${each.value.name}-pip"
   allocation_method   = "Static"
@@ -17,11 +18,12 @@ resource "azurerm_public_ip" "this" {
   tags                = try(each.value.tags, var.tags)
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface
 resource "azurerm_network_interface" "this" {
   count = length(var.interfaces)
 
   name                          = var.interfaces[count.index].name
-  location                      = var.location
+  location                      = var.region
   resource_group_name           = var.resource_group_name
   enable_accelerated_networking = var.accelerated_networking
   enable_ip_forwarding          = true
@@ -32,10 +34,13 @@ resource "azurerm_network_interface" "this" {
     subnet_id                     = var.interfaces[count.index].subnet_id
     private_ip_address_allocation = try(var.interfaces[count.index].private_ip_address, null) != null ? "Static" : "Dynamic"
     private_ip_address            = try(var.interfaces[count.index].private_ip_address, null)
-    public_ip_address_id          = try(azurerm_public_ip.this[count.index].id, var.interfaces[count.index].public_ip_address_id, null)
+    public_ip_address_id = try(
+      azurerm_public_ip.this[count.index].id, var.interfaces[count.index].public_ip_address_id, null
+    )
   }
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_backend_address_pool_association
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
   for_each = { for k, v in var.interfaces : k => v if try(v.enable_backend_pool, false) }
 
@@ -49,9 +54,10 @@ resource "azurerm_network_interface_backend_address_pool_association" "this" {
   ]
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine
 resource "azurerm_virtual_machine" "this" {
   name                         = var.name
-  location                     = var.location
+  location                     = var.region
   resource_group_name          = var.resource_group_name
   tags                         = var.tags
   vm_size                      = var.vm_size

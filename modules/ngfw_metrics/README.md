@@ -42,11 +42,11 @@ The following snippet deploys Log Analytics Workspace and two Application Insigh
 
 ```hcl
 module "ngfw_metrics" {
-  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/ngfw_metrics"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/ngfw_metrics"
 
   name                = "ngfw-law"
   resource_group_name = "ngfw-rg"
-  location            = "West US"
+  region              = "West US"
 
   application_insights = {
     ai1 = { name = "fw1-ai" }
@@ -61,7 +61,7 @@ Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Azure Log Analytics Workspace.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
-[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`application_insights`](#application_insights) | `map` | A map defining Application Insights instances.
 
 
@@ -125,7 +125,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 The name of the Azure region to deploy the resources in.
 
@@ -142,7 +142,7 @@ A map defining Application Insights instances.
 
 Following properties are available:
 
-- `name`                      - (`string`, required) the name of the Application Insights instance
+- `name`                      - (`string`, required) the name of the Application Insights instance.
 - `resource_group_name`       - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that will
                                 host the Application Insights instance.
 
@@ -201,9 +201,9 @@ Configuration of the log analytics workspace.
 Following properties are available:
 
 - `sku`                       - (`string`, optional, defaults to Azure defaults) the SKU of the Log Analytics Workspace.
-
-    As of API version `2018-04-03` the Azure default value is `PerGB2018`, other possible values are:
-    `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation`.
+    
+  As of API version `2018-04-03` the Azure default value is `PerGB2018`, other possible values are:
+  `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation`.
 
 - `metrics_retention_in_days` - (`number`, optional, defaults to Azure defaults) workspace data retention in days, 
                                 possible values are between 30 and 730.

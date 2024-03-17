@@ -28,10 +28,10 @@ Example of a private Load Balancer with HA ports rule:
 
 ```hcl
 module "lbi" {
-  source = "../../modules/loadbalancer"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/loadbalancer"
 
   name                = "private-lb"
-  location            = "West Europe"
+  region              = "West Europe"
   resource_group_name = "existing-rg"
 
   frontend_ips = {
@@ -60,10 +60,10 @@ Example of a private Load Balancer with a single rule for port `80`:
 
 ```hcl
 module "lbe" {
-  source = "../../modules/loadbalancer"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/loadbalancer"
 
   name                = "public-lb"
-  location            = "West Europe"
+  region              = "West Europe"
   resource_group_name = "existing-rg"
 
   frontend_ips = {
@@ -89,7 +89,8 @@ Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Azure Load Balancer.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
-[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
+[`backend_name`](#backend_name) | `string` | The name of the backend pool to create.
 [`frontend_ips`](#frontend_ips) | `map` | A map of objects describing Load Balancer Frontend IP configurations with respective inbound and outbound rules.
 
 
@@ -98,8 +99,7 @@ Name | Type | Description
 Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
-[`zones`](#zones) | `list` | Controls zones for Load Balancer's Fronted IP configurations.
-[`backend_name`](#backend_name) | `string` | The name of the backend pool to create.
+[`zones`](#zones) | `list` | Controls zones for Load Balancer's fronted IP configurations.
 [`health_probes`](#health_probes) | `map` | Backend's health probe definition.
 [`nsg_auto_rules_settings`](#nsg_auto_rules_settings) | `object` | Controls automatic creation of NSG rules for all defined inbound rules.
 
@@ -110,7 +110,9 @@ Name | Type | Description
 Name |  Description
 --- | ---
 `backend_pool_id` | The identifier of the backend pool.
-`frontend_ip_configs` | Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it, private IP address otherwise.
+`frontend_ip_configs` | Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it,
+private IP address otherwise.
+
 `health_probe` | The health probe object.
 
 ## Module's Nameplate
@@ -118,13 +120,13 @@ Name |  Description
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.3, < 2.0
-- `azurerm`, version: ~> 3.25
+- `terraform`, version: >= 1.5, < 2.0
+- `azurerm`, version: ~> 3.80
 
 
 Providers used in this module:
 
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 
@@ -161,7 +163,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 The name of the Azure region to deploy the resources in.
 
@@ -170,6 +172,14 @@ Type: string
 <sup>[back to list](#modules-required-inputs)</sup>
 
 
+
+#### backend_name
+
+The name of the backend pool to create. All frontends of the Load Balancer always use the same backend.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
 
 #### frontend_ips
 
@@ -215,20 +225,19 @@ Below are the properties for the `in_rules` map:
 - `floating_ip`         - (`bool`, optional, defaults to `true`) enables floating IP for this rule.
 - `session_persistence` - (`string`, optional, defaults to `Default`) controls session persistance/load distribution,
                           three values are possible:
-  - `Default`             -  this is the 5 tuple hash
-  - `SourceIP`            - a 2 tuple hash is used
-  - `SourceIPProtocol`    - a 3 tuple hash is used
+  - `Default`          - this is the 5 tuple hash.
+  - `SourceIP`         - a 2 tuple hash is used.
+  - `SourceIPProtocol` - a 3 tuple hash is used.
 - `nsg_priority`        - (number, optional, defaults to `null`) this becomes a priority of an auto-generated NSG rule,
-                          when skipped the rule priority will be auto-calculated,
-                          for more details on auto-generated NSG rules see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings)
+                          when skipped the rule priority will be auto-calculated. For more details on auto-generated NSG rules
+                          see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings).
 
 Below are the properties for `out_rules` map. 
   
-> [!Warning]
-> Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules.
-> Keep in mind that since we use a single backend,
-> and you cannot mix SNAT and outbound rules traffic in rules using the same backend,
-> setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`.
+**Warning!** \
+Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules. Keep in mind that since we use a
+single backend, and you cannot mix SNAT and outbound rules traffic in rules using the same backend, setting one `out_rule`
+switches the outgoing traffic route for **ALL** `in_rules`.
 
 - `name`                      - (`string`, required) a name of an outbound rule
 - `protocol`                  - (`string`, required) protocol used by the rule. One of `All`, `Tcp` or `Udp` is accepted
@@ -336,7 +345,6 @@ map(object({
 
 
 
-
 ### Optional Inputs
 
 
@@ -355,19 +363,19 @@ Default value: `map[]`
 
 #### zones
 
-Controls zones for Load Balancer's Fronted IP configurations.
+Controls zones for Load Balancer's fronted IP configurations.
 
 For:
 
-- public IPs    - these are zones in which the public IP resource is available
-- private IPs   - this represents Zones to which Azure will deploy paths leading to Load Balancer frontend IPs
-                  (all frontends are affected)
+- public IPs  - these are zones in which the public IP resource is available.
+- private IPs - these are zones to which Azure will deploy paths leading to Load Balancer frontend IPs (all frontends are 
+                affected).
 
 Setting this variable to explicit `null` disables a zonal deployment.
 This can be helpful in regions where Availability Zones are not available.
-  
-For public Load Balancers, since this setting controls also Availability Zones for public IPs,
-you need to specify all zones available in a region (typically 3): `["1","2","3"]`.
+
+For public Load Balancers, since this setting controls also Availability Zones for public IPs, you need to specify all zones
+available in a region (typically 3): `["1","2","3"]`.
 
 
 Type: list(string)
@@ -377,15 +385,6 @@ Default value: `[1 2 3]`
 <sup>[back to list](#modules-optional-inputs)</sup>
 
 
-#### backend_name
-
-The name of the backend pool to create. All frontends of the Load Balancer always use the same backend.
-
-Type: string
-
-Default value: `vmseries_backend`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### health_probes
 
@@ -460,6 +459,5 @@ object({
 Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

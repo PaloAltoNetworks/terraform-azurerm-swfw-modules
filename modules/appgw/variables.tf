@@ -1,16 +1,14 @@
-# Main resource
 variable "name" {
   description = "The name of the Application Gateway."
   type        = string
 }
 
-# Common settings
 variable "resource_group_name" {
   description = "The name of the Resource Group to use."
   type        = string
 }
 
-variable "location" {
+variable "region" {
   description = "The name of the Azure region to deploy the resources in."
   type        = string
 }
@@ -21,44 +19,40 @@ variable "tags" {
   type        = map(string)
 }
 
-# Application Gateway
+variable "subnet_id" {
+  description = "An ID of a subnet (must be dedicated to Application Gateway v2) that will host the Application Gateway."
+  type        = string
+}
+
 variable "zones" {
   description = <<-EOF
-  A list of zones the Application Gateway should be available in.
+  A list of zones the Application Gateway should be available in. For non-zonal deployments this should be set to an empty list,
+  as `null` will enforce the default value.
 
   **Note!** \
-  This is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal,
-  pinned to a single zone or zone-redundant (so available in all zones in a region).
-  Therefore make sure that if you specify more than one zone you specify all available in a region. You can use a subset,
-  but the Public IP will be created in all zones anyway. This fact will cause terraform to recreate the IP resource during
-  next `terraform apply` as there will be difference between the state and the actual configuration.
+  This is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal, pinned to
+  a single zone or zone-redundant (so available in all zones in a region).
+
+  Therefore make sure that if you specify more than one zone you specify all available in a region. You can use a subset, but the
+  Public IP will be created in all zones anyway. This fact will cause Terraform to recreate the IP resource during next 
+  `terraform apply` as there will be difference between the state and the actual configuration.
 
   For details on zones currently available in a region of your choice refer to
   [Microsoft's documentation](https://docs.microsoft.com/en-us/azure/availability-zones/az-region).
-
-  Example:
-  ```
-  zones = ["1","2","3"]
-  ```
   EOF
   default     = ["1", "2", "3"]
   type        = list(string)
-  validation {
-    condition     = var.zones == null || length(setsubtract(var.zones, ["1", "2", "3"])) == 0
-    error_message = "The `var.zones` can either be a non empty list of Availability Zones or explicit `null`."
-  }
 }
 
 variable "public_ip" {
   description = <<-EOF
-  A map defining a Public IP address resource that the Application Gateway will use to listen for incoming requests.
+  A map defining listener's public IP configuration.
 
   Following properties are available:
-
-  - `name`                - (`string`, required) name of the created or source Public IP resource
-  - `create`              - (`bool`, optional, defaults to `true`) controls if the public IP is created or sourced.
-  - `resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group hosting the
-                            existing Public IP resource
+  - `name`                - (`string`, required) name of the Public IP resource.
+  - `create`              - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or sourced.
+  - `resource_group_name` - (`string`, optional, defaults to `null`) name of the Resource Group hosting the Public IP resource, 
+                            used only for sourced resources.
   EOF
   type = object({
     name                = string
@@ -69,31 +63,71 @@ variable "public_ip" {
 
 variable "domain_name_label" {
   description = <<-EOF
-  Label for the Domain Name.
-
-  Will be used to make up the FQDN. If a domain name label is specified, an A DNS record is created
-  for the public IP in the Microsoft Azure DNS system."
+  A label for the Domain Name. Will be used to make up the FQDN. 
+  If a domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure DNS system.
   EOF
   default     = null
   type        = string
 }
 
+variable "capacity" {
+  description = <<-EOF
+  A map defining whether static or autoscale configuration is used.
+  
+  Following properties are available:
+  - `static`    - (`number`, optional, defaults to `2`) static number of Application Gateway instances, takes values bewteen 1 
+                  and 125.
+  - `autoscale` - (`map`, optional, defaults to `null`) autoscaling configuration, when specified `static` is being ignored:
+    - `min` - (`number`, required) minimum number of instances during autoscaling.
+    - `max` - (`number`, required) maximum number of instances during autoscaling.
+  EOF
+  default     = {}
+  nullable    = false
+  type = object({
+    static = optional(number, 2)
+    autoscale = optional(object({
+      min = number
+      max = number
+    }))
+  })
+  validation { # static
+    condition     = var.capacity.static >= 1 && var.capacity.static <= 125
+    error_message = <<-EOF
+    The `capacity.static` property can take values between 1 and 125.
+    EOF
+  }
+  validation { # autoscale
+    condition = var.capacity.autoscale == null ? true : (
+      (
+        var.capacity.autoscale.min >= 1 && var.capacity.autoscale.min <= 125
+        ) && (
+        var.capacity.autoscale.max >= 1 && var.capacity.autoscale.max <= 125
+        ) && (
+        var.capacity.autoscale.min < var.capacity.autoscale.max
+      )
+    )
+    error_message = <<-EOF
+    The `min` and `max` properties of the `capacity.autoscale` property can take values between 1 and 125 and `min` value has to
+    be lower then `max`.
+    EOF
+  }
+}
+
 variable "enable_http2" {
   description = "Enable HTTP2 on the Application Gateway."
   default     = false
-  nullable    = false
   type        = bool
 }
 
 variable "waf" {
   description = <<-EOF
-  Object sets only the SKU and provide basic WAF (Web Application Firewall) configuration for Application Gateway.
+  A map defining only the SKU and providing basic WAF (Web Application Firewall) configuration for Application Gateway. This
+  module does not support WAF rules configuration and advanced WAF settings.
 
-  This module does not support WAF rules configuration and advanced WAF settings.
-  Only below attributes are allowed:
-  - `prevention_mode`    - (`bool`, required) `true` if WAF mode is Prevention, `false` for Detection mode
-  - `rule_set_type`    - (`string`, optional, defaults to `OWASP`) The Type of the Rule Set used for this Web Application Firewall
-  - `rule_set_version` - (`string`, optional) The Version of the Rule Set used for this Web Application Firewall
+  Following properties are available:
+  - `prevention_mode`  - (`bool`, required) `true` sets WAF mode to `Prevention` mode, `false` to `Detection` mode.
+  - `rule_set_type`    - (`string`, optional, defaults to `OWASP`) the type of the Rule Set used for this WAF.
+  - `rule_set_version` - (`string`, optional, defaults to Azure defaults) the version of the Rule Set used for this WAF.
   EOF
   default     = null
   type = object({
@@ -101,120 +135,87 @@ variable "waf" {
     rule_set_type    = optional(string, "OWASP")
     rule_set_version = optional(string)
   })
-  validation {
-    condition     = var.waf != null ? contains(["OWASP", "Microsoft_BotManagerRuleSet"], var.waf.rule_set_type) : true
-    error_message = "For `rule_set_type` possible values are OWASP and Microsoft_BotManagerRuleSet"
+  validation { # rule_set_type
+    condition = var.waf == null ? true : contains(
+      ["OWASP", "Microsoft_BotManagerRuleSet"],
+      var.waf.rule_set_type
+    )
+    error_message = <<-EOF
+    For `waf.rule_set_type` possible values are \"OWASP\" and \"Microsoft_BotManagerRuleSet\".
+    EOF
   }
-  validation {
-    condition = var.waf != null ? contains(
-    ["0.1", "1.0", "2.2.9", "3.0", "3.1", "3.2"], coalesce(var.waf.rule_set_version, "3.2")) : true
-    error_message = "For `rule_set_version` possible values are 0.1, 1.0, 2.2.9, 3.0, 3.1 and 3.2"
-  }
-}
-
-variable "capacity" {
-  description = <<-EOF
-  Capacity configuration for Application Gateway.
-
-  Object defines static or autoscale configuration using attributes:
-  - `static`    - (`number`, optional) A static number of Application Gateway instances. A value bewteen 1 and 125
-                  or null, if autoscale configuration is provided
-  - `autoscale` - (`object`, optional) Autoscaling configuration (used only, if static is null) with attributes:
-    - `min`     - (`number`, optional) Minimum capacity for autoscaling.
-    - `max`     - (`number`, optional) Maximum capacity for autoscaling.
-  EOF
-  default = {
-    static = 2
-  }
-  nullable = false
-  type = object({
-    static = optional(number)
-    autoscale = optional(object({
-      min = optional(number)
-      max = optional(number)
-    }))
-  })
-  validation {
-    condition     = coalesce(var.capacity.static, 1) >= 1 && coalesce(var.capacity.static, 125) <= 125
-    error_message = "Static number of Application Gateway instances must be between 1 to 125."
-  }
-  validation {
-    condition = (var.capacity.static != null && var.capacity.autoscale == null
-    || var.capacity.static == null && var.capacity.autoscale != null)
-    error_message = "Only 1 capacity configuration can be used - static or autoscale."
+  validation { # rule_set_version
+    condition = try(var.waf.rule_set_version, null) == null ? true : contains(
+      ["0.1", "1.0", "2.2.9", "3.0", "3.1", "3.2"],
+      var.waf.rule_set_version
+    )
+    error_message = <<-EOF
+    The `waf.rule_set_version` property can be one of \"0.1\", \"1.0\", \"2.2.9\", \"3.0\", \"3.1\" or \"3.2\".
+    EOF
   }
 }
 
 variable "managed_identities" {
   description = <<-EOF
   A list of existing User-Assigned Managed Identities.
-
-  Application Gateway uses Managed Identities to retrieve certificates from Key Vault.
-  These identities have to have at least `GET` access to Key Vault's secrets.
-  Otherwise Application Gateway will not be able to use certificates stored in the Vault.
+  
+  **Note!** \
+  Application Gateway uses Managed Identities to retrieve certificates from a Key Vault. These identities have to have at least
+  `GET` access to Key Vault's secrets. Otherwise Application Gateway will not be able to use certificates stored in the Vault.
   EOF
   default     = null
   type        = list(string)
 }
 
-variable "subnet_id" {
+variable "global_ssl_policy" {
   description = <<-EOF
-  An ID of a subnet that will host the Application Gateway.
+  A map defining global SSL settings.
 
-  Keep in mind that this subnet can contain only AppGWs and only of the same type.
+  Following properties are available:
+  - `type`                 - (`string`, required, but defaults to `Predefined`) type of an SSL policy, possible values include:
+                             `Predefined`, `Custom` or `CustomV2`.
+  - `name`                 - (`string`, optional, defaults to `AppGwSslPolicy20220101S`) name of an SSL policy, supported only
+                             for `type` set to `Predefined`.
+    
+    **Note!** \
+    Normally you can set it also for `Custom` policies but the name is discarded on Azure side causing an update to Application
+    Gateway each time Terraform code is run. Therefore this property is omitted in the code for `Custom` policies.
+
+    For the `Predefined` policies, check the
+    [Microsoft documentation](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview)
+    for possible values as they tend to change over time. The default value is currently (Q1 2023) is also Microsoft's default.
+
+  - `min_protocol_version` - (`string`, optional, defaults to `null`) minimum version of the TLS protocol for SSL Policy, 
+                             required only for `type` set to `Custom`.
+  - `cipher_suites`        - (`list`, optional, defaults to `[]`) a list of accepted cipher suites, required only for `type` set
+                             to `Custom`. For possible values see [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites).
   EOF
-  type        = string
-}
-
-variable "ssl_global" {
-  description = <<-EOF
-  Global SSL settings.
-
-  SSL settings are defined by attributes:
-  - `ssl_policy_type`                 - (`string`, required) type of an SSL policy. Possible values are `Predefined`
-                                        or `Custom` or `CustomV2`. If the value is `Custom` the following values are mandatory:
-                                        `ssl_policy_cipher_suites` and `ssl_policy_min_protocol_version`.
-  - `ssl_policy_name`                 - (`string`, optional) name of an SSL policy.
-                                        Supported only for `ssl_policy_type` set to `Predefined`.
-                                        Normally you can set it also for `Custom` policies but the name is discarded
-                                        on Azure side causing an update to Application Gateway each time terraform code is run.
-                                        Therefore this property is omitted in the code for `Custom` policies.
-                                        For the `Predefined` policies, check the Microsoft documentation
-                                        https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview
-                                        for possible values as they tend to change over time.
-                                        The default value is currently (Q1 2023) a Microsoft's default.
-  - `ssl_policy_min_protocol_version` - (`string`, optional) minimum version of the TLS protocol for SSL Policy.
-                                        Required only for `ssl_policy_type` set to `Custom`.
-  - `ssl_policy_cipher_suites`        - (`list`, optional) a list of accepted cipher suites.
-                                        Required only for `ssl_policy_type` set to `Custom`.
-                                        For possible values see documentation:
-                                        https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites
-  EOF
-  default = {
-    ssl_policy_type                 = "Predefined"
-    ssl_policy_name                 = "AppGwSslPolicy20220101S"
-    ssl_policy_min_protocol_version = null
-    ssl_policy_cipher_suites        = []
-  }
-  nullable = false
+  default     = {}
+  nullable    = false
   type = object({
-    ssl_policy_type                 = string
-    ssl_policy_name                 = optional(string)
-    ssl_policy_min_protocol_version = optional(string)
-    ssl_policy_cipher_suites        = optional(list(string))
+    type                 = optional(string, "Predefined")
+    name                 = optional(string, "AppGwSslPolicy20220101S")
+    min_protocol_version = optional(string)
+    cipher_suites        = optional(list(string), [])
   })
-  validation {
-    condition     = contains(["Predefined", "Custom", "CustomV2"], var.ssl_global.ssl_policy_type)
-    error_message = "For global SSL settings possible types are Predefined, Custom and CustomV2."
+  validation { # type
+    condition     = contains(["Predefined", "Custom", "CustomV2"], var.global_ssl_policy.type)
+    error_message = <<-EOF
+    The `global_ssl_policy.type` property can be one of: \"Predefined\", \"Custom\" and \"CustomV2\".
+    EOF
   }
-  validation {
-    condition = contains(["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"],
-    coalesce(var.ssl_global.ssl_policy_min_protocol_version, "TLSv1_3"))
-    error_message = "For global SSL settings possible min protocol versions are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3."
+  validation { # min_protocol_version
+    condition = var.global_ssl_policy.min_protocol_version == null ? true : contains(
+      ["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"], var.global_ssl_policy.min_protocol_version
+    )
+    error_message = <<-EOF
+    The `global_ssl_policy.min_protocol_version` property can be one of: \"TLSv1_0\", \"TLSv1_1\", \"TLSv1_2\" and \"TLSv1_3\".
+    EOF
   }
-  validation {
-    condition = length(setsubtract(coalesce(var.ssl_global.ssl_policy_cipher_suites, []),
-      ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256",
+  validation { # cipher_suites
+    condition = length(setsubtract(var.global_ssl_policy.cipher_suites,
+      [
+        "TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256",
         "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
         "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
         "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
@@ -224,18 +225,21 @@ variable "ssl_global" {
         "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
         "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256",
         "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256",
-    "TLS_RSA_WITH_AES_256_GCM_SHA384"])) == 0
+        "TLS_RSA_WITH_AES_256_GCM_SHA384"
+      ])
+    ) == 0
     error_message = <<-EOF
-    For global SSL settings possible cipher suites are: TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA,
-    TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256,
-    TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA,
-    TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
-    TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
-    TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
-    TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,
-    TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA,
-    TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA,
-    TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384."
+    For global SSL settings possible cipher suites are: \"TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA\",
+    \"TLS_DHE_DSS_WITH_AES_128_CBC_SHA\", \"TLS_DHE_DSS_WITH_AES_128_CBC_SHA256\", \"TLS_DHE_DSS_WITH_AES_256_CBC_SHA\",
+    \"TLS_DHE_DSS_WITH_AES_256_CBC_SHA256\", \"TLS_DHE_RSA_WITH_AES_128_CBC_SHA\", \"TLS_DHE_RSA_WITH_AES_128_GCM_SHA256\",
+    \"TLS_DHE_RSA_WITH_AES_256_CBC_SHA\", \"TLS_DHE_RSA_WITH_AES_256_GCM_SHA384\", \"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA\",
+    \"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256\", \"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256\",
+    \"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA\", \"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384\",
+    \"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384\", \"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA\",
+    \"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256\", \"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256\", \"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA\",
+    \"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384\", \"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384\", \"TLS_RSA_WITH_3DES_EDE_CBC_SHA\",
+    \"TLS_RSA_WITH_AES_128_CBC_SHA\", \"TLS_RSA_WITH_AES_128_CBC_SHA256\", \"TLS_RSA_WITH_AES_128_GCM_SHA256\",
+    \"TLS_RSA_WITH_AES_256_CBC_SHA\", \"TLS_RSA_WITH_AES_256_CBC_SHA256\", \"TLS_RSA_WITH_AES_256_GCM_SHA384\"."
     EOF
   }
 }
@@ -245,47 +249,62 @@ variable "ssl_profiles" {
   A map of SSL profiles.
 
   SSL profiles can be later on referenced in HTTPS listeners by providing a name of the profile in the `name` property.
-  For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites`
-  variables as SSL profile is a named SSL policy - same properties apply.
+  For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites` properties
+  as SSL profile is a named SSL policy - same properties apply.
   The only difference is that you cannot name an SSL policy inside an SSL profile.
 
-  Every SSL profile contains attributes:
-  - `name`                            - (`string`, required) name of the SSL profile
-  - `ssl_policy_name`                 - (`string`, optional) name of predefined policy
-  - `ssl_policy_min_protocol_version` - (`string`, optional) the minimal TLS version.
-  - `ssl_policy_cipher_suites`        - (`list`, optional) a list of accepted cipher suites.
+  Every SSL profile contains following attributes:
+
+  - `name`                            - (`string`, required) name of the SSL profile.
+  - `ssl_policy_name`                 - (`string`, optional, defaults to `null`) name of predefined policy.
+  - `ssl_policy_min_protocol_version` - (`string`, optional, defaults to `null`) the minimal TLS version.
+  - `ssl_policy_cipher_suites`        - (`list`, optional, defaults to `null`) a list of accepted cipher suites.
   EOF
+  default     = {}
+  nullable    = false
   type = map(object({
     name                            = string
     ssl_policy_name                 = optional(string)
     ssl_policy_min_protocol_version = optional(string)
     ssl_policy_cipher_suites        = optional(list(string))
   }))
-  validation {
-    condition = alltrue(flatten([
-      for _, ssl_profile in var.ssl_profiles : [
-        contains(["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"], coalesce(ssl_profile.ssl_policy_min_protocol_version, "TLSv1_3"))
-    ]]))
-    error_message = "Possible values for `ssl_policy_min_protocol_version` are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3."
+  validation { # name
+    condition = (length(flatten([for _, ssl_profile in var.ssl_profiles : ssl_profile.name])) ==
+    length(distinct(flatten([for _, ssl_profile in var.ssl_profiles : ssl_profile.name]))))
+    error_message = <<-EOF
+    The `name` property has to be unique among all SSL profiles.
+    EOF
   }
-  validation {
+  validation { # ssl_policy_min_protocol_version
     condition = alltrue(flatten([
-      for _, ssl_profile in var.ssl_profiles : [
-        length(setsubtract(coalesce(ssl_profile.ssl_policy_cipher_suites, []),
-          ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256",
-            "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-            "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
-            "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
-            "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
-            "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
-            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
-            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-            "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256",
-            "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256",
-          "TLS_RSA_WITH_AES_256_GCM_SHA384"]
-        )) == 0
-    ]]))
+      for _, ssl_profile in var.ssl_profiles :
+      contains(["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"], ssl_profile.ssl_policy_min_protocol_version)
+      if ssl_profile.ssl_policy_min_protocol_version != null
+    ]))
+    error_message = <<-EOF
+    Possible values for `ssl_policy_min_protocol_version` are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3.
+    EOF
+  }
+  validation { # ssl_policy_cipher_suites
+    condition = alltrue(flatten([
+      for _, ssl_profile in var.ssl_profiles :
+      length(setsubtract(ssl_profile.ssl_policy_cipher_suites,
+        [
+          "TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256",
+          "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+          "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
+          "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+          "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+          "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+          "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+          "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+          "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256",
+          "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256",
+          "TLS_RSA_WITH_AES_256_GCM_SHA384"
+        ])
+      ) == 0
+      if ssl_profile.ssl_policy_cipher_suites != null
+    ]))
     error_message = <<-EOF
     Possible values for `ssl_policy_cipher_suites` are TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA,
     TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256,
@@ -299,16 +318,10 @@ variable "ssl_profiles" {
     TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384.
     EOF
   }
-  validation {
-    condition = (length(flatten([for _, ssl_profile in var.ssl_profiles : ssl_profile.name])) ==
-    length(distinct(flatten([for _, ssl_profile in var.ssl_profiles : ssl_profile.name]))))
-    error_message = "The `name` property has to be unique among all SSL profiles."
-  }
 }
 
 variable "frontend_ip_configuration_name" {
-  description = "Frontend IP configuration name"
-  default     = "public_ipconfig"
+  description = "A frontend IP configuration name."
   type        = string
 }
 
@@ -317,18 +330,20 @@ variable "listeners" {
   A map of listeners for the Application Gateway.
 
   Every listener contains attributes:
-  - `name`                     - (`string`, required) The name for this Frontend Port.
-  - `port`                     - (`string`, required) The port used for this Frontend Port.
-  - `protocol`                 - (`string`, optional) The Protocol to use for this HTTP Listener.
-  - `host_names`               - (`list`, optional) A list of Hostname(s) should be used for this HTTP Listener.
-                                 It allows special wildcard characters.
-  - `ssl_profile_name`         - (`string`, optional) The name of the associated SSL Profile which should be used
-                                 for this HTTP Listener.
-  - `ssl_certificate_path`     - (`string`, optional) Path to the file with tThe base64-encoded PFX certificate data.
-  - `ssl_certificate_pass`     - (`string`, optional) Password for the pfx file specified in data.
-  - `ssl_certificate_vault_id` - (`string`, optional) Secret Id of (base-64 encoded unencrypted pfx) Secret
+
+  - `name`                     - (`string`, required) the name for this Frontend Port.
+  - `port`                     - (`string`, required) the port used for this Frontend Port.
+  - `protocol`                 - (`string`, optional, defaults to `Https`) the Protocol to use for this HTTP Listener.
+  - `host_names`               - (`list`, optional, defaults to `null`) A list of Hostname(s) should be used for this HTTP 
+                                 Listener, it allows special wildcard characters.
+  - `ssl_profile_name`         - (`string`, optional, defaults to `null`) the name of the associated SSL Profile which should be
+                                 used for this HTTP Listener.
+  - `ssl_certificate_vault_id` - (`string`, optional, defaults to `null`) Secret Id of (base-64 encoded unencrypted pfx) Secret
                                  or Certificate object stored in Azure KeyVault.
-  - `custom_error_pages`       - (`map`, optional) Map of string, where key is HTTP status code and value is
+  - `ssl_certificate_path`     - (`string`, optional, defaults to `null`) Path to the file with tThe base64-encoded PFX
+                                 certificate data.
+  - `ssl_certificate_pass`     - (`string`, optional, defaults to `null`) Password for the pfx file specified in data.
+  - `custom_error_pages`       - (`map`, optional, defaults to `{}`) Map of string, where key is HTTP status code and value is
                                  error page URL of the application gateway customer error.
   EOF
   type = map(object({
@@ -337,135 +352,151 @@ variable "listeners" {
     protocol                 = optional(string, "Http")
     host_names               = optional(list(string))
     ssl_profile_name         = optional(string)
+    ssl_certificate_vault_id = optional(string)
     ssl_certificate_path     = optional(string)
     ssl_certificate_pass     = optional(string)
-    ssl_certificate_vault_id = optional(string)
     custom_error_pages       = optional(map(string), {})
   }))
-  validation {
+  validation { # name
+    condition = (length(flatten([for _, listener in var.listeners : listener.name])) ==
+    length(distinct(flatten([for _, listener in var.listeners : listener.name]))))
+    error_message = <<-EOF
+    The `name` property has to be unique among all listeners.
+    EOF
+  }
+  validation { # port
+    condition = alltrue(flatten([
+      for _, listener in var.listeners : (listener.port >= 1 && listener.port <= 65535)
+    ]))
+    error_message = <<-EOF
+    The listener `port` should be a valid TCP port number from 1 to 65535.
+    EOF
+  }
+  validation { # protocol
     condition = alltrue(flatten([
       for _, listener in var.listeners : [
         contains(["Http", "Https"], listener.protocol)
     ]]))
-    error_message = "Possible values for `protocol` are `Http` and `Https`."
+    error_message = <<-EOF
+    Possible values for `protocol` are `Http` and `Https`.
+    EOF
   }
-  validation {
-    condition = alltrue(flatten([
-      for _, listener in var.listeners : (listener.port >= 1 && listener.port <= 65535)
-    ]))
-    error_message = "The listener `port` should be a valid TCP port number from 1 to 65535."
-  }
-  validation {
+  validation { # ssl_certificate_vault_id & ssl_certificate_path
     condition = alltrue(flatten([
       for _, listener in var.listeners : (listener.protocol == "Https" ?
         try(length(coalesce(listener.ssl_certificate_vault_id, listener.ssl_certificate_path)), -1) > 0
       : true)
     ]))
-    error_message = "If `Https` protocol is used, then SSL certificate (from file or Azure Key Vault) is required"
+    error_message = <<-EOF
+    If `Https` protocol is used, then SSL certificate (from file or Azure Key Vault) is required.
+    EOF
   }
-  validation {
+  validation { # ssl_certificate_pass
     condition = alltrue(flatten([
       for _, listener in var.listeners : (listener.protocol == "Https" ?
         try(length(listener.ssl_certificate_pass), -1) >= 0
       : true)
     ]))
-    error_message = "If `Https` protocol is used, then SSL certificate password is required"
-  }
-  validation {
-    condition = (length(flatten([for _, listener in var.listeners : listener.name])) ==
-    length(distinct(flatten([for _, listener in var.listeners : listener.name]))))
-    error_message = "The `name` property has to be unique among all listeners."
+    error_message = <<-EOF
+    If `Https` protocol is used, then SSL certificate password is required.
+    EOF
   }
 }
 
 variable "backend_pool" {
   description = <<-EOF
-  Backend pool.
-
-  Object contains attributes:
-  - `name`         - (`string`, required) name of the backend pool.
-  - `vmseries_ips` - (`list`, optional, defaults to `[]`) IP addresses of VM-Series' interfaces that will serve as backends
+  A map defining a backend pool, when skipped will create an empty backend.
+  
+  Following properties are available:
+  - `name`         - (`string`, optional, defaults to `vmseries`) name of the backend pool.
+  - `vmseries_ips` - (`list`, optional, defaults to `[]`) IP addresses of VM-Series' interfaces that will serve as backend nodes
                      for the Application Gateway.
+
   EOF
-  default = {
-    name = "vmseries"
-  }
-  nullable = false
+  default     = {}
+  nullable    = false
   type = object({
-    name         = string
+    name         = optional(string, "vmseries")
     vmseries_ips = optional(list(string), [])
   })
 }
 
-variable "backends" {
+variable "backend_settings" {
   description = <<-EOF
   A map of backend settings for the Application Gateway.
 
   Every backend contains attributes:
-  - `name`                  - (`string`, optional) The name of the backend settings
-  - `path`                  - (`string`, optional) The Path which should be used as a prefix for all HTTP requests.
-  - `hostname_from_backend` - (`bool`, optional) Whether host header should be picked from the host name of the backend server.
-  - `hostname`              - (`string`, optional) Host header to be sent to the backend servers.
-  - `port`                  - (`number`, optional) The port which should be used for this Backend HTTP Settings Collection.
-  - `protocol`              - (`string`, optional) The Protocol which should be used. Possible values are Http and Https.
-  - `timeout`               - (`number`, optional) The request timeout in seconds, which must be between 1 and 86400 seconds.
-  - `cookie_based_affinity` - (`string`, optional) Is Cookie-Based Affinity enabled? Possible values are Enabled and Disabled.
-  - `affinity_cookie_name`  - (`string`, optional) The name of the affinity cookie.
-  - `probe`                 - (`string`, optional) Probe's key.
-  - `root_certs`            - (`map`, optional) A list of trusted_root_certificate names.
+
+  - `name`                      - (`string`, required) the name of the backend settings.
+  - `port`                      - (`number`, required) the port which should be used for this Backend HTTP Settings Collection.
+  - `protocol`                  - (`string`, required) the Protocol which should be used. Possible values are Http and Https.
+  - `path`                      - (`string`, optional, defaults to `null`) the Path which should be used as a prefix for all HTTP
+                                  requests.
+  - `hostname_from_backend`     - (`bool`, optional, defaults to `false`) whether host header should be picked from the host name
+                                  of the backend server.
+  - `hostname`                  - (`string`, optional, defaults to `null`) host header to be sent to the backend servers.
+  - `timeout`                   - (`number`, optional, defaults to `60`) the request timeout in seconds, which must be between 1
+                                  and 86400 seconds.
+  - `use_cookie_based_affinity` - (`bool`, optional, defaults to `true`) when set to `true` enables Cookie-Based Affinity.
+  - `affinity_cookie_name`      - (`string`, optional, defaults to Azure defaults) the name of the affinity cookie.
+  - `probe_key`                 - (`string`, optional, defaults to `null`) a key identifying a Probe definition in the 
+                                  `var.probes`.
+  - `root_certs`                - (`map`, optional, defaults to `{}`) a map of objects defining paths to trusted root 
+                                  certificates (`PEM` format), each map contains 2 properties:
+    - `name` - (`string`, required) a name of the certificate.
+    - `path` - (`string`, required) path to a file on a local file system containing the root cert.
   EOF
-  default = {
-    "minimum" = {
-      name = "minimum"
-    }
-  }
-  nullable = false
+  default     = {}
+  nullable    = false
   type = map(object({
-    name                  = optional(string)
-    path                  = optional(string)
-    hostname_from_backend = optional(bool, false)
-    hostname              = optional(string)
-    port                  = optional(number, 80)
-    protocol              = optional(string, "Http")
-    timeout               = optional(number, 60)
-    cookie_based_affinity = optional(string, "Enabled")
-    affinity_cookie_name  = optional(string)
-    probe                 = optional(string)
+    name                      = string
+    port                      = number
+    protocol                  = string
+    path                      = optional(string)
+    hostname_from_backend     = optional(bool, false)
+    hostname                  = optional(string)
+    timeout                   = optional(number, 60)
+    use_cookie_based_affinity = optional(bool, true)
+    affinity_cookie_name      = optional(string)
+    probe_key                 = optional(string)
     root_certs = optional(map(object({
       name = string
       path = string
     })), {})
   }))
-  validation {
+  validation { # name
+    condition = (length(flatten([for _, backend in var.backend_settings : backend.name])) ==
+    length(distinct(flatten([for _, backend in var.backend_settings : backend.name]))))
+    error_message = <<-EOF
+    The `name` property has to be unique among all backends.
+    EOF
+  }
+  validation { # port
     condition = alltrue(flatten([
-      for _, backend in var.backends : [
+      for _, backend in var.backend_settings : (backend.port >= 1 && backend.port <= 65535)
+    ]))
+    error_message = <<-EOF
+    The backend `port` should be a valid TCP port number from 1 to 65535.
+    EOF
+  }
+  validation { # protocol
+    condition = alltrue(flatten([
+      for _, backend in var.backend_settings : [
         contains(["Http", "Https"], backend.protocol)
     ]]))
-    error_message = "Possible values for `protocol` are `Http` and `Https`."
+    error_message = <<-EOF
+    Possible values for `protocol` are `Http` and `Https`.
+    EOF
   }
-  validation {
+  validation { # timeout
     condition = alltrue(flatten([
-      for _, backend in var.backends : [
-        contains(["Enabled", "Disabled"], backend.cookie_based_affinity)
-    ]]))
-    error_message = "Possible values for `cookie_based_affinity` are Enabled and Disabled."
-  }
-  validation {
-    condition = alltrue(flatten([
-      for _, backend in var.backends : (backend.port >= 1 && backend.port <= 65535)
+      for _, backend in var.backend_settings : (
+        backend.timeout != null ? backend.timeout >= 1 && backend.timeout <= 86400 : true
+      )
     ]))
-    error_message = "The backend `port` should be a valid TCP port number from 1 to 65535."
-  }
-  validation {
-    condition = alltrue(flatten([
-      for _, backend in var.backends : (backend.timeout != null ? backend.timeout >= 1 && backend.timeout <= 86400 : true)
-    ]))
-    error_message = "The backend `timeout` property should can take values between 1 and 86400 (seconds)."
-  }
-  validation {
-    condition = (length(flatten([for _, backend in var.backends : backend.name])) ==
-    length(distinct(flatten([for _, backend in var.backends : backend.name]))))
-    error_message = "The `name` property has to be unique among all backends."
+    error_message = <<-EOF
+    The backend `timeout` property should can take values between 1 and 86400 (seconds).
+    EOF
   }
 }
 
@@ -474,19 +505,23 @@ variable "probes" {
   A map of probes for the Application Gateway.
 
   Every probe contains attributes:
-  - `name`       - (`string`, required) The name used for this Probe
-  - `path`       - (`string`, required) The path used for this Probe
-  - `host`       - (`string`, optional) The hostname used for this Probe
-  - `port`       - (`number`, optional) Custom port which will be used for probing the backend servers.
-  - `protocol`   - (`string`, optional, defaults `Http`) The protocol which should be used.
-  - `interval`   - (`number`, optional, defaults `5`) The interval between two consecutive probes in seconds.
-  - `timeout`    - (`number`, optional, defaults `30`) The timeout used for this Probe,
-                   which indicates when a probe becomes unhealthy.
-  - `threshold`  - (`number`, optional, defaults `2`) The unhealthy Threshold for this Probe, which indicates
-                   the amount of retries which should be attempted before a node is deemed unhealthy.
-  - `match_code` - (`list`, optional) The list of allowed status codes for this Health Probe.
-  - `match_body` - (`string`, optional) A snippet from the Response Body which must be present in the Response.
+
+  - `name`       - (`string`, required) the name used for this Probe.
+  - `path`       - (`string`, required) the path used for this Probe.
+  - `host`       - (`string`, optional, defaults to `null`) the hostname used for this Probe.
+  - `port`       - (`number`, optional, defaults to `null`) custom port which will be used for probing the backend servers, when
+                   skipped a default port for `protocol` will be used.
+  - `protocol`   - (`string`, optional, defaults `Http`) the protocol which should be used, possible values are `Http` or `Https`.
+  - `interval`   - (`number`, optional, defaults `5`) the interval between two consecutive probes in seconds.
+  - `timeout`    - (`number`, optional, defaults `30`) the timeout after which a single probe is marked unhealthy.
+  - `threshold`  - (`number`, optional, defaults `2`) the unhealthy Threshold for this Probe, which indicates the amount of
+                   retries which should be attempted before a node is deemed unhealthy.
+  - `match_code` - (`list`, optional, defaults to `null`) custom list of allowed status codes for this Health Probe.
+  - `match_body` - (`string`, optional, defaults to `null`) a custom snippet from the Response Body which must be present to 
+                   treat a single probe as healthy.
   EOF
+  default     = {}
+  nullable    = false
   type = map(object({
     name       = string
     path       = string
@@ -499,41 +534,53 @@ variable "probes" {
     match_code = optional(list(number))
     match_body = optional(string)
   }))
-  validation {
-    condition = var.probes != null ? alltrue(flatten([
-      for _, backend in var.probes : [
-        contains(["Http", "Https"], backend.protocol)
-    ]])) : true
-    error_message = "Possible values for `protocol` are `Http` and `Https`."
-  }
-  validation {
+  validation { # name
     condition = (length(flatten([for _, probe in var.probes : probe.name])) ==
     length(distinct(flatten([for _, probe in var.probes : probe.name]))))
-    error_message = "The `name` property has to be unique among all probes."
+    error_message = <<-EOF
+    The `name` property has to be unique among all probes.
+    EOF
   }
-  validation {
+  validation { # port
     condition = alltrue(flatten([
       for _, probe in var.probes : ((coalesce(probe.port, 80)) >= 1 && (coalesce(probe.port, 80)) <= 65535)
     ]))
-    error_message = "The probe `port` should be a valid TCP port number from 1 to 65535."
+    error_message = <<-EOF
+    The probe `port` should be a valid TCP port number from 1 to 65535.
+    EOF
   }
-  validation {
+  validation { # protocol
     condition = alltrue(flatten([
-      for _, probe in var.probes : (probe.timeout != null ? probe.timeout >= 1 && probe.timeout <= 86400 : true)
-    ]))
-    error_message = "The probe `timeout` property should can take values between 1 and 86400 (seconds)."
+      for _, probe in var.probes : [
+        contains(["Http", "Https"], probe.protocol)
+    ]]))
+    error_message = <<-EOF
+    Possible values for `protocol` are `Http` and `Https`.
+    EOF
   }
-  validation {
+  validation { # interval
     condition = alltrue(flatten([
       for _, probe in var.probes : (probe.interval != null ? probe.interval >= 1 && probe.interval <= 86400 : true)
     ]))
-    error_message = "The probe `interval` property should can take values between 1 and 86400 (seconds)."
+    error_message = <<-EOF
+    The probe `interval` property should can take values between 1 and 86400 (seconds).
+    EOF
   }
-  validation {
+  validation { # timeout
+    condition = alltrue(flatten([
+      for _, probe in var.probes : (probe.timeout != null ? probe.timeout >= 1 && probe.timeout <= 86400 : true)
+    ]))
+    error_message = <<-EOF
+    The probe `timeout` property should can take values between 1 and 86400 (seconds).
+    EOF
+  }
+  validation { # threshold
     condition = alltrue(flatten([
       for _, probe in var.probes : (probe.threshold != null ? probe.threshold >= 1 && probe.threshold <= 20 : true)
     ]))
-    error_message = "The probe `threshold` property should can take values between 1 and 20."
+    error_message = <<-EOF
+    The probe `threshold` property should can take values between 1 and 20.
+    EOF
   }
 }
 
@@ -542,21 +589,23 @@ variable "rewrites" {
   A map of rewrites for the Application Gateway.
 
   Every rewrite contains attributes:
-  - `name`                - (`string`) Rewrite Rule Set name
-  - `rules`               - (`object`, optional) Rewrite Rule Set defined with attributes:
-      - `name`            - (`string`, required) Rewrite Rule name.
-      - `sequence`        - (`number`, required) Rule sequence of the rewrite rule that determines
-                            the order of execution in a set.
-      - `conditions`      - (`map`, optional) One or more condition blocks as defined below:
-        - `pattern`       - (`string`, required) The pattern, either fixed string or regular expression,
-                            that evaluates the truthfulness of the condition.
-        - `ignore_case`   - (`string`, optional, defaults to `false`) Perform a case in-sensitive comparison.
-        - `negate`        - (`bool`, optional, defaults to `false`) Negate the result of the condition evaluation.
-      - `request_headers` - (`map`, optional) Map of request header, where header name is the key,
-                            header value is the value of the object in the map.
-      - `response_headers`- (`map`, optional) Map of response header, where header name is the key,
-                            header value is the value of the object in the map.
+
+  - `name`  - (`string`, required) Rewrite Rule Set name.
+  - `rules` - (`map`, required) rewrite Rule Set defined with following attributes available:
+    - `name`             - (`string`, required) Rewrite Rule name.
+    - `sequence`         - (`number`, required) determines the order of rule execution in a set.
+    - `conditions`       - (`map`, optional, defaults to `{}`) one or more condition blocks as defined below:
+      - `pattern`     - (`string`, required) the pattern, either fixed string or regular expression, that evaluates the
+                        truthfulness of the condition.
+      - `ignore_case` - (`string`, optional, defaults to `false`) perform a case in-sensitive comparison.
+      - `negate`      - (`bool`, optional, defaults to `false`) negate the result of the condition evaluation.
+    - `request_headers`  - (`map`, optional, defaults to `{}`) map of request headers, where header name is the key, header value
+                           is the value.
+    - `response_headers` - (`map`, optional, defaults to `{}`) map of response header, where header name is the key, header value
+                           is the value.
   EOF
+  default     = {}
+  nullable    = false
   type = map(object({
     name = string
     rules = optional(map(object({
@@ -569,61 +618,14 @@ variable "rewrites" {
       })), {})
       request_headers  = optional(map(string), {})
       response_headers = optional(map(string), {})
-    })))
+    })), {})
   }))
-  validation {
+  validation { # name
     condition = (length(flatten([for _, rewrite in var.rewrites : rewrite.name])) ==
     length(distinct(flatten([for _, rewrite in var.rewrites : rewrite.name]))))
-    error_message = "The `name` property has to be unique among all rewrites."
-  }
-}
-
-variable "rules" {
-  description = <<-EOF
-  A map of rules for the Application Gateway.
-
-  A rule combines, backend, listener, rewrites and redirects configurations.
-  A key is an application name that is used to prefix all components inside Application Gateway
-  that are created for this application.
-
-  Every rule contains attributes:
-  - `name`         - (`string`, required) Rule name.
-  - `priority`     - (`string`, required) Rule evaluation order can be dictated by specifying an integer value
-                     from 1 to 20000 with 1 being the highest priority and 20000 being the lowest priority.
-  - `backend`      - (`string`, optional) Backend settings` key
-  - `listener`     - (`string`, required) Listener's key
-  - `rewrite`      - (`string`, optional) Rewrite's key
-  - `url_path_map` - (`string`, optional) URL Path Map's key
-  - `redirect`     - (`string`, optional) Redirect's key
-  EOF
-  type = map(object({
-    name         = string
-    priority     = number
-    backend      = optional(string)
-    listener     = string
-    rewrite      = optional(string)
-    url_path_map = optional(string)
-    redirect     = optional(string)
-  }))
-  validation {
-    condition = alltrue(flatten([
-      for _, rule in var.rules : [
-        rule.priority >= 1, rule.priority <= 20000
-    ]]))
-    error_message = "Rule priority is integer value from 1 to 20000."
-  }
-  validation {
-    condition = (length(flatten([for _, rule in var.rules : rule.name])) ==
-    length(distinct(flatten([for _, rule in var.rules : rule.name]))))
-    error_message = "The `name` property has to be unique among all rules."
-  }
-  validation {
-    condition = alltrue([for _, rule in var.rules :
-      rule.backend != null && rule.redirect == null && rule.url_path_map == null ||
-      rule.backend == null && rule.redirect != null && rule.url_path_map == null ||
-      rule.backend == null && rule.redirect == null && rule.url_path_map != null
-    ])
-    error_message = "Either `backend`, `redirect` or `url_path_map` is required, but not all as they are mutually exclusive."
+    error_message = <<-EOF
+    The `name` property has to be unique among all rewrites.
+    EOF
   }
 }
 
@@ -632,33 +634,51 @@ variable "redirects" {
   A map of redirects for the Application Gateway.
 
   Every redirect contains attributes:
-  - `name`                 - (`string`, required) The name of redirect.
-  - `type`                 - (`string`, required) The type of redirect.
-                             Possible values are Permanent, Temporary, Found and SeeOther
-  - `target_listener`      - (`string`, optional) The name of the listener to redirect to.
-  - `target_url`           - (`string`, optional) The URL to redirect the request to.
-  - `include_path`         - (`bool`, optional) Whether or not to include the path in the redirected URL.
-  - `include_query_string` - (`bool`, optional) Whether or not to include the query string in the redirected URL.
+  - `name`                 - (`string`, required) the name of redirect.
+  - `type`                 - (`string`, required) the type of redirect, possible values are `Permanent`, `Temporary`, `Found` and
+                             `SeeOther`.
+  - `target_listener_key`  - (`string`, optional, mutually exclusive with `target_url`) a key identifying a backend config
+                             defined in `var.listeners`.
+  - `target_url`           - (`string`, optional, mutually exclusive with `target_listener`) the URL to redirect to.
+  - `include_path`         - (`bool`, optional, defaults to Azure defaults) whether or not to include the path in the redirected
+                             URL.
+  - `include_query_string` - (`bool`, optional, defaults to Azure defaults) whether or not to include the query string in the
+                             redirected URL.
   EOF
+  default     = {}
+  nullable    = false
   type = map(object({
     name                 = string
     type                 = string
-    target_listener      = optional(string)
+    target_listener_key  = optional(string)
     target_url           = optional(string)
-    include_path         = optional(bool, false)
-    include_query_string = optional(bool, false)
+    include_path         = optional(bool)
+    include_query_string = optional(bool)
   }))
-  validation {
+  validation { # name
+    condition = (length(flatten([for _, redirect in var.redirects : redirect.name])) ==
+    length(distinct(flatten([for _, redirect in var.redirects : redirect.name]))))
+    error_message = <<-EOF
+    The `name` property has to be unique among all redirects.
+    EOF
+  }
+  validation { # type
     condition = var.redirects != null ? alltrue(flatten([
       for _, redirect in var.redirects : [
         contains(["Permanent", "Temporary", "Found", "SeeOther"], coalesce(redirect.type, "Permanent"))
     ]])) : true
-    error_message = "Possible values for `type` are Permanent, Temporary, Found and SeeOther."
+    error_message = <<-EOF
+    Possible values for `type` are \"Permanent\", \"Temporary\", \"Found\" and \"SeeOther\".
+    EOF
   }
-  validation {
-    condition = (length(flatten([for _, redirect in var.redirects : redirect.name])) ==
-    length(distinct(flatten([for _, redirect in var.redirects : redirect.name]))))
-    error_message = "The `name` property has to be unique among all redirects."
+  validation { # target_listener_key & target_url
+    condition = alltrue(flatten([
+      for _, r in var.redirects :
+      r.target_listener_key != null && r.target_url == null || r.target_listener_key == null && r.target_url != null
+    ]))
+    error_message = <<-EOF
+    At least one and only one property can be defined, either \"target_listener_key\" or \"target_url\".
+    EOF
   }
 }
 
@@ -667,25 +687,123 @@ variable "url_path_maps" {
   A map of URL path maps for the Application Gateway.
 
   Every URL path map contains attributes:
-  - `name`         - (`string`, required) The name of redirect.
-  - `backend`      - (`string`, required) The default backend for redirect.
-  - `path_rules`   - (`map`, optional) The map of rules, where every object has attributes:
-      - `paths`    - (`list`, required) List of paths
-      - `backend`  - (`string`, optional) Backend's key
-      - `redirect` - (`string`, optional) Redirect's key
+  - `name`         - (`string`, required) the name of redirect.
+  - `backend_key`  - (`string`, required) a key identifying the default backend for redirect defined in `var.backend_settings`.
+  - `path_rules`   - (`map`, optional, defaults to `{}`) the map of rules, where every object has attributes:
+    - `paths`        - (`list`, required) a list of paths.
+    - `backend_key`  - (`string`, optional, mutually exclusive with `redirect_key`) a key identifying a backend config defined
+                       in `var.backend_settings`.
+    - `redirect_key` - (`string`, optional, mutually exclusive with `backend_key`) a key identifying a redirect config defined
+                       in `var.redirects`.
   EOF
+  default     = {}
+  nullable    = false
   type = map(object({
-    name    = string
-    backend = string
+    name        = string
+    backend_key = string
     path_rules = optional(map(object({
-      paths    = list(string)
-      backend  = optional(string)
-      redirect = optional(string)
-    })))
+      paths        = list(string)
+      backend_key  = optional(string)
+      redirect_key = optional(string)
+    })), {})
   }))
-  validation {
+  validation { # name
     condition = (length(flatten([for _, url_path_map in var.url_path_maps : url_path_map.name])) ==
     length(distinct(flatten([for _, url_path_map in var.url_path_maps : url_path_map.name]))))
-    error_message = "The `name` property has to be unique among all URL path maps."
+    error_message = <<-EOF
+    The `name` property has to be unique among all URL path maps.
+    EOF
+  }
+  validation { # path_rules
+    condition = alltrue(flatten([
+      for _, url in var.url_path_maps : [
+        for _, rule in url.path_rules :
+        rule.backend_key != null && rule.redirect_key == null || rule.backend_key == null && rule.redirect_key != null
+      ]
+    ]))
+    error_message = <<-EOF
+    At least one and only one property can be defined, either \"backend_key\" or \"redirect_key\".
+    EOF
+  }
+}
+
+variable "rules" {
+  description = <<-EOF
+  A map of rules for the Application Gateway. A rule combines backend's, listener's, rewrites' and redirects' configurations.
+
+  A key is an application name that is used to prefix all components inside an Application Gateway
+  that are created for this application.
+
+  Every rule contains following attributes:
+
+  - `name`             - (`string`, required) Rule name.
+  - `priority`         - (`string`, required) Rule evaluation order can be dictated by specifying an integer value from 1 to 
+                         20000 with 1 being the highest priority and 20000 being the lowest priority.
+  - `listener_key`     - (`string`, required) a key identifying a listener config defined in `var.listeners`.
+  - `backend_key`      - (`string`, optional, mutually exclusive with `url_path_map_key` and `redirect_key`) a key identifying a
+                         backend config defined in `var.backend_settings`.
+  - `rewrite_key`      - (`string`, optional, defaults to `null`) a key identifying a rewrite config defined in `var.rewrites`.
+  - `url_path_map_key` - (`string`, optional, mutually exclusive with `backend_key` and `redirect_key`) a key identifying a
+                         url_path_map config defined in `var.url_path_maps`.
+  - `redirect_key`     - (`string`, optional, mutually exclusive with `url_path_map_key` and `backend_key`) a key identifying a
+                         redirect config defined in `var.redirects`.
+  EOF
+  type = map(object({
+    name             = string
+    priority         = number
+    backend_key      = optional(string)
+    listener_key     = string
+    rewrite_key      = optional(string)
+    url_path_map_key = optional(string)
+    redirect_key     = optional(string)
+  }))
+  validation { # name
+    condition = (length(flatten([for _, rule in var.rules : rule.name])) ==
+    length(distinct(flatten([for _, rule in var.rules : rule.name]))))
+    error_message = <<-EOF
+    The `name` property has to be unique among all rules.
+    EOF
+  }
+  validation { # priority
+    condition = alltrue(flatten([
+      for _, rule in var.rules : [
+        rule.priority >= 1, rule.priority <= 20000
+    ]]))
+    error_message = <<-EOF
+    The `priority` property is an integer value from 1 to 20000.
+    EOF
+  }
+  validation { # priority
+    condition = alltrue([
+      for _, v in var.rules :
+      !contains(
+        concat(
+          slice(
+            values(var.rules)[*].priority,
+            0,
+            index(values(var.rules)[*].priority, v.priority)
+          ),
+          slice(
+            values(var.rules)[*].priority,
+            index(values(var.rules)[*].priority, v.priority) + 1,
+            length(values(var.rules))
+          )
+        ),
+        v.priority
+      )
+    ])
+    error_message = <<-EOF
+    The `priority` property has to be unique.
+    EOF
+  }
+  validation { # url_path_map_key
+    condition = alltrue([for _, rule in var.rules :
+      rule.backend_key != null && rule.redirect_key == null && rule.url_path_map_key == null ||
+      rule.backend_key == null && rule.redirect_key != null && rule.url_path_map_key == null ||
+      rule.backend_key == null && rule.redirect_key == null && rule.url_path_map_key != null
+    ])
+    error_message = <<-EOF
+    Either `backend`, `redirect` or `url_path_map` is required, but not all as they are mutually exclusive.
+    EOF
   }
 }

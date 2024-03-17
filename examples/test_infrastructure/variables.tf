@@ -5,7 +5,7 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "location" {
+variable "region" {
   description = "The Azure region to use."
   type        = string
 }

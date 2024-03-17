@@ -1,5 +1,6 @@
-# --- GENERAL --- #
-location            = "North Europe"
+# GENERAL
+
+region              = "North Europe"
 resource_group_name = "autoscale-dedicated"
 name_prefix         = "example-"
 tags = {
@@ -7,7 +8,8 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-# --- VNET PART --- #
+# NETWORK
+
 vnets = {
   "transit" = {
     name          = "transit"
@@ -47,11 +49,6 @@ vnets = {
             address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
-          "appgw_blackhole" = {
-            name           = "appgw-blackhole-udr"
-            address_prefix = "10.0.0.48/28"
-            next_hop_type  = "None"
-          }
         }
       }
       "private" = {
@@ -71,11 +68,6 @@ vnets = {
           "public_blackhole" = {
             name           = "public-blackhole-udr"
             address_prefix = "10.0.0.32/28"
-            next_hop_type  = "None"
-          }
-          "appgw_blackhole" = {
-            name           = "appgw-blackhole-udr"
-            address_prefix = "10.0.0.48/28"
             next_hop_type  = "None"
           }
         }
@@ -115,10 +107,6 @@ vnets = {
         network_security_group_key = "public"
         route_table_key            = "public"
       }
-      "appgw" = {
-        name             = "appgw-snet"
-        address_prefixes = ["10.0.0.48/28"]
-      }
     }
   }
 }
@@ -136,13 +124,14 @@ natgws = {
   }
 }
 
+# LOAD BALANCING
 
-
-# --- LOAD BALANCING PART --- #
 load_balancers = {
   "public" = {
-    name  = "public-lb"
-    zones = null
+    name = "public-lb"
+    load_balancer = {
+      zones = null
+    }
     nsg_auto_rules_settings = {
       nsg_vnet_key = "transit"
       nsg_key      = "public"
@@ -164,12 +153,14 @@ load_balancers = {
     }
   }
   "private" = {
-    name  = "private-lb"
-    zones = null
+    name = "private-lb"
+    load_balancer = {
+      zones = null
+    }
+    vnet_key = "transit"
     frontend_ips = {
       "ha-ports" = {
         name               = "private-vmseries"
-        vnet_key           = "transit"
         subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
@@ -184,14 +175,16 @@ load_balancers = {
   }
 }
 
-# --- VMSERIES PART --- #
+# VM-SERIES
+
 ngfw_metrics = {
   name = "ngwf-log-analytics-wrksp"
 }
 
 scale_sets = {
   inbound = {
-    name = "inbound-vmss"
+    name     = "inbound-vmss"
+    vnet_key = "transit"
     image = {
       version = "10.2.4"
     }
@@ -199,7 +192,6 @@ scale_sets = {
       disable_password_authentication = false
     }
     virtual_machine_scale_set = {
-      vnet_key          = "transit"
       bootstrap_options = "type=dhcp-client"
       zones             = null
     }
@@ -223,7 +215,8 @@ scale_sets = {
     ]
   }
   obew = {
-    name = "obew-vmss"
+    name     = "obew-vmss"
+    vnet_key = "transit"
     image = {
       version = "10.2.4"
     }
@@ -231,7 +224,6 @@ scale_sets = {
       disable_password_authentication = false
     }
     virtual_machine_scale_set = {
-      vnet_key          = "transit"
       bootstrap_options = "type=dhcp-client"
       zones             = null
     }

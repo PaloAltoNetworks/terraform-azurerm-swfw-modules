@@ -8,7 +8,7 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "location" {
+variable "region" {
   description = "Azure region. Only for newly created resources."
   type        = string
 }
@@ -16,6 +16,15 @@ variable "location" {
 variable "tags" {
   description = "A map of tags that will be assigned to resources created by this module. Only for newly created resources."
   default     = {}
+  type        = map(string)
+}
+
+variable "subnet_ids" {
+  description = <<-EOF
+  A map of subnet IDs what will be bound with this NAT Gateway.
+  
+  Value is the subnet ID, key value does not matter but should be unique, typically it can be a subnet name.
+  EOF
   type        = map(string)
 }
 
@@ -46,27 +55,22 @@ variable "zone" {
   type        = string
   validation {
     condition     = (var.zone == null || can(regex("^[1-3]$", var.zone)))
-    error_message = "The `zone` variable should have value of either: \"1\", \"2\" or \"3\"."
+    error_message = <<-EOF
+    The `zone` variable should have value of either: \"1\", \"2\" or \"3\".
+    EOF
   }
 }
 
 variable "idle_timeout" {
-  description = "Connection IDLE timeout in minutes (up to 120, by default 4). Only for newly created resources."
-  default     = 4
+  description = "Connection IDLE timeout in minutes (up to 120, defaults to Azure defaults). Only for newly created resources."
+  default     = null
   type        = number
   validation {
     condition     = (var.idle_timeout >= 1 && var.idle_timeout <= 120)
-    error_message = "The `idle_timeout` variable should be a number between 1 and 120."
+    error_message = <<-EOF
+    The `idle_timeout` variable should be a number between 1 and 120.
+    EOF
   }
-}
-
-variable "subnet_ids" {
-  description = <<-EOF
-  A map of subnet IDs what will be bound with this NAT Gateway.
-  
-  Value is the subnet ID, key value does not matter but should be unique, typically it can be a subnet name.
-  EOF
-  type        = map(string)
 }
 
 variable "public_ip" {
@@ -160,9 +164,12 @@ variable "public_ip_prefix" {
     resource_group_name = optional(string)
     length              = optional(number, 28)
   })
-  validation {
-    condition = (var.public_ip_prefix == null ||
-    (try(var.public_ip_prefix.length, -1) >= 0 && try(var.public_ip_prefix.length, 32) <= 31))
-    error_message = "The `length` property should be a number between 0 and 31."
+  validation { # length
+    condition = var.public_ip_prefix == null || (
+      try(var.public_ip_prefix.length, -1) >= 0 && try(var.public_ip_prefix.length, 32) <= 31
+    )
+    error_message = <<-EOF
+    The `length` property should be a number between 0 and 31.
+    EOF
   }
 }

@@ -1,5 +1,6 @@
-# --- GENERAL --- #
-location              = "North Europe"
+# GENERAL
+
+region                = "North Europe"
 resource_group_name   = "panorama"
 name_prefix           = "example-"
 create_resource_group = true
@@ -7,11 +8,9 @@ tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
 }
-enable_zones = false
 
+# NETWORK
 
-
-# --- VNET PART --- #
 vnets = {
   "vnet" = {
     name          = "panorama-vnet"
@@ -44,11 +43,12 @@ vnets = {
   }
 }
 
-# --- PANORAMA PART --- #
+# PANORAMA
 
 panoramas = {
   "pn-1" = {
-    name = "panorama01"
+    name     = "panorama01"
+    vnet_key = "vnet"
     authentication = {
       disable_password_authentication = false
       #ssh_keys                       = ["~/.ssh/id_rsa.pub"]
@@ -57,7 +57,6 @@ panoramas = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key  = "vnet"
       size      = "Standard_D5_v2"
       zone      = null
       disk_name = "panorama-os-disk"

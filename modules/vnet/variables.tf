@@ -8,7 +8,7 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "location" {
+variable "region" {
   description = "The name of the Azure region to deploy the resources in."
   type        = string
 }
@@ -43,7 +43,9 @@ variable "address_space" {
       for v in coalesce(var.address_space, []) :
       can(regex("^(\\d{1,3}\\.){3}\\d{1,3}\\/[12]?[0-9]$", v))
     ])
-    error_message = "All items in var.address_space should be in CIDR notation, with the maximum subnet of /29."
+    error_message = <<-EOF
+    All items in var.address_space should be in CIDR notation, with the maximum subnet of /29.
+    EOF
   }
 }
 
@@ -53,45 +55,45 @@ variable "network_security_groups" {
 
   List of available properties:
 
-  - `name`   - (`string`, required) name of the Network Security Group.
-  - `rules`  - (`map`, optional, defaults to `{}`) A list of objects representing Network Security Rules.
+  - `name`  - (`string`, required) name of the Network Security Group.
+  - `rules` - (`map`, optional, defaults to `{}`) A list of objects representing Network Security Rules.
 
-    > [!NOTE]
-    > All port values are integers between `0` and `65535`. Port ranges can be specified as `minimum-maximum` port value,
-    > example: `21-23`.
+    **Note!** \
+    All port values are integers between `0` and `65535`. Port ranges can be specified as `minimum-maximum` port value,
+    example: `21-23`.
     
     Following attributes are available:
 
-    - `name`                          - (`string`, required) name of the rule
-    - `priority`                      - (`number`, required) numeric priority of the rule. The value can be between 100 and 4096
-                                        and must be unique for each rule in the collection. The lower the priority number,
-                                        the higher the priority of the rule.
-    - `direction`                     - (`string`, required) the direction specifies if rule will be evaluated on incoming
-                                        or outgoing traffic. Possible values are `Inbound` and `Outbound`.
-    - `access`                        - (`string`, required) specifies whether network traffic is allowed or denied.
-                                        Possible values are `Allow` and `Deny`.
-    - `protocol`                      - (`string`, required) a network protocol this rule applies to. Possible values include
-                                        `Tcp`, `Udp`, `Icmp`, or `*` (which matches all). For supported values refer to the
-                                        [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_securityrule#protocol)
-    - `source_port_range`             - (`string`, required, mutually exclusive with `source_port_ranges`) a source port or
-                                        a range of ports. This can also be an `*` to match all.
-    - `source_port_ranges`            - (`list`, required, mutually exclusive with `source_port_range`) a list of source ports
-                                        or ranges of ports.
-    - `source_address_prefix`         - (`string`, required, mutually exclusive with `source_address_prefixes`) source CIDR or IP
-                                        range or `*` to match any IP. This can also be a tag. To see all available tags for a
-                                        region use the following command (example for US West Central):
-                                        `az network list-service-tags --location westcentralus`.
-    - `source_address_prefixes`       - (`list`, required, mutually exclusive with `source_address_prefix`) a list of source
-                                        address prefixes. Tags are not allowed.
-    - `destination_port_range`        - (`string`, required, mutually exclusive with `destination_port_ranges`) destination port
-                                        or a range of ports. This can also be an `*` to match all.
-    - `destination_port_ranges`       - (`list`, required, mutually exclusive with `destination_port_range`) a list of
-                                        destination ports or a ranges of ports.
-    - `destination_address_prefix`    - (`string`, required, mutually exclusive with `destination_address_prefixes`) destination
-                                        CIDR or IP range or `*` to match any IP. Tags are allowed, see `source_address_prefix`
-                                        for details.
-    - `destination_address_prefixes`  - (`list`, required,  mutually exclusive with `destination_address_prefixes`) a list of 
-                                        destination address prefixes. Tags are not allowed.
+    - `name`                         - (`string`, required) name of the rule.
+    - `priority`                     - (`number`, required) numeric priority of the rule. The value can be between 100 and 4096
+                                       and must be unique for each rule in the collection. The lower the priority number,
+                                       the higher the priority of the rule.
+    - `direction`                    - (`string`, required) the direction specifies if rule will be evaluated on incoming
+                                       or outgoing traffic. Possible values are `Inbound` and `Outbound`.
+    - `access`                       - (`string`, required) specifies whether network traffic is allowed or denied.
+                                       Possible values are `Allow` and `Deny`.
+    - `protocol`                     - (`string`, required) a network protocol this rule applies to. Possible values include
+                                       `Tcp`, `Udp`, `Icmp`, or `*` (which matches all). For supported values refer to the
+                                       [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_securityrule#protocol).
+    - `source_port_range`            - (`string`, required, mutually exclusive with `source_port_ranges`) a source port or
+                                       a range of ports. This can also be an `*` to match all.
+    - `source_port_ranges`           - (`list`, required, mutually exclusive with `source_port_range`) a list of source ports
+                                       or ranges of ports.
+    - `source_address_prefix`        - (`string`, required, mutually exclusive with `source_address_prefixes`) source CIDR or IP
+                                       range or `*` to match any IP. This can also be a tag. To see all available tags for a
+                                       region use the following command (example for US West Central):
+                                       `az network list-service-tags --location westcentralus`.
+    - `source_address_prefixes`      - (`list`, required, mutually exclusive with `source_address_prefix`) a list of source
+                                       address prefixes. Tags are not allowed.
+    - `destination_port_range`       - (`string`, required, mutually exclusive with `destination_port_ranges`) destination port
+                                       or a range of ports. This can also be an `*` to match all.
+    - `destination_port_ranges`      - (`list`, required, mutually exclusive with `destination_port_range`) a list of
+                                       destination ports or a ranges of ports.
+    - `destination_address_prefix`   - (`string`, required, mutually exclusive with `destination_address_prefixes`) destination
+                                       CIDR or IP range or `*` to match any IP. Tags are allowed, see `source_address_prefix`
+                                       for details.
+    - `destination_address_prefixes` - (`list`, required,  mutually exclusive with `destination_address_prefixes`) a list of 
+                                       destination address prefixes. Tags are not allowed.
 
   Example:
   ```hcl
@@ -161,62 +163,79 @@ variable "network_security_groups" {
     })), {})
   }))
   validation { # name
-    condition     = length([for _, v in var.network_security_groups : v.name]) == length(distinct([for _, v in var.network_security_groups : v.name]))
-    error_message = "The `name` property has to be unique."
+    condition = length(
+      [for _, v in var.network_security_groups : v.name]) == length(distinct([for _, v in var.network_security_groups : v.name])
+    )
+    error_message = <<-EOF
+    The `name` property has to be unique.
+    EOF
   }
-  validation { # rule.name
+  validation { # rules.name
     condition = alltrue([
       for _, nsg in var.network_security_groups :
       length([for _, rule in nsg.rules : rule.name]) == length(distinct([for _, rule in nsg.rules : rule.name]))
     ])
-    error_message = "The `rule.name` property has to be unique in a particular NSG."
+    error_message = <<-EOF
+    The `rule.name` property has to be unique in a particular NSG.
+    EOF
   }
-  validation { # rule.priority
+  validation { # rules.priority
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
         rule.priority >= 100 && rule.priority <= 4096
       ]
     ]))
-    error_message = "The `priority` should be a value between 100 and 4096."
+    error_message = <<-EOF
+    The `priority` should be a value between 100 and 4096.
+    EOF
   }
-  validation { # rule.direction
+  validation { # rules.direction
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
         contains(["Inbound", "Outbound"], rule.direction)
       ]
     ]))
-    error_message = "The `direction` property should be one of Inbound or Outbound."
+    error_message = <<-EOF
+    The `direction` property should be one of Inbound or Outbound.
+    EOF
   }
-  validation { # rule.access
+  validation { # rules.access
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
         contains(["Allow", "Deny"], rule.access)
       ]
     ]))
-    error_message = "The `access` property should be one of Allow or Deny."
+    error_message = <<-EOF
+    The `access` property should be one of Allow or Deny.
+    EOF
   }
-  validation { # rule.protocol
+  validation { # rules.protocol
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
         contains(["Tcp", "Udp", "Icmp", "*"], rule.protocol)
       ]
     ]))
-    error_message = "The `protocol` property should be one of Tcp, Udp, Icmp or *."
+    error_message = <<-EOF
+    The `protocol` property should be one of Tcp, Udp, Icmp or *.
+    EOF
   }
-  validation { # rule.source_port_range(s)
+  validation { # rules.source_port_range(s)
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
-        (rule.source_port_range == null || rule.source_port_ranges == null) && !(rule.source_port_range == null && rule.source_port_ranges == null)
+        (rule.source_port_range == null || rule.source_port_ranges == null) &&
+        !(rule.source_port_range == null && rule.source_port_ranges == null)
       ]
     ]))
-    error_message = "The `source_port_range` and `source_port_ranges` properties are required but mutually exclusive."
+    error_message = <<-EOF
+    The `source_port_range` and `source_port_ranges` properties are required but mutually exclusive.
+    EOF
   }
-  validation { # rule.source_port_range
+  validation { # rules.source_port_range
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
@@ -224,9 +243,12 @@ variable "network_security_groups" {
         if rule.source_port_range != null
       ]
     ]))
-    error_message = "The `source_port_range` can be either an '*' or a port number (between 0 and 65535) or a range of ports (delimited with a '-')."
+    error_message = <<-EOF
+    The `source_port_range` can be either an '*' or a port number (between 0 and 65535) or a range of ports
+    (delimited with a '-').
+    EOF
   }
-  validation { # rule.source_port_ranges
+  validation { # rules.source_port_ranges
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules : [
@@ -235,18 +257,23 @@ variable "network_security_groups" {
         ]
       ]
     ]))
-    error_message = "The `source_port_ranges` is a list of port numbers (between 0 and 65535) or a ranges of ports (delimited with a '-')."
+    error_message = <<-EOF
+    The `source_port_ranges` is a list of port numbers (between 0 and 65535) or a ranges of ports (delimited with a '-').
+    EOF
   }
-  validation { # rule.destination_port_range(s)
+  validation { # rules.destination_port_range(s)
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
-        (rule.destination_port_range == null || rule.destination_port_ranges == null) && !(rule.destination_port_range == null && rule.destination_port_ranges == null)
+        (rule.destination_port_range == null || rule.destination_port_ranges == null) &&
+        !(rule.destination_port_range == null && rule.destination_port_ranges == null)
       ]
     ]))
-    error_message = "The `destination_port_range` and `destination_port_ranges` properties are required but mutually exclusive."
+    error_message = <<-EOF
+    The `destination_port_range` and `destination_port_ranges` properties are required but mutually exclusive.
+    EOF
   }
-  validation { # rule.destination_port_range
+  validation { # rules.destination_port_range
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
@@ -254,9 +281,12 @@ variable "network_security_groups" {
         if rule.destination_port_range != null
       ]
     ]))
-    error_message = "The `destination_port_range` can be either an '*' or a port number (between 0 and 65535) or a range of ports (delimited with a '-')."
+    error_message = <<-EOF
+    The `destination_port_range` can be either an '*' or a port number (between 0 and 65535) or a range of ports
+    (delimited with a '-').
+    EOF
   }
-  validation { # rule.destination_port_ranges
+  validation { # rules.destination_port_ranges
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules : [
@@ -265,18 +295,23 @@ variable "network_security_groups" {
         ]
       ]
     ]))
-    error_message = "The `destination_port_ranges` is a list of port numbers (between 0 and 65535) or a ranges of ports (delimited with a '-')."
+    error_message = <<-EOF
+    The `destination_port_ranges` is a list of port numbers (between 0 and 65535) or a ranges of ports (delimited with a '-').
+    EOF
   }
-  validation { # rule.source_address_prefix(s)
+  validation { # rules.source_address_prefix(s)
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
-        (rule.source_address_prefix == null || rule.source_address_prefixes == null) && !(rule.source_address_prefix == null && rule.source_address_prefixes == null)
+        (rule.source_address_prefix == null || rule.source_address_prefixes == null) &&
+        !(rule.source_address_prefix == null && rule.source_address_prefixes == null)
       ]
     ]))
-    error_message = "The `source_address_prefixes` and `source_address_prefixes` properties are required but mutually exclusive."
+    error_message = <<-EOF
+    The `source_address_prefix` and `source_address_prefixes` properties are required but mutually exclusive.
+    EOF
   }
-  validation { # rule.source_address_prefix
+  validation { # rules.source_address_prefix
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
@@ -284,9 +319,11 @@ variable "network_security_groups" {
         if rule.source_address_prefix != null
       ]
     ]))
-    error_message = "The `source_address_prefix` can be either '*', a CIDR or an Azure Service Tag."
+    error_message = <<-EOF
+    The `source_address_prefix` can be either '*', a CIDR or an Azure Service Tag.
+    EOF
   }
-  validation { # rule.source_address_prefixes
+  validation { # rules.source_address_prefixes
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules : [
@@ -295,18 +332,23 @@ variable "network_security_groups" {
         ]
       ]
     ]))
-    error_message = "The `source_address_prefixes` can be a list of CIDRs."
+    error_message = <<-EOF
+    The `source_address_prefixes` can be a list of CIDRs.
+    EOF
   }
-  validation { # rule.destination_address_prefix(s)
+  validation { # rules.destination_address_prefix(s)
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
-        (rule.destination_address_prefix == null || rule.destination_address_prefixes == null) && !(rule.destination_address_prefix == null && rule.destination_address_prefixes == null)
+        (rule.destination_address_prefix == null || rule.destination_address_prefixes == null) &&
+        !(rule.destination_address_prefix == null && rule.destination_address_prefixes == null)
       ]
     ]))
-    error_message = "The `destination_address_prefix` and `destination_address_prefixes` properties are required but mutually exclusive."
+    error_message = <<-EOF
+    The `destination_address_prefix` and `destination_address_prefixes` properties are required but mutually exclusive.
+    EOF
   }
-  validation { # rule.destination_address_prefix
+  validation { # rules.destination_address_prefix
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
@@ -314,9 +356,11 @@ variable "network_security_groups" {
         if rule.destination_address_prefix != null
       ]
     ]))
-    error_message = "The `destination_address_prefix` can be either '*', a CIDR or an Azure Service Tag."
+    error_message = <<-EOF
+    The `destination_address_prefix` can be either '*', a CIDR or an Azure Service Tag.
+    EOF
   }
-  validation { # rule.destination_address_prefixes
+  validation { # rules.destination_address_prefixes
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules : [
@@ -325,7 +369,9 @@ variable "network_security_groups" {
         ]
       ]
     ]))
-    error_message = "The `destination_address_prefixes` can be a list of CIDRs."
+    error_message = <<-EOF
+    The `destination_address_prefixes` can be a list of CIDRs.
+    EOF
   }
 }
 
@@ -336,14 +382,14 @@ variable "route_tables" {
   List of available properties:
 
   - `name`                          - (`string`, required) name of a Route Table.
-  - `disable_bgp_route_propagation` - (`bool`, optional, defaults to `false`) controls propagation of routes learned by BGP
+  - `disable_bgp_route_propagation` - (`bool`, optional, defaults to `false`) controls propagation of routes learned by BGP.
   - `routes`                        - (`map`, required) a map of Route Table entries (UDRs):
-    - `name`                    - (`string`, required) a name of a UDR.
-    - `address_prefix`          - (`string`, required) the destination CIDR to which the route applies, such as `10.1.0.0/16`.
-    - `next_hop_type`           - (`string`, required) the type of Azure hop the packet should be sent to.
-                                  Possible values are: `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
-    - `next_hop_ip_address`     - (`string`, required) contains the IP address packets should be forwarded to.
-                                  Used only when `next_hop_type` is set to `VirtualAppliance`, ignored otherwise.
+    - `name`                - (`string`, required) a name of a UDR.
+    - `address_prefix`      - (`string`, required) the destination CIDR to which the route applies, such as `10.1.0.0/16`.
+    - `next_hop_type`       - (`string`, required) the type of Azure hop the packet should be sent to. Possible values are:
+                              `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
+    - `next_hop_ip_address` - (`string`, required) contains the IP address packets should be forwarded to. Used only when
+                              `next_hop_type` is set to `VirtualAppliance`, ignored otherwise.
 
   Example:
   ```hcl
@@ -391,16 +437,20 @@ variable "route_tables" {
   }))
   validation { # name
     condition     = length([for _, v in var.route_tables : v.name]) == length(distinct([for _, v in var.route_tables : v.name]))
-    error_message = "The `name` property has to be unique."
+    error_message = <<-EOF
+    The `name` property has to be unique.
+    EOF
   }
-  validation { # route.name
+  validation { # routes.name
     condition = alltrue([
       for _, rt in var.route_tables :
       length([for _, udr in rt.routes : udr.name]) == length(distinct([for _, udr in rt.routes : udr.name]))
     ])
-    error_message = "The `rule.name` property has to be unique in a particular NSG."
+    error_message = <<-EOF
+    The `rule.name` property has to be unique in a particular NSG.
+    EOF
   }
-  validation { # route.address_prefix
+  validation { # routes.address_prefix
     condition = alltrue(flatten([
       for _, rt in var.route_tables : [
         for _, udr in rt.routes : [
@@ -408,17 +458,24 @@ variable "route_tables" {
         ]
       ]
     ]))
-    error_message = "The `address_prefix` should be in CIDR notation."
+    error_message = <<-EOF
+    The `address_prefix` should be in CIDR notation.
+    EOF
   }
-  validation { # route.next_hop_type
+  validation { # routes.next_hop_type
     condition = alltrue(flatten([
       for _, rt in var.route_tables : [
-        for _, udr in rt.routes : can(udr.next_hop_type) ? contains(["VirtualNetworkGateway", "VnetLocal", "Internet", "VirtualAppliance", "None"], udr.next_hop_type) : true
+        for _, udr in rt.routes : can(udr.next_hop_type) ? contains(
+          ["VirtualNetworkGateway", "VnetLocal", "Internet", "VirtualAppliance", "None"], udr.next_hop_type
+        ) : true
       ]
     ]))
-    error_message = "The `next_hop_type` route property should have value of either: \"VirtualNetworkGateway\", \"VnetLocal\", \"Internet\", \"VirtualAppliance\" or \"None\"."
+    error_message = <<-EOF
+    The `next_hop_type` route property should have value of either: \"VirtualNetworkGateway\", \"VnetLocal\", \"Internet\",
+    \"VirtualAppliance\" or \"None\".
+    EOF
   }
-  validation { # route.next_hop_ip_address
+  validation { # routes.next_hop_ip_address
     condition = alltrue(flatten([
       for _, rt in var.route_tables : [
         for _, udr in rt.routes :
@@ -426,7 +483,9 @@ variable "route_tables" {
         if udr.next_hop_ip_address != null
       ]
     ]))
-    error_message = "The `next_hop_ip_address` should be a valid IPv4 address."
+    error_message = <<-EOF
+    The `next_hop_ip_address` should be a valid IPv4 address.
+    EOF
   }
 }
 
@@ -436,9 +495,11 @@ variable "create_subnets" {
   
   Possible variants:
 
-  - `true`      - create subnets described in `var.subnets`
-  - `false`     - source subnets described in `var.subnets`
-  - `false` and `var.subnets` is empty  - skip subnets management.
+  - `true`  - create subnets described in `var.subnets`.
+  - `false` - source subnets described in `var.subnets`.
+  
+  **Note!** \
+  When this variable is `false` and `var.subnets` variable is empty, subnets management is skipped.
   EOF
   default     = true
   nullable    = false
@@ -449,8 +510,8 @@ variable "subnets" {
   description = <<-EOF
   Map of objects describing subnets to manage.
   
-  By the default the described subnets will be created. 
-  If however `create_subnets` is set to `false` this is just a mapping between the existing subnets and UDRs and NSGs that should be assigned to them.
+  By the default the described subnets will be created. If however `create_subnets` is set to `false` this is just a mapping
+  between the existing subnets and UDRs and NSGs that should be assigned to them.
   
   List of available attributes of each subnet entry:
 
@@ -497,15 +558,19 @@ variable "subnets" {
   }))
   validation { # name
     condition     = length([for _, v in var.subnets : v.name]) == length(distinct([for _, v in var.subnets : v.name]))
-    error_message = "The `name` property has to be unique."
+    error_message = <<-EOF
+    The `name` property has to be unique.
+    EOF
   }
-  validation { # subnet.address_prefixes
+  validation { # address_prefixes
     condition = alltrue(flatten([
       for _, snet in var.subnets : [
         for _, cidr in snet.address_prefixes :
         can(regex("^(\\d{1,3}\\.){3}\\d{1,3}\\/[12]?[0-9]$", cidr))
       ]
     ]))
-    error_message = "The `address_prefixes` should be list of CIDR blocks, with the maximum subnet of /29."
+    error_message = <<-EOF
+    The `address_prefixes` should be list of CIDR blocks, with the maximum subnet of /29.
+    EOF
   }
 }

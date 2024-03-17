@@ -1,4 +1,6 @@
-# Generate a random password.
+# Generate a random password
+
+# https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password
 resource "random_password" "this" {
   count = anytrue([
     for _, v in var.panoramas : v.authentication.password == null
@@ -25,15 +27,18 @@ locals {
   }
 }
 
-# Create or source the Resource Group.
+# Create or source a Resource Group
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
   name     = "${var.name_prefix}${var.resource_group_name}"
-  location = var.location
+  location = var.region
 
   tags = var.tags
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group
 data "azurerm_resource_group" "this" {
   count = var.create_resource_group ? 0 : 1
   name  = var.resource_group_name
@@ -43,7 +48,8 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
-# Manage the network required for the topology.
+# Manage the network required for the topology
+
 module "vnet" {
   source = "../../modules/vnet"
 
@@ -52,29 +58,31 @@ module "vnet" {
   name                   = each.value.create_virtual_network ? "${var.name_prefix}${each.value.name}" : each.value.name
   create_virtual_network = each.value.create_virtual_network
   resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
-  location               = var.location
+  region                 = var.region
 
   address_space = each.value.address_space
 
   create_subnets = each.value.create_subnets
   subnets        = each.value.subnets
 
-  network_security_groups = { for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  network_security_groups = {
+    for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
-  route_tables = { for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  route_tables = {
+    for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
 
   tags = var.tags
 }
 
-# Create Panorama virtual appliance
+# Create Panorama VMs and closely associated resources
 
 resource "azurerm_availability_set" "this" {
   for_each = var.availability_sets
 
   name                         = "${var.name_prefix}${each.value.name}"
   resource_group_name          = local.resource_group.name
-  location                     = var.location
+  location                     = var.region
   platform_update_domain_count = each.value.update_domain_count
   platform_fault_domain_count  = each.value.fault_domain_count
 
@@ -87,7 +95,7 @@ module "panorama" {
   for_each = var.panoramas
 
   name                = "${var.name_prefix}${each.value.name}"
-  location            = var.location
+  region              = var.region
   resource_group_name = local.resource_group.name
 
   authentication = local.authentication[each.key]
@@ -101,10 +109,12 @@ module "panorama" {
   )
 
   interfaces = [for v in each.value.interfaces : {
-    name                          = "${var.name_prefix}${v.name}"
-    subnet_id                     = module.vnet[each.value.virtual_machine.vnet_key].subnet_ids[v.subnet_key]
-    create_public_ip              = v.create_public_ip
-    public_ip_name                = v.create_public_ip ? "${var.name_prefix}${coalesce(v.public_ip_name, "${each.value.name}-pip")}" : v.public_ip_name
+    name             = "${var.name_prefix}${v.name}"
+    subnet_id        = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
+    create_public_ip = v.create_public_ip
+    public_ip_name = v.create_public_ip ? "${var.name_prefix}${
+      coalesce(v.public_ip_name, "${each.value.name}-pip")
+    }" : v.public_ip_name
     public_ip_resource_group_name = v.public_ip_resource_group_name
     private_ip_address            = v.private_ip_address
   }]

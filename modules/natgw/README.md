@@ -10,6 +10,14 @@ This module can be used to either create a new NAT Gateway or to connect
 an existing one with subnets deployed using (for example) the [VNET
 module](../vnet/README.md).
 
+NAT Gateway is not zone-redundant. It is a zonal resource. It means that it's always deployed in a zone. It's up to the user to
+decide if a zone will be specified during resource deployment or if Azure will take that decision for the user. Keep in mind
+that regardless of the fact that NAT Gateway is placed in a specific zone it can serve traffic for resources in all zones. But
+if that zone becomes unavailable, resources in other zones will lose internet connectivity.
+
+For design considerations, limitation and examples of zone-resiliency architecture please refer to
+[Microsoft documentation](https://learn.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-availability-zones).
+
 ## Usage
 
 To deploy this resource in it's minimum configuration following code
@@ -18,7 +26,7 @@ and Subnets):
 
 ```hcl
 module "natgw" {
-  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/natgw"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/natgw"
 
   name                = "NATGW_name"
   resource_group_name = "resource_group_name"
@@ -37,7 +45,7 @@ Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | Name of a NAT Gateway.
 [`resource_group_name`](#resource_group_name) | `string` | Name of a Resource Group hosting the NAT Gateway (either the existing one or the one that will be created).
-[`location`](#location) | `string` | Azure region.
+[`region`](#region) | `string` | Azure region.
 [`subnet_ids`](#subnet_ids) | `map` | A map of subnet IDs what will be bound with this NAT Gateway.
 
 
@@ -48,7 +56,7 @@ Name | Type | Description
 [`tags`](#tags) | `map` | A map of tags that will be assigned to resources created by this module.
 [`create_natgw`](#create_natgw) | `bool` | Triggers creation of a NAT Gateway when set to `true`.
 [`zone`](#zone) | `string` | Controls whether the NAT Gateway will be bound to a specific zone or not.
-[`idle_timeout`](#idle_timeout) | `number` | Connection IDLE timeout in minutes (up to 120, by default 4).
+[`idle_timeout`](#idle_timeout) | `number` | Connection IDLE timeout in minutes (up to 120, defaults to Azure defaults).
 [`public_ip`](#public_ip) | `object` | A map defining a Public IP resource.
 [`public_ip_prefix`](#public_ip_prefix) | `object` | A map defining a Public IP Prefix resource.
 
@@ -67,12 +75,12 @@ Name |  Description
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 Providers used in this module:
 
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 
@@ -110,16 +118,13 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 Azure region. Only for newly created resources.
 
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
-
-
 
 
 #### subnet_ids
@@ -132,6 +137,9 @@ Value is the subnet ID, key value does not matter but should be unique, typicall
 Type: map(string)
 
 <sup>[back to list](#modules-required-inputs)</sup>
+
+
+
 
 
 
@@ -152,6 +160,7 @@ Type: map(string)
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 #### create_natgw
 
@@ -188,14 +197,13 @@ Default value: `&{}`
 
 #### idle_timeout
 
-Connection IDLE timeout in minutes (up to 120, by default 4). Only for newly created resources.
+Connection IDLE timeout in minutes (up to 120, defaults to Azure defaults). Only for newly created resources.
 
 Type: number
 
-Default value: `4`
+Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 #### public_ip
 

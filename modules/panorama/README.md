@@ -24,7 +24,7 @@ Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Azure Virtual Machine.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
-[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`authentication`](#authentication) | `object` | A map defining authentication settings (including username and password).
 [`image`](#image) | `object` | Basic Azure VM configuration.
 [`virtual_machine`](#virtual_machine) | `object` | Firewall parameters configuration.
@@ -45,6 +45,7 @@ Name | Type | Description
 Name |  Description
 --- | ---
 `mgmt_ip_address` | Panorama management IP address. If `public_ip` was `true`, it is a public IP address, otherwise a private IP address.
+
 `interfaces` | Map of VM-Series network interfaces. Keys are equal to var.interfaces `name` properties.
 
 ## Module's Nameplate
@@ -93,7 +94,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 The name of the Azure region to deploy the resources in.
 
@@ -108,7 +109,8 @@ A map defining authentication settings (including username and password).
 
 Following properties are available:
 
-- `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative Panorama username.
+- `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative Panorama
+                                      username.
 - `password`                        - (`string`, optional, defaults to `null`) the initial administrative Panorama password.
 - `disable_password_authentication` - (`bool`, optional, defaults to `true`) disables password-based authentication.
 - `ssh_keys`                        - (`list`, optional, defaults to `[]`) a list of initial administrative SSH public keys.
@@ -119,7 +121,6 @@ The `password` property is required when `ssh_keys` is not specified.
 **Important!** \
 `ssh_keys` property is a list of strings, so each item should be the actual public key value.
 If you would like to load them from files use the `file` function, for example: `[ file("/path/to/public/keys/key_1.pub") ]`.
-
 
 
 Type: 
@@ -157,7 +158,6 @@ Following properties are available:
 
 **Important!** \
 The `custom_id` and `version` properties are mutually exclusive.
-  
 
 
 Type: 
@@ -207,7 +207,6 @@ List of other, optional properties:
                                    "SystemAssigned, UserAssigned".
 - `identity_ids`                 - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be
                                    assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
-
 
 
 Type: 
@@ -280,7 +279,6 @@ Example:
   },
 ]
 ```
-  
 
 
 Type: 
@@ -352,7 +350,6 @@ Example:
   }
 }
 ```
-  
 
 
 Type: 

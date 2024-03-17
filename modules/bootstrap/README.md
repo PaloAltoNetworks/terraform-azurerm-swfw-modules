@@ -28,11 +28,11 @@ The module is used only to create a Storage Account with module defaults where p
 
 ```hcl
 module "empty_storage" {
-  source = "../../modules/bootstrap"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/bootstrap"
 
   name                = "someemptystorage"
   resource_group_name = "rg-name"
-  location            = "North Europe"
+  region          = "North Europe"
 }
 ```
 
@@ -49,11 +49,11 @@ This code will create a storage account for 3 NGFWs. Please **note** that:
 
 ```hcl
 module "bootstrap" {
-  source = "../../modules/bootstrap"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/bootstrap"
 
   name                = "samplebootstrapstorage"
   resource_group_name = "rg-name"
-  location            = "North Europe"
+  region          = "North Europe"
 
   file_shares_configuration = {
     access_tier = "Hot"
@@ -97,7 +97,7 @@ structure already present.
 
 ```hcl
 module "existing_storage" {
-  source = "../../modules/bootstrap"
+  source = "PaloAltoNetworks/swfw-modules/azurerm//modules/bootstrap"
 
   storage_account = {
     create = false
@@ -140,7 +140,7 @@ Name | Type | Description
 
 Name | Type | Description
 --- | --- | ---
-[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`storage_account`](#storage_account) | `object` | A map controlling basic Storage Account configuration.
 [`storage_network_security`](#storage_network_security) | `object` | A map defining network security settings for a new storage account.
@@ -163,12 +163,12 @@ Name |  Description
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 Providers used in this module:
 
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 
@@ -222,7 +222,7 @@ Type: string
 
 
 
-#### location
+#### region
 
 The name of the Azure region to deploy the resources in.
 
@@ -252,12 +252,11 @@ Following properties are available:
 - `replication_type` - (`string`, optional, defaults to `LRS`) only for newly created Storage Accounts, defines the replication
                        type used. Can be one of the following values: `LRS`, `GRS`, `RAGRS`, `ZRS`, `GZRS` or `RAGZRS`.
 - `kind`             - (`string`, optional, defaults to `StorageV2`) only for newly created Storage Accounts, defines the
-                       account type. Can be one of the following: `BlobStorage`, `BlockBlobStorage`, `FileStorage`, `Storage` or
-                       `StorageV2`.
-- `tier`             - (`string`, optional, defaults to `Standard`) only for newly created Storage Accounts, defines the account
-                       tier. Can be either `Standard` or `Premium`. Note, that for `kind` set to `BlockBlobStorage` or
+                       account type. Can be one of the following: `BlobStorage`, `BlockBlobStorage`, `FileStorage`, `Storage`
+                       or `StorageV2`.
+- `tier`             - (`string`, optional, defaults to `Standard`) only for newly created Storage Accounts, defines the
+                       account tier. Can be either `Standard` or `Premium`. Note, that for `kind` set to `BlockBlobStorage` or
                        `FileStorage` the `tier` can only be set to `Premium`.
-  
 
 
 Type: 
@@ -288,14 +287,13 @@ File Shares. Files Shares API comes under this networks restrictions.
 
 Following properties are available:
 
-- `min_tls_version`     - (`string`, optional, defaults to `TLS1_2`) minimum supported TLS version
+- `min_tls_version`     - (`string`, optional, defaults to `TLS1_2`) minimum supported TLS version.
 - `allowed_public_ips`  - (`list`, optional, defaults to `[]`) list of IP CIDR ranges that are allowed to access the Storage
                           Account. Only public IPs are allowed, RFC1918 address space is not permitted.
 - `allowed_subnet_ids`  - (`list`, optional, defaults to `[]`) list of the allowed VNet subnet ids. Note that this option
                           requires network service endpoint enabled for Microsoft Storage for the specified subnets.
                           If you are using [vnet module](../vnet/README.md), set `storage_private_access` to true for the
                           specific subnet.
-
 
 
 Type: 
@@ -325,9 +323,9 @@ Following options are available:
                                     `file_shares` variable are created or sourced, if the latter, the storage account also 
                                     has to be sourced.
 - `disable_package_dirs_creation` - (`bool`, optional, defaults to `false`) for sourced File Shares, controls if the bootstrap
-                                    package folder structure is created
+                                    package folder structure is created.
 - `quota`                         - (`number`, optional, defaults to `10`) maximum size of a File Share in GB, a value between
-                                    1 and 5120 (5TB)
+                                    1 and 5120 (5TB).
 - `access_tier`                   - (`string`, optional, defaults to `Cool`) access tier for a File Share, can be one of: 
                                     "Cool", "Hot", "Premium", "TransactionOptimized". 
 
@@ -360,11 +358,11 @@ at the same time.
 
 Following properties are available per each File Share definition:
 
-- `name`                    - (`string`, required) name of the File Share
+- `name`                    - (`string`, required) name of the File Share.
 - `bootstrap_package_path`  - (`string`, optional, defaults to `null`) a path to a folder containing a full bootstrap package.
-                              For details on the bootstrap package structure see [documentation](https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-package)
-- `bootstrap_files`         - (`map`, optional, defaults to `{}`) a map of files that will be copied to the File Share and build
-                              the bootstrap package. 
+                              For details on the bootstrap package structure see [documentation](https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-package).
+- `bootstrap_files`         - (`map`, optional, defaults to `{}`) a map of files that will be copied to the File Share and 
+                              build the bootstrap package. 
                                 
     Keys are local paths, values - remote. Only Unix like directory separator (`/`) is supported. If `bootstrap_package_path`
     is also specified, these files will overwrite any file uploaded from that path.
@@ -382,10 +380,9 @@ Following properties are available per each File Share definition:
 Additionally you can override the default `quota` and `access_tier` properties per File Share (same restrictions apply):
 
 - `quota`       - (`number`, optional, defaults to `var.file_shares_configuration.quota`) maximum size of a File Share in GB,
-                  a value between 1 and 5120 (5TB)
+                  a value between 1 and 5120 (5TB).
 - `access_tier` - (`string`, optional, defaults to `var.file_shares_configuration.access_tier`) access tier for a File Share,
-                  can be one of: "Cool", "Hot", "Premium", "TransactionOptimized". 
-
+                  can be one of: "Cool", "Hot", "Premium", "TransactionOptimized".
 
 
 Type: 

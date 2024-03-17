@@ -1,3 +1,4 @@
+# https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/pet
 resource "random_pet" "this" {
   count = contains(
     flatten([for e in var.name_template.parts : [for _, v in e : v]]),
