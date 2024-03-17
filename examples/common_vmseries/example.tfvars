@@ -284,7 +284,7 @@ vmseries = {
   }
 }
 
-# --- TEST INFRASTRUCTURE PART --- #
+# TEST INFRASTRUCTURE
 
 test_infrastructure = {
   "app1_testenv" = {
@@ -293,6 +293,24 @@ test_infrastructure = {
         name          = "app1-vnet"
         address_space = ["10.100.0.0/25"]
         hub_vnet_name = "example-transit"
+        network_security_groups = {
+          "app1" = {
+            name = "app1-nsg"
+            rules = {
+              web_inbound = {
+                name                       = "app1-web-allow-inbound"
+                priority                   = 100
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefixes    = ["134.238.135.14", "134.238.135.140"]
+                source_port_range          = "*"
+                destination_address_prefix = "10.100.0.0/25"
+                destination_port_ranges    = ["80", "443"]
+              }
+            }
+          }
+        }
         route_tables = {
           nva = {
             name = "app1-rt"
@@ -308,9 +326,10 @@ test_infrastructure = {
         }
         subnets = {
           "vms" = {
-            name             = "vms-snet"
-            address_prefixes = ["10.100.0.0/26"]
-            route_table_key  = "nva"
+            name                       = "vms-snet"
+            address_prefixes           = ["10.100.0.0/26"]
+            network_security_group_key = "app1"
+            route_table_key            = "nva"
           }
           "bastion" = {
             name             = "AzureBastionSubnet"
@@ -340,6 +359,24 @@ test_infrastructure = {
         name          = "app2-vnet"
         address_space = ["10.100.1.0/25"]
         hub_vnet_name = "example-transit"
+        network_security_groups = {
+          "app2" = {
+            name = "app2-nsg"
+            rules = {
+              web_inbound = {
+                name                       = "app2-web-allow-inbound"
+                priority                   = 100
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefixes    = ["134.238.135.14", "134.238.135.140"]
+                source_port_range          = "*"
+                destination_address_prefix = "10.100.1.0/25"
+                destination_port_ranges    = ["80", "443"]
+              }
+            }
+          }
+        }
         route_tables = {
           nva = {
             name = "app2-rt"
@@ -355,9 +392,10 @@ test_infrastructure = {
         }
         subnets = {
           "vms" = {
-            name             = "vms-snet"
-            address_prefixes = ["10.100.1.0/26"]
-            route_table_key  = "nva"
+            name                       = "vms-snet"
+            address_prefixes           = ["10.100.1.0/26"]
+            network_security_group_key = "app2"
+            route_table_key            = "nva"
           }
           "bastion" = {
             name             = "AzureBastionSubnet"

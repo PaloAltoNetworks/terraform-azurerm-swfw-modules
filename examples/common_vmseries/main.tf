@@ -391,7 +391,6 @@ module "vmseries" {
   ]
 }
 
-
 # Create test infrastructure
 
 locals {
