@@ -13,7 +13,7 @@ For usage please refer to any reference architecture example.
 Name | Type | Description
 --- | --- | ---
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
-[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 [`authentication`](#authentication) | `object` | A map defining authentication details for spoke VMs.
 [`spoke_vms`](#spoke_vms) | `map` | A map defining spoke VMs for testing.
@@ -81,7 +81,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### location
+#### region
 
 The name of the Azure region to deploy the resources in.
 
@@ -94,22 +94,23 @@ Type: string
 
 A map defining VNETs.
   
-For detailed documentation on each property refer to [module documentation](../vnet/README.md)
+For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-- `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
-                              `false` will source an existing VNET.
-- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = `false` this should be
-                              a full resource name, including prefixes and be inside RG defined in `var.resource_group_name`.
-- `address_space`           - (`list(string)`, required when `create_virtual_network = `false`) a list of CIDRs for a newly
-                              created VNET
+- `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, `false` will source
+                              an existing VNET.
+- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a
+                              full resource name, including prefixes.
+- `address_space`           - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET.
+- `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
+                              VNET will reside or is sourced from.
 - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
-                              otherwise use source existing subnets
+                              otherwise use source existing subnets.
 - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
-                              [VNET module documentation](../vnet/README.md#subnets)
+                              [VNET module documentation](../../modules/vnet/README.md#subnets).
 - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
-                              [VNET module documentation](../vnet/README.md#network_security_groups)
+                              [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
 - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
-                              [VNET module documentation](../vnet/README.md#route_tables)
+                              [VNET module documentation](../../modules/vnet/README.md#route_tables).
 
 
 Type: 
@@ -122,8 +123,7 @@ map(object({
     hub_resource_group_name = optional(string)
     hub_vnet_name           = optional(string)
     network_security_groups = optional(map(object({
-      name                          = string
-      disable_bgp_route_propagation = optional(bool)
+      name = string
       rules = optional(map(object({
         name                         = string
         priority                     = number
@@ -141,7 +141,8 @@ map(object({
       })), {})
     })), {})
     route_tables = optional(map(object({
-      name = string
+      name                          = string
+      disable_bgp_route_propagation = optional(bool)
       routes = map(object({
         name                = string
         address_prefix      = string
@@ -172,7 +173,6 @@ A map defining authentication details for spoke VMs.
 Following properties are available:
 - `username` - (`string`, optional, defaults to `bitnami`) the initial administrative spoke VM username.
 - `password` - (`string`, required) the initial administrative spoke VM password.
-  
 
 
 Type: 
@@ -212,7 +212,6 @@ Values contain the following elements:
   - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
                                 on Azure Marketplace.
 - `custom_data`    - (`string`, optional) custom data to pass to the spoke VM. This can be used as cloud-init for Linux systems.
-  
 
 
 Type: 
@@ -251,7 +250,6 @@ This map follows resource definition convention, following values are available:
 - `subnet_key`     - (`string`, required) a key pointing to a Subnet dedicated to the Bastion deployment.
 
 
-
 Type: 
 
 ```hcl
@@ -273,8 +271,9 @@ map(object({
 
 #### create_resource_group
 
-When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
-When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
+When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by
+`resource_group_name`. When set to `false` the `resource_group_name` parameter is used to specify a name of an existing
+Resource Group.
 
 
 Type: bool
@@ -298,7 +297,9 @@ Default value: `map[]`
 
 #### hub_resource_group_name
 
-Name of the Resource Group hosting the hub/transit infrastructure. This value is required to create peering between the spoke and the hub VNET.
+Name of the Resource Group hosting the hub/transit infrastructure. This value is required to create peering between the spoke
+and the hub VNET.
+
 
 Type: string
 

@@ -2,7 +2,7 @@
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
   name     = var.resource_group_name
-  location = var.location
+  location = var.region
 
   tags = var.tags
 }
@@ -26,7 +26,7 @@ module "vnet" {
   name                   = each.value.name
   create_virtual_network = each.value.create_virtual_network
   resource_group_name    = local.resource_group.name
-  location               = var.location
+  region                 = var.region
 
   address_space = each.value.address_space
 
@@ -64,7 +64,7 @@ resource "azurerm_network_interface" "vm" {
   for_each = var.spoke_vms
 
   name                = each.value.interface_name
-  location            = var.location
+  location            = var.region
   resource_group_name = local.resource_group.name
 
   ip_configuration {
@@ -87,7 +87,7 @@ resource "azurerm_linux_virtual_machine" "this" {
 
   name                            = each.value.name
   resource_group_name             = local.resource_group.name
-  location                        = var.location
+  location                        = var.region
   size                            = each.value.size
   admin_username                  = var.authentication.username
   admin_password                  = local.password
@@ -129,7 +129,7 @@ resource "azurerm_public_ip" "bastion" {
   for_each = var.bastions
 
   name                = each.value.public_ip_name
-  location            = var.location
+  location            = var.region
   resource_group_name = local.resource_group.name
   allocation_method   = "Static"
   sku                 = "Standard"
@@ -141,7 +141,7 @@ resource "azurerm_bastion_host" "this" {
   for_each = var.bastions
 
   name                = each.value.name
-  location            = var.location
+  location            = var.region
   resource_group_name = local.resource_group.name
 
   ip_configuration {

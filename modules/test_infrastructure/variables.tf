@@ -1,7 +1,8 @@
 variable "create_resource_group" {
   description = <<-EOF
-  When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
-  When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
+  When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by
+  `resource_group_name`. When set to `false` the `resource_group_name` parameter is used to specify a name of an existing
+  Resource Group.
   EOF
   default     = true
   type        = bool
@@ -12,7 +13,7 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "location" {
+variable "region" {
   description = "The name of the Azure region to deploy the resources in."
   type        = string
 }
@@ -27,22 +28,23 @@ variable "vnets" {
   description = <<-EOF
   A map defining VNETs.
   
-  For detailed documentation on each property refer to [module documentation](../vnet/README.md)
+  For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-  - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
-                                `false` will source an existing VNET.
-  - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = `false` this should be
-                                a full resource name, including prefixes and be inside RG defined in `var.resource_group_name`.
-  - `address_space`           - (`list(string)`, required when `create_virtual_network = `false`) a list of CIDRs for a newly
-                                created VNET
+  - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, `false` will source
+                                an existing VNET.
+  - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a
+                                full resource name, including prefixes.
+  - `address_space`           - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET.
+  - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
+                                VNET will reside or is sourced from.
   - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
-                                otherwise use source existing subnets
+                                otherwise use source existing subnets.
   - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
-                                [VNET module documentation](../vnet/README.md#subnets)
+                                [VNET module documentation](../../modules/vnet/README.md#subnets).
   - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
-                                [VNET module documentation](../vnet/README.md#network_security_groups)
+                                [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
   - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
-                                [VNET module documentation](../vnet/README.md#route_tables)
+                                [VNET module documentation](../../modules/vnet/README.md#route_tables).
   EOF
   type = map(object({
     name                    = string
@@ -51,8 +53,7 @@ variable "vnets" {
     hub_resource_group_name = optional(string)
     hub_vnet_name           = optional(string)
     network_security_groups = optional(map(object({
-      name                          = string
-      disable_bgp_route_propagation = optional(bool)
+      name = string
       rules = optional(map(object({
         name                         = string
         priority                     = number
@@ -70,7 +71,8 @@ variable "vnets" {
       })), {})
     })), {})
     route_tables = optional(map(object({
-      name = string
+      name                          = string
+      disable_bgp_route_propagation = optional(bool)
       routes = map(object({
         name                = string
         address_prefix      = string
@@ -90,7 +92,10 @@ variable "vnets" {
 }
 
 variable "hub_resource_group_name" {
-  description = "Name of the Resource Group hosting the hub/transit infrastructure. This value is required to create peering between the spoke and the hub VNET."
+  description = <<-EOF
+  Name of the Resource Group hosting the hub/transit infrastructure. This value is required to create peering between the spoke
+  and the hub VNET.
+  EOF
   type        = string
   default     = null
 }
@@ -108,7 +113,6 @@ variable "authentication" {
   Following properties are available:
   - `username` - (`string`, optional, defaults to `bitnami`) the initial administrative spoke VM username.
   - `password` - (`string`, required) the initial administrative spoke VM password.
-  
   EOF
   type = object({
     username = optional(string, "bitnami")
@@ -141,7 +145,6 @@ variable "spoke_vms" {
     - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
                                   on Azure Marketplace.
   - `custom_data`    - (`string`, optional) custom data to pass to the spoke VM. This can be used as cloud-init for Linux systems.
-  
   EOF
   type = map(object({
     name           = string
@@ -171,7 +174,6 @@ variable "bastions" {
   - `vnet_key`       - (`string`, required) a key describing a VNET defined in `var.vnets`. This VNET should already have an 
                        existing subnet called `AzureBastionSubnet` (the name is hardcoded by Microsoft).
   - `subnet_key`     - (`string`, required) a key pointing to a Subnet dedicated to the Bastion deployment.
-
   EOF
   type = map(object({
     name           = string
