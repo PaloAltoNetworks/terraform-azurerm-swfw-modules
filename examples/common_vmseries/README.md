@@ -1102,9 +1102,9 @@ Following properties are supported:
 - `create_resource_group`  - (`bool`, optional, defaults to `true`) when set to `true`, a new Resource Group is created. When 
                              set to `false`, an existing Resource Group is sourced.
 - `resource_group_name`    - (`string`, optional) name of the Resource Group to be created or sourced.
-- `vnets`                  - (`map`, required) map defining VNETs and peerings for the test environment.
-    
-  The most basic properties are as follows:
+- `vnets`                  - (`map`, required) map defining VNETs and peerings for the test environment. The most basic
+                             properties are as follows:
+
   - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
                                 `false` will source an existing VNET.
   - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = `false` this should be
@@ -1123,25 +1123,23 @@ Following properties are supported:
   For all properties and their default values see [VNET module documentation](../../modules/vnet/README.md).
   
 - `authentication`         - (`map`, optional, defaults to example defaults) authentication settings for the deployed VMs.
-- `spoke_vms`              - (`map`, required) a map defining test VMs.
-    
-  The most basic properties are as follows:
+- `spoke_vms`              - (`map`, required) a map defining test VMs. The most basic properties are as follows:
+
   - `name`       - (`string`, required) a name of the VM.
   - `vnet_key`   - (`string`, required) a key describing a VNET defined in `vnets` property.
   - `subnet_key` - (`string`, required) a key describing a Subnet found in a VNET definition.
 
   For all properties and their default values see [module's documentation](../../modules/test_infrastructure/README.md#test_vms).
   
-- `bastions`               - (`map`, required) a map containing Azure Bastion definitions.
-    
-  The most basic properties are as follows:
+- `bastions`               - (`map`, required) a map containing Azure Bastion definitions. The most basic properties are as
+                             follows:
+                               
   - `name`       - (`string`, required) an Azure Bastion name.
   - `vnet_key`   - (`string`, required) a key describing a VNET defined in `vnets` property. This VNET should already have an
                    existing subnet called `AzureBastionSubnet` (the name is hardcoded by Microsoft).
   - `subnet_key` - (`string`, required) a key pointing to a Subnet dedicated to a Bastion deployment.
 
   For all properties and their default values see [module's documentation](../../modules/test_infrastructure/README.md#bastions).
-
 
 
 Type: 

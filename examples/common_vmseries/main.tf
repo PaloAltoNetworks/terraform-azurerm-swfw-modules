@@ -414,7 +414,7 @@ module "test_infrastructure" {
   resource_group_name = try(
     "${var.name_prefix}${each.value.resource_group_name}", "${local.resource_group.name}-testenv"
   )
-  location = var.location
+  location = var.region
   vnets = { for k, v in each.value.vnets : k => merge(v, {
     name                    = "${var.name_prefix}${v.name}"
     hub_resource_group_name = coalesce(v.hub_resource_group_name, local.resource_group.name)
