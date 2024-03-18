@@ -17,7 +17,7 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
-# https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/blob/main/modules/vnet/README.md
+# https://registry.terraform.io/modules/PaloAltoNetworks/swfw-modules/azurerm/latest/submodules/vnet
 module "vnet" {
   source = "../vnet"
 
@@ -39,7 +39,7 @@ module "vnet" {
   tags = var.tags
 }
 
-# https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/blob/main/modules/vnet_peering/README.md
+# https://registry.terraform.io/modules/PaloAltoNetworks/swfw-modules/azurerm/latest/submodules/vnet_peering
 module "vnet_peering" {
   source   = "../vnet_peering"
   for_each = { for k, v in var.vnets : k => v if v.hub_vnet_name != null }

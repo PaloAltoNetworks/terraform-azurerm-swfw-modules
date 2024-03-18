@@ -28,23 +28,25 @@ variable "vnets" {
   description = <<-EOF
   A map defining VNETs.
   
-  For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
+  For detailed documentation on each property refer to [module documentation](../vnet/README.md)
 
   - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, `false` will source
                                 an existing VNET.
   - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a
                                 full resource name, including prefixes.
   - `address_space`           - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET.
-  - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
-                                VNET will reside or is sourced from.
+  - `hub_resource_group_name` - (`string`, optional) name of the Resource Group hosting the hub/transit infrastructure. This
+                                value is necessary to create peering between the spoke and the hub VNET.
+  - `hub_vnet_name`           - (`string`, optional) Name of the hub/transit VNET. This value is required to create peering
+                                between the spoke and the hub VNET.
   - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
                                 otherwise use source existing subnets.
   - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
-                                [VNET module documentation](../../modules/vnet/README.md#subnets).
+                                [VNET module documentation](../vnet/README.md#subnets).
   - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
-                                [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
+                                [VNET module documentation](../vnet/README.md#network_security_groups).
   - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
-                                [VNET module documentation](../../modules/vnet/README.md#route_tables).
+                                [VNET module documentation](../vnet/README.md#route_tables).
   EOF
   type = map(object({
     name                    = string
@@ -89,21 +91,6 @@ variable "vnets" {
       enable_storage_service_endpoint = optional(bool, false)
     })), {})
   }))
-}
-
-variable "hub_resource_group_name" {
-  description = <<-EOF
-  Name of the Resource Group hosting the hub/transit infrastructure. This value is required to create peering between the spoke
-  and the hub VNET.
-  EOF
-  type        = string
-  default     = null
-}
-
-variable "hub_vnet_name" {
-  description = "Name of the hub/transit VNET. This value is required to create peering between the spoke and the hub VNET."
-  type        = string
-  default     = null
 }
 
 variable "authentication" {
