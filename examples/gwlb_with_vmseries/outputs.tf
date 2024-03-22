@@ -25,7 +25,7 @@ output "bootstrap_storage_urls" {
   sensitive = true
 }
 
-output "lb_frontend_ips" {
+output "app_lb_frontend_ips" {
   description = "IP Addresses of the load balancers."
   value = length({ for k, v in var.test_infrastructure : k => v if v.load_balancers != null }) > 0 ? {
     for k, v in module.test_infrastructure : k => v.frontend_ip_configs

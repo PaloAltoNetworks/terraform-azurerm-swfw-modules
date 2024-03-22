@@ -112,7 +112,7 @@ Name |  Description
 `metrics_instrumentation_keys` | The Instrumentation Key of the created instance(s) of Azure Application Insights.
 `vmseries_mgmt_ips` | IP addresses for the VM-Series management interface.
 `bootstrap_storage_urls` | 
-`lb_frontend_ips` | IP Addresses of the load balancers.
+`app_lb_frontend_ips` | IP Addresses of the load balancers.
 
 ## Module's Nameplate
 
@@ -848,7 +848,7 @@ map(object({
         enable_storage_service_endpoint = optional(bool, false)
       })), {})
     }))
-    load_balancers = map(object({
+    load_balancers = optional(map(object({
       name         = string
       vnet_key     = optional(string)
       zones        = optional(list(string))
@@ -895,7 +895,7 @@ map(object({
           idle_timeout_in_minutes  = optional(number)
         })), {})
       })), {})
-    }))
+    })), {})
     authentication = optional(object({
       username = optional(string, "bitnami")
       password = optional(string)

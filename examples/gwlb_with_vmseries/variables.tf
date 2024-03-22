@@ -645,7 +645,7 @@ variable "test_infrastructure" {
         enable_storage_service_endpoint = optional(bool, false)
       })), {})
     }))
-    load_balancers = map(object({
+    load_balancers = optional(map(object({
       name         = string
       vnet_key     = optional(string)
       zones        = optional(list(string))
@@ -692,7 +692,7 @@ variable "test_infrastructure" {
           idle_timeout_in_minutes  = optional(number)
         })), {})
       })), {})
-    }))
+    })), {})
     authentication = optional(object({
       username = optional(string, "bitnami")
       password = optional(string)

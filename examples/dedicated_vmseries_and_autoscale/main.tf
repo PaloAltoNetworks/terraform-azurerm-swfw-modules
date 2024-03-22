@@ -281,6 +281,10 @@ module "test_infrastructure" {
       name = "${var.name_prefix}${vv.name}" })
     }
   }) }
+  load_balancers = { for k, v in each.value.load_balancers : k => merge(v, {
+    name         = "${var.name_prefix}${v.name}"
+    backend_name = coalesce(v.backend_name, "${v.name}-backend")
+  }) }
   authentication = local.test_vm_authentication[each.key]
   spoke_vms = { for k, v in each.value.spoke_vms : k => merge(v, {
     name           = "${var.name_prefix}${v.name}"
