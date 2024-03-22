@@ -59,6 +59,53 @@ module "vnet_peering" {
   depends_on = [module.vnet]
 }
 
+# https://registry.terraform.io/modules/PaloAltoNetworks/swfw-modules/azurerm/latest/submodules/loadbalancer
+module "load_balancer" {
+  source = "../../modules/loadbalancer"
+
+  for_each = var.load_balancers
+
+  name                = each.value.name
+  region              = var.region
+  resource_group_name = local.resource_group.name
+  zones               = each.value.zones
+  backend_name        = each.value.backend_name
+
+  health_probes = each.value.health_probes
+
+  nsg_auto_rules_settings = try(
+    {
+      nsg_name = try(
+        var.vnets[each.value.nsg_auto_rules_settings.nsg_vnet_key].network_security_groups[
+        each.value.nsg_auto_rules_settings.nsg_key].name,
+        each.value.nsg_auto_rules_settings.nsg_name
+      )
+      nsg_resource_group_name = try(
+        var.vnets[each.value.nsg_auto_rules_settings.nsg_vnet_key].resource_group_name,
+        each.value.nsg_auto_rules_settings.nsg_resource_group_name,
+        null
+      )
+      source_ips    = each.value.nsg_auto_rules_settings.source_ips
+      base_priority = each.value.nsg_auto_rules_settings.base_priority
+    },
+    null
+  )
+
+  frontend_ips = {
+    for k, v in each.value.frontend_ips : k => merge(
+      v,
+      {
+        public_ip_name = v.create_public_ip ? v.public_ip_name : null
+        subnet_id      = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
+        gwlb_fip_id    = try(v.gwlb_fip_id, null)
+      }
+    )
+  }
+
+  tags       = var.tags
+  depends_on = [module.vnet]
+}
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface
 resource "azurerm_network_interface" "vm" {
   for_each = var.spoke_vms
@@ -121,6 +168,21 @@ resource "azurerm_linux_virtual_machine" "this" {
   lifecycle {
     ignore_changes = [source_image_reference["version"]]
   }
+}
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_backend_address_pool_association
+resource "azurerm_network_interface_backend_address_pool_association" "this" {
+  for_each = { for k, v in var.spoke_vms : k => v if v.load_balancer_key != null }
+
+  backend_address_pool_id = module.load_balancer[each.value.load_balancer_key].backend_pool_id
+  ip_configuration_name   = azurerm_network_interface.vm[each.key].ip_configuration[0].name
+  network_interface_id    = azurerm_network_interface.vm[each.key].id
+
+  depends_on = [
+    module.load_balancer,
+    azurerm_network_interface.vm,
+    azurerm_linux_virtual_machine.this
+  ]
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip

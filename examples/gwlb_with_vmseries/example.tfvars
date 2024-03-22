@@ -73,77 +73,9 @@ vnets = {
       }
     }
   }
-  "app1" = {
-    name          = "app1"
-    address_space = ["10.0.2.0/25"]
-    network_security_groups = {
-      "application_inbound" = {
-        name = "application-inbound-nsg"
-        rules = {
-          app_inbound = {
-            name                       = "application-allow-inbound"
-            priority                   = 100
-            direction                  = "Inbound"
-            access                     = "Allow"
-            protocol                   = "Tcp"
-            source_address_prefixes    = ["0.0.0.0/0"] # TODO: whitelist public IP addresses that will be used to manage the appliances
-            source_port_range          = "*"
-            destination_address_prefix = "*"
-            destination_port_ranges    = ["22", "80", "443"]
-          }
-        }
-      }
-    }
-    subnets = {
-      "app1" = {
-        name                       = "app1-snet"
-        address_prefixes           = ["10.0.2.0/28"]
-        network_security_group_key = "application_inbound"
-      }
-    }
-  }
 }
 
 # LOAD BALANCING
-
-load_balancers = {
-  "app1" = {
-    name = "app1-lb"
-    nsg_auto_rules_settings = {
-      nsg_vnet_key = "app1"
-      nsg_key      = "application_inbound"
-      source_ips   = ["0.0.0.0/0"]
-    }
-    frontend_ips = {
-      "app1" = {
-        name             = "app1"
-        public_ip_name   = "public-lb-app1-pip"
-        create_public_ip = true
-        gwlb_key         = "gwlb"
-        in_rules = {
-          "balanceHttp" = {
-            name        = "HTTP"
-            protocol    = "Tcp"
-            port        = 80
-            floating_ip = false
-          }
-          "balanceHttps" = {
-            name        = "HTTPS"
-            protocol    = "Tcp"
-            port        = 443
-            floating_ip = false
-          }
-        }
-        out_rules = {
-          outbound = {
-            name     = "tcp-outbound"
-            protocol = "Tcp"
-          }
-        }
-      }
-    }
-  }
-}
 
 gateway_load_balancers = {
   gwlb = {
@@ -264,21 +196,161 @@ vmseries = {
 
 # TEST INFRASTRUCTURE
 
-appvms = {
-  app1vm01 = {
-    name              = "app1-vm01"
-    avzone            = "3"
-    vnet_key          = "app1"
-    subnet_key        = "app1"
-    load_balancer_key = "app1"
-    username          = "appadmin"
-    custom_data       = <<SCRIPT
-#!/bin/sh
-sudo apt-get update
-sudo apt-get install -y nginx
-sudo systemctl start nginx
-sudo systemctl enable nginx
-echo "Backend VM is $(hostname)" | sudo tee /var/www/html/index.html
-SCRIPT
+test_infrastructure = {
+  "app1_testenv" = {
+    vnets = {
+      "app1" = {
+        name          = "app1-vnet"
+        address_space = ["10.100.0.0/25"]
+        hub_vnet_name = "example-transit"
+        network_security_groups = {
+          "app1" = {
+            name = "app1-nsg"
+          }
+        }
+        subnets = {
+          "vms" = {
+            name                       = "vms-snet"
+            address_prefixes           = ["10.100.0.0/26"]
+            network_security_group_key = "app1"
+          }
+          "bastion" = {
+            name             = "AzureBastionSubnet"
+            address_prefixes = ["10.100.0.64/26"]
+          }
+        }
+      }
+    }
+    load_balancers = {
+      "app1" = {
+        name = "app1-lb"
+        nsg_auto_rules_settings = {
+          nsg_vnet_key = "app1"
+          nsg_key      = "app1"
+          source_ips   = ["0.0.0.0/0"]
+        }
+        frontend_ips = {
+          "app1" = {
+            name             = "app1-frontend"
+            public_ip_name   = "public-lb-app1-frontend-pip"
+            create_public_ip = true
+            gwlb_key         = "gwlb"
+            in_rules = {
+              "balanceHttp" = {
+                name        = "HTTP"
+                protocol    = "Tcp"
+                port        = 80
+                floating_ip = false
+              }
+              "balanceHttps" = {
+                name        = "HTTPS"
+                protocol    = "Tcp"
+                port        = 443
+                floating_ip = false
+              }
+            }
+            out_rules = {
+              outbound = {
+                name     = "tcp-outbound"
+                protocol = "Tcp"
+              }
+            }
+          }
+        }
+      }
+    }
+    spoke_vms = {
+      "app1_vm" = {
+        name              = "app1-vm"
+        vnet_key          = "app1"
+        subnet_key        = "vms"
+        load_balancer_key = "app1"
+      }
+    }
+    bastions = {
+      "app1_bastion" = {
+        name       = "app1-bastion"
+        vnet_key   = "app1"
+        subnet_key = "bastion"
+      }
+    }
+  }
+  "app2_testenv" = {
+    vnets = {
+      "app2" = {
+        name          = "app2-vnet"
+        address_space = ["10.100.1.0/25"]
+        hub_vnet_name = "example-transit"
+        network_security_groups = {
+          "app2" = {
+            name = "app2-nsg"
+          }
+        }
+        subnets = {
+          "vms" = {
+            name                       = "vms-snet"
+            address_prefixes           = ["10.100.1.0/26"]
+            network_security_group_key = "app2"
+          }
+          "bastion" = {
+            name             = "AzureBastionSubnet"
+            address_prefixes = ["10.100.1.64/26"]
+          }
+        }
+      }
+    }
+    load_balancers = {
+      "app2" = {
+        name = "app2-lb"
+        nsg_auto_rules_settings = {
+          nsg_vnet_key = "app2"
+          nsg_key      = "app2"
+          source_ips   = ["0.0.0.0/0"]
+        }
+        frontend_ips = {
+          "app2" = {
+            name             = "app2-frontend"
+            public_ip_name   = "public-lb-app2-frontend-pip"
+            create_public_ip = true
+            gwlb_key         = "gwlb"
+            in_rules = {
+              "balanceHttp" = {
+                name        = "HTTP"
+                protocol    = "Tcp"
+                port        = 80
+                floating_ip = false
+              }
+              "balanceHttps" = {
+                name        = "HTTPS"
+                protocol    = "Tcp"
+                port        = 443
+                floating_ip = false
+              }
+            }
+            out_rules = {
+              outbound = {
+                name     = "tcp-outbound"
+                protocol = "Tcp"
+              }
+            }
+          }
+        }
+      }
+    }
+    spoke_vms = {
+      "app2_vm" = {
+        name              = "app2-vm"
+        vnet_key          = "app2"
+        subnet_key        = "vms"
+        load_balancer_key = "app2"
+      }
+    }
+    bastions = {
+      "app2_bastion" = {
+        name       = "app2-bastion"
+        vnet_key   = "app2"
+        subnet_key = "bastion"
+      }
+    }
   }
 }
