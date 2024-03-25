@@ -58,7 +58,7 @@ Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../vnet | https://registry.terraform.io/modules/PaloAltoNetworks/swfw-modules/azurerm/latest/submodules/vnet
 `vnet_peering` | - | ../vnet_peering | https://registry.terraform.io/modules/PaloAltoNetworks/swfw-modules/azurerm/latest/submodules/vnet_peering
-`load_balancer` | - | ../../modules/loadbalancer | https://registry.terraform.io/modules/PaloAltoNetworks/swfw-modules/azurerm/latest/submodules/loadbalancer
+`load_balancer` | - | ../loadbalancer | https://registry.terraform.io/modules/PaloAltoNetworks/swfw-modules/azurerm/latest/submodules/loadbalancer
 
 
 Resources used in this module:

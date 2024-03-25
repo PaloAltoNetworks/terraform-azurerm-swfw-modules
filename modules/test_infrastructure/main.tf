@@ -61,7 +61,7 @@ module "vnet_peering" {
 
 # https://registry.terraform.io/modules/PaloAltoNetworks/swfw-modules/azurerm/latest/submodules/loadbalancer
 module "load_balancer" {
-  source = "../../modules/loadbalancer"
+  source = "../loadbalancer"
 
   for_each = var.load_balancers
 
@@ -187,7 +187,6 @@ resource "azurerm_network_interface_backend_address_pool_association" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "bastion" {
-
   for_each = var.bastions
 
   name                = each.value.public_ip_name
@@ -199,7 +198,6 @@ resource "azurerm_public_ip" "bastion" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/bastion_host
 resource "azurerm_bastion_host" "this" {
-
   for_each = var.bastions
 
   name                = each.value.name
