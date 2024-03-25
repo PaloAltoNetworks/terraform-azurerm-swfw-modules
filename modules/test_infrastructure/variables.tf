@@ -205,16 +205,19 @@ variable "spoke_vms" {
 
   Values contain the following elements:
 
-  - `name`              - (`string`, required) a name of the spoke VM.
-  - `interface_name`    - (`string`, required) a name of the spoke VM's network interface.
-  - `disk_name`         - (`string`, required) a name of the OS disk.
-  - `vnet_key`          - (`string`, required) a key describing a VNET defined in `var.vnets`.
-  - `subnet_key`        - (`string`, required) a key describing a Subnet found in a VNET definition.
-  - `load_balancer_key` - (`string`, optional) a key of a Load Balancer defined in `var.load_balancers` variable, network
-                          interface that has this property defined will be added to the Load Balancer's backend pool.
-  - `size`              - (`string`, optional, default to `Standard_D1_v2`) a size of the spoke VM.
-  - `image`             - (`map`, optional) a map defining basic spoke VM image configuration. By default, latest Bitnami
-                          WordPress VM is deployed.
+  - `name`               - (`string`, required) a name of the spoke VM.
+  - `interface_name`     - (`string`, required) a name of the spoke VM's network interface.
+  - `disk_name`          - (`string`, required) a name of the OS disk.
+  - `vnet_key`           - (`string`, required) a key describing a VNET defined in `var.vnets`.
+  - `subnet_key`         - (`string`, required) a key describing a Subnet found in a VNET definition.
+  - `load_balancer_key`  - (`string`, optional) a key of a Load Balancer defined in `var.load_balancers` variable, network
+                           interface that has this property defined will be added to the Load Balancer's backend pool.
+  - `private_ip_address` - (`string`, optional) static private IP to assign to the interface. When skipped Azure will assign one
+                           dynamically. Keep in mind that a dynamic IP is guarantied not to change as long as the VM is running.
+                           Any stop/deallocate/restart operation might cause the IP to change.
+  - `size`               - (`string`, optional, default to `Standard_D1_v2`) a size of the spoke VM.
+  - `image`              - (`map`, optional) a map defining basic spoke VM image configuration. By default, latest Bitnami
+                           WordPress VM is deployed.
     - `publisher`               - (`string`, optional, defaults to `bitnami`) the Azure Publisher identifier for an image which
                                   should be deployed.
     - `offer`                   - (`string`, optional, defaults to `wordpress`) the Azure Offer identifier corresponding to a 
@@ -225,17 +228,18 @@ variable "spoke_vms" {
                                   Marketplace.
     - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
                                   on Azure Marketplace.
-  - `custom_data`       - (`string`, optional) custom data to pass to the spoke VM. This can be used as cloud-init for Linux
-                          systems.
+  - `custom_data`        - (`string`, optional) custom data to pass to the spoke VM. This can be used as cloud-init for Linux
+                           systems.
   EOF
   type = map(object({
-    name              = string
-    interface_name    = string
-    disk_name         = string
-    vnet_key          = string
-    subnet_key        = string
-    load_balancer_key = optional(string)
-    size              = optional(string, "Standard_D1_v2")
+    name               = string
+    interface_name     = string
+    disk_name          = string
+    vnet_key           = string
+    subnet_key         = string
+    load_balancer_key  = optional(string)
+    private_ip_address = optional(string)
+    size               = optional(string, "Standard_D1_v2")
     image = object({
       publisher               = optional(string, "bitnami")
       offer                   = optional(string, "wordpress")

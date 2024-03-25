@@ -117,7 +117,8 @@ resource "azurerm_network_interface" "vm" {
   ip_configuration {
     name                          = "internal"
     subnet_id                     = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
-    private_ip_address_allocation = "Dynamic"
+    private_ip_address_allocation = each.value.private_ip_address != null ? "Static" : "Dynamic"
+    private_ip_address            = each.value.private_ip_address
   }
 }
 

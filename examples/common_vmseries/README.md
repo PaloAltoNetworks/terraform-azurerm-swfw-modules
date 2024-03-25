@@ -1286,13 +1286,14 @@ map(object({
       password = optional(string)
     }), {})
     spoke_vms = map(object({
-      name              = string
-      interface_name    = optional(string)
-      disk_name         = optional(string)
-      vnet_key          = string
-      subnet_key        = string
-      load_balancer_key = optional(string)
-      size              = optional(string)
+      name               = string
+      interface_name     = optional(string)
+      disk_name          = optional(string)
+      vnet_key           = string
+      subnet_key         = string
+      load_balancer_key  = optional(string)
+      private_ip_address = optional(string)
+      size               = optional(string)
       image = optional(object({
         publisher               = optional(string)
         offer                   = optional(string)
