@@ -41,9 +41,9 @@ module "vnet" {
 
 # https://registry.terraform.io/modules/PaloAltoNetworks/swfw-modules/azurerm/latest/submodules/vnet_peering
 module "vnet_peering" {
-  source   = "../vnet_peering"
-  for_each = { for k, v in var.vnets : k => v if v.hub_vnet_name != null }
+  source = "../vnet_peering"
 
+  for_each = { for k, v in var.vnets : k => v if v.hub_vnet_name != null }
 
   local_peer_config = {
     name                = "peer-${each.value.name}-to-${each.value.hub_vnet_name}"
