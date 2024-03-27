@@ -1,5 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 ---
+short\_title: Standalone VM-Series Deployment
+type: example
 show\_in\_hub: false
 ---
 # Palo Alto Networks Next Generation deployment example
@@ -26,7 +28,7 @@ This is a non zonal deployment. The deployed infrastructure consists of:
 
 A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
 
-- (in case of non cloud shell deployment) credentials and (optionally) tools required to authenticate against Azure Cloud, see
+- _(in case of non cloud shell deployment)_ credentials and (optionally) tools required to authenticate against Azure Cloud, see
   [AzureRM provider documentation for details](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure)
 - [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
 - if you have not run Palo Alto NGFW images in a subscription it might be necessary to accept the license first
@@ -39,14 +41,14 @@ Steps to deploy the infrastructure are as following:
 - checkout the code locally (if you haven't done so yet)
 - copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs
   (take a closer look at the `TODO` markers)
-- (optional) authenticate to AzureRM, switch to the Subscription of your choice if necessary
+- _(optional)_ authenticate to AzureRM, switch to the Subscription of your choice if necessary
 - initialize the Terraform module:
 
   ```bash
   terraform init
   ```
 
-- (optional) plan you infrastructure to see what will be actually deployed:
+- _(optional)_ plan you infrastructure to see what will be actually deployed:
 
   ```bash
   terraform plan

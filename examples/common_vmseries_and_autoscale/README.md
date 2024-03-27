@@ -57,7 +57,7 @@ This reference architecture consists of:
     - 3 of them dedicated to the firewalls: management, private and public
     - one dedicated to an Application Gateway
   - Route Tables and Network Security Groups
-- 1 Virtual Machine Scale set:
+- 1 Virtual Machine Scale Set:
   - deployed across availability zones
   - for inbound, outbound and east-west traffic
   - with 3 network interfaces: management, public, private
@@ -69,6 +69,14 @@ This reference architecture consists of:
   - private - in front of the private interfaces of the firewalls in VMSS, for outgoing and east-west traffic
 - an Application Insights, used to store the custom PanOS metrics sent from firewalls in scale set
 - an Application Gateway, serving as a reverse proxy for incoming traffic, with a sample rule setting the XFF header properly
+- _(optional)_ test workloads with accompanying infrastructure:
+  - 2 Spoke VNETs with Route Tables and Network Security Groups
+  - 2 Spoke VMs serving as WordPress-based web servers
+  - 2 Azure Bastion managed jump hosts
+
+**NOTE!**
+- In order to deploy the architecture without test workloads described above, empty the `test_infrastructure` map in
+  `example.tfvars` file.
 
 **Disclaimer!** \
 Public IP addresses are assigned to management interfaces in this example in order to simplify the deployment. With a private
@@ -92,7 +100,7 @@ firewalls in common option, and are automatically registered to Azure Load Balan
 
 A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
 
-- (in case of non cloud shell deployment) credentials and (optionally) tools required to authenticate against Azure Cloud, see
+- _(in case of non cloud shell deployment)_ credentials and (optionally) tools required to authenticate against Azure Cloud, see
   [AzureRM provider documentation for details](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure)
 - [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
 - if you have not run Palo Alto NGFW images in a subscription it might be necessary to accept the license first
@@ -121,14 +129,14 @@ A non-platform requirement would be a running Panorama instance. For full automa
 - copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer
   look at the `TODO` markers). If you already have a configured Panorama (with at least minimum configuration described above) you
   might want to also adjust the `bootstrap_options` for the scale set [`common`](./example.tfvars#L224).
-- (optional) authenticate to AzureRM, switch to the Subscription of your choice if necessary
+- _(optional)_ authenticate to AzureRM, switch to the Subscription of your choice if necessary
 - initialize the Terraform module:
 
   ```bash
   terraform init
   ```
 
-- (optional) plan you infrastructure to see what will be actually deployed:
+- _(optional)_ plan you infrastructure to see what will be actually deployed:
 
   ```bash
   terraform plan
