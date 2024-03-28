@@ -2,9 +2,9 @@
 
 # https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password
 resource "random_password" "this" {
-  count = anytrue([
-    for _, v in var.vmseries : v.authentication.password == null
-  ]) ? 1 : 0
+  count = anytrue([for _, v in var.vmseries : v.authentication.password == null]) ? (
+    anytrue([for _, v in var.test_infrastructure : v.authentication.password == null]) ? 2 : 1
+  ) : 0
 
   length           = 16
   min_lower        = 16 - 4
@@ -389,4 +389,56 @@ module "vmseries" {
     module.load_balancer,
     module.bootstrap,
   ]
+}
+
+# Create test infrastructure
+
+locals {
+  test_vm_authentication = {
+    for k, v in var.test_infrastructure : k =>
+    merge(
+      v.authentication,
+      {
+        password = coalesce(v.authentication.password, try(random_password.this[1].result, null))
+      }
+    )
+  }
+}
+
+module "test_infrastructure" {
+  source = "../../modules/test_infrastructure"
+
+  for_each = var.test_infrastructure
+
+  resource_group_name = try(
+    "${var.name_prefix}${each.value.resource_group_name}", "${local.resource_group.name}-testenv"
+  )
+  region = var.region
+  vnets = { for k, v in each.value.vnets : k => merge(v, {
+    name                    = "${var.name_prefix}${v.name}"
+    hub_resource_group_name = coalesce(v.hub_resource_group_name, local.resource_group.name)
+    network_security_groups = { for kv, vv in v.network_security_groups : kv => merge(vv, {
+      name = "${var.name_prefix}${vv.name}" })
+    }
+    route_tables = { for kv, vv in v.route_tables : kv => merge(vv, {
+      name = "${var.name_prefix}${vv.name}" })
+    }
+  }) }
+  load_balancers = { for k, v in each.value.load_balancers : k => merge(v, {
+    name         = "${var.name_prefix}${v.name}"
+    backend_name = coalesce(v.backend_name, "${v.name}-backend")
+  }) }
+  authentication = local.test_vm_authentication[each.key]
+  spoke_vms = { for k, v in each.value.spoke_vms : k => merge(v, {
+    name           = "${var.name_prefix}${v.name}"
+    interface_name = "${var.name_prefix}${coalesce(v.interface_name, "${v.name}-nic")}"
+    disk_name      = "${var.name_prefix}${coalesce(v.disk_name, "${v.name}-osdisk")}"
+  }) }
+  bastions = { for k, v in each.value.bastions : k => merge(v, {
+    name           = "${var.name_prefix}${v.name}"
+    public_ip_name = "${var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")}"
+  }) }
+
+  tags       = var.tags
+  depends_on = [module.vnet]
 }

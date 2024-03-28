@@ -37,3 +37,10 @@ output "bootstrap_storage_urls" {
   value     = length(var.bootstrap_storages) > 0 ? { for k, v in module.bootstrap : k => v.file_share_urls } : null
   sensitive = true
 }
+
+output "app_lb_frontend_ips" {
+  description = "IP Addresses of the load balancers."
+  value = length({ for k, v in var.test_infrastructure : k => v if v.load_balancers != null }) > 0 ? {
+    for k, v in module.test_infrastructure : k => v.frontend_ip_configs
+  } : null
+}

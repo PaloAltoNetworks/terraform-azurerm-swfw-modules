@@ -49,7 +49,7 @@ set of VM-Series firewalls services all outbound, east-west, and enterprise netw
 increased scale and operational resiliency and reduces the chances of high bandwidth use from the inbound traffic flows affecting
 other traffic flows within the deployment.
 
-![Dedicated-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/757005dc-3e24-4b39-8a69-7b3fbf9819cb)
+![Detailed Topology Diagram](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/135693994/a3104f98-4981-47ce-b96e-84e026268d1d)
 
 This reference architecture consists of:
 
@@ -58,7 +58,7 @@ This reference architecture consists of:
     - 3 of them dedicated to the firewalls: management, private and public
     - one dedicated to an Application Gateway
   - Route Tables and Network Security Groups
-- 2 Virtual Machine Scale sets:
+- 2 Virtual Machine Scale Sets:
   - one for inbound, one for outbound and east-west traffic
   - with 3 network interfaces: management, public, private
   - no public addresses are assigned to firewalls' interfaces
@@ -69,9 +69,15 @@ This reference architecture consists of:
 - firewalls mainly) interfaces
 - 2 Application Insights, one per each scale set, used to store the custom PanOS metrics
 - an Application Gateway, serving as a reverse proxy for incoming traffic, with a sample rule setting the XFF header properly
+- _(optional)_ test workloads with accompanying infrastructure:
+  - 2 Spoke VNETs with Route Tables and Network Security Groups
+  - 2 Spoke VMs serving as WordPress-based web servers
+  - 2 Azure Bastion managed jump hosts
 
-A note on resiliency - this is an example of a none zonal deployment. Resiliency is maintained by using fault domains (Scale Set's
-default mechanism).
+**NOTE!**
+- In order to deploy the architecture without test workloads described above, empty the `test_infrastructure` map in
+  `example.tfvars` file.
+- This is an example of a non-zonal deployment. Resiliency is maintained by using fault domains (Scale Set's default mechanism).
 
 ### Auto Scaling VM-Series
 
@@ -86,7 +92,7 @@ firewalls, and are automatically registered to Azure Load Balancers.
 
 A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
 
-- (in case of non cloud shell deployment) credentials and (optionally) tools required to authenticate against Azure Cloud, see
+- _(in case of non cloud shell deployment)_ credentials and (optionally) tools required to authenticate against Azure Cloud, see
   [AzureRM provider documentation for details](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure)
 - [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
 - if you have not run Palo Alto NGFW images in a subscription it might be necessary to accept the license first
@@ -117,14 +123,14 @@ requirements:
   look at the `TODO` markers). If you already have a configured Panorama (with at least minimum configuration described above) you
   might want to also adjust the `bootstrap_options` for each scale set ([inbound](./example.tfvars#L205) and
   [obew](./example.tfvars#L249) separately).
-- (optional) authenticate to AzureRM, switch to the Subscription of your choice if necessary
+- _(optional)_ authenticate to AzureRM, switch to the Subscription of your choice if necessary
 - initialize the Terraform module:
 
   ```bash
   terraform init
   ```
 
-- (optional) plan you infrastructure to see what will be actually deployed:
+- _(optional)_ plan you infrastructure to see what will be actually deployed:
 
   ```bash
   terraform plan
@@ -215,6 +221,7 @@ Name | Type | Description
 [`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
 [`ngfw_metrics`](#ngfw_metrics) | `object` | A map controlling metrics-relates resources.
 [`scale_sets`](#scale_sets) | `map` | A map defining Azure Virtual Machine Scale Sets based on Palo Alto Networks Next Generation Firewall image.
+[`test_infrastructure`](#test_infrastructure) | `map` | A map defining test infrastructure including test VMs and Azure Bastion hosts.
 
 
 
@@ -226,6 +233,10 @@ Name |  Description
 `passwords` | Initial firewall administrative passwords for all deployed Scale Sets.
 `metrics_instrumentation_keys` | The Instrumentation Key of the created instance(s) of Azure Application Insights.
 `lb_frontend_ips` | IP Addresses of the load balancers.
+`test_vms_usernames` | Initial administrative username to use for test VMs.
+`test_vms_passwords` | Initial administrative password to use for test VMs.
+`test_vms_ips` | IP Addresses of the test VMs.
+`app_lb_frontend_ips` | IP Addresses of the load balancers.
 
 ## Module's Nameplate
 
@@ -250,6 +261,7 @@ Name | Version | Source | Description
 `appgw` | - | ../../modules/appgw | 
 `ngfw_metrics` | - | ../../modules/ngfw_metrics | 
 `vmss` | - | ../../modules/vmss | 
+`test_infrastructure` | - | ../../modules/test_infrastructure | 
 
 
 Resources used in this module:
@@ -354,6 +366,7 @@ map(object({
 
 
 <sup>[back to list](#modules-required-inputs)</sup>
+
 
 
 
@@ -965,6 +978,232 @@ map(object({
         })
       })), [])
     })), [])
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### test_infrastructure
+
+A map defining test infrastructure including test VMs and Azure Bastion hosts.
+
+For details and defaults for available options please refer to the
+[`test_infrastructure`](../../modules/test_infrastructure/README.md) module.
+
+Following properties are supported:
+
+- `create_resource_group`  - (`bool`, optional, defaults to `true`) when set to `true`, a new Resource Group is created. When 
+                             set to `false`, an existing Resource Group is sourced.
+- `resource_group_name`    - (`string`, optional) name of the Resource Group to be created or sourced.
+- `vnets`                  - (`map`, required) a map defining VNETs and peerings for the test environment. The most basic
+                             properties are as follows:
+
+  - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
+                                `false` will source an existing VNET.
+  - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = `false` this should be
+                                a full resource name, including prefixes.
+  - `address_space`           - (`list(string)`, required when `create_virtual_network = `false`) a list of CIDRs for a newly
+                                created VNET.
+  - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
+                                otherwise use source existing subnets.
+  - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
+                                [VNET module documentation](../../modules/vnet/README.md#subnets).
+  - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
+                                [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
+  - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
+                                [VNET module documentation](../../modules/vnet/README.md#route_tables).
+
+  For all properties and their default values see [module's documentation](../../modules/test_infrastructure/README.md#vnets).
+  
+- `load_balancers`         - (`map`, optional) a map containing configuration for all (both private and public) Load Balancers.
+                             The most basic properties are as follows:
+
+  - `name`                    - (`string`, required) a name of the Load Balancer.
+  - `vnet_key`                - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets`
+                                map that stores the Subnet described by `subnet_key`.
+  - `zones`                   - (`list`, optional, defaults to module default) a list of zones for Load Balancer's frontend IP
+                                configurations.
+  - `backend_name`            - (`string`, optional) a name of the backend pool to create.
+  - `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by load
+                                balancing rules, please refer to
+                                [loadbalancer module documentation](../../modules/loadbalancer/README.md#health_probes) for
+                                more specific use cases and available properties.
+  - `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule that
+                                will be populated with `Allow` rules for each load balancing rule (`in_rules`), please refer to
+                                [loadbalancer module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings)
+                                for available properties. 
+                                
+  Please note that in this example two additional properties are available:
+
+    - `nsg_vnet_key` - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition in the
+                       `var.vnets` map that stores the NSG described by `nsg_key`.
+    - `nsg_key`      - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to an NSG definition in the
+                       `var.vnets` map.
+
+  - `frontend_ips`            - (`map`, optional, defaults to `{}`) a map containing frontend IP configuration with respective
+                                `in_rules` and `out_rules`, please refer to
+                                [loadbalancer module documentation](../../modules/loadbalancer/README.md#frontend_ips) for
+                                available properties.
+
+    **Note!** \
+    In this example the `subnet_id` is not available directly, another property has been introduced instead:
+
+    - `subnet_key` - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map.
+
+  For all properties and their default values see
+  [module's documentation](../../modules/test_infrastructure/README.md#load_balancers).
+
+- `authentication`         - (`map`, optional, defaults to example defaults) authentication settings for the deployed VMs.
+- `spoke_vms`              - (`map`, required) a map defining test VMs. The most basic properties are as follows:
+
+  - `name`              - (`string`, required) a name of the VM.
+  - `vnet_key`          - (`string`, required) a key describing a VNET defined in `vnets` property.
+  - `subnet_key`        - (`string`, required) a key describing a Subnet found in a VNET definition.
+  - `load_balancer_key` - (`string`, optional) a key describing a Load Balancer defined in `load_balancers` property.
+
+  For all properties and their default values see
+  [module's documentation](../../modules/test_infrastructure/README.md#test_vms).
+  
+- `bastions`               - (`map`, required) a map containing Azure Bastion definitions. The most basic properties are as
+                             follows:
+                               
+  - `name`       - (`string`, required) an Azure Bastion name.
+  - `vnet_key`   - (`string`, required) a key describing a VNET defined in `vnets` property. This VNET should already have an
+                   existing subnet called `AzureBastionSubnet` (the name is hardcoded by Microsoft).
+  - `subnet_key` - (`string`, required) a key pointing to a Subnet dedicated to a Bastion deployment.
+
+  For all properties and their default values see
+  [module's documentation](../../modules/test_infrastructure/README.md#bastions).
+
+
+Type: 
+
+```hcl
+map(object({
+    create_resource_group = optional(bool, true)
+    resource_group_name   = optional(string)
+    vnets = map(object({
+      name                    = string
+      create_virtual_network  = optional(bool, true)
+      address_space           = optional(list(string))
+      hub_resource_group_name = optional(string)
+      hub_vnet_name           = string
+      network_security_groups = optional(map(object({
+        name                          = string
+        disable_bgp_route_propagation = optional(bool)
+        rules = optional(map(object({
+          name                         = string
+          priority                     = number
+          direction                    = string
+          access                       = string
+          protocol                     = string
+          source_port_range            = optional(string)
+          source_port_ranges           = optional(list(string))
+          destination_port_range       = optional(string)
+          destination_port_ranges      = optional(list(string))
+          source_address_prefix        = optional(string)
+          source_address_prefixes      = optional(list(string))
+          destination_address_prefix   = optional(string)
+          destination_address_prefixes = optional(list(string))
+        })), {})
+      })), {})
+      route_tables = optional(map(object({
+        name = string
+        routes = map(object({
+          name                = string
+          address_prefix      = string
+          next_hop_type       = string
+          next_hop_ip_address = optional(string)
+        }))
+      })), {})
+      create_subnets = optional(bool, true)
+      subnets = optional(map(object({
+        name                            = string
+        address_prefixes                = optional(list(string), [])
+        network_security_group_key      = optional(string)
+        route_table_key                 = optional(string)
+        enable_storage_service_endpoint = optional(bool, false)
+      })), {})
+    }))
+    load_balancers = optional(map(object({
+      name         = string
+      vnet_key     = optional(string)
+      zones        = optional(list(string))
+      backend_name = optional(string)
+      health_probes = optional(map(object({
+        name                = string
+        protocol            = string
+        port                = optional(number)
+        probe_threshold     = optional(number)
+        interval_in_seconds = optional(number)
+        request_path        = optional(string)
+      })))
+      nsg_auto_rules_settings = optional(object({
+        nsg_name                = optional(string)
+        nsg_vnet_key            = optional(string)
+        nsg_key                 = optional(string)
+        nsg_resource_group_name = optional(string)
+        source_ips              = list(string)
+        base_priority           = optional(number)
+      }))
+      frontend_ips = optional(map(object({
+        name                          = string
+        subnet_key                    = optional(string)
+        public_ip_name                = optional(string)
+        create_public_ip              = optional(bool, false)
+        public_ip_resource_group_name = optional(string)
+        private_ip_address            = optional(string)
+        gwlb_key                      = optional(string)
+        in_rules = optional(map(object({
+          name                = string
+          protocol            = string
+          port                = number
+          backend_port        = optional(number)
+          health_probe_key    = optional(string)
+          floating_ip         = optional(bool)
+          session_persistence = optional(string)
+          nsg_priority        = optional(number)
+        })), {})
+        out_rules = optional(map(object({
+          name                     = string
+          protocol                 = string
+          allocated_outbound_ports = optional(number)
+          enable_tcp_reset         = optional(bool)
+          idle_timeout_in_minutes  = optional(number)
+        })), {})
+      })), {})
+    })), {})
+    authentication = optional(object({
+      username = optional(string, "bitnami")
+      password = optional(string)
+    }), {})
+    spoke_vms = map(object({
+      name               = string
+      interface_name     = optional(string)
+      disk_name          = optional(string)
+      vnet_key           = string
+      subnet_key         = string
+      load_balancer_key  = optional(string)
+      private_ip_address = optional(string)
+      size               = optional(string)
+      image = optional(object({
+        publisher               = optional(string)
+        offer                   = optional(string)
+        sku                     = optional(string)
+        version                 = optional(string)
+        enable_marketplace_plan = optional(bool)
+      }), {})
+      custom_data = optional(string)
+    }))
+    bastions = map(object({
+      name           = string
+      public_ip_name = optional(string)
+      vnet_key       = string
+      subnet_key     = string
+    }))
   }))
 ```
 
