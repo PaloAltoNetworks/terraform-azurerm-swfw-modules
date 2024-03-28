@@ -49,7 +49,7 @@ set of VM-Series firewalls services all outbound, east-west, and enterprise netw
 increased scale and operational resiliency and reduces the chances of high bandwidth use from the inbound traffic flows affecting
 other traffic flows within the deployment.
 
-![Dedicated-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/135693994/a3104f98-4981-47ce-b96e-84e026268d1d)
+![Detailed Topology Diagram](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/135693994/a3104f98-4981-47ce-b96e-84e026268d1d)
 
 This reference architecture consists of:
 

@@ -48,7 +48,7 @@ and may present scale limitations with all traffic flowing through a single set 
 that occurs when traffic crosses virtual routers. This option is suitable for smaller scale deployments because inbound and
 outbound traffic flows occur on the same set of firewalls. However, the technical integration complexity is high.
 
-![Common-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/135693994/10289e10-6652-423b-94cd-0dc0b35f9997)
+![Detailed Topology Diagram](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/135693994/10289e10-6652-423b-94cd-0dc0b35f9997)
 
 This reference architecture consists of:
 
