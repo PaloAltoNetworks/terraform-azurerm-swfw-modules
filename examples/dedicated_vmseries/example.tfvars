@@ -24,7 +24,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["134.238.135.14", "134.238.135.140"]
+            source_address_prefixes    = ["0.0.0.0/0"] # TODO: Whitelist public IP addresses that will be used to manage the appliances
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -168,7 +168,7 @@ bootstrap_storages = {
     storage_network_security = {
       vnet_key            = "transit"
       allowed_subnet_keys = ["management"]
-      allowed_public_ips  = ["134.238.135.14", "134.238.135.140"]
+      allowed_public_ips  = ["0.0.0.0/0"] # TODO: Whitelist public IP addresses that will be used to access storage account
     }
   }
 }
@@ -334,7 +334,7 @@ test_infrastructure = {
                 direction                  = "Inbound"
                 access                     = "Allow"
                 protocol                   = "Tcp"
-                source_address_prefixes    = ["134.238.135.14", "134.238.135.140"]
+                source_address_prefixes    = ["0.0.0.0/0"] # TODO: Whitelist public IP addresses that will be used to access test infrastructure
                 source_port_range          = "*"
                 destination_address_prefix = "10.100.0.0/25"
                 destination_port_ranges    = ["80", "443"]
@@ -400,7 +400,7 @@ test_infrastructure = {
                 direction                  = "Inbound"
                 access                     = "Allow"
                 protocol                   = "Tcp"
-                source_address_prefixes    = ["134.238.135.14", "134.238.135.140"]
+                source_address_prefixes    = ["0.0.0.0/0"] # TODO: Whitelist public IP addresses that will be used to access test infrastructure
                 source_port_range          = "*"
                 destination_address_prefix = "10.100.1.0/25"
                 destination_port_ranges    = ["80", "443"]
