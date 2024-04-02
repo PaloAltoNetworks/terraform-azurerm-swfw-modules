@@ -119,6 +119,7 @@ variable "virtual_machine" {
   - `accelerated_networking`        - (`bool`, optional, defaults to `true`) when set to `true`  enables Azure accelerated
                                       networking (SR-IOV) for all dataplane network interfaces, this does not affect the
                                       management interface (always disabled).
+  - `allow_extension_operations`    - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM.
   - `disk_encryption_set_id`        - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
                                       used to encrypt this VM's disk.
   - `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted
@@ -131,7 +132,6 @@ variable "virtual_machine" {
                                       "SystemAssigned, UserAssigned".
   - `identity_ids`                  - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
                                       assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
-  - `allow_extension_operations`    - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM.
   EOF
   type = object({
     size                         = optional(string, "Standard_D3_v2")
@@ -141,13 +141,13 @@ variable "virtual_machine" {
     disk_name                    = string
     avset_id                     = optional(string)
     accelerated_networking       = optional(bool, true)
+    allow_extension_operations   = optional(bool, false)
     encryption_at_host_enabled   = optional(bool)
     disk_encryption_set_id       = optional(string)
     enable_boot_diagnostics      = optional(bool, false)
     boot_diagnostics_storage_uri = optional(string)
     identity_type                = optional(string, "SystemAssigned")
     identity_ids                 = optional(list(string), [])
-    allow_extension_operations   = optional(bool, false)
   })
   validation { # disk_type
     condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.virtual_machine.disk_type)

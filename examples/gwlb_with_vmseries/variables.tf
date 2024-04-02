@@ -459,13 +459,13 @@ variable "vmseries" {
       disk_name                    = optional(string)
       avset_key                    = optional(string)
       accelerated_networking       = optional(bool)
+      allow_extension_operations   = optional(bool)
       encryption_at_host_enabled   = optional(bool)
       disk_encryption_set_id       = optional(string)
       enable_boot_diagnostics      = optional(bool, true)
       boot_diagnostics_storage_uri = optional(string)
       identity_type                = optional(string)
       identity_ids                 = optional(list(string))
-      allow_extension_operations   = optional(bool)
     })
     interfaces = list(object({
       name                          = string

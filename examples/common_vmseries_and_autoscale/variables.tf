@@ -577,6 +577,7 @@ variable "scale_sets" {
       zones                        = optional(list(string))
       disk_type                    = optional(string)
       accelerated_networking       = optional(bool)
+      allow_extension_operations   = optional(bool)
       encryption_at_host_enabled   = optional(bool)
       overprovision                = optional(bool)
       platform_fault_domain_count  = optional(number)
@@ -585,7 +586,6 @@ variable "scale_sets" {
       boot_diagnostics_storage_uri = optional(string)
       identity_type                = optional(string)
       identity_ids                 = optional(list(string), [])
-      allow_extension_operations   = optional(bool)
     }))
     autoscaling_configuration = optional(object({
       default_count           = optional(number)

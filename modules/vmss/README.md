@@ -374,6 +374,7 @@ List of other, optional properties:
 - `accelerated_networking`       - (`bool`, optional, defaults to `true`) when set to `true` enables Azure accelerated
                                    networking (SR-IOV) for all dataplane network interfaces, this does not affect the
                                    management interface (always disabled).
+- `allow_extension_operations`   - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM.
 - `disk_encryption_set_id`       - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
                                    used to encrypt this VM's disk.
 - `encryption_at_host_enabled`   - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted by enabling
@@ -392,8 +393,6 @@ List of other, optional properties:
                                    "SystemAssigned, UserAssigned".
 - `identity_ids`                 - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
                                    assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
-- `allow_extension_operations`   - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM.
-
 
 
 Type: 
@@ -405,6 +404,7 @@ object({
     zones                        = optional(list(string))
     disk_type                    = optional(string, "StandardSSD_LRS")
     accelerated_networking       = optional(bool, true)
+    allow_extension_operations   = optional(bool, false)
     encryption_at_host_enabled   = optional(bool)
     overprovision                = optional(bool, true)
     platform_fault_domain_count  = optional(number)
@@ -414,7 +414,6 @@ object({
     boot_diagnostics_storage_uri = optional(string)
     identity_type                = optional(string, "SystemAssigned")
     identity_ids                 = optional(list(string), [])
-    allow_extension_operations   = optional(bool, false)
   })
 ```
 
@@ -647,6 +646,5 @@ list(object({
 Default value: `[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->
