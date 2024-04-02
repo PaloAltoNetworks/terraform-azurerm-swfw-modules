@@ -88,7 +88,9 @@ variable "storage_account" {
     EOF
   }
   validation { # blob_retention
-    condition     = var.storage_account.blob_retention >= 0 && var.storage_account.blob_retention <= 365
+    condition = var.storage_account.blob_retention != null ? (
+      var.storage_account.blob_retention >= 0 && var.storage_account.blob_retention <= 365
+    ) : true
     error_message = <<-EOF
     The `blob_retention` property can take values between 0 and 365.
     EOF
