@@ -11,6 +11,12 @@ resource "azurerm_storage_account" "this" {
   account_kind             = var.storage_account.kind
   tags                     = var.tags
 
+  blob_properties {
+    delete_retention_policy {
+      days = var.storage_account.blob_retention
+    }
+  }
+
   lifecycle {
     precondition {
       condition     = var.region != null

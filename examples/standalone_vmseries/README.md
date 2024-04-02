@@ -830,6 +830,7 @@ map(object({
       replication_type = optional(string)
       kind             = optional(string)
       tier             = optional(string)
+      blob_retention   = optional(number)
     }), {})
     storage_network_security = optional(object({
       min_tls_version     = optional(string)

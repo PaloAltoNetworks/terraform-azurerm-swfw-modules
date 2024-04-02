@@ -47,6 +47,8 @@ variable "storage_account" {
   - `tier`             - (`string`, optional, defaults to `Standard`) only for newly created Storage Accounts, defines the
                          account tier. Can be either `Standard` or `Premium`. Note, that for `kind` set to `BlockBlobStorage` or
                          `FileStorage` the `tier` can only be set to `Premium`.
+  - `blob_retention`   - (`number`, optional, defaults to `7`) specifies the number of days that the blob should be retained
+                         before irreversibly deleted. If set to `0`, soft delete is disabled for the Azure Storage Account.
   EOF
   default     = {}
   nullable    = false
@@ -55,6 +57,7 @@ variable "storage_account" {
     replication_type = optional(string, "LRS")
     kind             = optional(string, "StorageV2")
     tier             = optional(string, "Standard")
+    blob_retention   = optional(number, 7)
   })
   validation { # replication_type
     condition     = contains(["LRS", "GRS", "RAGRS", "ZRS", "GZRS", "RAGZRS"], var.storage_account.replication_type)
@@ -80,6 +83,12 @@ variable "storage_account" {
     condition = contains(
       ["BlockBlobStorage", "FileStorage"], var.storage_account.kind
     ) ? var.storage_account.tier == "Premium" : true
+    error_message = <<-EOF
+    If the `kind` property is set to either \"BlockBlobStorage\" or \"FileStorage\", the `tier` has to be set to \"Premium\"."
+    EOF
+  }
+  validation { # blob_retention
+    condition     = var.storage_account.blob_retention >= 0 && var.storage_account.blob_retention <= 365
     error_message = <<-EOF
     If the `kind` property is set to either \"BlockBlobStorage\" or \"FileStorage\", the `tier` has to be set to \"Premium\"."
     EOF
