@@ -14,7 +14,7 @@ resource "azurerm_storage_account" "this" {
   lifecycle {
     precondition {
       condition     = var.region != null
-      error_message = "When creating a storage account the `location` variable cannot be null."
+      error_message = "When creating a storage account the `region` variable cannot be null."
     }
   }
 }
