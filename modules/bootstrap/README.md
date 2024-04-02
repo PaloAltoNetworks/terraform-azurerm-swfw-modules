@@ -258,8 +258,7 @@ Following properties are available:
                        account tier. Can be either `Standard` or `Premium`. Note, that for `kind` set to `BlockBlobStorage` or
                        `FileStorage` the `tier` can only be set to `Premium`.
 - `blob_retention`   - (`number`, optional, defaults to Azure default) specifies the number of days that the blob should be
-                       retained before irreversibly deleted. When set to `0`, soft delete is disabled for the Azure Storage
-                       Account.
+                       retained before irreversibly deleted. When set to `0`, soft delete is disabled for the Storage Account.
 
 
 Type: 
