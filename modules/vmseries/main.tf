@@ -106,8 +106,7 @@ resource "azurerm_linux_virtual_machine" "this" {
 
   custom_data = var.virtual_machine.bootstrap_options == null ? null : base64encode(var.virtual_machine.bootstrap_options)
 
-  # After converting to azurerm_linux_virtual_machine, an empty block boot_diagnostics {} will use managed storage.
-  # Need version 2.36 in required_providers as per https://github.com/terraform-providers/terraform-provider-azurerm/pull/8917.
+  # An empty block boot_diagnostics {} will use managed storage
   dynamic "boot_diagnostics" {
     for_each = var.virtual_machine.enable_boot_diagnostics ? [1] : []
     content {
