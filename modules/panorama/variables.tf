@@ -115,8 +115,9 @@ variable "virtual_machine" {
   - `allow_extension_operations`   - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM.
   - `encryption_at_host_enabled`   - (`bool`, optional, defaults to `false`) should all the disks be encrypted by enabling
                                      Encryption at Host.
-  - `diagnostics_storage_uri`      - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold
-                                     diagnostic files.
+  - `enable_boot_diagnostics`      - (`bool`, optional, defaults to `false`) enables boot diagnostics for a VM.
+  - `boot_diagnostics_storage_uri` - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold diagnostic
+                                     files.
   - `identity_type`                - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
                                      should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
                                      "SystemAssigned, UserAssigned".
@@ -124,17 +125,18 @@ variable "virtual_machine" {
                                      assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
   EOF
   type = object({
-    size                       = optional(string, "Standard_D5_v2")
-    zone                       = string
-    disk_type                  = optional(string, "StandardSSD_LRS")
-    disk_name                  = string
-    avset_id                   = optional(string)
-    allow_extension_operations = optional(bool, false)
-    encryption_at_host_enabled = optional(bool, false)
-    disk_encryption_set_id     = optional(string)
-    diagnostics_storage_uri    = optional(string)
-    identity_type              = optional(string, "SystemAssigned")
-    identity_ids               = optional(list(string), [])
+    size                         = optional(string, "Standard_D5_v2")
+    zone                         = string
+    disk_type                    = optional(string, "StandardSSD_LRS")
+    disk_name                    = string
+    avset_id                     = optional(string)
+    allow_extension_operations   = optional(bool, false)
+    encryption_at_host_enabled   = optional(bool, false)
+    disk_encryption_set_id       = optional(string)
+    enable_boot_diagnostics      = optional(bool, false)
+    boot_diagnostics_storage_uri = optional(string)
+    identity_type                = optional(string, "SystemAssigned")
+    identity_ids                 = optional(list(string), [])
   })
   validation { # disk_type
     condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.virtual_machine.disk_type)
