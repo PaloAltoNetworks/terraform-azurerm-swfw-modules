@@ -2,9 +2,9 @@
 
 # https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password
 resource "random_password" "this" {
-  count = anytrue([
-    for _, v in var.vmseries : v.authentication.password == null
-  ]) ? 1 : 0
+  count = anytrue([for _, v in var.vmseries : v.authentication.password == null]) ? (
+    anytrue([for _, v in var.test_infrastructure : v.authentication.password == null]) ? 2 : 1
+  ) : 0
 
   length           = 16
   min_lower        = 16 - 4
