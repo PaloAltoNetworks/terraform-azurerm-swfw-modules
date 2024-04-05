@@ -22,7 +22,7 @@ This module is designed to work in several *modes* depending on which variables 
           direction                  = "Inbound"
           access                     = "Allow"
           protocol                   = "Tcp"
-          source_address_prefixes    = ["0.0.0.0/0"] # TODO: Whitelist public IP addresses that will be used to manage the appliances
+          source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to manage the appliances
           source_port_range          = "*"
           destination_address_prefix = "10.0.0.0/28"
           destination_port_ranges    = ["22", "443"]
@@ -91,7 +91,7 @@ This module is designed to work in several *modes* depending on which variables 
           direction                  = "Inbound"
           access                     = "Allow"
           protocol                   = "Tcp"
-          source_address_prefixes    = ["0.0.0.0/0"] # TODO: Whitelist public IP addresses that will be used to manage the appliances
+          source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to manage the appliances
           source_port_range          = "*"
           destination_address_prefix = "10.0.0.0/28"
           destination_port_ranges    = ["22", "443"]
@@ -533,5 +533,6 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 <!-- END_TF_DOCS -->

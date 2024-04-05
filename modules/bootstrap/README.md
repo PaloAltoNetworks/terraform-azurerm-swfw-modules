@@ -61,7 +61,7 @@ module "bootstrap" {
   }
   storage_network_security = {
     min_tls_version    = "TLS1_1"
-    allowed_public_ips = ["0.0.0.0/0"] # TODO: Whitelist public IP addresses that will be used to access storage account
+    allowed_public_ips = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access storage account
   }
   file_shares = {
     "vm01" = {
@@ -405,5 +405,6 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 <!-- END_TF_DOCS -->
