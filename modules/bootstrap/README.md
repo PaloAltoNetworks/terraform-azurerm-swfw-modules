@@ -257,6 +257,8 @@ Following properties are available:
 - `tier`             - (`string`, optional, defaults to `Standard`) only for newly created Storage Accounts, defines the
                        account tier. Can be either `Standard` or `Premium`. Note, that for `kind` set to `BlockBlobStorage` or
                        `FileStorage` the `tier` can only be set to `Premium`.
+- `blob_retention`   - (`number`, optional, defaults to Azure default) specifies the number of days that the blob should be
+                       retained before irreversibly deleted. When set to `0`, soft delete is disabled for the Storage Account.
 
 
 Type: 
@@ -267,6 +269,7 @@ object({
     replication_type = optional(string, "LRS")
     kind             = optional(string, "StorageV2")
     tier             = optional(string, "Standard")
+    blob_retention   = optional(number)
   })
 ```
 
@@ -402,6 +405,5 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

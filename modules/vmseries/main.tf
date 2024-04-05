@@ -58,6 +58,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   size                       = var.virtual_machine.size
   zone                       = var.virtual_machine.zone
   availability_set_id        = var.virtual_machine.avset_id
+  allow_extension_operations = var.virtual_machine.allow_extension_operations
   encryption_at_host_enabled = var.virtual_machine.encryption_at_host_enabled
 
   network_interface_ids = [for v in var.interfaces : azurerm_network_interface.this[v.name].id]
@@ -105,6 +106,7 @@ resource "azurerm_linux_virtual_machine" "this" {
 
   custom_data = var.virtual_machine.bootstrap_options == null ? null : base64encode(var.virtual_machine.bootstrap_options)
 
+  # An empty block boot_diagnostics {} will use managed storage
   dynamic "boot_diagnostics" {
     for_each = var.virtual_machine.enable_boot_diagnostics ? [1] : []
     content {

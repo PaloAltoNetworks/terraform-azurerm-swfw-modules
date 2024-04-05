@@ -2,19 +2,26 @@
 resource "azurerm_storage_account" "this" {
   count = var.storage_account.create ? 1 : 0
 
-  name                     = var.name
-  location                 = var.region
-  resource_group_name      = var.resource_group_name
-  min_tls_version          = var.storage_network_security.min_tls_version
-  account_replication_type = var.storage_account.replication_type
-  account_tier             = var.storage_account.tier
-  account_kind             = var.storage_account.kind
-  tags                     = var.tags
+  name                            = var.name
+  location                        = var.region
+  resource_group_name             = var.resource_group_name
+  min_tls_version                 = var.storage_network_security.min_tls_version
+  allow_nested_items_to_be_public = false
+  account_replication_type        = var.storage_account.replication_type
+  account_tier                    = var.storage_account.tier
+  account_kind                    = var.storage_account.kind
+  tags                            = var.tags
+
+  blob_properties {
+    delete_retention_policy {
+      days = var.storage_account.blob_retention
+    }
+  }
 
   lifecycle {
     precondition {
       condition     = var.region != null
-      error_message = "When creating a storage account the `location` variable cannot be null."
+      error_message = "When creating a storage account the `region` variable cannot be null."
     }
   }
 }

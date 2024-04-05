@@ -196,5 +196,4 @@ Default value: `map[application_gw:agw application_insights:appi availability_se
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-
 <!-- END_TF_DOCS -->
