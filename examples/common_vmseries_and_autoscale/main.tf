@@ -5,7 +5,9 @@ resource "random_password" "this" {
   count = anytrue([
     for _, v in var.scale_sets : v.authentication.password == null
     if !v.authentication.disable_password_authentication
-  ]) ? 1 : 0
+    ]) ? (
+    anytrue([for _, v in var.test_infrastructure : v.authentication.password == null]) ? 2 : 1
+  ) : 0
 
   length           = 16
   min_lower        = 16 - 4

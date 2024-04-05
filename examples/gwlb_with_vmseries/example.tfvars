@@ -24,7 +24,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["0.0.0.0/0"] # TODO: whitelist public IP addresses that will be used to manage the appliances
+            source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to manage the appliances
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -126,7 +126,7 @@ bootstrap_storages = {
     storage_network_security = {
       vnet_key            = "transit"
       allowed_subnet_keys = ["management"]
-      allowed_public_ips  = ["0.0.0.0/0"] # TODO: whitelist public IP addresses that will be used to manage the appliances
+      allowed_public_ips  = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access storage account
     }
   }
 }
@@ -227,7 +227,7 @@ test_infrastructure = {
         nsg_auto_rules_settings = {
           nsg_vnet_key = "app1"
           nsg_key      = "app1"
-          source_ips   = ["0.0.0.0/0"]
+          source_ips   = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access LB
         }
         frontend_ips = {
           "app1" = {
@@ -305,7 +305,7 @@ test_infrastructure = {
         nsg_auto_rules_settings = {
           nsg_vnet_key = "app2"
           nsg_key      = "app2"
-          source_ips   = ["0.0.0.0/0"]
+          source_ips   = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access LB
         }
         frontend_ips = {
           "app2" = {
