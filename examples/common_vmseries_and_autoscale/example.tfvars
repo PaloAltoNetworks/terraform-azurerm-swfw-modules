@@ -238,7 +238,7 @@ scale_sets = {
       zones             = ["1", "2", "3"]
     }
     autoscaling_configuration = {
-      default_count = 1
+      default_count = 2
     }
     interfaces = [
       {
@@ -262,13 +262,13 @@ scale_sets = {
     autoscaling_profiles = [
       {
         name          = "default_profile"
-        default_count = 0
+        default_count = 2
       },
       {
         name          = "weekday_profile"
         default_count = 2
-        minimum_count = 1
-        maximum_count = 3
+        minimum_count = 2
+        maximum_count = 4
         recurrence = {
           days       = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
           start_time = "07:30"
