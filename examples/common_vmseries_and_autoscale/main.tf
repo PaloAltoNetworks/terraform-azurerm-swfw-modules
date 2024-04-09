@@ -302,3 +302,22 @@ module "test_infrastructure" {
   tags       = var.tags
   depends_on = [module.vnet]
 }
+
+module "vnet_peering" {
+  source = "../../modules/vnet_peering"
+
+  for_each = var.vnet_peerings
+
+  local_peer_config = {
+    name                = "peer-${each.value.local_vnet_name}-to-${each.value.remote_vnet_name}"
+    resource_group_name = coalesce(each.value.local_resource_group_name, local.resource_group.name)
+    vnet_name           = each.value.local_vnet_name
+  }
+  remote_peer_config = {
+    name                = "peer-${each.value.remote_vnet_name}-to-${each.value.local_vnet_name}"
+    resource_group_name = coalesce(each.value.remote_resource_group_name, local.resource_group.name)
+    vnet_name           = each.value.remote_vnet_name
+  }
+
+  depends_on = [module.vnet]
+}

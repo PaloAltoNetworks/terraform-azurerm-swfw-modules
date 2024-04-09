@@ -222,6 +222,7 @@ Name | Type | Description
 [`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
 [`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
 [`tags`](#tags) | `map` | Map of tags to assign to the created resources.
+[`vnet_peerings`](#vnet_peerings) | `map` | A map defining VNET peerings.
 [`natgws`](#natgws) | `map` | A map defining NAT Gateways.
 [`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (both private and public) Load Balancers.
 [`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
@@ -268,6 +269,7 @@ Name | Version | Source | Description
 `ngfw_metrics` | - | ../../modules/ngfw_metrics | 
 `vmss` | - | ../../modules/vmss | 
 `test_infrastructure` | - | ../../modules/test_infrastructure | 
+`vnet_peering` | - | ../../modules/vnet_peering | 
 
 
 Resources used in this module:
@@ -381,6 +383,7 @@ map(object({
 
 
 
+
 ### Optional Inputs
 
 
@@ -432,6 +435,33 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+
+#### vnet_peerings
+
+A map defining VNET peerings.
+
+Following properties are supported:
+- `local_vnet_name`            - (`string`, required) - name of the local VNET
+- `local_resource_group_name`  - (`string`, optional) - name of the resource group, in which local VNET exists
+- `remote_vnet_name`           - (`string`, required) - name of the remote VNET
+- `remote_resource_group_name` - (`string`, optional) - name of the resource group, in which remote VNET exists
+
+
+Type: 
+
+```hcl
+map(object({
+    local_vnet_name            = string
+    local_resource_group_name  = optional(string)
+    remote_vnet_name           = string
+    remote_resource_group_name = optional(string)
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### natgws
 
@@ -1217,5 +1247,6 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 <!-- END_TF_DOCS -->

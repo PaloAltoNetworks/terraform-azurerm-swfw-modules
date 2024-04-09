@@ -125,6 +125,14 @@ vnets = {
   }
 }
 
+vnet_peerings = {
+  # "vmseries-to-panorama" = {
+  #   local_vnet_name            = "example-autoscale"
+  #   remote_vnet_name           = "example-panorama"
+  #   remote_resource_group_name = "panorama"
+  # }
+}
+
 # LOAD BALANCING
 
 load_balancers = {
@@ -228,7 +236,7 @@ scale_sets = {
     name     = "common-vmss"
     vnet_key = "transit"
     image = {
-      version = "10.2.4"
+      version = "10.2.8"
     }
     authentication = {
       disable_password_authentication = false
@@ -307,6 +315,17 @@ test_infrastructure = {
           "app1" = {
             name = "app1-nsg"
             rules = {
+              from_bastion = {
+                name                       = "app1-web-allow-bastion"
+                priority                   = 105
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefix      = "10.100.0.64/26"
+                source_port_range          = "*"
+                destination_address_prefix = "*"
+                destination_port_range     = "*"
+              }
               web_inbound = {
                 name                       = "app1-web-allow-inbound"
                 priority                   = 100
@@ -373,6 +392,17 @@ test_infrastructure = {
           "app2" = {
             name = "app2-nsg"
             rules = {
+              from_bastion = {
+                name                       = "app1-web-allow-bastion"
+                priority                   = 105
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefix      = "10.100.1.64/26"
+                source_port_range          = "*"
+                destination_address_prefix = "*"
+                destination_port_range     = "*"
+              }
               web_inbound = {
                 name                       = "app2-web-allow-inbound"
                 priority                   = 100
