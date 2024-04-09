@@ -354,14 +354,16 @@ module "vmseries" {
       bootstrap_options = try(
         coalesce(
           each.value.virtual_machine.bootstrap_options,
-          join(",", [
-            "storage-account=${module.bootstrap[
-            each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_name}",
-            "access-key=${module.bootstrap[
-            each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_primary_access_key}",
-            "file-share=${each.key}",
-            "share-directory=None"
-          ]),
+          try(
+            join(",", [
+              "storage-account=${module.bootstrap[
+              each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_name}",
+              "access-key=${module.bootstrap[
+              each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_primary_access_key}",
+              "file-share=${each.key}",
+              "share-directory=None"
+            ]),
+          null),
         ),
         null
       )
@@ -441,5 +443,24 @@ module "test_infrastructure" {
   }) }
 
   tags       = var.tags
+  depends_on = [module.vnet]
+}
+
+module "vnet_peering" {
+  source = "../../modules/vnet_peering"
+
+  for_each = var.vnet_peerings
+
+  local_peer_config = {
+    name                = "peer-${each.value.local_vnet_name}-to-${each.value.remote_vnet_name}"
+    resource_group_name = try(each.value.local_resource_group_name, local.resource_group.name)
+    vnet_name           = each.value.local_vnet_name
+  }
+  remote_peer_config = {
+    name                = "peer-${each.value.remote_vnet_name}-to-${each.value.local_vnet_name}"
+    resource_group_name = try(each.value.remote_resource_group_name, local.resource_group.name)
+    vnet_name           = each.value.remote_vnet_name
+  }
+
   depends_on = [module.vnet]
 }
