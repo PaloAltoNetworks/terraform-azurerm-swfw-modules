@@ -453,12 +453,12 @@ module "vnet_peering" {
 
   local_peer_config = {
     name                = "peer-${each.value.local_vnet_name}-to-${each.value.remote_vnet_name}"
-    resource_group_name = try(each.value.local_resource_group_name, local.resource_group.name)
+    resource_group_name = coalesce(each.value.local_resource_group_name, local.resource_group.name)
     vnet_name           = each.value.local_vnet_name
   }
   remote_peer_config = {
     name                = "peer-${each.value.remote_vnet_name}-to-${each.value.local_vnet_name}"
-    resource_group_name = try(each.value.remote_resource_group_name, local.resource_group.name)
+    resource_group_name = coalesce(each.value.remote_resource_group_name, local.resource_group.name)
     vnet_name           = each.value.remote_vnet_name
   }
 
