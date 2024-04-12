@@ -238,6 +238,7 @@ Modules used in this module:
 Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | 
+`vnet_peering` | - | ../../modules/vnet_peering | 
 `natgw` | - | ../../modules/natgw | 
 `load_balancer` | - | ../../modules/loadbalancer | 
 `appgw` | - | ../../modules/appgw | 
@@ -245,7 +246,6 @@ Name | Version | Source | Description
 `bootstrap` | - | ../../modules/bootstrap | 
 `vmseries` | - | ../../modules/vmseries | 
 `test_infrastructure` | - | ../../modules/test_infrastructure | 
-`vnet_peering` | - | ../../modules/vnet_peering | 
 
 
 Resources used in this module:
@@ -421,10 +421,10 @@ Default value: `map[]`
 A map defining VNET peerings.
 
 Following properties are supported:
-- `local_vnet_name`            - (`string`, required) - name of the local VNET
-- `local_resource_group_name`  - (`string`, optional) - name of the resource group, in which local VNET exists
-- `remote_vnet_name`           - (`string`, required) - name of the remote VNET
-- `remote_resource_group_name` - (`string`, optional) - name of the resource group, in which remote VNET exists
+- `local_vnet_name`            - (`string`, required) name of the local VNET.
+- `local_resource_group_name`  - (`string`, optional) name of the resource group, in which local VNET exists.
+- `remote_vnet_name`           - (`string`, required) name of the remote VNET.
+- `remote_resource_group_name` - (`string`, optional) name of the resource group, in which remote VNET exists.
 
 
 Type: 
@@ -1355,6 +1355,5 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

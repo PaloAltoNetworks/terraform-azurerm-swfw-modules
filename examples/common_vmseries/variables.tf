@@ -119,10 +119,10 @@ variable "vnet_peerings" {
   A map defining VNET peerings.
 
   Following properties are supported:
-  - `local_vnet_name`            - (`string`, required) - name of the local VNET
-  - `local_resource_group_name`  - (`string`, optional) - name of the resource group, in which local VNET exists
-  - `remote_vnet_name`           - (`string`, required) - name of the remote VNET
-  - `remote_resource_group_name` - (`string`, optional) - name of the resource group, in which remote VNET exists
+  - `local_vnet_name`            - (`string`, required) name of the local VNET.
+  - `local_resource_group_name`  - (`string`, optional) name of the resource group, in which local VNET exists.
+  - `remote_vnet_name`           - (`string`, required) name of the remote VNET.
+  - `remote_resource_group_name` - (`string`, optional) name of the resource group, in which remote VNET exists.
   EOF
   default     = {}
   type = map(object({

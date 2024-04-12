@@ -128,8 +128,8 @@ vnets = {
 vnet_peerings = {
   # "vmseries-to-panorama" = {
   #   local_vnet_name            = "example-transit"
-  #   remote_vnet_name           = "example-panorama"
-  #   remote_resource_group_name = "panorama"
+  #   remote_vnet_name           = "example-panorama-vnet"
+  #   remote_resource_group_name = "example-panorama"
   # }
 }
 
@@ -306,8 +306,8 @@ test_infrastructure = {
             name = "app1-nsg"
             rules = {
               from_bastion = {
-                name                       = "app1-web-allow-bastion"
-                priority                   = 105
+                name                       = "app1-mgmt-allow-bastion"
+                priority                   = 100
                 direction                  = "Inbound"
                 access                     = "Allow"
                 protocol                   = "Tcp"
@@ -318,7 +318,7 @@ test_infrastructure = {
               }
               web_inbound = {
                 name                       = "app1-web-allow-inbound"
-                priority                   = 100
+                priority                   = 110
                 direction                  = "Inbound"
                 access                     = "Allow"
                 protocol                   = "Tcp"
@@ -383,8 +383,8 @@ test_infrastructure = {
             name = "app2-nsg"
             rules = {
               from_bastion = {
-                name                       = "app1-web-allow-bastion"
-                priority                   = 105
+                name                       = "app1-mgmt-allow-bastion"
+                priority                   = 100
                 direction                  = "Inbound"
                 access                     = "Allow"
                 protocol                   = "Tcp"
@@ -395,7 +395,7 @@ test_infrastructure = {
               }
               web_inbound = {
                 name                       = "app2-web-allow-inbound"
-                priority                   = 100
+                priority                   = 110
                 direction                  = "Inbound"
                 access                     = "Allow"
                 protocol                   = "Tcp"
