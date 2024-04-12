@@ -44,14 +44,11 @@ Name | Type | Description
 [`virtual_machine`](#virtual_machine) | `object` | Firewall parameters configuration.
 [`interfaces`](#interfaces) | `list` | List of the network interface specifications.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
-
-
 
 ## Module's Outputs
 
@@ -65,17 +62,14 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-
 Providers used in this module:
 
 - `azurerm`, version: ~> 3.98
-
 
 
 
@@ -90,7 +84,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
 
 #### name
 
@@ -115,7 +108,6 @@ The name of the Azure region to deploy the resources in.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
 
 #### authentication
 
@@ -336,13 +328,7 @@ list(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
 ### Optional Inputs
-
-
-
-
 
 #### tags
 
@@ -353,9 +339,5 @@ Type: map(string)
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-
-
-
 
 <!-- END_TF_DOCS -->

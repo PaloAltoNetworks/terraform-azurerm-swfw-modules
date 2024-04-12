@@ -48,7 +48,6 @@ Name | Type | Description
 [`region`](#region) | `string` | Azure region.
 [`subnet_ids`](#subnet_ids) | `map` | A map of subnet IDs what will be bound with this NAT Gateway.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
@@ -60,8 +59,6 @@ Name | Type | Description
 [`public_ip`](#public_ip) | `object` | A map defining a Public IP resource.
 [`public_ip_prefix`](#public_ip_prefix) | `object` | A map defining a Public IP Prefix resource.
 
-
-
 ## Module's Outputs
 
 Name |  Description
@@ -71,17 +68,14 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-
 Providers used in this module:
 
 - `azurerm`, version: ~> 3.98
-
 
 
 
@@ -100,7 +94,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
 
 #### name
 
@@ -126,7 +119,6 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
 #### subnet_ids
 
 A map of subnet IDs what will be bound with this NAT Gateway.
@@ -138,18 +130,7 @@ Type: map(string)
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
-
-
-
-
-
 ### Optional Inputs
-
-
-
-
 
 #### tags
 
@@ -160,7 +141,6 @@ Type: map(string)
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 #### create_natgw
 

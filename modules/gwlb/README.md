@@ -90,7 +90,6 @@ Name | Type | Description
 [`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`frontend_ip`](#frontend_ip) | `object` | Frontend IP configuration of the Gateway Load Balancer.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
@@ -101,8 +100,6 @@ Name | Type | Description
 [`backends`](#backends) | `map` | Map with backend configurations for the Gateway Load Balancer.
 [`lb_rule`](#lb_rule) | `object` | Load balancing rule configuration.
 
-
-
 ## Module's Outputs
 
 Name |  Description
@@ -112,17 +109,14 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-
 Providers used in this module:
 
 - `azurerm`, version: ~> 3.98
-
 
 
 
@@ -136,7 +130,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
 
 #### name
 
@@ -161,8 +154,6 @@ The name of the Azure region to deploy the resources in.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
-
 
 #### frontend_ip
 
@@ -190,16 +181,7 @@ object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
-
-
-
 ### Optional Inputs
-
-
-
-
 
 #### tags
 
@@ -224,7 +206,6 @@ Type: list(string)
 Default value: `[1 2 3]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 #### health_probe
 

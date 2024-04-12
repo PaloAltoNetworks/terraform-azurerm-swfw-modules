@@ -823,7 +823,6 @@ Name | Type | Description
 [`listeners`](#listeners) | `map` | A map of listeners for the Application Gateway.
 [`rules`](#rules) | `map` | A map of rules for the Application Gateway.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
@@ -844,8 +843,6 @@ Name | Type | Description
 [`redirects`](#redirects) | `map` | A map of redirects for the Application Gateway.
 [`url_path_maps`](#url_path_maps) | `map` | A map of URL path maps for the Application Gateway.
 
-
-
 ## Module's Outputs
 
 Name |  Description
@@ -856,17 +853,14 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-
 Providers used in this module:
 
 - `azurerm`, version: ~> 3.98
-
 
 
 
@@ -879,7 +873,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
 
 #### name
 
@@ -905,7 +898,6 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
 #### subnet_id
 
 An ID of a subnet (must be dedicated to Application Gateway v2) that will host the Application Gateway.
@@ -913,7 +905,6 @@ An ID of a subnet (must be dedicated to Application Gateway v2) that will host t
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
 
 #### public_ip
 
@@ -938,13 +929,6 @@ object({
 
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
-
-
-
-
-
-
 
 #### frontend_ip_configuration_name
 
@@ -995,12 +979,6 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
-
-
-
-
 #### rules
 
 A map of rules for the Application Gateway. A rule combines backend's, listener's, rewrites' and redirects' configurations.
@@ -1040,13 +1018,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
 ### Optional Inputs
-
-
-
-
 
 #### tags
 
@@ -1057,7 +1029,6 @@ Type: map(string)
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 #### zones
 
@@ -1081,7 +1052,6 @@ Type: list(string)
 Default value: `[1 2 3]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 #### domain_name_label
 
@@ -1247,8 +1217,6 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-
 
 #### backend_pool
 
@@ -1483,6 +1451,5 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

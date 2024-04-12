@@ -135,7 +135,6 @@ Name | Type | Description
 [`name`](#name) | `string` | Name of the Storage Account.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
@@ -147,8 +146,6 @@ Name | Type | Description
 [`file_shares_configuration`](#file_shares_configuration) | `object` | A map defining common File Share setting.
 [`file_shares`](#file_shares) | `map` | Definition of File Shares.
 
-
-
 ## Module's Outputs
 
 Name |  Description
@@ -159,17 +156,14 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-
 Providers used in this module:
 
 - `azurerm`, version: ~> 3.98
-
 
 
 
@@ -186,7 +180,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
 
 #### name
 
@@ -209,18 +202,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
-
-
-
-
-
-
 ### Optional Inputs
-
-
-
 
 #### region
 

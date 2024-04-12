@@ -110,7 +110,6 @@ Name | Type | Description
 [`image`](#image) | `object` | Basic Azure VM configuration.
 [`interfaces`](#interfaces) | `list` | List of the network interfaces specifications.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
@@ -119,8 +118,6 @@ Name | Type | Description
 [`virtual_machine_scale_set`](#virtual_machine_scale_set) | `object` | Scale set parameters configuration.
 [`autoscaling_configuration`](#autoscaling_configuration) | `object` | Autoscaling configuration common to all policies.
 [`autoscaling_profiles`](#autoscaling_profiles) | `list` | A list defining autoscaling profiles.
-
-
 
 ## Module's Outputs
 
@@ -132,23 +129,19 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-
 Providers used in this module:
 
 - `azurerm`, version: ~> 3.98
-
 
 Modules used in this module:
 Name | Version | Source | Description
 --- | --- | --- | ---
 `ptd_time` | - | ./dt_string_converter | 
-
 
 Resources used in this module:
 
@@ -158,7 +151,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
 
 #### name
 
@@ -183,7 +175,6 @@ The name of the Azure region to deploy the resources in.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
 
 #### authentication
 
@@ -258,7 +249,6 @@ object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
 #### interfaces
 
 List of the network interfaces specifications.
@@ -321,15 +311,7 @@ list(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
-
-
 ### Optional Inputs
-
-
-
-
 
 #### tags
 
@@ -340,8 +322,6 @@ Type: map(string)
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-
 
 #### virtual_machine_scale_set
 
@@ -421,7 +401,6 @@ object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 #### autoscaling_configuration
 

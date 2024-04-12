@@ -23,13 +23,13 @@ content: |-
   {{- range .Module.Inputs }}
   {{- if .Required }}
   [`{{ .Name }}`](#{{ .Name }}) | `{{ (split "(" .Type.Raw)._0 }}` | {{ (split "." .Description.Raw)._0 }}.
-  {{- end -}}
-  {{ end }}
+  {{- end }}
+  {{- end }}
 
-  {{- $optional := false }}
-  {{- range .Module.Inputs }}{{ if not .Required }}{{ $optional = true }}{{ end }}{{ end }}
+  {{ $optional := false -}}
+  {{ range .Module.Inputs }}{{ if not .Required }}{{ $optional = true -}}{{ end -}}{{ end -}}
 
-  {{ if $optional }}
+  {{ if $optional -}}
   ## Module's Optional Inputs
 
   Name | Type | Description
@@ -38,10 +38,10 @@ content: |-
   {{- if not .Required }}
   [`{{ .Name }}`](#{{ .Name }}) | `{{ (split "(" .Type.Raw)._0 }}` | {{ (split "." .Description.Raw)._0 }}.
   {{- end -}}
-  {{ end }}
+  {{ end -}}
   {{ end }}
 
-  {{ if ne (len .Module.Outputs) 0 }}
+  {{ if ne (len .Module.Outputs) 0 -}}
   ## Module's Outputs
 
   Name |  Description
@@ -53,21 +53,21 @@ content: |-
 
   ## Module's Nameplate
 
-  {{ if ne (len .Module.Requirements) 0 }}
+  {{ if ne (len .Module.Requirements) 0 -}}
   Requirements needed by this module:
   {{ range .Module.Requirements }}
   - `{{ .Name }}`{{ if .Version }}, version: {{ .Version }}{{ end }}
   {{- end }}
   {{- end }}
 
-  {{ if ne (len .Module.Providers) 0 }}
+  {{ if ne (len .Module.Providers) 0 -}}
   Providers used in this module:
   {{ range .Module.Providers }}
   - `{{ .Name }}`{{ if .Version }}, version: {{ .Version }}{{ end }}
   {{- end }}
   {{- end }}
 
-  {{ if ne (len .Module.ModuleCalls) 0 }}
+  {{ if ne (len .Module.ModuleCalls) 0 -}}
   Modules used in this module:
   Name | Version | Source | Description
   --- | --- | --- | ---
@@ -76,7 +76,7 @@ content: |-
   {{- end }}
   {{- end }}
 
-  {{ if ne (len .Module.Resources) 0 }}
+  {{ if ne (len .Module.Resources) 0 -}}
   Resources used in this module:
   {{ range .Module.Resources }}
   - `{{ .Type }}` ({{ .Mode }})
@@ -87,7 +87,7 @@ content: |-
 
   ### Required Inputs
 
-  {{ range .Module.Inputs }}
+  {{ range .Module.Inputs -}}
   {{ if .Required -}}
   #### {{ .Name }}
 
@@ -101,13 +101,14 @@ content: |-
   {{ end }}
 
   <sup>[back to list](#modules-required-inputs)</sup>
-  {{ end }}
-  {{- end }}
+  
+  {{ end -}}
+  {{- end -}}
 
-  {{ if $optional }}
+  {{ if $optional -}}
   ### Optional Inputs
 
-  {{ range .Module.Inputs }}
+  {{ range .Module.Inputs -}}
   {{ if not .Required -}}
   #### {{ .Name }}
 
@@ -123,6 +124,7 @@ content: |-
   Default value: `{{ .Default }}`
 
   <sup>[back to list](#modules-optional-inputs)</sup>
+  
   {{ end }}
-  {{- end }}
-  {{ end }}
+  {{- end -}}
+  {{ end -}}
