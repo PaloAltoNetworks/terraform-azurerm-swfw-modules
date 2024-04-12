@@ -46,12 +46,12 @@ Name |  Description
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.80
+- `azurerm`, version: ~> 3.98
 
 
 Providers used in this module:
 
-- `azurerm`, version: ~> 3.80
+- `azurerm`, version: ~> 3.98
 
 
 
@@ -135,7 +135,6 @@ object({
 
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
 
 
 <!-- END_TF_DOCS -->
