@@ -93,9 +93,8 @@ resource "azurerm_storage_share_directory" "this" {
     if !var.file_shares_configuration.disable_package_dirs_creation
   }
 
-  name                 = each.value.folder_name
-  share_name           = local.file_shares[each.value.share_key].name
-  storage_account_name = local.storage_account.name
+  name             = each.value.folder_name
+  storage_share_id = local.file_shares[each.value.share_key].id
 }
 
 
