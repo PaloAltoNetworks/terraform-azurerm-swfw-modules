@@ -138,6 +138,7 @@ Name | Type | Description
 [`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
 [`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
 [`tags`](#tags) | `map` | Map of tags to assign to the created resources.
+[`vnet_peerings`](#vnet_peerings) | `map` | A map defining VNET peerings.
 [`gateway_load_balancers`](#gateway_load_balancers) | `map` | A map with Gateway Load Balancer (GWLB) definitions.
 [`availability_sets`](#availability_sets) | `map` | A map defining availability sets.
 [`ngfw_metrics`](#ngfw_metrics) | `object` | A map controlling metrics-relates resources.
@@ -177,6 +178,7 @@ Modules used in this module:
 Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | 
+`vnet_peering` | - | ../../modules/vnet_peering | 
 `gwlb` | - | ../../modules/gwlb | 
 `ngfw_metrics` | - | ../../modules/ngfw_metrics | 
 `bootstrap` | - | ../../modules/bootstrap | 
@@ -297,6 +299,7 @@ map(object({
 
 
 
+
 ### Optional Inputs
 
 
@@ -348,6 +351,33 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+
+#### vnet_peerings
+
+A map defining VNET peerings.
+
+Following properties are supported:
+- `local_vnet_name`            - (`string`, required) name of the local VNET.
+- `local_resource_group_name`  - (`string`, optional) name of the resource group, in which local VNET exists.
+- `remote_vnet_name`           - (`string`, required) name of the remote VNET.
+- `remote_resource_group_name` - (`string`, optional) name of the resource group, in which remote VNET exists.
+
+
+Type: 
+
+```hcl
+map(object({
+    local_vnet_name            = string
+    local_resource_group_name  = optional(string)
+    remote_vnet_name           = string
+    remote_resource_group_name = optional(string)
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### gateway_load_balancers
 
