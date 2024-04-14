@@ -130,7 +130,6 @@ Name | Type | Description
 [`region`](#region) | `string` | The Azure region to use.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
@@ -146,8 +145,6 @@ Name | Type | Description
 [`vmseries`](#vmseries) | `map` | A map defining Azure Virtual Machines based on Palo Alto Networks Next Generation Firewall image.
 [`test_infrastructure`](#test_infrastructure) | `map` | A map defining test infrastructure including test VMs and Azure Bastion hosts.
 
-
-
 ## Module's Outputs
 
 Name |  Description
@@ -161,18 +158,15 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
-
 
 Providers used in this module:
 
 - `random`
 - `azurerm`
 - `local`
-
 
 Modules used in this module:
 Name | Version | Source | Description
@@ -185,7 +179,6 @@ Name | Version | Source | Description
 `vmseries` | - | ../../modules/vmseries | 
 `test_infrastructure` | - | ../../modules/test_infrastructure | 
 
-
 Resources used in this module:
 
 - `availability_set` (managed)
@@ -197,9 +190,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
-
-
 
 #### resource_group_name
 
@@ -216,7 +206,6 @@ The Azure region to use.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
 
 #### vnets
 
@@ -291,17 +280,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
-
-
-
-
-
-
-
 ### Optional Inputs
-
 
 #### name_prefix
 
@@ -339,8 +318,6 @@ Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-
-
 #### tags
 
 Map of tags to assign to the created resources.
@@ -350,7 +327,6 @@ Type: map(string)
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 #### vnet_peerings
 

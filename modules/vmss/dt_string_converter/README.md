@@ -15,7 +15,6 @@ Name | Type | Description
 
 
 
-
 ## Module's Outputs
 
 Name |  Description
@@ -36,7 +35,6 @@ Name |  Description
 
 ### Required Inputs
 
-
 #### time
 
 The time value in minutes to be converted to string representation.
@@ -44,6 +42,5 @@ The time value in minutes to be converted to string representation.
 Type: number
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

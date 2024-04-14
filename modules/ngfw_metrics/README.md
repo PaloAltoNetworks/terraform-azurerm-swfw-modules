@@ -64,7 +64,6 @@ Name | Type | Description
 [`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`application_insights`](#application_insights) | `map` | A map defining Application Insights instances.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
@@ -72,8 +71,6 @@ Name | Type | Description
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`create_workspace`](#create_workspace) | `bool` | Controls creation or sourcing of a Log Analytics Workspace.
 [`log_analytics_workspace`](#log_analytics_workspace) | `object` | Configuration of the log analytics workspace.
-
-
 
 ## Module's Outputs
 
@@ -84,17 +81,14 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-
 Providers used in this module:
 
 - `azurerm`, version: ~> 3.98
-
 
 
 
@@ -107,7 +101,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
 
 #### name
 
@@ -132,9 +125,6 @@ The name of the Azure region to deploy the resources in.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
-
-
 
 #### application_insights
 
@@ -166,13 +156,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
 ### Optional Inputs
-
-
-
-
 
 #### tags
 
@@ -222,6 +206,5 @@ object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->
