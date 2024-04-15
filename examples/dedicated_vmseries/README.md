@@ -187,7 +187,6 @@ Name | Type | Description
 [`region`](#region) | `string` | The Azure region to use.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
@@ -195,6 +194,7 @@ Name | Type | Description
 [`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
 [`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
 [`tags`](#tags) | `map` | Map of tags to assign to the created resources.
+[`vnet_peerings`](#vnet_peerings) | `map` | A map defining VNET peerings.
 [`natgws`](#natgws) | `map` | A map defining NAT Gateways.
 [`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (both private and public) Load Balancers.
 [`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
@@ -203,8 +203,6 @@ Name | Type | Description
 [`bootstrap_storages`](#bootstrap_storages) | `map` | A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs.
 [`vmseries`](#vmseries) | `map` | A map defining Azure Virtual Machines based on Palo Alto Networks Next Generation Firewall image.
 [`test_infrastructure`](#test_infrastructure) | `map` | A map defining test infrastructure including test VMs and Azure Bastion hosts.
-
-
 
 ## Module's Outputs
 
@@ -224,11 +222,9 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
-
 
 Providers used in this module:
 
@@ -236,11 +232,11 @@ Providers used in this module:
 - `azurerm`
 - `local`
 
-
 Modules used in this module:
 Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | 
+`vnet_peering` | - | ../../modules/vnet_peering | 
 `natgw` | - | ../../modules/natgw | 
 `load_balancer` | - | ../../modules/loadbalancer | 
 `appgw` | - | ../../modules/appgw | 
@@ -248,7 +244,6 @@ Name | Version | Source | Description
 `bootstrap` | - | ../../modules/bootstrap | 
 `vmseries` | - | ../../modules/vmseries | 
 `test_infrastructure` | - | ../../modules/test_infrastructure | 
-
 
 Resources used in this module:
 
@@ -261,9 +256,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
-
-
 
 #### resource_group_name
 
@@ -280,7 +272,6 @@ The Azure region to use.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
 
 #### vnets
 
@@ -355,18 +346,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
-
-
-
-
-
-
-
-
 ### Optional Inputs
-
 
 #### name_prefix
 
@@ -404,8 +384,6 @@ Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-
-
 #### tags
 
 Map of tags to assign to the created resources.
@@ -416,6 +394,32 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+#### vnet_peerings
+
+A map defining VNET peerings.
+
+Following properties are supported:
+- `local_vnet_name`            - (`string`, required) name of the local VNET.
+- `local_resource_group_name`  - (`string`, optional) name of the resource group, in which local VNET exists.
+- `remote_vnet_name`           - (`string`, required) name of the remote VNET.
+- `remote_resource_group_name` - (`string`, optional) name of the resource group, in which remote VNET exists.
+
+
+Type: 
+
+```hcl
+map(object({
+    local_vnet_name            = string
+    local_resource_group_name  = optional(string)
+    remote_vnet_name           = string
+    remote_resource_group_name = optional(string)
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### natgws
 

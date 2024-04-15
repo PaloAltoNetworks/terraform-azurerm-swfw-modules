@@ -30,7 +30,6 @@ Name | Type | Description
 
 
 
-
 ## Module's Outputs
 
 Name |  Description
@@ -42,17 +41,14 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-
 Providers used in this module:
 
 - `azurerm`, version: ~> 3.98
-
 
 
 
@@ -66,7 +62,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
 
 #### local_peer_config
 
@@ -135,6 +130,5 @@ object({
 
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
 
 <!-- END_TF_DOCS -->

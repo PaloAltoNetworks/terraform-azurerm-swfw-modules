@@ -42,6 +42,14 @@ vnets = {
   }
 }
 
+vnet_peerings = {
+  # "vmseries-to-panorama" = {
+  #   local_vnet_name            = "example-transit"
+  #   remote_vnet_name           = "example-panorama-vnet"
+  #   remote_resource_group_name = "example-panorama"
+  # }
+}
+
 # VM-SERIES
 
 vmseries = {
@@ -49,7 +57,7 @@ vmseries = {
     name     = "firewall01"
     vnet_key = "transit"
     image = {
-      version = "10.2.3"
+      version = "10.2.8"
     }
     virtual_machine = {
       bootstrap_options = "type=dhcp-client"

@@ -10,7 +10,7 @@ variable "name_prefix" {
   ```
   name_prefix = "test-"
   ```
-  
+
   **Note!** \
   This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name,
   even if it is also prefixed with the same value as the one in this property.
@@ -23,7 +23,7 @@ variable "create_resource_group" {
   description = <<-EOF
   When set to `true` it will cause a Resource Group creation.
   Name of the newly specified RG is controlled by `resource_group_name`.
-  
+
   When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
   EOF
   default     = true
@@ -51,7 +51,7 @@ variable "tags" {
 variable "vnets" {
   description = <<-EOF
   A map defining VNETs.
-  
+
   For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
   - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, `false` will source
@@ -114,14 +114,33 @@ variable "vnets" {
   }))
 }
 
+variable "vnet_peerings" {
+  description = <<-EOF
+  A map defining VNET peerings.
+
+  Following properties are supported:
+  - `local_vnet_name`            - (`string`, required) name of the local VNET.
+  - `local_resource_group_name`  - (`string`, optional) name of the resource group, in which local VNET exists.
+  - `remote_vnet_name`           - (`string`, required) name of the remote VNET.
+  - `remote_resource_group_name` - (`string`, optional) name of the resource group, in which remote VNET exists.
+  EOF
+  default     = {}
+  type = map(object({
+    local_vnet_name            = string
+    local_resource_group_name  = optional(string)
+    remote_vnet_name           = string
+    remote_resource_group_name = optional(string)
+  }))
+}
+
 variable "natgws" {
   description = <<-EOF
-  A map defining NAT Gateways. 
+  A map defining NAT Gateways.
 
   Please note that a NAT Gateway is a zonal resource, this means it's always placed in a zone (even when you do not specify one
   explicitly). Please refer to Microsoft documentation for notes on NAT Gateway's zonal resiliency.
   For detailed documentation on each property refer to [module documentation](../../modules/natgw/README.md).
-  
+
   Following properties are supported:
   - `name`                - (`string`, required) a name of a NAT Gateway. In case `create_natgw = false` this should be a full
                             resource name, including prefixes.
@@ -201,8 +220,8 @@ variable "load_balancers" {
   - `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule that will
                                 be populated with `Allow` rules for each load balancing rule (`in_rules`), please refer to
                                 [module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings) for
-                                available properties. 
-                                
+                                available properties.
+
     Please note that in this example two additional properties are available:
 
     - `nsg_vnet_key` - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition in the
@@ -280,7 +299,7 @@ variable "appgws" {
   refer to [module documentation](../../modules/appgw/README.md).
 
   **Note!** \
-  The `rules` property is meant to bind together `backend_setting`, `redirect` or `url_path_map` (all 3 are mutually exclusive). 
+  The `rules` property is meant to bind together `backend_setting`, `redirect` or `url_path_map` (all 3 are mutually exclusive).
   It represents the Rules section of an Application Gateway in Azure Portal.
 
   Below you can find a brief list of most important properties:
@@ -302,11 +321,11 @@ variable "appgws" {
                          settings, see [module's documentation](../../modules/appgw/README.md#backend_settings) for details.
   - `probes`           - (`map`, optional, defaults to module default) defines backend probes used check health of backends, see
                          [module's documentation](../../modules/appgw/README.md#probes) for details.
-  - `rewrites`         - (`map`, optional, defaults to module default) defines rewrite rules, see 
+  - `rewrites`         - (`map`, optional, defaults to module default) defines rewrite rules, see
                          [module's documentation](../../modules/appgw/README.md#rewrites) for details.
-  - `redirects`        - (`map`, optional, mutually exclusive with `backend_settings` and `url_path_maps`) static redirects 
+  - `redirects`        - (`map`, optional, mutually exclusive with `backend_settings` and `url_path_maps`) static redirects
                          definition, see [module's documentation](../../modules/appgw/README.md#redirects) for details.
-  - `url_path_maps`    - (`map`, optional, mutually exclusive with `backend_settings` and `redirects`) URL path maps definition, 
+  - `url_path_maps`    - (`map`, optional, mutually exclusive with `backend_settings` and `redirects`) URL path maps definition,
                          see [module's documentation](../../modules/appgw/README.md#url_path_maps) for details.
   - `rules`            - (`map`, required) Application Gateway Rules definition, bind together a `listener` with either
                          `backend_setting`, `redirect` or `url_path_map`, see
@@ -449,7 +468,7 @@ variable "availability_sets" {
   - `name`                - (`string`, required) name of the Application Insights.
   - `update_domain_count` - (`number`, optional, defaults to Azure default) specifies the number of update domains that are used.
   - `fault_domain_count`  - (`number`, optional, defaults to Azure default) specifies the number of fault domains that are used.
-  
+
   **Note!** \
   Please keep in mind that Azure defaults are not working for every region (especially the small ones, without any Availability
   Zones). Please verify how many update and fault domain are supported in a region before deploying this resource.
@@ -515,7 +534,7 @@ variable "bootstrap_storages" {
                                   will host (created) a Storage Account. When skipped the code will fall back to
                                   `var.resource_group_name`.
   - `storage_account`           - (`map`, optional, defaults to `{}`) a map controlling basic Storage Account configuration.
-                                  
+
     The property you should pay attention to is:
 
     - `create` - (`bool`, optional, defaults to module default) controls if the Storage Account specified in the `name` property
@@ -524,8 +543,8 @@ variable "bootstrap_storages" {
     For detailed documentation see [module's documentation](../../modules/bootstrap/README.md#storage_account).
 
   - `storage_network_security`  - (`map`, optional, defaults to `{}`) a map defining network security settings for a **new**
-                                  storage account. 
-                                  
+                                  storage account.
+
     The properties you should pay attention to are:
 
     - `allowed_subnet_keys` - (`list`, optional, defaults to `[]`) a list of keys pointing to Subnet definitions in the
@@ -535,9 +554,9 @@ variable "bootstrap_storages" {
                               Subnets described in `allowed_subnet_keys`.
 
     For detailed documentation see [module's documentation](../../modules/bootstrap/README.md#storage_network_security).
-                            
+
   - `file_shares_configuration` - (`map`, optional, defaults to `{}`) a map defining common File Share setting.
-                                  
+
     The properties you should pay attention to are:
 
     - `create_file_shares`            - (`bool`, optional, defaults to module default) controls if the File Shares defined in the
@@ -604,7 +623,7 @@ variable "vmseries" {
 
     **Note!** \
     The `disable_password_authentication` property is by default `false` in this example. When using this value, you don't have
-    to specify anything but you can still additionally pass SSH keys for authentication. You can however set this property to 
+    to specify anything but you can still additionally pass SSH keys for authentication. You can however set this property to
     `true`, then you have to specify `ssh_keys` property.
 
     For all properties and their default values see [module's documentation](../../modules/vmseries/README.md#authentication).
@@ -617,7 +636,7 @@ variable "vmseries" {
 
     For details on all properties refer to [module's documentation](../../modules/vmseries/README.md#image).
 
-  - `virtual_machine` - (`map`, optional, defaults to module default) a map that groups most common VM configuration options. 
+  - `virtual_machine` - (`map`, optional, defaults to module default) a map that groups most common VM configuration options.
                         Most common properties are:
 
     - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
@@ -677,7 +696,7 @@ variable "vmseries" {
       - `intranet_cidr`          - (`string`, optional, defaults to `null`) a CIDR of the Intranet - combined CIDR of all
                                    private networks. When set it will override the private Subnet CIDR for inbound traffic
                                    static routes.
-      
+
       For details on all properties refer to [module's documentation](../../modules/panorama/README.md#virtual_machine).
 
   - `interfaces`      - (`list`, required) configuration of all network interfaces. Order of the interfaces does matter - the
@@ -787,13 +806,13 @@ variable "test_infrastructure" {
 
   Following properties are supported:
 
-  - `create_resource_group`  - (`bool`, optional, defaults to `true`) when set to `true`, a new Resource Group is created. When 
+  - `create_resource_group`  - (`bool`, optional, defaults to `true`) when set to `true`, a new Resource Group is created. When
                                set to `false`, an existing Resource Group is sourced.
   - `resource_group_name`    - (`string`, optional) name of the Resource Group to be created or sourced.
   - `vnets`                  - (`map`, required) a map defining VNETs and peerings for the test environment. The most basic
                                properties are as follows:
 
-    - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
+    - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET,
                                   `false` will source an existing VNET.
     - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = `false` this should be
                                   a full resource name, including prefixes.
@@ -809,7 +828,7 @@ variable "test_infrastructure" {
                                   [VNET module documentation](../../modules/vnet/README.md#route_tables).
 
     For all properties and their default values see [module's documentation](../../modules/test_infrastructure/README.md#vnets).
-  
+
   - `load_balancers`         - (`map`, optional) a map containing configuration for all (both private and public) Load Balancers.
                                The most basic properties are as follows:
 
@@ -826,8 +845,8 @@ variable "test_infrastructure" {
     - `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule that
                                   will be populated with `Allow` rules for each load balancing rule (`in_rules`), please refer to
                                   [loadbalancer module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings)
-                                  for available properties. 
-                                
+                                  for available properties.
+
     Please note that in this example two additional properties are available:
 
       - `nsg_vnet_key` - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition in the
@@ -858,10 +877,10 @@ variable "test_infrastructure" {
 
     For all properties and their default values see
     [module's documentation](../../modules/test_infrastructure/README.md#test_vms).
-  
+
   - `bastions`               - (`map`, required) a map containing Azure Bastion definitions. The most basic properties are as
                                follows:
-                               
+
     - `name`       - (`string`, required) an Azure Bastion name.
     - `vnet_key`   - (`string`, required) a key describing a VNET defined in `vnets` property. This VNET should already have an
                      existing subnet called `AzureBastionSubnet` (the name is hardcoded by Microsoft).

@@ -324,7 +324,6 @@ Name | Type | Description
 [`instance_settings`](#instance_settings) | `object` | A map containing the basic Virtual Network Gateway instance settings.
 [`ip_configurations`](#ip_configurations) | `object` | A map defining the Public IPs used by the Virtual Network Gateway.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
@@ -339,8 +338,6 @@ Name | Type | Description
 [`local_network_gateways`](#local_network_gateways) | `map` | Map of local network gateways and their connections.
 [`vpn_clients`](#vpn_clients) | `map` | VPN client configurations (IPSec point-to-site connections).
 
-
-
 ## Module's Outputs
 
 Name |  Description
@@ -350,17 +347,14 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-
 Providers used in this module:
 
 - `azurerm`, version: ~> 3.98
-
 
 
 
@@ -375,7 +369,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
 
 #### name
 
@@ -401,7 +394,6 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
 #### subnet_id
 
 An ID of a Subnet in which the Virtual Network Gateway will be created.
@@ -412,8 +404,6 @@ This has to be a dedicated Subnet named `GatewaySubnet`.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
-
 
 #### instance_settings
 
@@ -527,19 +517,7 @@ object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
-
-
-
-
-
-
 ### Optional Inputs
-
-
-
-
 
 #### tags
 
@@ -550,7 +528,6 @@ Type: map(string)
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 #### zones
 
@@ -575,8 +552,6 @@ Type: string
 Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-
 
 #### private_ip_address_enabled
 

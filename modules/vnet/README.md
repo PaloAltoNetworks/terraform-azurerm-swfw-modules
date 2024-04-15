@@ -130,7 +130,6 @@ Name | Type | Description
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
@@ -142,8 +141,6 @@ Name | Type | Description
 [`route_tables`](#route_tables) | `map` | Map of objects describing a Route Tables.
 [`create_subnets`](#create_subnets) | `bool` | Controls subnet creation.
 [`subnets`](#subnets) | `map` | Map of objects describing subnets to manage.
-
-
 
 ## Module's Outputs
 
@@ -158,17 +155,14 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-
 Providers used in this module:
 
 - `azurerm`, version: ~> 3.98
-
 
 
 
@@ -188,7 +182,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
 
 #### name
 
@@ -214,20 +207,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
-
-
-
-
-
-
-
 ### Optional Inputs
-
-
-
-
 
 #### tags
 

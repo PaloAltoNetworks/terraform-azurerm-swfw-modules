@@ -114,6 +114,25 @@ variable "vnets" {
   }))
 }
 
+variable "vnet_peerings" {
+  description = <<-EOF
+  A map defining VNET peerings.
+
+  Following properties are supported:
+  - `local_vnet_name`            - (`string`, required) name of the local VNET.
+  - `local_resource_group_name`  - (`string`, optional) name of the resource group, in which local VNET exists.
+  - `remote_vnet_name`           - (`string`, required) name of the remote VNET.
+  - `remote_resource_group_name` - (`string`, optional) name of the resource group, in which remote VNET exists.
+  EOF
+  default     = {}
+  type = map(object({
+    local_vnet_name            = string
+    local_resource_group_name  = optional(string)
+    remote_vnet_name           = string
+    remote_resource_group_name = optional(string)
+  }))
+}
+
 # LOAD BALANCING
 
 variable "gateway_load_balancers" {

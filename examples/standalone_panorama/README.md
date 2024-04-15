@@ -128,7 +128,6 @@ Name | Type | Description
 [`region`](#region) | `string` | The Azure region to use.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
@@ -138,8 +137,6 @@ Name | Type | Description
 [`tags`](#tags) | `map` | Map of tags to assign to the created resources.
 [`availability_sets`](#availability_sets) | `map` | A map defining availability sets.
 [`panoramas`](#panoramas) | `map` | A map defining Azure Virtual Machine based on Palo Alto Networks Panorama image.
-
-
 
 ## Module's Outputs
 
@@ -151,24 +148,20 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
-
 
 Providers used in this module:
 
 - `random`
 - `azurerm`
 
-
 Modules used in this module:
 Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | 
 `panorama` | - | ../../modules/panorama | 
-
 
 Resources used in this module:
 
@@ -180,9 +173,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
-
-
 
 #### resource_group_name
 
@@ -199,7 +189,6 @@ The Azure region to use.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
 
 #### vnets
 
@@ -274,12 +263,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
-
-
 ### Optional Inputs
-
 
 #### name_prefix
 
@@ -317,8 +301,6 @@ Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-
-
 #### tags
 
 Map of tags to assign to the created resources.
@@ -328,7 +310,6 @@ Type: map(string)
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 #### availability_sets
 

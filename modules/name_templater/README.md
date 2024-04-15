@@ -59,14 +59,11 @@ Name | Type | Description
 [`name_prefix`](#name_prefix) | `string` | Prefix used in names for the resources.
 [`name_template`](#name_template) | `object` | A name template definition.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
 [`abbreviations`](#abbreviations) | `map` | Map of abbreviations used for resources (placed in place of "__default__").
-
-
 
 ## Module's Outputs
 
@@ -76,17 +73,14 @@ Name |  Description
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
 - `random`, version: ~> 3.5
 
-
 Providers used in this module:
 
 - `random`, version: ~> 3.5
-
 
 
 
@@ -97,7 +91,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
 
 #### resource_type
 
@@ -174,14 +167,7 @@ object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
-
 ### Optional Inputs
-
-
-
-
 
 #### abbreviations
 

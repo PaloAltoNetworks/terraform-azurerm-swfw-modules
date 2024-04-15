@@ -93,7 +93,6 @@ Name | Type | Description
 [`backend_name`](#backend_name) | `string` | The name of the backend pool to create.
 [`frontend_ips`](#frontend_ips) | `map` | A map of objects describing Load Balancer Frontend IP configurations with respective inbound and outbound rules.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
@@ -102,8 +101,6 @@ Name | Type | Description
 [`zones`](#zones) | `list` | Controls zones for Load Balancer's fronted IP configurations.
 [`health_probes`](#health_probes) | `map` | Backend's health probe definition.
 [`nsg_auto_rules_settings`](#nsg_auto_rules_settings) | `object` | Controls automatic creation of NSG rules for all defined inbound rules.
-
-
 
 ## Module's Outputs
 
@@ -117,17 +114,14 @@ private IP address otherwise.
 
 ## Module's Nameplate
 
-
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-
 Providers used in this module:
 
 - `azurerm`, version: ~> 3.98
-
 
 
 
@@ -145,7 +139,6 @@ Resources used in this module:
 ## Inputs/Outpus details
 
 ### Required Inputs
-
 
 #### name
 
@@ -170,8 +163,6 @@ The name of the Azure region to deploy the resources in.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
-
 
 #### backend_name
 
@@ -341,15 +332,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
-
-
 ### Optional Inputs
-
-
-
-
 
 #### tags
 
@@ -383,8 +366,6 @@ Type: list(string)
 Default value: `[1 2 3]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-
 
 #### health_probes
 

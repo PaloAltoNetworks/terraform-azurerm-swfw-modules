@@ -75,6 +75,14 @@ vnets = {
   }
 }
 
+vnet_peerings = {
+  # "vmseries-to-panorama" = {
+  #   local_vnet_name            = "example-transit"
+  #   remote_vnet_name           = "example-panorama-vnet"
+  #   remote_resource_group_name = "example-panorama"
+  # }
+}
+
 # LOAD BALANCING
 
 gateway_load_balancers = {
@@ -136,7 +144,7 @@ vmseries = {
     name     = "firewall01"
     vnet_key = "transit"
     image = {
-      version = "10.2.3"
+      version = "10.2.8"
     }
     virtual_machine = {
       size = "Standard_DS3_v2"
@@ -166,7 +174,7 @@ vmseries = {
     name     = "firewall02"
     vnet_key = "transit"
     image = {
-      version = "10.2.3"
+      version = "10.2.8"
     }
     virtual_machine = {
       size = "Standard_DS3_v2"
@@ -206,6 +214,19 @@ test_infrastructure = {
         network_security_groups = {
           "app1" = {
             name = "app1-nsg"
+            rules = {
+              from_bastion = {
+                name                       = "app1-mgmt-allow-bastion"
+                priority                   = 100
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefix      = "10.100.0.64/26"
+                source_port_range          = "*"
+                destination_address_prefix = "*"
+                destination_port_range     = "*"
+              }
+            }
           }
         }
         subnets = {
@@ -284,6 +305,19 @@ test_infrastructure = {
         network_security_groups = {
           "app2" = {
             name = "app2-nsg"
+            rules = {
+              from_bastion = {
+                name                       = "app2-mgmt-allow-bastion"
+                priority                   = 100
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefix      = "10.100.1.64/26"
+                source_port_range          = "*"
+                destination_address_prefix = "*"
+                destination_port_range     = "*"
+              }
+            }
           }
         }
         subnets = {

@@ -14,7 +14,6 @@ Name | Type | Description
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 [`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
 
-
 ## Module's Optional Inputs
 
 Name | Type | Description
@@ -25,26 +24,21 @@ Name | Type | Description
 
 
 
-
 ## Module's Nameplate
-
 
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.5, < 2.0
 
-
 Providers used in this module:
 
 - `azurerm`
-
 
 Modules used in this module:
 Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | 
 `appgw` | - | ../../modules/appgw | 
-
 
 Resources used in this module:
 
@@ -56,8 +50,6 @@ Resources used in this module:
 
 ### Required Inputs
 
-
-
 #### region
 
 The Azure region to use.
@@ -65,8 +57,6 @@ The Azure region to use.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
-
 
 #### resource_group_name
 
@@ -322,10 +312,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-
-
 ### Optional Inputs
-
 
 #### tags
 
@@ -336,7 +323,6 @@ Type: map(string)
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
 
 #### name_prefix
 
@@ -372,8 +358,5 @@ Type: bool
 Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-
-
 
 <!-- END_TF_DOCS -->
