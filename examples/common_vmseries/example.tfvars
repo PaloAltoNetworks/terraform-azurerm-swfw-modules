@@ -232,7 +232,7 @@ vmseries = {
     name     = "firewall01"
     vnet_key = "transit"
     image = {
-      version = "10.2.8"
+      version = "10.2.901"
     }
     virtual_machine = {
       size              = "Standard_DS3_v2"
@@ -262,7 +262,7 @@ vmseries = {
   "fw-2" = {
     name = "firewall02"
     image = {
-      version = "10.2.8"
+      version = "10.2.901"
     }
     virtual_machine = {
       size              = "Standard_DS3_v2"

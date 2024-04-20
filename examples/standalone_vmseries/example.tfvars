@@ -57,7 +57,7 @@ vmseries = {
     name     = "firewall01"
     vnet_key = "transit"
     image = {
-      version = "10.2.8"
+      version = "10.2.901"
     }
     virtual_machine = {
       bootstrap_options = "type=dhcp-client"

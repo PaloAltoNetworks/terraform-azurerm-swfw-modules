@@ -186,7 +186,7 @@ vmseries = {
     name     = "inbound-firewall01"
     vnet_key = "transit"
     image = {
-      version = "10.2.8"
+      version = "10.2.901"
     }
     virtual_machine = {
       size = "Standard_DS3_v2"
@@ -221,7 +221,7 @@ vmseries = {
     name     = "inbound-firewall02"
     vnet_key = "transit"
     image = {
-      version = "10.2.8"
+      version = "10.2.901"
     }
     virtual_machine = {
       size = "Standard_DS3_v2"
@@ -255,7 +255,7 @@ vmseries = {
     name     = "obew-firewall01"
     vnet_key = "transit"
     image = {
-      version = "10.2.8"
+      version = "10.2.901"
     }
     virtual_machine = {
       size = "Standard_DS3_v2"
@@ -290,7 +290,7 @@ vmseries = {
     name     = "obew-firewall02"
     vnet_key = "transit"
     image = {
-      version = "10.2.8"
+      version = "10.2.901"
     }
     virtual_machine = {
       size = "Standard_DS3_v2"

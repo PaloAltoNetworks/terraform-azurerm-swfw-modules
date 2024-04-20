@@ -190,7 +190,7 @@ scale_sets = {
     name     = "inbound-vmss"
     vnet_key = "transit"
     image = {
-      version = "10.2.8"
+      version = "10.2.901"
     }
     authentication = {
       disable_password_authentication = false
@@ -222,7 +222,7 @@ scale_sets = {
     name     = "obew-vmss"
     vnet_key = "transit"
     image = {
-      version = "10.2.8"
+      version = "10.2.901"
     }
     authentication = {
       disable_password_authentication = false
