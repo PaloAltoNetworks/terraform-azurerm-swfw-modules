@@ -154,6 +154,9 @@ Name |  Description
 `metrics_instrumentation_keys` | The Instrumentation Key of the created instance(s) of Azure Application Insights.
 `vmseries_mgmt_ips` | IP addresses for the VM-Series management interface.
 `bootstrap_storage_urls` | 
+`test_vms_usernames` | Initial administrative username to use for test VMs.
+`test_vms_passwords` | Initial administrative password to use for test VMs.
+`test_vms_ips` | IP Addresses of the test VMs.
 `app_lb_frontend_ips` | IP Addresses of the load balancers.
 
 ## Module's Nameplate

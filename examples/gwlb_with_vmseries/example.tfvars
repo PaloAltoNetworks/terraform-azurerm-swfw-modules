@@ -226,6 +226,17 @@ test_infrastructure = {
                 destination_address_prefix = "*"
                 destination_port_range     = "*"
               }
+              web_inbound = {
+                name                       = "app1-web-allow-inbound"
+                priority                   = 110
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access test infrastructure
+                source_port_range          = "*"
+                destination_address_prefix = "10.100.0.0/25"
+                destination_port_ranges    = ["80", "443"]
+              }
             }
           }
         }
@@ -245,11 +256,6 @@ test_infrastructure = {
     load_balancers = {
       "app1" = {
         name = "app1-lb"
-        nsg_auto_rules_settings = {
-          nsg_vnet_key = "app1"
-          nsg_key      = "app1"
-          source_ips   = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access LB
-        }
         frontend_ips = {
           "app1" = {
             name             = "app1-frontend"
@@ -317,6 +323,17 @@ test_infrastructure = {
                 destination_address_prefix = "*"
                 destination_port_range     = "*"
               }
+              web_inbound = {
+                name                       = "app2-web-allow-inbound"
+                priority                   = 110
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access test infrastructure
+                source_port_range          = "*"
+                destination_address_prefix = "10.100.1.0/25"
+                destination_port_ranges    = ["80", "443"]
+              }
             }
           }
         }
@@ -336,11 +353,6 @@ test_infrastructure = {
     load_balancers = {
       "app2" = {
         name = "app2-lb"
-        nsg_auto_rules_settings = {
-          nsg_vnet_key = "app2"
-          nsg_key      = "app2"
-          source_ips   = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access LB
-        }
         frontend_ips = {
           "app2" = {
             name             = "app2-frontend"
