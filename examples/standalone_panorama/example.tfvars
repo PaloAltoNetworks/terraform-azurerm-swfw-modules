@@ -20,14 +20,14 @@ vnets = {
         name = "panorama-nsg"
         rules = {
           mgmt_inbound = {
-            name                       = "vmseries-management-allow-inbound"
+            name                       = "panorama-management-allow-inbound"
             priority                   = 100
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
             source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to manage the appliances
             source_port_range          = "*"
-            destination_address_prefix = "10.1.0.0/24"
+            destination_address_prefix = "10.1.0.0/28"
             destination_port_ranges    = ["22", "443"]
           }
         }
