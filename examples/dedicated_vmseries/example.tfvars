@@ -197,6 +197,7 @@ vmseries = {
         bootstrap_xml_template = "templates/bootstrap_inbound.tmpl"
         private_snet_key       = "private"
         public_snet_key        = "public"
+        intranet_cidr          = "10.0.0.0/8"
       }
     }
     interfaces = [
@@ -232,6 +233,7 @@ vmseries = {
         bootstrap_xml_template = "templates/bootstrap_inbound.tmpl"
         private_snet_key       = "private"
         public_snet_key        = "public"
+        intranet_cidr          = "10.0.0.0/8"
       }
     }
     interfaces = [
@@ -266,6 +268,7 @@ vmseries = {
         bootstrap_xml_template = "templates/bootstrap_obew.tmpl"
         private_snet_key       = "private"
         public_snet_key        = "public"
+        intranet_cidr          = "10.0.0.0/8"
       }
     }
     interfaces = [
@@ -301,6 +304,7 @@ vmseries = {
         bootstrap_xml_template = "templates/bootstrap_obew.tmpl"
         private_snet_key       = "private"
         public_snet_key        = "public"
+        intranet_cidr          = "10.0.0.0/8"
       }
     }
     interfaces = [
