@@ -4,8 +4,9 @@ region              = "North Europe"
 resource_group_name = "transit-vnet-common"
 name_prefix         = "example-"
 tags = {
-  "CreatedBy"   = "Palo Alto Networks"
-  "CreatedWith" = "Terraform"
+  "CreatedBy"     = "Palo Alto Networks"
+  "CreatedWith"   = "Terraform"
+  "xdr-exclusion" = "yes"
 }
 
 # NETWORK

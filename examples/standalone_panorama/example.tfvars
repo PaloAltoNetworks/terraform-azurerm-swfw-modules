@@ -5,8 +5,9 @@ resource_group_name   = "panorama"
 name_prefix           = "example-"
 create_resource_group = true
 tags = {
-  "CreatedBy"   = "Palo Alto Networks"
-  "CreatedWith" = "Terraform"
+  "CreatedBy"     = "Palo Alto Networks"
+  "CreatedWith"   = "Terraform"
+  "xdr-exclusion" = "yes"
 }
 
 # NETWORK
