@@ -5,6 +5,11 @@ repos:
     - --args=--config=.terraform-docs.yml
     id: terraform_docs
   - args:
+    - --args=--config=.terraform-docs-internal.yml
+    - --hook-config=--path-to-file=.README.md
+    files: ^modules/test_infrastructure/
+    id: terraform_docs
+  - args:
     - --args=--only=terraform_deprecated_interpolation
     - --args=--only=terraform_deprecated_index
     - --args=--only=terraform_module_pinned_source
