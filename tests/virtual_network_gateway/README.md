@@ -1,0 +1,299 @@
+<!-- BEGIN_TF_DOCS -->
+# VNG module sample
+
+A sample of using a VNG module with the new variables layout and usage of `optional` keyword.
+
+The `README` is also in new, document-style format.
+
+## Module's Required Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group.
+[`region`](#region) | `string` | The Azure region to use.
+[`vnets`](#vnets) | `map` | A map defining VNETs.
+
+## Module's Optional Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
+[`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
+[`tags`](#tags) | `map` | Map of tags to assign to the created resources.
+[`virtual_network_gateways`](#virtual_network_gateways) | `map` | Map of Virtual Network Gateways to create.
+
+## Module's Outputs
+
+Name |  Description
+--- | ---
+`vng_public_ips` | IP Addresses of the VNGs.
+`vng_ipsec_policy` | IPsec policy used for Virtual Network Gateway connection
+
+## Module's Nameplate
+
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.5, < 2.0
+
+Providers used in this module:
+
+- `azurerm`
+
+Modules used in this module:
+Name | Version | Source | Description
+--- | --- | --- | ---
+`vnet` | - | ../../modules/vnet | 
+`vng` | - | ../../modules/virtual_network_gateway | 
+
+Resources used in this module:
+
+- `resource_group` (managed)
+- `resource_group` (data)
+
+## Inputs/Outpus details
+
+### Required Inputs
+
+#### resource_group_name
+
+Name of the Resource Group.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### region
+
+The Azure region to use.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### vnets
+
+A map defining VNETs.
+  
+For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
+
+- `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, `false` will source
+                              an existing VNET.
+- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a
+                              full resource name, including prefixes.
+- `address_space`           - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET.
+- `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
+                              VNET will reside or is sourced from.
+- `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
+                              otherwise use source existing subnets.
+- `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
+                              [VNET module documentation](../../modules/vnet/README.md#subnets).
+- `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
+                              [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
+- `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
+                              [VNET module documentation](../../modules/vnet/README.md#route_tables).
+
+
+Type: 
+
+```hcl
+map(object({
+    name                   = string
+    resource_group_name    = optional(string)
+    create_virtual_network = optional(bool, true)
+    address_space          = optional(list(string))
+    network_security_groups = optional(map(object({
+      name = string
+      rules = optional(map(object({
+        name                         = string
+        priority                     = number
+        direction                    = string
+        access                       = string
+        protocol                     = string
+        source_port_range            = optional(string)
+        source_port_ranges           = optional(list(string))
+        destination_port_range       = optional(string)
+        destination_port_ranges      = optional(list(string))
+        source_address_prefix        = optional(string)
+        source_address_prefixes      = optional(list(string))
+        destination_address_prefix   = optional(string)
+        destination_address_prefixes = optional(list(string))
+      })), {})
+    })), {})
+    route_tables = optional(map(object({
+      name                          = string
+      disable_bgp_route_propagation = optional(bool)
+      routes = map(object({
+        name                = string
+        address_prefix      = string
+        next_hop_type       = string
+        next_hop_ip_address = optional(string)
+      }))
+    })), {})
+    create_subnets = optional(bool, true)
+    subnets = optional(map(object({
+      name                            = string
+      address_prefixes                = optional(list(string), [])
+      network_security_group_key      = optional(string)
+      route_table_key                 = optional(string)
+      enable_storage_service_endpoint = optional(bool, false)
+    })), {})
+  }))
+```
+
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+### Optional Inputs
+
+#### name_prefix
+
+A prefix that will be added to all created resources.
+There is no default delimiter applied between the prefix and the resource name.
+Please include the delimiter in the actual prefix.
+
+Example:
+```
+name_prefix = "test-"
+```
+  
+**Note!** \
+This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name,
+even if it is also prefixed with the same value as the one in this property.
+
+
+Type: string
+
+Default value: ``
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### create_resource_group
+
+When set to `true` it will cause a Resource Group creation.
+Name of the newly specified RG is controlled by `resource_group_name`.
+  
+When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
+
+
+Type: bool
+
+Default value: `true`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### tags
+
+Map of tags to assign to the created resources.
+
+Type: map(string)
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### virtual_network_gateways
+
+Map of Virtual Network Gateways to create.
+
+Type: 
+
+```hcl
+map(object({
+    name       = string
+    vnet_key   = string
+    subnet_key = string
+    zones      = optional(list(string))
+    edge_zone  = optional(string)
+    instance_settings = object({
+      type          = optional(string)
+      vpn_type      = optional(string)
+      generation    = optional(string)
+      sku           = optional(string)
+      active_active = optional(bool)
+    })
+    ip_configurations = object({
+      primary = object({
+        name                          = string
+        create_public_ip              = optional(bool)
+        public_ip_name                = string
+        private_ip_address_allocation = optional(string)
+      })
+      secondary = optional(object({
+        name                          = string
+        create_public_ip              = optional(bool)
+        public_ip_name                = string
+        private_ip_address_allocation = optional(string)
+      }))
+    })
+    private_ip_address_enabled       = optional(bool)
+    default_local_network_gateway_id = optional(string)
+    azure_bgp_peer_addresses         = optional(map(string))
+    bgp = optional(object({
+      enable = optional(bool, false)
+      configuration = optional(object({
+        asn         = string
+        peer_weight = optional(number)
+        primary_peering_addresses = object({
+          name               = string
+          apipa_address_keys = list(string)
+          default_addresses  = optional(list(string))
+        })
+        secondary_peering_addresses = optional(object({
+          name               = string
+          apipa_address_keys = list(string)
+          default_addresses  = optional(list(string))
+        }))
+      }))
+    }))
+    local_network_gateways = optional(map(object({
+      name = string
+      remote_bgp_settings = optional(object({
+        asn                 = string
+        bgp_peering_address = string
+        peer_weight         = optional(number)
+      }))
+      gateway_address = optional(string)
+      address_space   = optional(list(string), [])
+      connection = object({
+        name = string
+        custom_bgp_addresses = optional(object({
+          primary_key   = string
+          secondary_key = optional(string)
+        }))
+        ipsec_policies = list(object({
+          dh_group         = string
+          ike_encryption   = string
+          ike_integrity    = string
+          ipsec_encryption = string
+          ipsec_integrity  = string
+          pfs_group        = string
+          sa_datasize      = optional(string)
+          sa_lifetime      = optional(string)
+        }))
+        type       = optional(string)
+        mode       = optional(string)
+        shared_key = optional(string)
+      })
+    })), {})
+    vpn_clients = optional(map(object({
+      address_space         = string
+      aad_tenant            = optional(string)
+      aad_audience          = optional(string)
+      aad_issuer            = optional(string)
+      root_certificates     = optional(map(string), {})
+      revoked_certificates  = optional(map(string), {})
+      radius_server_address = optional(string)
+      radius_server_secret  = optional(string)
+      vpn_client_protocols  = optional(list(string))
+      vpn_auth_types        = optional(list(string))
+      custom_routes         = optional(map(list(string)))
+    })), {})
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+<!-- END_TF_DOCS -->

@@ -2,9 +2,12 @@ repos:
 - hooks:
   - id: terraform_fmt
   - args:
-    - --args=--sort=false
-    - --args=--lockfile=false
-    - --args=--indent=3
+    - --args=--config=.terraform-docs.yml
+    id: terraform_docs
+  - args:
+    - --args=--config=.terraform-docs-internal.yml
+    - --hook-config=--path-to-file=.README.md
+    files: ^modules/test_infrastructure/
     id: terraform_docs
   - args:
     - --args=--only=terraform_deprecated_interpolation
@@ -14,14 +17,14 @@ repos:
     - --args=--only=terraform_workspace_remote
     id: terraform_tflint
   repo: https://github.com/antonbabenko/pre-commit-terraform
-  rev: v1.83.0
+  rev: v1.88.4
 - hooks:
   - args:
     - --compact
     - --quiet
     - --skip-check
-    - CKV_AZURE_118,CKV_AZURE_119,CKV_AZURE_120,CKV2_AZURE_10,CKV2_AZURE_12,CKV_AZURE_35,CKV_AZURE_206,CKV_AZURE_93,CKV2_AZURE_1,CKV2_AZURE_18,CKV_AZURE_97,CKV_AZURE_59,CKV_AZURE_190,CKV2_AZURE_33,CKV_AZURE_179,CKV_AZURE_1,CKV_AZURE_49,CKV_AZURE_217,CKV_AZURE_218
+    - CKV_GHA_7,CKV_AZURE_1,CKV_AZURE_35,CKV_AZURE_44,CKV_AZURE_49,CKV_AZURE_59,CKV_AZURE_93,CKV_AZURE_97,CKV_AZURE_118,CKV_AZURE_119,CKV_AZURE_120,CKV_AZURE_179,CKV_AZURE_190,CKV_AZURE_206,CKV_AZURE_217,CKV_AZURE_218,CKV2_AZURE_1,CKV2_AZURE_10,CKV2_AZURE_12,CKV2_AZURE_18,CKV2_AZURE_33,CKV2_AZURE_39,CKV2_AZURE_40,CKV2_AZURE_41
     id: checkov
     verbose: true
   repo: https://github.com/bridgecrewio/checkov.git
-  rev: 2.4.22
+  rev: 3.2.50

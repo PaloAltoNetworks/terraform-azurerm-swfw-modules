@@ -1,114 +1,109 @@
-# Common
+# GENERAL
+
+region              = "North Europe"
+resource_group_name = "gwlb"
 name_prefix         = "example-"
-location            = "North Europe"
-resource_group_name = "vmseries-gwlb"
 tags = {
-  "CreatedBy"   = "Palo Alto Networks"
-  "CreatedWith" = "Terraform"
+  "CreatedBy"     = "Palo Alto Networks"
+  "CreatedWith"   = "Terraform"
+  "xdr-exclusion" = "yes"
 }
 
-# VNets
+# NETWORK
+
 vnets = {
-  security = {
-    name          = "security"
-    address_space = ["10.0.1.0/24"]
-    subnets = {
-      mgmt = {
-        name                            = "vmseries-mgmt"
-        address_prefixes                = ["10.0.1.0/28"]
-        network_security_group          = "mgmt"
-        enable_storage_service_endpoint = true
-      }
-      data = {
-        name                   = "vmseries-data"
-        address_prefixes       = ["10.0.1.16/28"]
-        network_security_group = "data"
-      }
-    }
+  "transit" = {
+    name          = "transit"
+    address_space = ["10.0.0.0/25"]
     network_security_groups = {
-      mgmt = {
-        name = "vmseries-mgmt"
+      "management" = {
+        name = "mgmt-nsg"
         rules = {
-          vmseries-mgmt-allow-inbound = {
+          mgmt_inbound = {
+            name                       = "vmseries-management-allow-inbound"
             priority                   = 100
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["191.191.191.191"] # Put your own public IP address here
+            source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to manage the appliances
             source_port_range          = "*"
-            destination_address_prefix = "*"
+            destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
           }
         }
       }
-      data = {
-        name = "vmseries-data"
+      "data" = {
+        name = "data-nsg"
       }
     }
     route_tables = {
-      mgmt = {
-        name = "vmseries-mgmt"
+      "management" = {
+        name = "mgmt-rt"
         routes = {
-          data-blackhole = {
-            address_prefix = "10.0.1.16/28"
+          "data_blackhole" = {
+            name           = "data-blackhole-udr"
+            address_prefix = "10.0.0.16/28"
             next_hop_type  = "None"
           }
         }
       }
-      data = {
-        name = "vmseries-data"
+      "data" = {
+        name = "data-rt"
         routes = {
-          mgmt-blackhole = {
-            address_prefix = "10.0.1.0/28"
+          "mgmt_blackhole" = {
+            name           = "mgmt-blackhole-udr"
+            address_prefix = "10.0.0.0/28"
             next_hop_type  = "None"
           }
         }
       }
     }
-  }
-
-  app1 = {
-    name          = "app1-vnet"
-    address_space = ["10.0.2.0/24"]
     subnets = {
-      web = {
-        name                   = "app1-web"
-        address_prefixes       = ["10.0.2.0/28"]
-        network_security_group = "web"
+      "management" = {
+        name                            = "mgmt-snet"
+        address_prefixes                = ["10.0.0.0/28"]
+        network_security_group_key      = "management"
+        route_table_key                 = "management"
+        enable_storage_service_endpoint = true
       }
-    }
-    network_security_groups = {
-      web = {
-        name = "app1-web"
-        rules = {
-          application-allow-inbound = {
-            priority                   = 100
-            direction                  = "Inbound"
-            access                     = "Allow"
-            protocol                   = "Tcp"
-            source_address_prefixes    = ["191.191.191.191"] # Put your own public IP address here
-            source_port_range          = "*"
-            destination_address_prefix = "*"
-            destination_port_ranges    = ["80", "443"]
-          }
-        }
+      "data" = {
+        name                       = "data-snet"
+        address_prefixes           = ["10.0.0.16/28"]
+        network_security_group_key = "data"
+        route_table_key            = "data"
       }
     }
   }
 }
 
+vnet_peerings = {
+  # "vmseries-to-panorama" = {
+  #   local_vnet_name            = "example-transit"
+  #   remote_vnet_name           = "example-panorama-vnet"
+  #   remote_resource_group_name = "example-panorama"
+  # }
+}
+
+# LOAD BALANCING
+
 gateway_load_balancers = {
   gwlb = {
-    name       = "vmseries-gwlb"
-    vnet_key   = "security"
-    subnet_key = "data"
+    name = "vmseries-gwlb"
+
+    frontend_ip = {
+      vnet_key   = "transit"
+      subnet_key = "data"
+    }
 
     health_probe = {
-      port = 80
+      name     = "custom-health-probe"
+      port     = 80
+      protocol = "Tcp"
     }
 
     backends = {
-      ext-int = {
+      backend = {
+        name = "custom-backend"
         tunnel_interfaces = {
           internal = {
             identifier = 800
@@ -125,132 +120,284 @@ gateway_load_balancers = {
         }
       }
     }
+
+    lb_rule = {
+      name = "custom-lb-rule"
+    }
   }
 }
 
-# VMseries
+# VM-SERIES
+
 bootstrap_storages = {
-  bootstrap = {
-    name        = "vmseriesgwlbboostrap"
-    storage_acl = true
-    storage_allow_vnet_subnets = {
-      management = {
-        vnet_key   = "security"
-        subnet_key = "mgmt"
-      }
+  "bootstrap" = {
+    name = "examplegwlbbootstrap"
+    storage_network_security = {
+      vnet_key            = "transit"
+      allowed_subnet_keys = ["management"]
+      allowed_public_ips  = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access storage account
     }
   }
 }
 
 vmseries = {
-  vms01 = {
-    avzone = 1
-    name   = "vmseries01"
-    bootstrap_storage = {
-      key                    = "bootstrap"
-      static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
-      template_bootstrap_xml = "templates/bootstrap-gwlb.tftpl"
+  "fw-1" = {
+    name     = "firewall01"
+    vnet_key = "transit"
+    image = {
+      version = "10.2.901"
+    }
+    virtual_machine = {
+      size = "Standard_DS3_v2"
+      zone = 1
+      bootstrap_package = {
+        bootstrap_storage_key  = "bootstrap"
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+        bootstrap_xml_template = "templates/bootstrap-gwlb.tftpl"
+        data_snet_key          = "data"
+      }
     }
     interfaces = [
       {
-        name             = "mgmt"
-        subnet_key       = "mgmt"
+        name             = "vm01-mgmt"
+        subnet_key       = "management"
         create_public_ip = true
       },
       {
-        name                = "data"
-        subnet_key          = "data"
-        enable_backend_pool = true
-        gwlb_key            = "gwlb"
-        gwlb_backend_key    = "ext-int"
-      }
-    ]
-  }
-  vms02 = {
-    avzone = 2
-    name   = "vmseries02"
-    bootstrap_storage = {
-      key                    = "bootstrap"
-      static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
-      template_bootstrap_xml = "templates/bootstrap-gwlb.tftpl"
-    }
-    interfaces = [
-      {
-        name             = "mgmt"
-        subnet_key       = "mgmt"
-        create_public_ip = true
-      },
-      {
-        name                = "data"
-        subnet_key          = "data"
-        enable_backend_pool = true
-        gwlb_key            = "gwlb"
-        gwlb_backend_key    = "ext-int"
-      }
-    ]
-  }
-}
-
-vmseries_common = {
-  username = "panadmin"
-  ssh_keys = [] # Update here if required
-
-  img_version = "10.2.3"
-  img_sku     = "byol"
-  vm_size     = "Standard_D3_v2"
-
-  vnet_key = "security"
-}
-
-# Sample application
-load_balancers = {
-  app1 = {
-    name = "app1-web"
-
-    frontend_ips = {
-      app1 = {
-        create_public_ip = true
+        name             = "vm01-data"
+        subnet_key       = "data"
         gwlb_key         = "gwlb"
-        in_rules = {
-          http = {
-            floating_ip = false
-            port        = 80
-            protocol    = "Tcp"
-          }
-          https = {
-            floating_ip = false
-            port        = 443
-            protocol    = "Tcp"
+        gwlb_backend_key = "backend"
+      }
+    ]
+  }
+  "fw-2" = {
+    name     = "firewall02"
+    vnet_key = "transit"
+    image = {
+      version = "10.2.901"
+    }
+    virtual_machine = {
+      size = "Standard_DS3_v2"
+      zone = 2
+      bootstrap_package = {
+        bootstrap_storage_key  = "bootstrap"
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+        bootstrap_xml_template = "templates/bootstrap-gwlb.tftpl"
+        data_snet_key          = "data"
+      }
+    }
+    interfaces = [
+      {
+        name             = "vm02-mgmt"
+        subnet_key       = "management"
+        create_public_ip = true
+      },
+      {
+        name             = "vm02-data"
+        subnet_key       = "data"
+        gwlb_key         = "gwlb"
+        gwlb_backend_key = "backend"
+      }
+    ]
+  }
+}
+
+# TEST INFRASTRUCTURE
+
+test_infrastructure = {
+  "app1_testenv" = {
+    vnets = {
+      "app1" = {
+        name          = "app1-vnet"
+        address_space = ["10.100.0.0/25"]
+        hub_vnet_name = "transit" # Name prefix is added to the beginning of this string
+        network_security_groups = {
+          "app1" = {
+            name = "app1-nsg"
+            rules = {
+              from_bastion = {
+                name                       = "app1-mgmt-allow-bastion"
+                priority                   = 100
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefix      = "10.100.0.64/26"
+                source_port_range          = "*"
+                destination_address_prefix = "*"
+                destination_port_range     = "*"
+              }
+              web_inbound = {
+                name                       = "app1-web-allow-inbound"
+                priority                   = 110
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access test infrastructure
+                source_port_range          = "*"
+                destination_address_prefix = "10.100.0.0/25"
+                destination_port_ranges    = ["80", "443"]
+              }
+            }
           }
         }
-        out_rules = {
-          outbound = {
-            protocol = "Tcp"
+        subnets = {
+          "vms" = {
+            name                       = "vms-snet"
+            address_prefixes           = ["10.100.0.0/26"]
+            network_security_group_key = "app1"
+          }
+          "bastion" = {
+            name             = "AzureBastionSubnet"
+            address_prefixes = ["10.100.0.64/26"]
           }
         }
       }
     }
+    load_balancers = {
+      "app1" = {
+        name = "app1-lb"
+        frontend_ips = {
+          "app1" = {
+            name             = "app1-frontend"
+            public_ip_name   = "public-lb-app1-frontend-pip"
+            create_public_ip = true
+            gwlb_key         = "gwlb"
+            in_rules = {
+              "balanceHttp" = {
+                name        = "HTTP"
+                protocol    = "Tcp"
+                port        = 80
+                floating_ip = false
+              }
+              "balanceHttps" = {
+                name        = "HTTPS"
+                protocol    = "Tcp"
+                port        = 443
+                floating_ip = false
+              }
+            }
+            out_rules = {
+              outbound = {
+                name     = "tcp-outbound"
+                protocol = "Tcp"
+              }
+            }
+          }
+        }
+      }
+    }
+    spoke_vms = {
+      "app1_vm" = {
+        name              = "app1-vm"
+        vnet_key          = "app1"
+        subnet_key        = "vms"
+        load_balancer_key = "app1"
+      }
+    }
+    bastions = {
+      "app1_bastion" = {
+        name       = "app1-bastion"
+        vnet_key   = "app1"
+        subnet_key = "bastion"
+      }
+    }
   }
-}
-
-appvms_common = {
-  username    = "appadmin"
-  custom_data = <<SCRIPT
-#!/bin/sh
-sudo apt-get update
-sudo apt-get install -y nginx
-sudo systemctl start nginx
-sudo systemctl enable nginx
-echo "Backend VM is $(hostname)" | sudo tee /var/www/html/index.html
-SCRIPT
-}
-
-appvms = {
-  app1vm01 = {
-    name              = "app1-vm01"
-    avzone            = "3"
-    vnet_key          = "app1"
-    subnet_key        = "web"
-    load_balancer_key = "app1"
+  "app2_testenv" = {
+    vnets = {
+      "app2" = {
+        name          = "app2-vnet"
+        address_space = ["10.100.1.0/25"]
+        hub_vnet_name = "transit" # Name prefix is added to the beginning of this string
+        network_security_groups = {
+          "app2" = {
+            name = "app2-nsg"
+            rules = {
+              from_bastion = {
+                name                       = "app2-mgmt-allow-bastion"
+                priority                   = 100
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefix      = "10.100.1.64/26"
+                source_port_range          = "*"
+                destination_address_prefix = "*"
+                destination_port_range     = "*"
+              }
+              web_inbound = {
+                name                       = "app2-web-allow-inbound"
+                priority                   = 110
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access test infrastructure
+                source_port_range          = "*"
+                destination_address_prefix = "10.100.1.0/25"
+                destination_port_ranges    = ["80", "443"]
+              }
+            }
+          }
+        }
+        subnets = {
+          "vms" = {
+            name                       = "vms-snet"
+            address_prefixes           = ["10.100.1.0/26"]
+            network_security_group_key = "app2"
+          }
+          "bastion" = {
+            name             = "AzureBastionSubnet"
+            address_prefixes = ["10.100.1.64/26"]
+          }
+        }
+      }
+    }
+    load_balancers = {
+      "app2" = {
+        name = "app2-lb"
+        frontend_ips = {
+          "app2" = {
+            name             = "app2-frontend"
+            public_ip_name   = "public-lb-app2-frontend-pip"
+            create_public_ip = true
+            gwlb_key         = "gwlb"
+            in_rules = {
+              "balanceHttp" = {
+                name        = "HTTP"
+                protocol    = "Tcp"
+                port        = 80
+                floating_ip = false
+              }
+              "balanceHttps" = {
+                name        = "HTTPS"
+                protocol    = "Tcp"
+                port        = 443
+                floating_ip = false
+              }
+            }
+            out_rules = {
+              outbound = {
+                name     = "tcp-outbound"
+                protocol = "Tcp"
+              }
+            }
+          }
+        }
+      }
+    }
+    spoke_vms = {
+      "app2_vm" = {
+        name              = "app2-vm"
+        vnet_key          = "app2"
+        subnet_key        = "vms"
+        load_balancer_key = "app2"
+      }
+    }
+    bastions = {
+      "app2_bastion" = {
+        name       = "app2-bastion"
+        vnet_key   = "app2"
+        subnet_key = "bastion"
+      }
+    }
   }
 }

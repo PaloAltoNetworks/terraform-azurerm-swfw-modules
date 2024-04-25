@@ -1,172 +1,10 @@
-locals {
-  resource_group_name = var.create_resource_group ? azurerm_resource_group.this[0].name : data.azurerm_resource_group.this[0].name
-  vmseries_password   = try(var.vmseries_common.password, random_password.vmseries[0].result)
-  appvms_password     = try(var.appvms_common.password, random_password.appvms[0].result)
-}
+# Generate a random password
 
-# Obtain Public IP address of deployment machine
-data "http" "this" {
-  count = length(var.bootstrap_storages) > 0 && anytrue([for v in values(var.bootstrap_storages) : try(v.storage_acl, false)]) ? 1 : 0
-  url   = "https://ifconfig.me"
-}
-
-resource "azurerm_resource_group" "this" {
-  count = var.create_resource_group ? 1 : 0
-
-  name     = "${var.name_prefix}${var.resource_group_name}"
-  location = var.location
-
-  tags = var.tags
-}
-
-data "azurerm_resource_group" "this" {
-  count = var.create_resource_group ? 0 : 1
-
-  name = "${var.name_prefix}${var.resource_group_name}"
-}
-
-# VNets
-module "vnet" {
-  for_each = var.vnets
-  source   = "../../modules/vnet"
-
-  name                   = each.value.name
-  name_prefix            = var.name_prefix
-  location               = var.location
-  create_virtual_network = try(each.value.create_virtual_network, true)
-  resource_group_name    = try(each.value.resource_group_name, local.resource_group_name)
-  address_space          = try(each.value.create_virtual_network, true) ? each.value.address_space : []
-
-  create_subnets = try(each.value.create_subnets, true)
-  subnets        = each.value.subnets
-
-  network_security_groups = try(each.value.network_security_groups, {})
-  route_tables            = try(each.value.route_tables, {})
-
-  tags = var.tags
-}
-
-# Gateway Load Balancers
-module "gwlb" {
-  for_each = var.gateway_load_balancers
-  source   = "../../modules/gwlb"
-
-  name                = "${var.name_prefix}${each.value.name}"
-  resource_group_name = try(each.value.resource_group_name, local.resource_group_name)
-  location            = var.location
-
-  backends     = each.value.backends
-  health_probe = each.value.health_probe
-
-  frontend_ip_config = {
-    name                          = try(each.value.frontend_ip_config.name, "${var.name_prefix}${each.value.name}")
-    private_ip_address_allocation = try(each.value.frontend_ip_config.private_ip_address_allocation, null)
-    private_ip_address_version    = try(each.value.frontend_ip_config.private_ip_address_version, null)
-    private_ip_address            = try(each.value.frontend_ip_config.private_ip_address, null)
-    subnet_id                     = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
-    zones                         = var.enable_zones ? try(each.value.frontend_ip_config.zones, null) : null
-  }
-
-  tags = var.tags
-}
-
-# VM-Series
-module "ai" {
-  source = "../../modules/application_insights"
-
-  for_each = toset(
-    var.application_insights != null ? flatten(
-      try([var.application_insights.name], [for _, v in var.vmseries : "${v.name}-ai"])
-    ) : []
-  )
-
-  name                = "${var.name_prefix}${each.key}"
-  resource_group_name = local.resource_group_name
-  location            = var.location
-
-  workspace_mode            = try(var.application_insights.workspace_mode, null)
-  workspace_name            = try(var.application_insights.workspace_name, "${var.name_prefix}${each.key}-wrkspc")
-  workspace_sku             = try(var.application_insights.workspace_sku, null)
-  metrics_retention_in_days = try(var.application_insights.metrics_retention_in_days, null)
-
-  tags = var.tags
-}
-
-resource "local_file" "bootstrap_xml" {
-  for_each = { for k, v in var.vmseries : k => v if can(v.bootstrap_storage.template_bootstrap_xml) }
-
-  filename = "files/${each.key}-bootstrap.xml"
-  content = templatefile(
-    each.value.bootstrap_storage.template_bootstrap_xml,
-    {
-      data_gateway_ip = cidrhost(
-        module.vnet[var.vmseries_common.vnet_key].subnet_cidrs[each.value.interfaces[1].subnet_key],
-        1
-      )
-
-      ai_instr_key = try(module.ai[try(var.application_insights.name, "${var.name_prefix}${each.value.name}-ai")].metrics_instrumentation_key, null)
-
-      ai_update_interval = try(
-        each.value.ai_update_interval,
-        var.vmseries_common.ai_update_interval,
-        5
-      )
-    }
-  )
-
-  depends_on = [
-    module.ai,
-    module.vnet
-  ]
-}
-
-module "bootstrap" {
-  for_each = var.bootstrap_storages
-  source   = "../../modules/bootstrap"
-
-  name                   = each.value.name
-  create_storage_account = try(each.value.create_storage, true)
-  resource_group_name    = try(each.value.resource_group_name, local.resource_group_name)
-  location               = var.location
-
-  storage_acl                      = try(each.value.storage_acl, false)
-  storage_allow_vnet_subnet_ids    = try([for v in each.value.storage_allow_vnet_subnets : module.vnet[v.vnet_key].subnet_ids[v.subnet_key]], [])
-  storage_allow_inbound_public_ips = concat(try(each.value.storage_allow_inbound_public_ips, []), try([data.http.this[0].response_body], []))
-
-  tags = var.tags
-}
-
-module "bootstrap_share" {
-  source = "../../modules/bootstrap"
-
-  for_each = { for k, v in var.vmseries : k => v if can(v.bootstrap_storage) }
-
-  create_storage_account = false
-  name                   = module.bootstrap[each.value.bootstrap_storage.key].storage_account.name
-  resource_group_name    = try(var.bootstrap_storages[each.value.bootstrap_storage.key].resource_group_name, local.resource_group_name)
-  location               = var.location
-  storage_share_name     = "${var.name_prefix}${each.value.name}"
-
-  files = merge(
-    each.value.bootstrap_storage.static_files,
-    can(each.value.bootstrap_storage.template_bootstrap_xml) ? {
-      "files/${each.key}-bootstrap.xml" = "config/bootstrap.xml"
-    } : {}
-  )
-  files_md5 = can(each.value.bootstrap_storage.template_bootstrap_xml) ? {
-    "files/${each.key}-bootstrap.xml" = local_file.bootstrap_xml[each.key].content_md5
-  } : {}
-
-  tags = var.tags
-
-  depends_on = [
-    local_file.bootstrap_xml,
-    module.bootstrap
-  ]
-}
-
-resource "random_password" "vmseries" {
-  count = try(var.vmseries_common.password, null) == null ? 1 : 0
+# https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password
+resource "random_password" "this" {
+  count = anytrue([for _, v in var.vmseries : v.authentication.password == null]) ? (
+    anytrue([for _, v in var.test_infrastructure : v.authentication.password == null]) ? 2 : 1
+  ) : 0
 
   length           = 16
   min_lower        = 16 - 4
@@ -176,143 +14,336 @@ resource "random_password" "vmseries" {
   override_special = "_%@"
 }
 
+locals {
+  authentication = {
+    for k, v in var.vmseries : k =>
+    merge(
+      v.authentication,
+      {
+        ssh_keys = [for ssh_key in v.authentication.ssh_keys : file(ssh_key)]
+        password = coalesce(v.authentication.password, try(random_password.this[0].result, null))
+      }
+    )
+  }
+}
+
+# Create or source a Resource Group
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
+resource "azurerm_resource_group" "this" {
+  count    = var.create_resource_group ? 1 : 0
+  name     = "${var.name_prefix}${var.resource_group_name}"
+  location = var.region
+
+  tags = var.tags
+}
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group
+data "azurerm_resource_group" "this" {
+  count = var.create_resource_group ? 0 : 1
+  name  = var.resource_group_name
+}
+
+locals {
+  resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
+}
+
+# Manage the network required for the topology
+
+module "vnet" {
+  source = "../../modules/vnet"
+
+  for_each = var.vnets
+
+  name                   = each.value.create_virtual_network ? "${var.name_prefix}${each.value.name}" : each.value.name
+  create_virtual_network = each.value.create_virtual_network
+  resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
+  region                 = var.region
+
+  address_space = each.value.address_space
+
+  create_subnets = each.value.create_subnets
+  subnets        = each.value.subnets
+
+  network_security_groups = {
+    for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  }
+  route_tables = {
+    for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  }
+
+  tags = var.tags
+}
+
+module "vnet_peering" {
+  source = "../../modules/vnet_peering"
+
+  for_each = var.vnet_peerings
+
+  local_peer_config = {
+    name                = "peer-${each.value.local_vnet_name}-to-${each.value.remote_vnet_name}"
+    resource_group_name = coalesce(each.value.local_resource_group_name, local.resource_group.name)
+    vnet_name           = each.value.local_vnet_name
+  }
+  remote_peer_config = {
+    name                = "peer-${each.value.remote_vnet_name}-to-${each.value.local_vnet_name}"
+    resource_group_name = coalesce(each.value.remote_resource_group_name, local.resource_group.name)
+    vnet_name           = each.value.remote_vnet_name
+  }
+
+  depends_on = [module.vnet]
+}
+
+# Create Gateway Load Balancers
+
+module "gwlb" {
+  for_each = var.gateway_load_balancers
+  source   = "../../modules/gwlb"
+
+  name                = "${var.name_prefix}${each.value.name}"
+  resource_group_name = try(each.value.resource_group_name, local.resource_group.name)
+  region              = var.region
+
+  backends     = try(each.value.backends, null)
+  health_probe = try(each.value.health_probe, null)
+  lb_rule      = try(each.value.lb_rule, null)
+
+  zones = try(each.value.zones, null)
+  frontend_ip = {
+    name                       = coalesce(each.value.frontend_ip.name, "${var.name_prefix}${each.value.name}")
+    private_ip_address_version = try(each.value.frontend_ip.private_ip_address_version, null)
+    private_ip_address         = try(each.value.frontend_ip.private_ip_address, null)
+    subnet_id                  = module.vnet[each.value.frontend_ip.vnet_key].subnet_ids[each.value.frontend_ip.subnet_key]
+  }
+
+  tags = var.tags
+}
+
+# Create VM-Series VMs and closely associated resources
+
+module "ngfw_metrics" {
+  source = "../../modules/ngfw_metrics"
+
+  count = var.ngfw_metrics != null ? 1 : 0
+
+  create_workspace = var.ngfw_metrics.create_workspace
+
+  name = "${var.ngfw_metrics.create_workspace ? var.name_prefix : ""}${var.ngfw_metrics.name}"
+  resource_group_name = var.ngfw_metrics.create_workspace ? local.resource_group.name : (
+    coalesce(var.ngfw_metrics.resource_group_name, local.resource_group.name)
+  )
+  region = var.region
+
+  log_analytics_workspace = {
+    sku                       = var.ngfw_metrics.sku
+    metrics_retention_in_days = var.ngfw_metrics.metrics_retention_in_days
+  }
+
+  application_insights = { for k, v in var.vmseries : k => { name = "${var.name_prefix}${v.name}-ai" } }
+
+  tags = var.tags
+}
+
+# https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file
+resource "local_file" "bootstrap_xml" {
+  for_each = {
+    for k, v in var.vmseries :
+    k => v if try(v.virtual_machine.bootstrap_package.bootstrap_xml_template != null, false)
+  }
+
+  filename = "files/${each.key}-bootstrap.xml"
+  content = templatefile(
+    each.value.virtual_machine.bootstrap_package.bootstrap_xml_template,
+    {
+      data_gateway_ip = cidrhost(
+        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.virtual_machine.bootstrap_package.data_snet_key],
+        1
+      )
+
+      ai_instr_key = try(
+        module.ngfw_metrics[0].metrics_instrumentation_keys[each.key],
+        null
+      )
+
+      ai_update_interval = each.value.virtual_machine.bootstrap_package.ai_update_interval
+    }
+  )
+
+  depends_on = [
+    module.ngfw_metrics,
+    module.vnet
+  ]
+}
+
+locals {
+  bootstrap_file_shares_flat = flatten([
+    for k, v in var.vmseries :
+    merge(v.virtual_machine.bootstrap_package, { vm_key = k })
+    if v.virtual_machine.bootstrap_package != null
+  ])
+
+  bootstrap_file_shares = { for k, v in var.bootstrap_storages : k => {
+    for file_share in local.bootstrap_file_shares_flat : file_share.vm_key => {
+      name                   = file_share.vm_key
+      bootstrap_package_path = file_share.bootstrap_package_path
+      bootstrap_files = merge(
+        file_share.static_files,
+        file_share.bootstrap_xml_template == null ? {} : {
+          "files/${file_share.vm_key}-bootstrap.xml" = "config/bootstrap.xml"
+        }
+      )
+      bootstrap_files_md5 = file_share.bootstrap_xml_template == null ? {} : {
+        "files/${file_share.vm_key}-bootstrap.xml" = local_file.bootstrap_xml[file_share.vm_key].content_md5
+      }
+    } if file_share.bootstrap_storage_key == k }
+  }
+}
+
+module "bootstrap" {
+  source = "../../modules/bootstrap"
+
+  for_each = var.bootstrap_storages
+
+  storage_account     = each.value.storage_account
+  name                = each.value.name
+  resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
+  region              = var.region
+
+  storage_network_security = merge(
+    each.value.storage_network_security,
+    each.value.storage_network_security.vnet_key == null ? {} : {
+      allowed_subnet_ids = [
+        for v in each.value.storage_network_security.allowed_subnet_keys :
+        module.vnet[each.value.storage_network_security.vnet_key].subnet_ids[v]
+    ] }
+  )
+  file_shares_configuration = each.value.file_shares_configuration
+  file_shares               = local.bootstrap_file_shares[each.key]
+
+  tags = var.tags
+}
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/availability_set
 resource "azurerm_availability_set" "this" {
   for_each = var.availability_sets
 
   name                         = "${var.name_prefix}${each.value.name}"
-  resource_group_name          = local.resource_group_name
-  location                     = var.location
-  platform_update_domain_count = try(each.value.update_domain_count, null)
-  platform_fault_domain_count  = try(each.value.fault_domain_count, null)
+  resource_group_name          = local.resource_group.name
+  location                     = var.region
+  platform_update_domain_count = each.value.update_domain_count
+  platform_fault_domain_count  = each.value.fault_domain_count
 
   tags = var.tags
 }
 
 module "vmseries" {
+  source = "../../modules/vmseries"
+
   for_each = var.vmseries
-  source   = "../../modules/vmseries"
 
   name                = "${var.name_prefix}${each.value.name}"
-  location            = var.location
-  resource_group_name = local.resource_group_name
-  enable_zones        = var.enable_zones
-  avzone              = try(each.value.avzone, 1)
-  avset_id            = try(azurerm_availability_set.this[each.value.availability_set_key].id, null)
+  region              = var.region
+  resource_group_name = local.resource_group.name
 
-  username    = var.vmseries_common.username
-  password    = local.vmseries_password
-  ssh_keys    = var.vmseries_common.ssh_keys
-  img_version = try(each.value.img_version, var.vmseries_common.img_version)
-  img_sku     = try(each.value.img_sku, var.vmseries_common.img_sku)
-  vm_size     = try(each.value.vm_size, var.vmseries_common.vm_size)
-
-  bootstrap_options = try(
-    each.value.bootstrap_options,
-    var.vmseries_common.bootstrap_options,
-    join(",", [
-      "storage-account=${module.bootstrap[each.value.bootstrap_storage.key].storage_account.name}",
-      "access-key=${module.bootstrap[each.value.bootstrap_storage.key].storage_account.primary_access_key}",
-      "file-share=${var.name_prefix}${each.value.name}",
-      "share-directory=None"
-    ]),
-    ""
+  authentication = local.authentication[each.key]
+  image          = each.value.image
+  virtual_machine = merge(
+    each.value.virtual_machine,
+    {
+      disk_name = "${var.name_prefix}${coalesce(each.value.virtual_machine.disk_name, "${each.value.name}-osdisk")}"
+      avset_id  = try(azurerm_availability_set.this[each.value.virtual_machine.avset_key].id, null)
+      bootstrap_options = try(
+        coalesce(
+          each.value.virtual_machine.bootstrap_options,
+          try(
+            join(",", [
+              "storage-account=${module.bootstrap[
+              each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_name}",
+              "access-key=${module.bootstrap[
+              each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_primary_access_key}",
+              "file-share=${each.key}",
+              "share-directory=None"
+            ]),
+          null),
+        ),
+        null
+      )
+    }
   )
 
-  interfaces = [for interface in each.value.interfaces :
-    {
-      name                     = "${var.name_prefix}${each.value.name}-${interface.name}"
-      subnet_id                = module.vnet[var.vmseries_common.vnet_key].subnet_ids[interface.subnet_key]
-      create_public_ip         = try(interface.create_public_ip, false)
-      public_ip_name           = try(interface.public_ip_name, null)
-      public_ip_resource_group = try(interface.public_ip_resource_group, null)
-      private_ip_address       = try(interface.private_ip_address, null)
-      enable_backend_pool      = try(interface.enable_backend_pool, false)
-      lb_backend_pool_id       = try(interface.enable_backend_pool, false) ? module.gwlb[interface.gwlb_key].backend_pool_ids[interface.gwlb_backend_key] : null
-      tags                     = try(interface.tags, null)
-    }
-  ]
+  interfaces = [for v in each.value.interfaces : {
+    name             = "${var.name_prefix}${v.name}"
+    subnet_id        = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
+    create_public_ip = v.create_public_ip
+    public_ip_name = v.create_public_ip ? "${var.name_prefix}${
+      coalesce(v.public_ip_name, "${v.name}-pip")
+    }" : v.public_ip_name
+    public_ip_resource_group_name = v.public_ip_resource_group_name
+    private_ip_address            = v.private_ip_address
+    attach_to_lb_backend_pool     = v.load_balancer_key != null || v.gwlb_key != null
+    lb_backend_pool_id            = try(module.gwlb[v.gwlb_key].backend_pool_ids[v.gwlb_backend_key], null)
+  }]
 
   tags = var.tags
-
   depends_on = [
     module.vnet,
+    azurerm_availability_set.this,
     module.bootstrap,
-    module.bootstrap_share,
-    azurerm_availability_set.this
   ]
 }
 
-# Sample application VMs and Load Balancers
-module "load_balancer" {
-  for_each = var.load_balancers
-  source   = "../../modules/loadbalancer"
+# Create test infrastructure
 
-  name                = "${var.name_prefix}${each.value.name}"
-  location            = var.location
-  resource_group_name = local.resource_group_name
-  enable_zones        = var.enable_zones
-  avzones             = try(each.value.avzones, null)
-
-  network_security_group_name          = try(each.value.network_security_group_name, null)
-  network_security_resource_group_name = try(each.value.network_security_group_rg_name, null)
-  network_security_allow_source_ips    = try(each.value.network_security_allow_source_ips, [])
-
-  frontend_ips = {
-    for k, v in each.value.frontend_ips : k => {
-      create_public_ip         = try(v.create_public_ip, false)
-      public_ip_name           = try(v.public_ip_name, null)
-      public_ip_resource_group = try(v.public_ip_resource_group, null)
-      private_ip_address       = try(v.private_ip_address, null)
-      subnet_id                = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
-      in_rules                 = try(v.in_rules, {})
-      out_rules                = try(v.out_rules, {})
-      zones                    = var.enable_zones ? try(v.zones, null) : null # For the regions without AZ support.
-
-      gateway_load_balancer_frontend_ip_configuration_id = try(v.gwlb_key, null) != null ? module.gwlb[v.gwlb_key].frontend_ip_config_id : null
-    }
+locals {
+  test_vm_authentication = {
+    for k, v in var.test_infrastructure : k =>
+    merge(
+      v.authentication,
+      {
+        password = coalesce(v.authentication.password, try(random_password.this[1].result, null))
+      }
+    )
   }
+}
 
-  tags = var.tags
+module "test_infrastructure" {
+  source = "../../modules/test_infrastructure"
 
+  for_each = var.test_infrastructure
+
+  resource_group_name = try(
+    "${var.name_prefix}${each.value.resource_group_name}", "${local.resource_group.name}-testenv"
+  )
+  region = var.region
+  vnets = { for k, v in each.value.vnets : k => merge(v, {
+    name                    = "${var.name_prefix}${v.name}"
+    hub_vnet_name           = "${var.name_prefix}${v.hub_vnet_name}"
+    hub_resource_group_name = coalesce(v.hub_resource_group_name, local.resource_group.name)
+    network_security_groups = { for kv, vv in v.network_security_groups : kv => merge(vv, {
+      name = "${var.name_prefix}${vv.name}" })
+    }
+    route_tables = { for kv, vv in v.route_tables : kv => merge(vv, {
+      name = "${var.name_prefix}${vv.name}" })
+    }
+  }) }
+  load_balancers = { for k, v in each.value.load_balancers : k => merge(v, {
+    name         = "${var.name_prefix}${v.name}"
+    backend_name = coalesce(v.backend_name, "${v.name}-backend")
+    frontend_ips = { for kv, vv in v.frontend_ips : kv => merge(vv, {
+      gwlb_fip_id = try(module.gwlb[vv.gwlb_key].frontend_ip_config_id, null)
+    }) }
+  }) }
+  authentication = local.test_vm_authentication[each.key]
+  spoke_vms = { for k, v in each.value.spoke_vms : k => merge(v, {
+    name           = "${var.name_prefix}${v.name}"
+    interface_name = "${var.name_prefix}${coalesce(v.interface_name, "${v.name}-nic")}"
+    disk_name      = "${var.name_prefix}${coalesce(v.disk_name, "${v.name}-osdisk")}"
+  }) }
+  bastions = { for k, v in each.value.bastions : k => merge(v, {
+    name           = "${var.name_prefix}${v.name}"
+    public_ip_name = "${var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")}"
+  }) }
+
+  tags       = var.tags
   depends_on = [module.vnet]
-}
-
-resource "random_password" "appvms" {
-  count = try(var.appvms_common.password, null) == null ? 1 : 0
-
-  length      = 16
-  min_lower   = 16 - 4
-  min_numeric = 1
-  min_special = 1
-  min_upper   = 1
-}
-
-module "appvm" {
-  for_each = var.appvms
-  source   = "../../modules/virtual_machine"
-
-  name                = "${var.name_prefix}${each.value.name}"
-  location            = var.location
-  resource_group_name = local.resource_group_name
-  avzone              = each.value.avzone
-
-  interfaces = [
-    {
-      name                = "${var.name_prefix}${each.value.name}"
-      subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
-      enable_backend_pool = true
-      lb_backend_pool_id  = module.load_balancer[each.value.load_balancer_key].backend_pool_id
-    },
-  ]
-
-  username    = try(var.appvms_common.username, null)
-  password    = try(local.appvms_password)
-  ssh_keys    = try(var.appvms_common.ssh_keys, [])
-  custom_data = try(var.appvms_common.custom_data, null)
-
-  vm_size                = try(var.appvms_common.vm_size, "Standard_B1ls")
-  managed_disk_type      = try(var.appvms_common.disk_type, "Standard_LRS")
-  accelerated_networking = try(var.appvms_common.accelerated_networking, false)
-
-  tags = var.tags
 }

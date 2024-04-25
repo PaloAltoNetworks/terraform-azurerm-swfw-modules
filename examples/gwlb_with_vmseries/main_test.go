@@ -14,7 +14,7 @@ import (
 func CreateTerraformOptions(t *testing.T) *terraform.Options {
 	// prepare random prefix
 	randomNames, _ := testskeleton.GenerateTerraformVarsInfo("azure")
-	storageDefinition := fmt.Sprintf("{ bootstrap = { name = \"%s\", public_snet_key = \"public\", private_snet_key = \"private\", intranet_cidr = \"10.0.1.0/24\"} }", randomNames.AzureStorageAccountName)
+	storageDefinition := fmt.Sprintf("{ bootstrap = { name = \"%s\" } }", randomNames.AzureStorageAccountName)
 
 	// copy the init-cfg.sample.txt file to init-cfg.txt for test purposes
 	_, err := os.Stat("files/init-cfg.txt")

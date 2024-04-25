@@ -1,14 +1,16 @@
-# --- GENERAL --- #
-location            = "North Europe"
+# GENERAL
+
+region              = "North Europe"
 resource_group_name = "transit-vnet-dedicated"
 name_prefix         = "example-"
 tags = {
-  "CreatedBy"   = "Palo Alto Networks"
-  "CreatedWith" = "Terraform"
+  "CreatedBy"     = "Palo Alto Networks"
+  "CreatedWith"   = "Terraform"
+  "xdr-exclusion" = "yes"
 }
 
+# NETWORK
 
-# --- VNET PART --- #
 vnets = {
   "transit" = {
     name          = "transit"
@@ -17,12 +19,13 @@ vnets = {
       "management" = {
         name = "mgmt-nsg"
         rules = {
-          vmseries_mgmt_allow_inbound = {
+          mgmt_inbound = {
+            name                       = "vmseries-management-allow-inbound"
             priority                   = 100
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["1.2.3.4"] # TODO: whitelist public IP addresses that will be used to manage the appliances
+            source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to manage the appliances
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -38,10 +41,12 @@ vnets = {
         name = "mgmt-rt"
         routes = {
           "private_blackhole" = {
+            name           = "private-blackhole-udr"
             address_prefix = "10.0.0.16/28"
             next_hop_type  = "None"
           }
           "public_blackhole" = {
+            name           = "public-blackhole-udr"
             address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
@@ -51,15 +56,18 @@ vnets = {
         name = "private-rt"
         routes = {
           "default" = {
-            address_prefix         = "0.0.0.0/0"
-            next_hop_type          = "VirtualAppliance"
-            next_hop_in_ip_address = "10.0.0.30"
+            name                = "default-udr"
+            address_prefix      = "0.0.0.0/0"
+            next_hop_type       = "VirtualAppliance"
+            next_hop_ip_address = "10.0.0.30"
           }
           "mgmt_blackhole" = {
+            name           = "mgmt-blackhole-udr"
             address_prefix = "10.0.0.0/28"
             next_hop_type  = "None"
           }
           "public_blackhole" = {
+            name           = "public-blackhole-udr"
             address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
@@ -69,10 +77,12 @@ vnets = {
         name = "public-rt"
         routes = {
           "mgmt_blackhole" = {
+            name           = "mgmt-blackhole-udr"
             address_prefix = "10.0.0.0/28"
             next_hop_type  = "None"
           }
           "private_blackhole" = {
+            name           = "private-blackhole-udr"
             address_prefix = "10.0.0.16/28"
             next_hop_type  = "None"
           }
@@ -83,39 +93,51 @@ vnets = {
       "management" = {
         name                            = "mgmt-snet"
         address_prefixes                = ["10.0.0.0/28"]
-        network_security_group          = "management"
-        route_table                     = "management"
+        network_security_group_key      = "management"
+        route_table_key                 = "management"
         enable_storage_service_endpoint = true
       }
       "private" = {
         name             = "private-snet"
         address_prefixes = ["10.0.0.16/28"]
-        route_table      = "private"
+        route_table_key  = "private"
       }
       "public" = {
-        name                   = "public-snet"
-        address_prefixes       = ["10.0.0.32/28"]
-        network_security_group = "public"
-        route_table            = "public"
+        name                       = "public-snet"
+        address_prefixes           = ["10.0.0.32/28"]
+        network_security_group_key = "public"
+        route_table_key            = "public"
       }
     }
   }
 }
 
+vnet_peerings = {
+  # "vmseries-to-panorama" = {
+  #   local_vnet_name            = "example-transit"
+  #   remote_vnet_name           = "example-panorama-vnet"
+  #   remote_resource_group_name = "example-panorama"
+  # }
+}
 
-# --- LOAD BALANCING PART --- #
+# LOAD BALANCING
+
 load_balancers = {
   "public" = {
-    name                              = "public-lb"
-    nsg_vnet_key                      = "transit"
-    nsg_key                           = "public"
-    network_security_allow_source_ips = ["0.0.0.0/0"] # Put your own public IP address here  <-- TODO to be adjusted by the customer
-    avzones                           = ["1", "2", "3"]
+    name = "public-lb"
+    nsg_auto_rules_settings = {
+      nsg_vnet_key = "transit"
+      nsg_key      = "public"
+      source_ips   = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access LB
+    }
     frontend_ips = {
-      "palo-lb-app1" = {
+      "app1" = {
+        name             = "app1"
+        public_ip_name   = "public-lb-app1-pip"
         create_public_ip = true
         in_rules = {
           "balanceHttp" = {
+            name     = "HTTP"
             protocol = "Tcp"
             port     = 80
           }
@@ -124,15 +146,16 @@ load_balancers = {
     }
   }
   "private" = {
-    name    = "private-lb"
-    avzones = ["1", "2", "3"]
+    name     = "private-lb"
+    vnet_key = "transit"
     frontend_ips = {
       "ha-ports" = {
-        vnet_key           = "transit"
+        name               = "private-vmseries"
         subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
           HA_PORTS = {
+            name     = "HA-ports"
             port     = 0
             protocol = "All"
           }
@@ -142,138 +165,324 @@ load_balancers = {
   }
 }
 
+# VM-SERIES
 
+ngfw_metrics = {
+  name = "metrics"
+}
 
-# --- VMSERIES PART --- #
-
-bootstrap_storage = {
-  bootstrap = {
-    name             = "xmplbootstrapdedicated"
-    public_snet_key  = "public"
-    private_snet_key = "private"
-    storage_acl      = true
-    intranet_cidr    = "10.100.0.0/16"
-    storage_allow_vnet_subnets = {
-      management = {
-        vnet_key   = "transit"
-        subnet_key = "management"
-      }
+bootstrap_storages = {
+  "bootstrap" = {
+    name = "smplngfwbtstrp"
+    storage_network_security = {
+      vnet_key            = "transit"
+      allowed_subnet_keys = ["management"]
+      allowed_public_ips  = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access storage account
     }
-    storage_allow_inbound_public_ips = ["1.2.3.4"] # TODO: whitelist public IP addresses subnets (minimum /30 CIDR) that will be used to apply the terraform code from
   }
 }
 
-vmseries_version = "10.2.3"
-vmseries_vm_size = "Standard_DS3_v2"
 vmseries = {
   "fw-in-1" = {
-    name                 = "inbound-firewall-01"
-    add_to_appgw_backend = true
-    bootstrap_storage = {
-      name                   = "bootstrap"
-      static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
-      template_bootstrap_xml = "templates/bootstrap_inbound.tmpl"
-    }
+    name     = "inbound-firewall01"
     vnet_key = "transit"
-    avzone   = 1
+    image = {
+      version = "10.2.901"
+    }
+    virtual_machine = {
+      size = "Standard_DS3_v2"
+      zone = 1
+      bootstrap_package = {
+        bootstrap_storage_key  = "bootstrap"
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+        bootstrap_xml_template = "templates/bootstrap_inbound.tmpl"
+        private_snet_key       = "private"
+        public_snet_key        = "public"
+        intranet_cidr          = "10.0.0.0/8"
+      }
+    }
     interfaces = [
       {
-        name       = "mgmt"
-        subnet_key = "management"
-        create_pip = true
+        name             = "vm-in-01-mgmt"
+        subnet_key       = "management"
+        create_public_ip = true
       },
       {
-        name       = "private"
+        name       = "vm-in-01-private"
         subnet_key = "private"
       },
       {
-        name              = "public"
+        name              = "vm-in-01-public"
         subnet_key        = "public"
+        create_public_ip  = true
         load_balancer_key = "public"
-        create_pip        = true
       }
     ]
   }
   "fw-in-2" = {
-    name                 = "inbound-firewall-02"
-    add_to_appgw_backend = true
-    bootstrap_storage = {
-      name                   = "bootstrap"
-      static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
-      template_bootstrap_xml = "templates/bootstrap_inbound.tmpl"
-    }
+    name     = "inbound-firewall02"
     vnet_key = "transit"
-    avzone   = 2
+    image = {
+      version = "10.2.901"
+    }
+    virtual_machine = {
+      size = "Standard_DS3_v2"
+      zone = 2
+      bootstrap_package = {
+        bootstrap_storage_key  = "bootstrap"
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+        bootstrap_xml_template = "templates/bootstrap_inbound.tmpl"
+        private_snet_key       = "private"
+        public_snet_key        = "public"
+        intranet_cidr          = "10.0.0.0/8"
+      }
+    }
     interfaces = [
       {
-        name       = "mgmt"
-        subnet_key = "management"
-        create_pip = true
+        name             = "vm-in-02-mgmt"
+        subnet_key       = "management"
+        create_public_ip = true
       },
       {
-        name       = "private"
+        name       = "vm-in-02-private"
         subnet_key = "private"
       },
       {
-        name              = "public"
+        name              = "vm-in-02-public"
         subnet_key        = "public"
         load_balancer_key = "public"
-        create_pip        = true
       }
     ]
   }
   "fw-obew-1" = {
-    name = "obew-firewall-01"
-    bootstrap_storage = {
-      name                   = "bootstrap"
-      static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
-      template_bootstrap_xml = "templates/bootstrap_obew.tmpl"
-    }
+    name     = "obew-firewall01"
     vnet_key = "transit"
-    avzone   = 1
+    image = {
+      version = "10.2.901"
+    }
+    virtual_machine = {
+      size = "Standard_DS3_v2"
+      zone = 1
+      bootstrap_package = {
+        bootstrap_storage_key  = "bootstrap"
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+        bootstrap_xml_template = "templates/bootstrap_obew.tmpl"
+        private_snet_key       = "private"
+        public_snet_key        = "public"
+        intranet_cidr          = "10.0.0.0/8"
+      }
+    }
     interfaces = [
       {
-        name       = "mgmt"
-        subnet_key = "management"
-        create_pip = true
+        name             = "vm-obew-01-mgmt"
+        subnet_key       = "management"
+        create_public_ip = true
       },
       {
-        name              = "private"
+        name              = "vm-obew-01-private"
         subnet_key        = "private"
         load_balancer_key = "private"
       },
       {
-        name       = "public"
-        subnet_key = "public"
-        create_pip = true
+        name             = "vm-obew-01-public"
+        subnet_key       = "public"
+        create_public_ip = true
       }
     ]
   }
   "fw-obew-2" = {
-    name = "obew-firewall-02"
-    bootstrap_storage = {
-      name                   = "bootstrap"
-      static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
-      template_bootstrap_xml = "templates/bootstrap_obew.tmpl"
-    }
+    name     = "obew-firewall02"
     vnet_key = "transit"
-    avzone   = 2
+    image = {
+      version = "10.2.901"
+    }
+    virtual_machine = {
+      size = "Standard_DS3_v2"
+      zone = 2
+      bootstrap_package = {
+        bootstrap_storage_key  = "bootstrap"
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+        bootstrap_xml_template = "templates/bootstrap_obew.tmpl"
+        private_snet_key       = "private"
+        public_snet_key        = "public"
+        intranet_cidr          = "10.0.0.0/8"
+      }
+    }
     interfaces = [
       {
-        name       = "mgmt"
-        subnet_key = "management"
-        create_pip = true
+        name             = "vm-obew-02-mgmt"
+        subnet_key       = "management"
+        create_public_ip = true
       },
       {
-        name              = "private"
+        name              = "vm-obew-02-private"
         subnet_key        = "private"
         load_balancer_key = "private"
       },
       {
-        name       = "public"
-        subnet_key = "public"
-        create_pip = true
+        name             = "vm-obew-02-public"
+        subnet_key       = "public"
+        create_public_ip = true
       }
     ]
+  }
+}
+
+# TEST INFRASTRUCTURE
+
+test_infrastructure = {
+  "app1_testenv" = {
+    vnets = {
+      "app1" = {
+        name          = "app1-vnet"
+        address_space = ["10.100.0.0/25"]
+        hub_vnet_name = "transit" # Name prefix is added to the beginning of this string
+        network_security_groups = {
+          "app1" = {
+            name = "app1-nsg"
+            rules = {
+              from_bastion = {
+                name                       = "app1-mgmt-allow-bastion"
+                priority                   = 100
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefix      = "10.100.0.64/26"
+                source_port_range          = "*"
+                destination_address_prefix = "*"
+                destination_port_range     = "*"
+              }
+              web_inbound = {
+                name                       = "app1-web-allow-inbound"
+                priority                   = 110
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access test infrastructure
+                source_port_range          = "*"
+                destination_address_prefix = "10.100.0.0/25"
+                destination_port_ranges    = ["80", "443"]
+              }
+            }
+          }
+        }
+        route_tables = {
+          nva = {
+            name = "app1-rt"
+            routes = {
+              "toNVA" = {
+                name                = "toNVA-udr"
+                address_prefix      = "0.0.0.0/0"
+                next_hop_type       = "VirtualAppliance"
+                next_hop_ip_address = "10.0.0.30"
+              }
+            }
+          }
+        }
+        subnets = {
+          "vms" = {
+            name                       = "vms-snet"
+            address_prefixes           = ["10.100.0.0/26"]
+            network_security_group_key = "app1"
+            route_table_key            = "nva"
+          }
+          "bastion" = {
+            name             = "AzureBastionSubnet"
+            address_prefixes = ["10.100.0.64/26"]
+          }
+        }
+      }
+    }
+    spoke_vms = {
+      "app1_vm" = {
+        name       = "app1-vm"
+        vnet_key   = "app1"
+        subnet_key = "vms"
+      }
+    }
+    bastions = {
+      "app1_bastion" = {
+        name       = "app1-bastion"
+        vnet_key   = "app1"
+        subnet_key = "bastion"
+      }
+    }
+  }
+  "app2_testenv" = {
+    vnets = {
+      "app2" = {
+        name          = "app2-vnet"
+        address_space = ["10.100.1.0/25"]
+        hub_vnet_name = "transit" # Name prefix is added to the beginning of this string
+        network_security_groups = {
+          "app2" = {
+            name = "app2-nsg"
+            rules = {
+              from_bastion = {
+                name                       = "app2-mgmt-allow-bastion"
+                priority                   = 100
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefix      = "10.100.1.64/26"
+                source_port_range          = "*"
+                destination_address_prefix = "*"
+                destination_port_range     = "*"
+              }
+              web_inbound = {
+                name                       = "app2-web-allow-inbound"
+                priority                   = 110
+                direction                  = "Inbound"
+                access                     = "Allow"
+                protocol                   = "Tcp"
+                source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access test infrastructure
+                source_port_range          = "*"
+                destination_address_prefix = "10.100.1.0/25"
+                destination_port_ranges    = ["80", "443"]
+              }
+            }
+          }
+        }
+        route_tables = {
+          nva = {
+            name = "app2-rt"
+            routes = {
+              "toNVA" = {
+                name                = "toNVA-udr"
+                address_prefix      = "0.0.0.0/0"
+                next_hop_type       = "VirtualAppliance"
+                next_hop_ip_address = "10.0.0.30"
+              }
+            }
+          }
+        }
+        subnets = {
+          "vms" = {
+            name                       = "vms-snet"
+            address_prefixes           = ["10.100.1.0/26"]
+            network_security_group_key = "app2"
+            route_table_key            = "nva"
+          }
+          "bastion" = {
+            name             = "AzureBastionSubnet"
+            address_prefixes = ["10.100.1.64/26"]
+          }
+        }
+      }
+    }
+    spoke_vms = {
+      "app2_vm" = {
+        name       = "app2-vm"
+        vnet_key   = "app2"
+        subnet_key = "vms"
+      }
+    }
+    bastions = {
+      "app2_bastion" = {
+        name       = "app2-bastion"
+        vnet_key   = "app2"
+        subnet_key = "bastion"
+      }
+    }
   }
 }

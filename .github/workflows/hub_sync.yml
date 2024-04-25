@@ -6,7 +6,7 @@ permissions:
 on:
   workflow_dispatch:
   release:
-    types: [released]
+    types: [published]
 
 jobs:
   hub_sync:

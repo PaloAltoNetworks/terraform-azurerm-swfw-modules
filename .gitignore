@@ -30,6 +30,12 @@
 .vscode
 .idea
 
+
+# Ceritifcates
+*.pem
+*.crt
+*.pfx
+*.key
 # Palo auth codes
 authcodes
 # Crash log files
@@ -49,3 +55,5 @@ terraform.tfvars.json
 # **/
 *bootstrap.xml
 
+bootstrap_package/
+examples/appgw/files/*

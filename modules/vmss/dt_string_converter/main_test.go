@@ -1,4 +1,4 @@
-package application_insights
+package vmss
 
 import (
 	"testing"
