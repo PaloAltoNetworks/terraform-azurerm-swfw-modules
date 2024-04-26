@@ -5,8 +5,8 @@ permissions:
 
 on:
   workflow_dispatch:
-  release:
-    types: [released]
+  schedule:
+    - cron: "0 3 * * 4" # this means every Thursday @3am UTC
 
 jobs:
   hub_sync:
