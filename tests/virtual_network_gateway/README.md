@@ -1,11 +1,31 @@
-<!-- BEGIN_TF_DOCS -->
 # VNG module sample
 
 A sample of using a VNG module with the new variables layout and usage of `optional` keyword.
 
 The `README` is also in new, document-style format.
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+
+### Providers
+
+- `azurerm`
+
+### Modules
+Name | Version | Source | Description
+--- | --- | --- | ---
+`vnet` | - | ../../modules/vnet | 
+`vng` | - | ../../modules/virtual_network_gateway | 
+
+### Resources
+
+- `resource_group` (managed)
+- `resource_group` (data)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -13,7 +33,7 @@ Name | Type | Description
 [`region`](#region) | `string` | The Azure region to use.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -22,37 +42,14 @@ Name | Type | Description
 [`tags`](#tags) | `map` | Map of tags to assign to the created resources.
 [`virtual_network_gateways`](#virtual_network_gateways) | `map` | Map of Virtual Network Gateways to create.
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
 `vng_public_ips` | IP Addresses of the VNGs.
 `vng_ipsec_policy` | IPsec policy used for Virtual Network Gateway connection
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-
-Providers used in this module:
-
-- `azurerm`
-
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-`vnet` | - | ../../modules/vnet | 
-`vng` | - | ../../modules/virtual_network_gateway | 
-
-Resources used in this module:
-
-- `resource_group` (managed)
-- `resource_group` (data)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### resource_group_name
 
@@ -143,7 +140,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### name_prefix
 
@@ -295,5 +292,3 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

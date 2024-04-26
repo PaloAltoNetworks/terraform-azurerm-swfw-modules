@@ -1,11 +1,32 @@
-<!-- BEGIN_TF_DOCS -->
 # APP GW module sample
 
 A sample of using a APP GW module with the new variables layout and usage of `optional` keyword.
 
 The `README` is also in new, document-style format.
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+
+### Providers
+
+- `azurerm`
+
+### Modules
+Name | Version | Source | Description
+--- | --- | --- | ---
+`vnet` | - | ../../modules/vnet | 
+`appgw` | - | ../../modules/appgw | 
+
+### Resources
+
+- `public_ip` (managed)
+- `resource_group` (managed)
+- `resource_group` (data)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -14,7 +35,7 @@ Name | Type | Description
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 [`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -24,31 +45,7 @@ Name | Type | Description
 
 
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-
-Providers used in this module:
-
-- `azurerm`
-
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-`vnet` | - | ../../modules/vnet | 
-`appgw` | - | ../../modules/appgw | 
-
-Resources used in this module:
-
-- `public_ip` (managed)
-- `resource_group` (managed)
-- `resource_group` (data)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### region
 
@@ -312,7 +309,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### tags
 
@@ -358,5 +355,3 @@ Type: bool
 Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

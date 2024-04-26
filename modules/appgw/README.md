@@ -1,4 +1,3 @@
-<!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks Application Gateway Module for Azure
 
 A terraform module for deploying a Application Gateway v2 and its components required for the VM-Series firewalls in Azure.
@@ -810,7 +809,26 @@ appgws = {
 }
 ```
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+- `azurerm`, version: ~> 3.98
+
+### Providers
+
+- `azurerm`, version: ~> 3.98
+
+
+
+### Resources
+
+- `application_gateway` (managed)
+- `public_ip` (managed)
+- `public_ip` (data)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -823,7 +841,7 @@ Name | Type | Description
 [`listeners`](#listeners) | `map` | A map of listeners for the Application Gateway.
 [`rules`](#rules) | `map` | A map of rules for the Application Gateway.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -843,7 +861,7 @@ Name | Type | Description
 [`redirects`](#redirects) | `map` | A map of redirects for the Application Gateway.
 [`url_path_maps`](#url_path_maps) | `map` | A map of URL path maps for the Application Gateway.
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
@@ -851,28 +869,7 @@ Name |  Description
 `public_domain_name` | Public domain name assigned to the Application Gateway.
 `backend_pool_id` | The identifier of the Application Gateway backend address pool.
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.98
-
-Providers used in this module:
-
-- `azurerm`, version: ~> 3.98
-
-
-
-Resources used in this module:
-
-- `application_gateway` (managed)
-- `public_ip` (managed)
-- `public_ip` (data)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### name
 
@@ -1018,7 +1015,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### tags
 
@@ -1451,5 +1448,3 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

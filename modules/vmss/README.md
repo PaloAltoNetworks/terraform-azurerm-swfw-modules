@@ -1,4 +1,3 @@
-<!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks VMSS Module for Azure
 
 A terraform module for deploying a Scale Set based on Next Generation Firewalls in Azure.
@@ -40,11 +39,11 @@ autoscaling. This is a suggested way of setting up scaling rules as these metric
 
 This however requires some additional steps:
 
-- deploy the [`ngfw_metrics`](../ngfw\_metrics/README.md) module, this module outputs two properties:
+- deploy the [`ngfw_metrics`](../ngfw_metrics/README.md) module, this module outputs two properties:
   - `application_insights_ids` - a map of IDs of the deployed Application Insights instances
   - `metrics_instrumentation_keys` - a map of instrumentation keys for the deployed Application Insights instances
 - configure this module with the ID of the desired Application Insights instance, use the
-  [`var.autoscaling_configuration.application_insights_id`](#autoscaling\_configuration) property
+  [`var.autoscaling_configuration.application_insights_id`](#autoscaling_configuration) property
 - depending on the bootstrap method you use, configure the PAN-OS VM-Series plugins with the metrics instrumentation key
   belonging to the Application Insights instance of your choice.
 
@@ -99,7 +98,28 @@ module "vmss" {
 }
 ```
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+- `azurerm`, version: ~> 3.98
+
+### Providers
+
+- `azurerm`, version: ~> 3.98
+
+### Modules
+Name | Version | Source | Description
+--- | --- | --- | ---
+`ptd_time` | - | ./dt_string_converter | 
+
+### Resources
+
+- `linux_virtual_machine_scale_set` (managed)
+- `monitor_autoscale_setting` (managed)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -110,7 +130,7 @@ Name | Type | Description
 [`image`](#image) | `object` | Basic Azure VM configuration.
 [`interfaces`](#interfaces) | `list` | List of the network interfaces specifications.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -119,7 +139,7 @@ Name | Type | Description
 [`autoscaling_configuration`](#autoscaling_configuration) | `object` | Autoscaling configuration common to all policies.
 [`autoscaling_profiles`](#autoscaling_profiles) | `list` | A list defining autoscaling profiles.
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
@@ -127,30 +147,7 @@ Name |  Description
 `username` | Firewall admin account name.
 `password` | Firewall admin password
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.98
-
-Providers used in this module:
-
-- `azurerm`, version: ~> 3.98
-
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-`ptd_time` | - | ./dt_string_converter | 
-
-Resources used in this module:
-
-- `linux_virtual_machine_scale_set` (managed)
-- `monitor_autoscale_setting` (managed)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### name
 
@@ -311,7 +308,7 @@ list(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### tags
 
@@ -625,5 +622,3 @@ list(object({
 Default value: `[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

@@ -1,8 +1,7 @@
-<!-- BEGIN_TF_DOCS -->
 ---
-short\_title: Standalone VM-Series Deployment
+short_title: Standalone VM-Series Deployment
 type: example
-show\_in\_hub: false
+show_in_hub: false
 ---
 # Palo Alto Networks Next Generation deployment example
 
@@ -11,8 +10,8 @@ An example of a Terraform module that deploys a Next Generation Firewall applian
 **NOTE:**
 
 - after the deployment firewall remains not licensed and not configured
-- this example contains some **files*- that **can contain sensitive data**, namely the `TFVARS` file can contain bootstrap\_options
-  properties in `var.vmseries` definition. Keep in mind that **this code*- is **only an example**. It's main purpose is to
+- this example contains some **files** that **can contain sensitive data**, namely the `TFVARS` file can contain bootstrap_options
+  properties in `var.vmseries` definition. Keep in mind that **this code** is **only an example**. It's main purpose is to
   introduce the Terraform modules. It's not meant to be run on production in this form.
 
 ## Topology and resources
@@ -113,7 +112,40 @@ To remove the deployed infrastructure run:
 terraform destroy
 ```
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+
+### Providers
+
+- `random`
+- `azurerm`
+- `local`
+
+### Modules
+Name | Version | Source | Description
+--- | --- | --- | ---
+`vnet` | - | ../../modules/vnet | 
+`vnet_peering` | - | ../../modules/vnet_peering | 
+`natgw` | - | ../../modules/natgw | 
+`load_balancer` | - | ../../modules/loadbalancer | 
+`appgw` | - | ../../modules/appgw | 
+`ngfw_metrics` | - | ../../modules/ngfw_metrics | 
+`bootstrap` | - | ../../modules/bootstrap | 
+`vmseries` | - | ../../modules/vmseries | 
+`test_infrastructure` | - | ../../modules/test_infrastructure | 
+
+### Resources
+
+- `availability_set` (managed)
+- `resource_group` (managed)
+- `file` (managed)
+- `password` (managed)
+- `resource_group` (data)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -121,7 +153,7 @@ Name | Type | Description
 [`region`](#region) | `string` | The Azure region to use.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -138,7 +170,7 @@ Name | Type | Description
 [`vmseries`](#vmseries) | `map` | A map defining Azure Virtual Machines based on Palo Alto Networks Next Generation Firewall image.
 [`test_infrastructure`](#test_infrastructure) | `map` | A map defining test infrastructure including test VMs and Azure Bastion hosts.
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
@@ -151,42 +183,7 @@ Name |  Description
 `bootstrap_storage_urls` | 
 `app_lb_frontend_ips` | IP Addresses of the load balancers.
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-
-Providers used in this module:
-
-- `random`
-- `azurerm`
-- `local`
-
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-`vnet` | - | ../../modules/vnet | 
-`vnet_peering` | - | ../../modules/vnet_peering | 
-`natgw` | - | ../../modules/natgw | 
-`load_balancer` | - | ../../modules/loadbalancer | 
-`appgw` | - | ../../modules/appgw | 
-`ngfw_metrics` | - | ../../modules/ngfw_metrics | 
-`bootstrap` | - | ../../modules/bootstrap | 
-`vmseries` | - | ../../modules/vmseries | 
-`test_infrastructure` | - | ../../modules/test_infrastructure | 
-
-Resources used in this module:
-
-- `availability_set` (managed)
-- `resource_group` (managed)
-- `file` (managed)
-- `password` (managed)
-- `resource_group` (data)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### resource_group_name
 
@@ -277,7 +274,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### name_prefix
 
@@ -1264,5 +1261,3 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

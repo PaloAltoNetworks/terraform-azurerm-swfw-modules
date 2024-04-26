@@ -1,4 +1,3 @@
-<!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks Bootstrap Module for Azure
 
 A terraform module for deploying a storage account and the dependencies required to
@@ -126,16 +125,39 @@ be discovered and the remote file will be overwritten. This has some implication
 The module can calculate hashes for the existing files - any files that were present before Terraform run.
 
 If however you are creating some files on the fly (templating for instance) you have to provide the MD5 hashes yourself. For more
-details refer to the [var.file\_shares](#file\_shares) variable documentation.
+details refer to the [var.file_shares](#file_shares) variable documentation.
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+- `azurerm`, version: ~> 3.98
+
+### Providers
+
+- `azurerm`, version: ~> 3.98
+
+
+
+### Resources
+
+- `storage_account` (managed)
+- `storage_account_network_rules` (managed)
+- `storage_share` (managed)
+- `storage_share_directory` (managed)
+- `storage_share_file` (managed)
+- `storage_account` (data)
+- `storage_share` (data)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | Name of the Storage Account.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -146,7 +168,7 @@ Name | Type | Description
 [`file_shares_configuration`](#file_shares_configuration) | `object` | A map defining common File Share setting.
 [`file_shares`](#file_shares) | `map` | Definition of File Shares.
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
@@ -154,32 +176,7 @@ Name |  Description
 `storage_account_primary_access_key` | The primary access key for the Azure Storage Account. For either created or sourced
 `file_share_urls` | The File Shares' share URL used for bootstrap configuration.
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.98
-
-Providers used in this module:
-
-- `azurerm`, version: ~> 3.98
-
-
-
-Resources used in this module:
-
-- `storage_account` (managed)
-- `storage_account_network_rules` (managed)
-- `storage_share` (managed)
-- `storage_share_directory` (managed)
-- `storage_share_file` (managed)
-- `storage_account` (data)
-- `storage_share` (data)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### name
 
@@ -202,7 +199,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### region
 
@@ -387,5 +384,3 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

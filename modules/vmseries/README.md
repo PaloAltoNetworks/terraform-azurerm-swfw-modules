@@ -1,4 +1,3 @@
-<!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks VM-Series Module for Azure
 
 A Terraform module for deploying a VM-Series firewall in Azure cloud.
@@ -32,7 +31,28 @@ If your Region doesn't, use an alternative mechanism of Availability Set, which 
    avzone   = null
 ```
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+- `azurerm`, version: ~> 3.98
+
+### Providers
+
+- `azurerm`, version: ~> 3.98
+
+
+
+### Resources
+
+- `linux_virtual_machine` (managed)
+- `network_interface` (managed)
+- `network_interface_backend_address_pool_association` (managed)
+- `public_ip` (managed)
+- `public_ip` (data)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -44,13 +64,13 @@ Name | Type | Description
 [`virtual_machine`](#virtual_machine) | `object` | Firewall parameters configuration.
 [`interfaces`](#interfaces) | `list` | List of the network interface specifications.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
@@ -60,30 +80,7 @@ Name |  Description
 `principal_id` | The ID of Azure Service Principal of the created VM-Series. Usable only if `identity_type` contains SystemAssigned.
 
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.98
-
-Providers used in this module:
-
-- `azurerm`, version: ~> 3.98
-
-
-
-Resources used in this module:
-
-- `linux_virtual_machine` (managed)
-- `network_interface` (managed)
-- `network_interface_backend_address_pool_association` (managed)
-- `public_ip` (managed)
-- `public_ip` (data)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### name
 
@@ -328,7 +325,7 @@ list(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### tags
 
@@ -339,5 +336,3 @@ Type: map(string)
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

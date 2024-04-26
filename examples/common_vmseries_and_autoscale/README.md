@@ -1,8 +1,7 @@
-<!-- BEGIN_TF_DOCS -->
 ---
-short\_title: Common Firewall Option with Autoscaling
+short_title: Common Firewall Option with Autoscaling
 type: refarch
-show\_in\_hub: true
+show_in_hub: true
 ---
 # Reference Architecture with Terraform: VM-Series in Azure, Centralized Architecture, Common NGFW Option with Autoscaling
 
@@ -19,7 +18,7 @@ Virtual Machine Scale Sets (VMSS) are used for autoscaling to run the Next Gener
 metrics published by PanOS it is possible to adjust the number of firewall appliances to the current workload (data plane
 utilization). Since firewalls are added or removed automatically, they cannot be managed in a classic way. To ease licensing,
 management and updates a Panorama appliance is suggested. Deployment of a Panorama instance is not covered in this example,
-but a [dedicated one exists](../standalone\\_panorama/README.md).
+but a [dedicated one exists](../standalone\_panorama/README.md).
 
 ## Reference Architecture Design
 
@@ -206,7 +205,36 @@ To remove the deployed infrastructure run:
 terraform destroy
 ```
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+
+### Providers
+
+- `random`
+- `azurerm`
+
+### Modules
+Name | Version | Source | Description
+--- | --- | --- | ---
+`vnet` | - | ../../modules/vnet | 
+`vnet_peering` | - | ../../modules/vnet_peering | 
+`natgw` | - | ../../modules/natgw | 
+`load_balancer` | - | ../../modules/loadbalancer | 
+`appgw` | - | ../../modules/appgw | 
+`ngfw_metrics` | - | ../../modules/ngfw_metrics | 
+`vmss` | - | ../../modules/vmss | 
+`test_infrastructure` | - | ../../modules/test_infrastructure | 
+
+### Resources
+
+- `resource_group` (managed)
+- `password` (managed)
+- `resource_group` (data)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -214,7 +242,7 @@ Name | Type | Description
 [`region`](#region) | `string` | The Azure region to use.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -229,7 +257,7 @@ Name | Type | Description
 [`scale_sets`](#scale_sets) | `map` | A map defining Azure Virtual Machine Scale Sets based on Palo Alto Networks Next Generation Firewall image.
 [`test_infrastructure`](#test_infrastructure) | `map` | A map defining test infrastructure including test VMs and Azure Bastion hosts.
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
@@ -242,38 +270,7 @@ Name |  Description
 `test_vms_ips` | IP Addresses of the test VMs.
 `app_lb_frontend_ips` | IP Addresses of the load balancers.
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-
-Providers used in this module:
-
-- `random`
-- `azurerm`
-
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-`vnet` | - | ../../modules/vnet | 
-`vnet_peering` | - | ../../modules/vnet_peering | 
-`natgw` | - | ../../modules/natgw | 
-`load_balancer` | - | ../../modules/loadbalancer | 
-`appgw` | - | ../../modules/appgw | 
-`ngfw_metrics` | - | ../../modules/ngfw_metrics | 
-`vmss` | - | ../../modules/vmss | 
-`test_infrastructure` | - | ../../modules/test_infrastructure | 
-
-Resources used in this module:
-
-- `resource_group` (managed)
-- `password` (managed)
-- `resource_group` (data)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### resource_group_name
 
@@ -364,7 +361,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### name_prefix
 
@@ -1223,5 +1220,3 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

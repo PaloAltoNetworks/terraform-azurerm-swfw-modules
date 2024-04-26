@@ -1,4 +1,3 @@
-<!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks VNet Module for Azure
 
 A Terraform module for deploying a Virtual Network and its components required for the VM-Series firewalls in Azure.
@@ -122,51 +121,20 @@ This module is designed to work in several *modes* depending on which variables 
   }
   ```
 
-## Module's Required Inputs
+## Reference
 
-Name | Type | Description
---- | --- | ---
-[`name`](#name) | `string` | The name of the Azure Virtual Network.
-[`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
-[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
-
-## Module's Optional Inputs
-
-Name | Type | Description
---- | --- | ---
-[`tags`](#tags) | `map` | The map of tags to assign to all created resources.
-[`create_virtual_network`](#create_virtual_network) | `bool` | Controls Virtual Network creation.
-[`address_space`](#address_space) | `list` | The address space used by the virtual network.
-[`network_security_groups`](#network_security_groups) | `map` | Map of objects describing Network Security Groups.
-[`route_tables`](#route_tables) | `map` | Map of objects describing a Route Tables.
-[`create_subnets`](#create_subnets) | `bool` | Controls subnet creation.
-[`subnets`](#subnets) | `map` | Map of objects describing subnets to manage.
-
-## Module's Outputs
-
-Name |  Description
---- | ---
-`virtual_network_id` | The identifier of the created or sourced Virtual Network.
-`vnet_cidr` | VNET address space.
-`subnet_ids` | The identifiers of the created or sourced Subnets.
-`subnet_cidrs` | Subnet CIDRs (sourced or created).
-`network_security_group_ids` | The identifiers of the created Network Security Groups.
-`route_table_ids` | The identifiers of the created Route Tables.
-
-## Module's Nameplate
-
-Requirements needed by this module:
+### Requirements
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-Providers used in this module:
+### Providers
 
 - `azurerm`, version: ~> 3.98
 
 
 
-Resources used in this module:
+### Resources
 
 - `network_security_group` (managed)
 - `network_security_rule` (managed)
@@ -179,9 +147,38 @@ Resources used in this module:
 - `subnet` (data)
 - `virtual_network` (data)
 
-## Inputs/Outpus details
-
 ### Required Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`name`](#name) | `string` | The name of the Azure Virtual Network.
+[`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
+
+### Optional Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`tags`](#tags) | `map` | The map of tags to assign to all created resources.
+[`create_virtual_network`](#create_virtual_network) | `bool` | Controls Virtual Network creation.
+[`address_space`](#address_space) | `list` | The address space used by the virtual network.
+[`network_security_groups`](#network_security_groups) | `map` | Map of objects describing Network Security Groups.
+[`route_tables`](#route_tables) | `map` | Map of objects describing a Route Tables.
+[`create_subnets`](#create_subnets) | `bool` | Controls subnet creation.
+[`subnets`](#subnets) | `map` | Map of objects describing subnets to manage.
+
+### Outputs
+
+Name |  Description
+--- | ---
+`virtual_network_id` | The identifier of the created or sourced Virtual Network.
+`vnet_cidr` | VNET address space.
+`subnet_ids` | The identifiers of the created or sourced Subnets.
+`subnet_cidrs` | Subnet CIDRs (sourced or created).
+`network_security_group_ids` | The identifiers of the created Network Security Groups.
+`route_table_ids` | The identifiers of the created Route Tables.
+
+### Required Inputs details
 
 #### name
 
@@ -207,7 +204,7 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### tags
 
@@ -513,5 +510,3 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

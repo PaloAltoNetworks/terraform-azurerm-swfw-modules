@@ -1,8 +1,7 @@
-<!-- BEGIN_TF_DOCS -->
 ---
-short\_title: GWLB Firewall Option
+short_title: GWLB Firewall Option
 type: example
-show\_in\_hub: false
+show_in_hub: false
 ---
 # VM-Series Azure Gateway Load Balancer example
 
@@ -122,7 +121,38 @@ To remove the deployed infrastructure run:
 terraform destroy
 ```
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+
+### Providers
+
+- `random`
+- `azurerm`
+- `local`
+
+### Modules
+Name | Version | Source | Description
+--- | --- | --- | ---
+`vnet` | - | ../../modules/vnet | 
+`vnet_peering` | - | ../../modules/vnet_peering | 
+`gwlb` | - | ../../modules/gwlb | 
+`ngfw_metrics` | - | ../../modules/ngfw_metrics | 
+`bootstrap` | - | ../../modules/bootstrap | 
+`vmseries` | - | ../../modules/vmseries | 
+`test_infrastructure` | - | ../../modules/test_infrastructure | 
+
+### Resources
+
+- `availability_set` (managed)
+- `resource_group` (managed)
+- `file` (managed)
+- `password` (managed)
+- `resource_group` (data)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -130,7 +160,7 @@ Name | Type | Description
 [`region`](#region) | `string` | The Azure region to use.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -145,7 +175,7 @@ Name | Type | Description
 [`vmseries`](#vmseries) | `map` | A map defining Azure Virtual Machines based on Palo Alto Networks Next Generation Firewall image.
 [`test_infrastructure`](#test_infrastructure) | `map` | A map defining test infrastructure including test VMs and Azure Bastion hosts.
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
@@ -159,40 +189,7 @@ Name |  Description
 `test_vms_ips` | IP Addresses of the test VMs.
 `app_lb_frontend_ips` | IP Addresses of the load balancers.
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-
-Providers used in this module:
-
-- `random`
-- `azurerm`
-- `local`
-
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-`vnet` | - | ../../modules/vnet | 
-`vnet_peering` | - | ../../modules/vnet_peering | 
-`gwlb` | - | ../../modules/gwlb | 
-`ngfw_metrics` | - | ../../modules/ngfw_metrics | 
-`bootstrap` | - | ../../modules/bootstrap | 
-`vmseries` | - | ../../modules/vmseries | 
-`test_infrastructure` | - | ../../modules/test_infrastructure | 
-
-Resources used in this module:
-
-- `availability_set` (managed)
-- `resource_group` (managed)
-- `file` (managed)
-- `password` (managed)
-- `resource_group` (data)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### resource_group_name
 
@@ -283,7 +280,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### name_prefix
 
@@ -985,5 +982,3 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->
