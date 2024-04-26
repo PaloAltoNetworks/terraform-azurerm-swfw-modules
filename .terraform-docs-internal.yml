@@ -5,6 +5,8 @@ header-from: ".header.md"
 output:
   file: .README.md
   mode: replace
+  template: |-
+    {{ .Content }}
 
 sort:
   enabled: false
@@ -12,11 +14,44 @@ sort:
 settings:
   indent: 3
   lockfile: false
+  escape: false
 
 content: |-
   {{ .Header }}
 
-  ## Module's Required Inputs
+  ## Reference
+
+  {{ if ne (len .Module.Requirements) 0 -}}
+  ### Requirements
+  {{ range .Module.Requirements }}
+  - `{{ .Name }}`{{ if .Version }}, version: {{ .Version }}{{ end }}
+  {{- end }}
+  {{- end }}
+
+  {{ if ne (len .Module.Providers) 0 -}}
+  ### Providers
+  {{ range .Module.Providers }}
+  - `{{ .Name }}`{{ if .Version }}, version: {{ .Version }}{{ end }}
+  {{- end }}
+  {{- end }}
+
+  {{ if ne (len .Module.ModuleCalls) 0 -}}
+  ### Modules
+  Name | Version | Source | Description
+  --- | --- | --- | ---
+  {{- range .Module.ModuleCalls }}
+  `{{ .Name }}` | {{ if .Version }}{{ .Version }}{{ else }}-{{ end }} | {{ .Source }} | {{ .Description }}
+  {{- end }}
+  {{- end }}
+
+  {{ if ne (len .Module.Resources) 0 -}}
+  ### Resources
+  {{ range .Module.Resources }}
+  - `{{ .Type }}` ({{ .Mode }})
+  {{- end }}
+  {{- end }}
+
+  ### Required Inputs
 
   Name | Type | Description
   --- | --- | ---
@@ -30,7 +65,7 @@ content: |-
   {{ range .Module.Inputs }}{{ if not .Required }}{{ $optional = true -}}{{ end -}}{{ end -}}
 
   {{ if $optional -}}
-  ## Module's Optional Inputs
+  ### Optional Inputs
 
   Name | Type | Description
   --- | --- | ---
@@ -42,7 +77,7 @@ content: |-
   {{ end }}
 
   {{ if ne (len .Module.Outputs) 0 -}}
-  ## Module's Outputs
+  ### Outputs
 
   Name |  Description
   --- | ---
@@ -51,41 +86,7 @@ content: |-
   {{- end }}
   {{- end }}
 
-  ## Module's Nameplate
-
-  {{ if ne (len .Module.Requirements) 0 -}}
-  Requirements needed by this module:
-  {{ range .Module.Requirements }}
-  - `{{ .Name }}`{{ if .Version }}, version: {{ .Version }}{{ end }}
-  {{- end }}
-  {{- end }}
-
-  {{ if ne (len .Module.Providers) 0 -}}
-  Providers used in this module:
-  {{ range .Module.Providers }}
-  - `{{ .Name }}`{{ if .Version }}, version: {{ .Version }}{{ end }}
-  {{- end }}
-  {{- end }}
-
-  {{ if ne (len .Module.ModuleCalls) 0 -}}
-  Modules used in this module:
-  Name | Version | Source | Description
-  --- | --- | --- | ---
-  {{- range .Module.ModuleCalls }}
-  `{{ .Name }}` | {{ if .Version }}{{ .Version }}{{ else }}-{{ end }} | {{ .Source }} | {{ .Description }}
-  {{- end }}
-  {{- end }}
-
-  {{ if ne (len .Module.Resources) 0 -}}
-  Resources used in this module:
-  {{ range .Module.Resources }}
-  - `{{ .Type }}` ({{ .Mode }})
-  {{- end }}
-  {{- end }}
-
-  ## Inputs/Outpus details
-
-  ### Required Inputs
+  ### Required Inputs details
 
   {{ range .Module.Inputs -}}
   {{ if .Required -}}
@@ -106,7 +107,7 @@ content: |-
   {{- end -}}
 
   {{ if $optional -}}
-  ### Optional Inputs
+  ### Optional Inputs details
 
   {{ range .Module.Inputs -}}
   {{ if not .Required -}}
