@@ -1,8 +1,7 @@
-<!-- BEGIN_TF_DOCS -->
 ---
-short\_title: Standalone Panorama Deployment
+short_title: Standalone Panorama Deployment
 type: example
-show\_in\_hub: true
+show_in_hub: true
 ---
 # Standalone Panorama Deployment
 
@@ -13,7 +12,7 @@ location.
 
 The Terraform code presented here will deploy Palo Alto Networks Panorama management platform in Azure in management only mode
 (without additional logging disks). For option on how to add additional logging disks - please refer to panorama
-[module documentation](../../modules/panorama/README.md#input\_logging\_disks).
+[module documentation](../../modules/panorama/README.md#input_logging_disks).
 
 ## Topology
 
@@ -120,7 +119,31 @@ To remove the deployed infrastructure run:
 terraform destroy
 ```
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+
+### Providers
+
+- `random`
+- `azurerm`
+
+### Modules
+Name | Version | Source | Description
+--- | --- | --- | ---
+`vnet` | - | ../../modules/vnet | 
+`panorama` | - | ../../modules/panorama | 
+
+### Resources
+
+- `availability_set` (managed)
+- `resource_group` (managed)
+- `password` (managed)
+- `resource_group` (data)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -128,7 +151,7 @@ Name | Type | Description
 [`region`](#region) | `string` | The Azure region to use.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -138,7 +161,7 @@ Name | Type | Description
 [`availability_sets`](#availability_sets) | `map` | A map defining availability sets.
 [`panoramas`](#panoramas) | `map` | A map defining Azure Virtual Machine based on Palo Alto Networks Panorama image.
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
@@ -146,33 +169,7 @@ Name |  Description
 `password` | Initial administrative password to use for VM-Series.
 `panorama_mgmt_ips` | 
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-
-Providers used in this module:
-
-- `random`
-- `azurerm`
-
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-`vnet` | - | ../../modules/vnet | 
-`panorama` | - | ../../modules/panorama | 
-
-Resources used in this module:
-
-- `availability_set` (managed)
-- `resource_group` (managed)
-- `password` (managed)
-- `resource_group` (data)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### resource_group_name
 
@@ -263,7 +260,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### name_prefix
 
@@ -456,5 +453,3 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

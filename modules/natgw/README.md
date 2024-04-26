@@ -1,4 +1,3 @@
-<!-- BEGIN_TF_DOCS -->
 # NAT Gateway module
 
 ## Purpose
@@ -39,47 +38,20 @@ module.vnet.subnet_ids["a_subnet_name"] }
 This will create a NAT Gateway in with a single Public IP in a zone chosen
 by Azure.
 
-## Module's Required Inputs
+## Reference
 
-Name | Type | Description
---- | --- | ---
-[`name`](#name) | `string` | Name of a NAT Gateway.
-[`resource_group_name`](#resource_group_name) | `string` | Name of a Resource Group hosting the NAT Gateway (either the existing one or the one that will be created).
-[`region`](#region) | `string` | Azure region.
-[`subnet_ids`](#subnet_ids) | `map` | A map of subnet IDs what will be bound with this NAT Gateway.
-
-## Module's Optional Inputs
-
-Name | Type | Description
---- | --- | ---
-[`tags`](#tags) | `map` | A map of tags that will be assigned to resources created by this module.
-[`create_natgw`](#create_natgw) | `bool` | Triggers creation of a NAT Gateway when set to `true`.
-[`zone`](#zone) | `string` | Controls whether the NAT Gateway will be bound to a specific zone or not.
-[`idle_timeout`](#idle_timeout) | `number` | Connection IDLE timeout in minutes (up to 120, defaults to Azure defaults).
-[`public_ip`](#public_ip) | `object` | A map defining a Public IP resource.
-[`public_ip_prefix`](#public_ip_prefix) | `object` | A map defining a Public IP Prefix resource.
-
-## Module's Outputs
-
-Name |  Description
---- | ---
-`natgw_pip` | Public IP associated with the NAT Gateway.
-`natgw_pip_prefix` | Public IP Prefix associated with the NAT Gateway.
-
-## Module's Nameplate
-
-Requirements needed by this module:
+### Requirements
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-Providers used in this module:
+### Providers
 
 - `azurerm`, version: ~> 3.98
 
 
 
-Resources used in this module:
+### Resources
 
 - `nat_gateway` (managed)
 - `nat_gateway_public_ip_association` (managed)
@@ -91,9 +63,34 @@ Resources used in this module:
 - `public_ip` (data)
 - `public_ip_prefix` (data)
 
-## Inputs/Outpus details
-
 ### Required Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`name`](#name) | `string` | Name of a NAT Gateway.
+[`resource_group_name`](#resource_group_name) | `string` | Name of a Resource Group hosting the NAT Gateway (either the existing one or the one that will be created).
+[`region`](#region) | `string` | Azure region.
+[`subnet_ids`](#subnet_ids) | `map` | A map of subnet IDs what will be bound with this NAT Gateway.
+
+### Optional Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`tags`](#tags) | `map` | A map of tags that will be assigned to resources created by this module.
+[`create_natgw`](#create_natgw) | `bool` | Triggers creation of a NAT Gateway when set to `true`.
+[`zone`](#zone) | `string` | Controls whether the NAT Gateway will be bound to a specific zone or not.
+[`idle_timeout`](#idle_timeout) | `number` | Connection IDLE timeout in minutes (up to 120, defaults to Azure defaults).
+[`public_ip`](#public_ip) | `object` | A map defining a Public IP resource.
+[`public_ip_prefix`](#public_ip_prefix) | `object` | A map defining a Public IP Prefix resource.
+
+### Outputs
+
+Name |  Description
+--- | ---
+`natgw_pip` | Public IP associated with the NAT Gateway.
+`natgw_pip_prefix` | Public IP Prefix associated with the NAT Gateway.
+
+### Required Inputs details
 
 #### name
 
@@ -130,7 +127,7 @@ Type: map(string)
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### tags
 
@@ -293,5 +290,3 @@ object({
 Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

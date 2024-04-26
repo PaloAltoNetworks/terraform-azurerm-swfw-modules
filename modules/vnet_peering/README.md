@@ -1,4 +1,3 @@
-<!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks VNet Peering Module for Azure
 
 A terraform module for deploying a Virtual Network Peering and its components required for the VM-Series firewalls in Azure.
@@ -21,7 +20,27 @@ remote_peer_config = {
 }
 ```
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+- `azurerm`, version: ~> 3.98
+
+### Providers
+
+- `azurerm`, version: ~> 3.98
+
+
+
+### Resources
+
+- `virtual_network_peering` (managed)
+- `virtual_network_peering` (managed)
+- `virtual_network` (data)
+- `virtual_network` (data)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -30,7 +49,7 @@ Name | Type | Description
 
 
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
@@ -39,29 +58,7 @@ Name |  Description
 `local_peering_id` | The ID of the local VNET peering.
 `remote_peering_id` | The ID of the remote VNET peering.
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.98
-
-Providers used in this module:
-
-- `azurerm`, version: ~> 3.98
-
-
-
-Resources used in this module:
-
-- `virtual_network_peering` (managed)
-- `virtual_network_peering` (managed)
-- `virtual_network` (data)
-- `virtual_network` (data)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### local_peer_config
 
@@ -130,5 +127,3 @@ object({
 
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
-<!-- END_TF_DOCS -->

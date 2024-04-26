@@ -1,4 +1,3 @@
-<!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks Virtual Network Gateway Module for Azure
 
 A terraform module for deploying a VNG (Virtual Network Gateway) and its components required for the VM-Series firewalls in Azure.
@@ -313,7 +312,28 @@ variable "virtual_network_gateways" {
 }
 ```
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+- `azurerm`, version: ~> 3.98
+
+### Providers
+
+- `azurerm`, version: ~> 3.98
+
+
+
+### Resources
+
+- `local_network_gateway` (managed)
+- `public_ip` (managed)
+- `virtual_network_gateway` (managed)
+- `virtual_network_gateway_connection` (managed)
+- `public_ip` (data)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -324,7 +344,7 @@ Name | Type | Description
 [`instance_settings`](#instance_settings) | `object` | A map containing the basic Virtual Network Gateway instance settings.
 [`ip_configurations`](#ip_configurations) | `object` | A map defining the Public IPs used by the Virtual Network Gateway.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -338,37 +358,14 @@ Name | Type | Description
 [`local_network_gateways`](#local_network_gateways) | `map` | Map of local network gateways and their connections.
 [`vpn_clients`](#vpn_clients) | `map` | VPN client configurations (IPSec point-to-site connections).
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
 `public_ip` | Public IP addresses for Virtual Network Gateway
 `ipsec_policy` | IPsec policy used for Virtual Network Gateway connection
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.98
-
-Providers used in this module:
-
-- `azurerm`, version: ~> 3.98
-
-
-
-Resources used in this module:
-
-- `local_network_gateway` (managed)
-- `public_ip` (managed)
-- `virtual_network_gateway` (managed)
-- `virtual_network_gateway_connection` (managed)
-- `public_ip` (data)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### name
 
@@ -517,7 +514,7 @@ object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### tags
 
@@ -788,5 +785,3 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

@@ -1,4 +1,3 @@
-<!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks Metrics Infrastructure Module for Azure
 
 A Terraform module deploying Azure Application Insights (Log Analytics Workspace mode).
@@ -55,7 +54,26 @@ module "ngfw_metrics" {
 }
 ```
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+- `azurerm`, version: ~> 3.98
+
+### Providers
+
+- `azurerm`, version: ~> 3.98
+
+
+
+### Resources
+
+- `application_insights` (managed)
+- `log_analytics_workspace` (managed)
+- `log_analytics_workspace` (data)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -64,7 +82,7 @@ Name | Type | Description
 [`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`application_insights`](#application_insights) | `map` | A map defining Application Insights instances.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -72,35 +90,14 @@ Name | Type | Description
 [`create_workspace`](#create_workspace) | `bool` | Controls creation or sourcing of a Log Analytics Workspace.
 [`log_analytics_workspace`](#log_analytics_workspace) | `object` | Configuration of the log analytics workspace.
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
 `metrics_instrumentation_keys` | The Instrumentation Key of the Application Insights instances.
 `application_insights_ids` | An Azure ID of the Application Insights instances.
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.98
-
-Providers used in this module:
-
-- `azurerm`, version: ~> 3.98
-
-
-
-Resources used in this module:
-
-- `application_insights` (managed)
-- `log_analytics_workspace` (managed)
-- `log_analytics_workspace` (data)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### name
 
@@ -156,7 +153,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### tags
 
@@ -206,5 +203,3 @@ object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

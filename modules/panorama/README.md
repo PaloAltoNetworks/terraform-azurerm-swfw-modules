@@ -1,4 +1,3 @@
-<!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks Panorama Module for Azure
 
 A terraform module for deploying a working Panorama instance in Azure.
@@ -18,7 +17,29 @@ az vm image terms accept --publisher paloaltonetworks --offer panorama --plan by
 You can revoke the acceptance later with the `az vm image terms cancel` command.
 The acceptance applies to the entirety of your Azure Subscription.
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+- `azurerm`, version: ~> 3.98
+
+### Providers
+
+- `azurerm`, version: ~> 3.98
+
+
+
+### Resources
+
+- `linux_virtual_machine` (managed)
+- `managed_disk` (managed)
+- `network_interface` (managed)
+- `public_ip` (managed)
+- `virtual_machine_data_disk_attachment` (managed)
+- `public_ip` (data)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -30,14 +51,14 @@ Name | Type | Description
 [`virtual_machine`](#virtual_machine) | `object` | Firewall parameters configuration.
 [`interfaces`](#interfaces) | `list` | List of the network interface specifications.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`logging_disks`](#logging_disks) | `map` |  A map of objects describing the additional disks configuration.
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
@@ -45,31 +66,7 @@ Name |  Description
 
 `interfaces` | Map of VM-Series network interfaces. Keys are equal to var.interfaces `name` properties.
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.98
-
-Providers used in this module:
-
-- `azurerm`, version: ~> 3.98
-
-
-
-Resources used in this module:
-
-- `linux_virtual_machine` (managed)
-- `managed_disk` (managed)
-- `network_interface` (managed)
-- `public_ip` (managed)
-- `virtual_machine_data_disk_attachment` (managed)
-- `public_ip` (data)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### name
 
@@ -291,7 +288,7 @@ list(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### tags
 
@@ -350,5 +347,3 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

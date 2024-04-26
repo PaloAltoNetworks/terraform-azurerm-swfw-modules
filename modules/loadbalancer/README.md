@@ -1,4 +1,3 @@
-<!-- BEGIN_TF_DOCS -->
 # Load Balancer Module for Azure
 
 A Terraform module for deploying a Load Balancer for VM-Series firewalls.
@@ -83,49 +82,20 @@ module "lbe" {
 }
 ```
 
-## Module's Required Inputs
+## Reference
 
-Name | Type | Description
---- | --- | ---
-[`name`](#name) | `string` | The name of the Azure Load Balancer.
-[`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
-[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
-[`backend_name`](#backend_name) | `string` | The name of the backend pool to create.
-[`frontend_ips`](#frontend_ips) | `map` | A map of objects describing Load Balancer Frontend IP configurations with respective inbound and outbound rules.
-
-## Module's Optional Inputs
-
-Name | Type | Description
---- | --- | ---
-[`tags`](#tags) | `map` | The map of tags to assign to all created resources.
-[`zones`](#zones) | `list` | Controls zones for Load Balancer's fronted IP configurations.
-[`health_probes`](#health_probes) | `map` | Backend's health probe definition.
-[`nsg_auto_rules_settings`](#nsg_auto_rules_settings) | `object` | Controls automatic creation of NSG rules for all defined inbound rules.
-
-## Module's Outputs
-
-Name |  Description
---- | ---
-`backend_pool_id` | The identifier of the backend pool.
-`frontend_ip_configs` | Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it,
-private IP address otherwise.
-
-`health_probe` | The health probe object.
-
-## Module's Nameplate
-
-Requirements needed by this module:
+### Requirements
 
 - `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.98
 
-Providers used in this module:
+### Providers
 
 - `azurerm`, version: ~> 3.98
 
 
 
-Resources used in this module:
+### Resources
 
 - `lb` (managed)
 - `lb_backend_address_pool` (managed)
@@ -136,9 +106,36 @@ Resources used in this module:
 - `public_ip` (managed)
 - `public_ip` (data)
 
-## Inputs/Outpus details
-
 ### Required Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`name`](#name) | `string` | The name of the Azure Load Balancer.
+[`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
+[`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
+[`backend_name`](#backend_name) | `string` | The name of the backend pool to create.
+[`frontend_ips`](#frontend_ips) | `map` | A map of objects describing Load Balancer Frontend IP configurations with respective inbound and outbound rules.
+
+### Optional Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`tags`](#tags) | `map` | The map of tags to assign to all created resources.
+[`zones`](#zones) | `list` | Controls zones for Load Balancer's fronted IP configurations.
+[`health_probes`](#health_probes) | `map` | Backend's health probe definition.
+[`nsg_auto_rules_settings`](#nsg_auto_rules_settings) | `object` | Controls automatic creation of NSG rules for all defined inbound rules.
+
+### Outputs
+
+Name |  Description
+--- | ---
+`backend_pool_id` | The identifier of the backend pool.
+`frontend_ip_configs` | Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it,
+private IP address otherwise.
+
+`health_probe` | The health probe object.
+
+### Required Inputs details
 
 #### name
 
@@ -332,7 +329,7 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### tags
 
@@ -440,5 +437,3 @@ object({
 Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

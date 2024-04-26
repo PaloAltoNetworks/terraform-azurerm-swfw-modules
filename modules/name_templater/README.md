@@ -1,4 +1,3 @@
-<!-- BEGIN_TF_DOCS -->
 # Name Templater module
 
 A module to generate resource name template.
@@ -51,7 +50,24 @@ vnet_name = format(module.name_templates.template, "transit")
 
 Following the values above the actual resource name would be `"a_prefix-rnd-crediblefrog-prd-transit-vnet"`.
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+- `random`, version: ~> 3.5
+
+### Providers
+
+- `random`, version: ~> 3.5
+
+
+
+### Resources
+
+- `pet` (managed)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -59,38 +75,19 @@ Name | Type | Description
 [`name_prefix`](#name_prefix) | `string` | Prefix used in names for the resources.
 [`name_template`](#name_template) | `object` | A name template definition.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
 [`abbreviations`](#abbreviations) | `map` | Map of abbreviations used for resources (placed in place of "__default__").
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
 `template` | A template string that can be used with `format` function to generate a resource name.
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-- `random`, version: ~> 3.5
-
-Providers used in this module:
-
-- `random`, version: ~> 3.5
-
-
-
-Resources used in this module:
-
-- `pet` (managed)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### resource_type
 
@@ -167,7 +164,7 @@ object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### abbreviations
 
@@ -181,5 +178,3 @@ Type: map(string)
 Default value: `map[application_gw:agw application_insights:appi availability_set:avail bastion:bas data_disk:disk file_share:share load_balancer:lb log_analytics_workspace:log managed_identity:id nat_gw:ng network_interface:nic nsg:nsg nsg_rule:nsgsr os_disk:osdisk public_ip:pip public_ip_prefix:ippre resource_group:rg route_table:rt service_endpoint:se storage_account:st subnet:snet udr:udr virtual_machine:vm virtual_machine_scale_set:vmss virtual_network_gateway:vgw vnet:vnet vnet_peering:peer]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->

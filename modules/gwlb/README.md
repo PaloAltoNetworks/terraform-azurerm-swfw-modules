@@ -1,4 +1,3 @@
-<!-- BEGIN_TF_DOCS -->
 # Gateway Load Balancer Module for Azure
 
 A Terraform module for deploying a Gateway Load Balancer for VM-Series firewalls.
@@ -81,7 +80,27 @@ For more customized requirements, below extended definition of GWLB can be appli
   }
 ```
 
-## Module's Required Inputs
+## Reference
+
+### Requirements
+
+- `terraform`, version: >= 1.5, < 2.0
+- `azurerm`, version: ~> 3.98
+
+### Providers
+
+- `azurerm`, version: ~> 3.98
+
+
+
+### Resources
+
+- `lb` (managed)
+- `lb_backend_address_pool` (managed)
+- `lb_probe` (managed)
+- `lb_rule` (managed)
+
+### Required Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -90,7 +109,7 @@ Name | Type | Description
 [`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
 [`frontend_ip`](#frontend_ip) | `object` | Frontend IP configuration of the Gateway Load Balancer.
 
-## Module's Optional Inputs
+### Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
@@ -100,36 +119,14 @@ Name | Type | Description
 [`backends`](#backends) | `map` | Map with backend configurations for the Gateway Load Balancer.
 [`lb_rule`](#lb_rule) | `object` | Load balancing rule configuration.
 
-## Module's Outputs
+### Outputs
 
 Name |  Description
 --- | ---
 `backend_pool_ids` | Backend pools' identifiers.
 `frontend_ip_config_id` | Frontend IP configuration identifier.
 
-## Module's Nameplate
-
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 3.98
-
-Providers used in this module:
-
-- `azurerm`, version: ~> 3.98
-
-
-
-Resources used in this module:
-
-- `lb` (managed)
-- `lb_backend_address_pool` (managed)
-- `lb_probe` (managed)
-- `lb_rule` (managed)
-
-## Inputs/Outpus details
-
-### Required Inputs
+### Required Inputs details
 
 #### name
 
@@ -181,7 +178,7 @@ object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-### Optional Inputs
+### Optional Inputs details
 
 #### tags
 
@@ -304,5 +301,3 @@ object({
 Default value: `map[name:lb_rule]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-<!-- END_TF_DOCS -->
