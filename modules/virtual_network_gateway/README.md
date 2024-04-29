@@ -429,6 +429,7 @@ table below for details on available combinations:
     <td rowspan="11">Vpn</td>
     <td rowspan="3">Generation1</td>
     <td>Basic</td>
+  </tr>
   <tr><td>VpnGw1</td></tr>
   <tr><td>VpnGw1AZ</td></tr>
   <tr>
