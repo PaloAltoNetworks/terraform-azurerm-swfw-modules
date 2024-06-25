@@ -162,6 +162,7 @@ Name | Type | Description
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`create_virtual_network`](#create_virtual_network) | `bool` | Controls Virtual Network creation.
 [`address_space`](#address_space) | `list` | The address space used by the virtual network.
+[`enable_vnet_encryption`](#enable_vnet_encryption) | `bool` | When set to `true`, enables Azure Virtual Network encryption in `AllowUnencrypted` mode.
 [`network_security_groups`](#network_security_groups) | `map` | Map of objects describing Network Security Groups.
 [`route_tables`](#route_tables) | `map` | Map of objects describing a Route Tables.
 [`create_subnets`](#create_subnets) | `bool` | Controls subnet creation.
@@ -239,6 +240,16 @@ You can supply more than one address space. Required only when you create a VNET
 Type: list(string)
 
 Default value: `&{}`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### enable_vnet_encryption
+
+When set to `true`, enables Azure Virtual Network encryption in `AllowUnencrypted` mode.
+
+Type: bool
+
+Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

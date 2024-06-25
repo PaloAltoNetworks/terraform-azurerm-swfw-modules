@@ -49,6 +49,13 @@ variable "address_space" {
   }
 }
 
+variable "enable_vnet_encryption" {
+  description = "When set to `true`, enables Azure Virtual Network encryption in `AllowUnencrypted` mode."
+  default     = true
+  nullable    = false
+  type        = bool
+}
+
 variable "network_security_groups" {
   description = <<-EOF
   Map of objects describing Network Security Groups.
