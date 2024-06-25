@@ -48,7 +48,7 @@ data "azurerm_public_ip" "this" {
   for_each = { for k, v in var.frontend_ips : k => v if !v.create_public_ip && v.public_ip_name != null }
 
   name                = each.value.public_ip_name
-  resource_group_name = coalesce(each.value.public_ip_resource_group, var.resource_group_name)
+  resource_group_name = coalesce(each.value.public_ip_resource_group_name, var.resource_group_name)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb
