@@ -27,4 +27,4 @@ repos:
     id: checkov
     verbose: true
   repo: https://github.com/bridgecrewio/checkov.git
-  rev: 3.2.121
+  rev: 3.2.122
