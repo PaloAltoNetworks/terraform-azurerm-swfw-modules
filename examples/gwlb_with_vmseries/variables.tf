@@ -387,13 +387,12 @@ variable "vmseries_common" {
     condition = alltrue([
       var.vmseries_common.bootstrap_package != null ? (
         var.vmseries_common.bootstrap_package.bootstrap_xml_template != null ? (
-          var.vmseries_common.bootstrap_package.private_snet_key != null &&
-          var.vmseries_common.bootstrap_package.public_snet_key != null
+          var.vmseries_common.bootstrap_package.data_snet_key != null
         ) : true
       ) : true
     ])
     error_message = <<-EOF
-    The `private_snet_key` and `public_snet_key` are required when `bootstrap_xml_template` is set.
+    The `data_snet_key` is required when `bootstrap_xml_template` is set.
     EOF
   }
 }
