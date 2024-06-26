@@ -376,7 +376,8 @@ variable "vmseries_common" {
   validation { # bootstrap_options & bootstrap_package
     condition = alltrue([
       var.vmseries_common.bootstrap_options != null && var.vmseries_common.bootstrap_package == null ||
-      var.vmseries_common.bootstrap_options == null && var.vmseries_common.bootstrap_package != null
+      var.vmseries_common.bootstrap_options == null && var.vmseries_common.bootstrap_package != null ||
+      var.vmseries_common.bootstrap_options == null && var.vmseries_common.bootstrap_package == null
     ])
     error_message = <<-EOF
     Either `bootstrap_options` or `bootstrap_package` property can be set.
