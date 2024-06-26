@@ -182,15 +182,16 @@ bootstrap_storages = {
   }
 }
 
+vmseries_common = {
+  version = "10.2.901"
+  size    = "Standard_DS3_v2"
+}
+
 vmseries = {
   "fw-in-1" = {
     name     = "inbound-firewall01"
     vnet_key = "transit"
-    image = {
-      version = "10.2.901"
-    }
     virtual_machine = {
-      size = "Standard_DS3_v2"
       zone = 1
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
@@ -222,11 +223,7 @@ vmseries = {
   "fw-in-2" = {
     name     = "inbound-firewall02"
     vnet_key = "transit"
-    image = {
-      version = "10.2.901"
-    }
     virtual_machine = {
-      size = "Standard_DS3_v2"
       zone = 2
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
@@ -257,11 +254,7 @@ vmseries = {
   "fw-obew-1" = {
     name     = "obew-firewall01"
     vnet_key = "transit"
-    image = {
-      version = "10.2.901"
-    }
     virtual_machine = {
-      size = "Standard_DS3_v2"
       zone = 1
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
@@ -293,11 +286,7 @@ vmseries = {
   "fw-obew-2" = {
     name     = "obew-firewall02"
     vnet_key = "transit"
-    image = {
-      version = "10.2.901"
-    }
     virtual_machine = {
-      size = "Standard_DS3_v2"
       zone = 2
       bootstrap_package = {
         bootstrap_storage_key  = "bootstrap"
