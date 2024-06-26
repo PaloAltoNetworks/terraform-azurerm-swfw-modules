@@ -248,6 +248,7 @@ Name | Type | Description
 [`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (both private and public) Load Balancers.
 [`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
 [`ngfw_metrics`](#ngfw_metrics) | `object` | A map controlling metrics-relates resources.
+[`scale_sets_common`](#scale_sets_common) | `object` | A map defining common settings for all created VM-Series Scale Sets.
 [`scale_sets`](#scale_sets) | `map` | A map defining Azure Virtual Machine Scale Sets based on Palo Alto Networks Next Generation Firewall image.
 [`test_infrastructure`](#test_infrastructure) | `map` | A map defining test infrastructure including test VMs and Azure Bastion hosts.
 
@@ -816,6 +817,40 @@ Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+#### scale_sets_common
+
+A map defining common settings for all created VM-Series Scale Sets. 
+  
+It duplicates popular properties from `scale_sets` variable, specifically `scale_sets.image` and 
+`scale_sets.virtual_machine_scale_set` maps. However, if values are set in those maps, they still take precedence over the ones
+set within this variable. As a result, all common properties can be overriden on a per-VMSS basis.
+
+Following properties are supported:
+  
+- `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
+- `custom_id`         - (`string`, optional) absolute ID of your own custom PAN-OS image.
+- `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
+                        Deployment Guide* as only a few selected sizes are supported.
+- `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
+                        when launched for the 1st time, for details see module documentation.
+
+
+Type: 
+
+```hcl
+object({
+    version           = optional(string)
+    custom_id         = optional(string)
+    size              = optional(string)
+    bootstrap_options = optional(string)
+  })
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
 #### scale_sets
 
 A map defining Azure Virtual Machine Scale Sets based on Palo Alto Networks Next Generation Firewall image.
@@ -842,9 +877,9 @@ The basic Scale Set configuration properties are as follows:
 
     For all properties and their default values refer to [module's documentation](../../modules/vmss/README.md#authentication).
 
-- `image`                     - (`map`, required) properties defining a base image used to spawn VMs in this Scale Set. The
-                                `image` property is required but there are only 2 properties (mutually exclusive) that have to
-                                be set up, either:
+- `image`                     - (`map`, optional) properties defining a base image used to spawn VMs in this Scale Set. The
+                                `image` property is required (if no common properties were set within `scale_sets_common` 
+                                variable) but there are only 2 properties (mutually exclusive) that have to be set up, either:
 
     - `version`   - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
     - `custom_id` - (`string`, optional) absolute ID of your own custom PAN-OS image.
@@ -907,14 +942,14 @@ map(object({
       disable_password_authentication = optional(bool, true)
       ssh_keys                        = optional(list(string), [])
     })
-    image = object({
+    image = optional(object({
       version                 = optional(string)
       publisher               = optional(string)
       offer                   = optional(string)
       sku                     = optional(string)
       enable_marketplace_plan = optional(bool)
       custom_id               = optional(string)
-    })
+    }))
     virtual_machine_scale_set = optional(object({
       size                         = optional(string)
       bootstrap_options            = optional(string)
