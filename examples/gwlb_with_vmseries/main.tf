@@ -246,15 +246,23 @@ module "vmseries" {
   resource_group_name = local.resource_group.name
 
   authentication = local.authentication[each.key]
-  image          = each.value.image
+  image = merge(
+    each.value.image,
+    {
+      version   = try(each.value.image.version, var.vmseries_common.version, null)
+      custom_id = try(each.value.image.custom_id, var.vmseries_common.custom_id, null)
+    }
+  )
   virtual_machine = merge(
     each.value.virtual_machine,
     {
       disk_name = "${var.name_prefix}${coalesce(each.value.virtual_machine.disk_name, "${each.value.name}-osdisk")}"
       avset_id  = try(azurerm_availability_set.this[each.value.virtual_machine.avset_key].id, null)
+      size      = try(coalesce(each.value.virtual_machine.size, var.vmseries_common.size), null)
       bootstrap_options = try(
         coalesce(
           each.value.virtual_machine.bootstrap_options,
+          var.vmseries_common.bootstrap_options,
           try(
             join(",", [
               "storage-account=${module.bootstrap[
@@ -268,6 +276,10 @@ module "vmseries" {
         ),
         null
       )
+      bootstrap_package = try(
+        coalesce(each.value.virtual_machine.bootstrap_package, var.vmseries_common.bootstrap_package),
+        null
+      )
     }
   )
 
@@ -275,8 +287,8 @@ module "vmseries" {
     name             = "${var.name_prefix}${v.name}"
     subnet_id        = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
     create_public_ip = v.create_public_ip
-    public_ip_name = v.create_public_ip ? "${var.name_prefix}${
-      coalesce(v.public_ip_name, "${v.name}-pip")
+    public_ip_name = v.create_public_ip ? "${
+      var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")
     }" : v.public_ip_name
     public_ip_resource_group_name = v.public_ip_resource_group_name
     private_ip_address            = v.private_ip_address

@@ -140,22 +140,23 @@ bootstrap_storages = {
   }
 }
 
+vmseries_common = {
+  version = "10.2.901"
+  size    = "Standard_DS3_v2"
+  bootstrap_package = {
+    bootstrap_storage_key  = "bootstrap"
+    static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+    bootstrap_xml_template = "templates/bootstrap-gwlb.tftpl"
+    data_snet_key          = "data"
+  }
+}
+
 vmseries = {
   "fw-1" = {
     name     = "firewall01"
     vnet_key = "transit"
-    image = {
-      version = "10.2.901"
-    }
     virtual_machine = {
-      size = "Standard_DS3_v2"
       zone = 1
-      bootstrap_package = {
-        bootstrap_storage_key  = "bootstrap"
-        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
-        bootstrap_xml_template = "templates/bootstrap-gwlb.tftpl"
-        data_snet_key          = "data"
-      }
     }
     interfaces = [
       {
@@ -174,18 +175,8 @@ vmseries = {
   "fw-2" = {
     name     = "firewall02"
     vnet_key = "transit"
-    image = {
-      version = "10.2.901"
-    }
     virtual_machine = {
-      size = "Standard_DS3_v2"
       zone = 2
-      bootstrap_package = {
-        bootstrap_storage_key  = "bootstrap"
-        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
-        bootstrap_xml_template = "templates/bootstrap-gwlb.tftpl"
-        data_snet_key          = "data"
-      }
     }
     interfaces = [
       {

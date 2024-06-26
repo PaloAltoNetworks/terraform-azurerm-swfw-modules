@@ -172,6 +172,7 @@ Name | Type | Description
 [`availability_sets`](#availability_sets) | `map` | A map defining availability sets.
 [`ngfw_metrics`](#ngfw_metrics) | `object` | A map controlling metrics-relates resources.
 [`bootstrap_storages`](#bootstrap_storages) | `map` | A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs.
+[`vmseries_common`](#vmseries_common) | `object` | A map defining common settings for all created VM-Series instances.
 [`vmseries`](#vmseries) | `map` | A map defining Azure Virtual Machines based on Palo Alto Networks Next Generation Firewall image.
 [`test_infrastructure`](#test_infrastructure) | `map` | A map defining test infrastructure including test VMs and Azure Bastion hosts.
 
@@ -585,6 +586,52 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+#### vmseries_common
+
+A map defining common settings for all created VM-Series instances. 
+  
+It duplicates popular properties from `vmseries` variable, specifically `vmseries.image` and `vmseries.virtual_machine` maps.
+However, if values are set in those maps, they still take precedence over the ones set within this variable. As a result, all
+common properties can be overriden on a per-VM basis.
+
+Following properties are supported:
+  
+- `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
+- `custom_id`         - (`string`, optional) absolute ID of your own custom PAN-OS image.
+- `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
+                        Deployment Guide* as only a few selected sizes are supported.
+- `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
+                        when launched for the 1st time, for details see module documentation.
+- `bootstrap_package` - (`map`, optional, mutually exclusive with `bootstrap_options`) a map defining content of the bootstrap
+                        package. For details and available properties refer to `vmseries` variable.
+
+
+Type: 
+
+```hcl
+object({
+    version           = optional(string)
+    custom_id         = optional(string)
+    size              = optional(string)
+    bootstrap_options = optional(string)
+    bootstrap_package = optional(object({
+      bootstrap_storage_key  = string
+      static_files           = optional(map(string), {})
+      bootstrap_package_path = optional(string)
+      bootstrap_xml_template = optional(string)
+      private_snet_key       = optional(string)
+      public_snet_key        = optional(string)
+      ai_update_interval     = optional(number, 5)
+      intranet_cidr          = optional(string)
+    }))
+  })
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
 #### vmseries
 
 A map defining Azure Virtual Machines based on Palo Alto Networks Next Generation Firewall image.
@@ -608,8 +655,9 @@ The most basic properties are as follows:
 
   For all properties and their default values see [module's documentation](../../modules/vmseries/README.md#authentication).
 
-- `image`           - (`map`, required) properties defining a base image used by the deployed VM. The `image` property is
-                      required but there are only 2 properties (mutually exclusive) that have to be set, either:
+- `image`           - (`map`, optional) properties defining a base image used by the deployed VM. The `image` property is
+                      required (if no common properties were set within `vmseries_common` variable) but there are only 2 
+                      properties (mutually exclusive) that have to be set, either:
 
   - `version`   - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
   - `custom_id` - (`string`, optional) absolute ID of your own custom PAN-OS image.
@@ -621,8 +669,8 @@ The most basic properties are as follows:
 
   - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
                           Deployment Guide* as only a few selected sizes are supported.
-  - `zone`              - (`string`, optional, defaults to module default) the Availability Zone in which the VM and (if
-                          deployed) public IP addresses will be created.
+  - `zone`              - (`string`, required) the Availability Zone in which the VM and (if deployed) public IP addresses will
+                          be created.
   - `disk_type`         - (`string`, optional, defaults to module default) type of a Managed Disk which should be created,
                           possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
                           `size` values).
@@ -704,14 +752,14 @@ map(object({
       disable_password_authentication = optional(bool, false)
       ssh_keys                        = optional(list(string), [])
     }), {})
-    image = object({
+    image = optional(object({
       version                 = optional(string)
       publisher               = optional(string)
       offer                   = optional(string)
       sku                     = optional(string)
       enable_marketplace_plan = optional(bool)
       custom_id               = optional(string)
-    })
+    }))
     virtual_machine = object({
       size              = optional(string)
       bootstrap_options = optional(string)
