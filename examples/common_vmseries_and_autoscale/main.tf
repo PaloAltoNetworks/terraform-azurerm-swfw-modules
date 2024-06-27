@@ -248,15 +248,15 @@ module "vmss" {
   image = merge(
     each.value.image,
     {
-      version = try(each.value.image.version, var.scale_sets_common.version, null)
+      version = try(each.value.image.version, var.scale_sets_universal.version, null)
     }
   )
   virtual_machine_scale_set = merge(
     each.value.virtual_machine_scale_set,
     {
-      size = try(coalesce(each.value.virtual_machine_scale_set.size, var.scale_sets_common.size), null)
+      size = try(coalesce(each.value.virtual_machine_scale_set.size, var.scale_sets_universal.size), null)
       bootstrap_options = try(
-        coalesce(each.value.virtual_machine_scale_set.bootstrap_options, var.scale_sets_common.bootstrap_options),
+        coalesce(each.value.virtual_machine_scale_set.bootstrap_options, var.scale_sets_universal.bootstrap_options),
         null
       )
     }

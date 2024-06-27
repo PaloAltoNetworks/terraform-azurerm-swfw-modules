@@ -337,13 +337,13 @@ variable "bootstrap_storages" {
   }))
 }
 
-variable "vmseries_common" {
+variable "vmseries_universal" {
   description = <<-EOF
   A map defining common settings for all created VM-Series instances. 
   
   It duplicates popular properties from `vmseries` variable, specifically `vmseries.image` and `vmseries.virtual_machine` maps.
   However, if values are set in those maps, they still take precedence over the ones set within this variable. As a result, all
-  common properties can be overriden on a per-VM basis.
+  universal properties can be overriden on a per-VM basis.
 
   Following properties are supported:
   

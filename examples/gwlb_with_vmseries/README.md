@@ -172,7 +172,7 @@ Name | Type | Description
 [`availability_sets`](#availability_sets) | `map` | A map defining availability sets.
 [`ngfw_metrics`](#ngfw_metrics) | `object` | A map controlling metrics-relates resources.
 [`bootstrap_storages`](#bootstrap_storages) | `map` | A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs.
-[`vmseries_common`](#vmseries_common) | `object` | A map defining common settings for all created VM-Series instances.
+[`vmseries_universal`](#vmseries_universal) | `object` | A map defining common settings for all created VM-Series instances.
 [`vmseries`](#vmseries) | `map` | A map defining Azure Virtual Machines based on Palo Alto Networks Next Generation Firewall image.
 [`test_infrastructure`](#test_infrastructure) | `map` | A map defining test infrastructure including test VMs and Azure Bastion hosts.
 
@@ -586,18 +586,17 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### vmseries_common
+#### vmseries_universal
 
 A map defining common settings for all created VM-Series instances. 
   
 It duplicates popular properties from `vmseries` variable, specifically `vmseries.image` and `vmseries.virtual_machine` maps.
 However, if values are set in those maps, they still take precedence over the ones set within this variable. As a result, all
-common properties can be overriden on a per-VM basis.
+universal properties can be overriden on a per-VM basis.
 
 Following properties are supported:
   
 - `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
-- `custom_id`         - (`string`, optional) absolute ID of your own custom PAN-OS image.
 - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
                         Deployment Guide* as only a few selected sizes are supported.
 - `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
@@ -611,7 +610,6 @@ Type:
 ```hcl
 object({
     version           = optional(string)
-    custom_id         = optional(string)
     size              = optional(string)
     bootstrap_options = optional(string)
     bootstrap_package = optional(object({

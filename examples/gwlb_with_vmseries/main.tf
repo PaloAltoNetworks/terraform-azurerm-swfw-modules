@@ -249,7 +249,7 @@ module "vmseries" {
   image = merge(
     each.value.image,
     {
-      version = try(each.value.image.version, var.vmseries_common.version, null)
+      version = try(each.value.image.version, var.vmseries_universal.version, null)
     }
   )
   virtual_machine = merge(
@@ -257,11 +257,11 @@ module "vmseries" {
     {
       disk_name = "${var.name_prefix}${coalesce(each.value.virtual_machine.disk_name, "${each.value.name}-osdisk")}"
       avset_id  = try(azurerm_availability_set.this[each.value.virtual_machine.avset_key].id, null)
-      size      = try(coalesce(each.value.virtual_machine.size, var.vmseries_common.size), null)
+      size      = try(coalesce(each.value.virtual_machine.size, var.vmseries_universal.size), null)
       bootstrap_options = try(
         coalesce(
           each.value.virtual_machine.bootstrap_options,
-          var.vmseries_common.bootstrap_options,
+          var.vmseries_universal.bootstrap_options,
           try(
             join(",", [
               "storage-account=${module.bootstrap[
@@ -276,7 +276,7 @@ module "vmseries" {
         null
       )
       bootstrap_package = try(
-        coalesce(each.value.virtual_machine.bootstrap_package, var.vmseries_common.bootstrap_package),
+        coalesce(each.value.virtual_machine.bootstrap_package, var.vmseries_universal.bootstrap_package),
         null
       )
     }

@@ -493,13 +493,13 @@ variable "ngfw_metrics" {
   })
 }
 
-variable "scale_sets_common" {
+variable "scale_sets_universal" {
   description = <<-EOF
   A map defining common settings for all created VM-Series Scale Sets. 
   
   It duplicates popular properties from `scale_sets` variable, specifically `scale_sets.image` and 
   `scale_sets.virtual_machine_scale_set` maps. However, if values are set in those maps, they still take precedence over the ones
-  set within this variable. As a result, all common properties can be overriden on a per-VMSS basis.
+  set within this variable. As a result, all universal properties can be overriden on a per-VMSS basis.
 
   Following properties are supported:
   

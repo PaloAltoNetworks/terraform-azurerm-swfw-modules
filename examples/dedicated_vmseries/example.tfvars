@@ -182,7 +182,7 @@ bootstrap_storages = {
   }
 }
 
-vmseries_common = {
+vmseries_universal = {
   version = "10.2.901"
   size    = "Standard_DS3_v2"
 }

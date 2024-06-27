@@ -254,7 +254,7 @@ Name | Type | Description
 [`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (both private and public) Load Balancers.
 [`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
 [`ngfw_metrics`](#ngfw_metrics) | `object` | A map controlling metrics-relates resources.
-[`scale_sets_common`](#scale_sets_common) | `object` | A map defining common settings for all created VM-Series Scale Sets.
+[`scale_sets_universal`](#scale_sets_universal) | `object` | A map defining common settings for all created VM-Series Scale Sets.
 [`scale_sets`](#scale_sets) | `map` | A map defining Azure Virtual Machine Scale Sets based on Palo Alto Networks Next Generation Firewall image.
 [`test_infrastructure`](#test_infrastructure) | `map` | A map defining test infrastructure including test VMs and Azure Bastion hosts.
 
@@ -823,18 +823,17 @@ Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### scale_sets_common
+#### scale_sets_universal
 
 A map defining common settings for all created VM-Series Scale Sets. 
   
 It duplicates popular properties from `scale_sets` variable, specifically `scale_sets.image` and 
 `scale_sets.virtual_machine_scale_set` maps. However, if values are set in those maps, they still take precedence over the ones
-set within this variable. As a result, all common properties can be overriden on a per-VMSS basis.
+set within this variable. As a result, all universal properties can be overriden on a per-VMSS basis.
 
 Following properties are supported:
   
 - `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
-- `custom_id`         - (`string`, optional) absolute ID of your own custom PAN-OS image.
 - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
                         Deployment Guide* as only a few selected sizes are supported.
 - `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
@@ -846,7 +845,6 @@ Type:
 ```hcl
 object({
     version           = optional(string)
-    custom_id         = optional(string)
     size              = optional(string)
     bootstrap_options = optional(string)
   })

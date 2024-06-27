@@ -186,7 +186,7 @@ ngfw_metrics = {
   name = "ngwf-log-analytics-wrksp"
 }
 
-scale_sets_common = {
+scale_sets_universal = {
   version           = "10.2.901"
   size              = "Standard_D3_v2"
   bootstrap_options = "type=dhcp-client"
