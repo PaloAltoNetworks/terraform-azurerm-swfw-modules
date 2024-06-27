@@ -348,7 +348,6 @@ variable "vmseries_common" {
   Following properties are supported:
   
   - `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
-  - `custom_id`         - (`string`, optional) absolute ID of your own custom PAN-OS image.
   - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
                           Deployment Guide* as only a few selected sizes are supported.
   - `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
@@ -359,7 +358,6 @@ variable "vmseries_common" {
   default     = {}
   type = object({
     version           = optional(string)
-    custom_id         = optional(string)
     size              = optional(string)
     bootstrap_options = optional(string)
     bootstrap_package = optional(object({

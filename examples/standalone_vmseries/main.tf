@@ -367,8 +367,7 @@ module "vmseries" {
   image = merge(
     each.value.image,
     {
-      version   = try(each.value.image.version, var.vmseries_common.version, null)
-      custom_id = try(each.value.image.custom_id, var.vmseries_common.custom_id, null)
+      version = try(each.value.image.version, var.vmseries_common.version, null)
     }
   )
   virtual_machine = merge(
