@@ -544,7 +544,7 @@ variable "scale_sets" {
       For all properties and their default values refer to [module's documentation](../../modules/vmss/README.md#authentication).
 
   - `image`                     - (`map`, optional) properties defining a base image used to spawn VMs in this Scale Set. The
-                                  `image` property is required (if no common properties were set within `scale_sets_common` 
+                                  `image` property is required (if no common properties were set within `scale_sets_universal` 
                                   variable) but there are only 2 properties (mutually exclusive) that have to be set up, either:
 
       - `version`   - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.

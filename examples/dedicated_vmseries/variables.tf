@@ -641,9 +641,9 @@ variable "vmseries_universal" {
   })
   validation { # bootstrap_options & bootstrap_package
     condition = alltrue([
-      var.vmseries_common.bootstrap_options != null && var.vmseries_common.bootstrap_package == null ||
-      var.vmseries_common.bootstrap_options == null && var.vmseries_common.bootstrap_package != null ||
-      var.vmseries_common.bootstrap_options == null && var.vmseries_common.bootstrap_package == null
+      var.vmseries_universal.bootstrap_options != null && var.vmseries_universal.bootstrap_package == null ||
+      var.vmseries_universal.bootstrap_options == null && var.vmseries_universal.bootstrap_package != null ||
+      var.vmseries_universal.bootstrap_options == null && var.vmseries_universal.bootstrap_package == null
     ])
     error_message = <<-EOF
     Either `bootstrap_options` or `bootstrap_package` property can be set.
@@ -651,10 +651,10 @@ variable "vmseries_universal" {
   }
   validation { # bootstrap_package
     condition = alltrue([
-      var.vmseries_common.bootstrap_package != null ? (
-        var.vmseries_common.bootstrap_package.bootstrap_xml_template != null ? (
-          var.vmseries_common.bootstrap_package.private_snet_key != null &&
-          var.vmseries_common.bootstrap_package.public_snet_key != null
+      var.vmseries_universal.bootstrap_package != null ? (
+        var.vmseries_universal.bootstrap_package.bootstrap_xml_template != null ? (
+          var.vmseries_universal.bootstrap_package.private_snet_key != null &&
+          var.vmseries_universal.bootstrap_package.public_snet_key != null
         ) : true
       ) : true
     ])
@@ -688,7 +688,7 @@ variable "vmseries" {
     For all properties and their default values see [module's documentation](../../modules/vmseries/README.md#authentication).
 
   - `image`           - (`map`, optional) properties defining a base image used by the deployed VM. The `image` property is
-                        required (if no common properties were set within `vmseries_common` variable) but there are only 2 
+                        required (if no common properties were set within `vmseries_universal` variable) but there are only 2 
                         properties (mutually exclusive) that have to be set, either:
 
     - `version`   - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.

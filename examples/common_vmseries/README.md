@@ -995,7 +995,7 @@ The most basic properties are as follows:
   For all properties and their default values see [module's documentation](../../modules/vmseries/README.md#authentication).
 
 - `image`           - (`map`, optional) properties defining a base image used by the deployed VM. The `image` property is
-                      required (if no common properties were set within `vmseries_common` variable) but there are only 2 
+                      required (if no common properties were set within `vmseries_universal` variable) but there are only 2 
                       properties (mutually exclusive) that have to be set, either:
 
   - `version`   - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
