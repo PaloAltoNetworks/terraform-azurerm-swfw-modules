@@ -60,8 +60,8 @@ module "vnet" {
   resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
   region                 = var.region
 
-  address_space          = each.value.address_space
-  enable_vnet_encryption = each.value.enable_vnet_encryption
+  address_space   = each.value.address_space
+  vnet_encryption = each.value.vnet_encryption
 
   create_subnets = each.value.create_subnets
   subnets        = each.value.subnets

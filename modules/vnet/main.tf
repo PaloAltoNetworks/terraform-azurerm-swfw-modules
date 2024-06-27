@@ -9,9 +9,9 @@ resource "azurerm_virtual_network" "this" {
   tags                = var.tags
 
   dynamic "encryption" {
-    for_each = var.enable_vnet_encryption ? [1] : []
+    for_each = var.vnet_encryption != null ? [1] : []
     content {
-      enforcement = "AllowUnencrypted"
+      enforcement = var.vnet_encryption
     }
   }
 

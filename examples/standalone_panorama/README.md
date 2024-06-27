@@ -198,7 +198,9 @@ For detailed documentation on each property refer to [module documentation](../.
 - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a
                               full resource name, including prefixes.
 - `address_space`           - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET.
-- `enable_vnet_encryption`  - (`bool`, optional, defaults to `false`) when set to `true`, enables VNET encryption.
+- `vnet_encryption`         - (`string`, optional, defaults to module default) enables Azure Virtual Network Encryption when
+                              set, only possible value at the moment is `AllowUnencrypted`. When set to `null`, the feature is 
+                              disabled.
 - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
                               VNET will reside or is sourced from.
 - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
@@ -219,7 +221,7 @@ map(object({
     resource_group_name    = optional(string)
     create_virtual_network = optional(bool, true)
     address_space          = optional(list(string))
-    enable_vnet_encryption = optional(bool, false)
+    vnet_encryption        = optional(string)
     network_security_groups = optional(map(object({
       name = string
       rules = optional(map(object({
