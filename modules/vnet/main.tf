@@ -8,6 +8,13 @@ resource "azurerm_virtual_network" "this" {
   address_space       = var.address_space
   tags                = var.tags
 
+  dynamic "encryption" {
+    for_each = var.vnet_encryption != null ? [1] : []
+    content {
+      enforcement = var.vnet_encryption
+    }
+  }
+
   lifecycle {
     precondition {
       condition     = length(coalesce(var.address_space, [])) > 0

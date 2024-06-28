@@ -49,6 +49,21 @@ variable "address_space" {
   }
 }
 
+variable "vnet_encryption" {
+  description = <<-EOF
+  Enables Azure Virtual Network encryption feature (in `AllowUnencrypted` mode by default).
+  When set to `null` VNET encryption is disabled.
+  EOF
+  default     = "AllowUnencrypted"
+  type        = string
+  validation {
+    condition     = var.vnet_encryption != null ? contains(["AllowUnencrypted"], var.vnet_encryption) : true
+    error_message = <<-EOF
+    The `vnet_encryption` variable must be of "AllowUnencrypted" (encryption enabled) or `null` (encryption disabled).
+    EOF
+  }
+}
+
 variable "network_security_groups" {
   description = <<-EOF
   Map of objects describing Network Security Groups.
