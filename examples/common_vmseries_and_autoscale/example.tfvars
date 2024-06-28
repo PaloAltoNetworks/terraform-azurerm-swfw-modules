@@ -243,6 +243,7 @@ scale_sets = {
       disable_password_authentication = false
     }
     virtual_machine_scale_set = {
+      size              = "Standard_D3_v2"
       bootstrap_options = "type=dhcp-client"
       zones             = ["1", "2", "3"]
     }

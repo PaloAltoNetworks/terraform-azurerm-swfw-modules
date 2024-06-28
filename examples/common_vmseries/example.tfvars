@@ -228,17 +228,18 @@ appgws = {
 
 # VM-SERIES
 
+vmseries_universal = {
+  version           = "10.2.901"
+  size              = "Standard_DS3_v2"
+  bootstrap_options = "type=dhcp-client"
+}
+
 vmseries = {
   "fw-1" = {
     name     = "firewall01"
     vnet_key = "transit"
-    image = {
-      version = "10.2.901"
-    }
     virtual_machine = {
-      size              = "Standard_DS3_v2"
-      zone              = 1
-      bootstrap_options = "type=dhcp-client"
+      zone = 1
     }
     interfaces = [
       {
@@ -261,16 +262,11 @@ vmseries = {
     ]
   }
   "fw-2" = {
-    name = "firewall02"
-    image = {
-      version = "10.2.901"
-    }
-    virtual_machine = {
-      size              = "Standard_DS3_v2"
-      zone              = 2
-      bootstrap_options = "type=dhcp-client"
-    }
+    name     = "firewall02"
     vnet_key = "transit"
+    virtual_machine = {
+      zone = 2
+    }
     interfaces = [
       {
         name             = "vm02-mgmt"

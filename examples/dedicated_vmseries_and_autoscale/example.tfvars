@@ -186,19 +186,21 @@ ngfw_metrics = {
   name = "ngwf-log-analytics-wrksp"
 }
 
+scale_sets_universal = {
+  version           = "10.2.901"
+  size              = "Standard_D3_v2"
+  bootstrap_options = "type=dhcp-client"
+}
+
 scale_sets = {
   inbound = {
     name     = "inbound-vmss"
     vnet_key = "transit"
-    image = {
-      version = "10.2.901"
-    }
     authentication = {
       disable_password_authentication = false
     }
     virtual_machine_scale_set = {
-      bootstrap_options = "type=dhcp-client"
-      zones             = null
+      zones = null
     }
     autoscaling_configuration = {
       default_count = 2
@@ -222,15 +224,11 @@ scale_sets = {
   obew = {
     name     = "obew-vmss"
     vnet_key = "transit"
-    image = {
-      version = "10.2.901"
-    }
     authentication = {
       disable_password_authentication = false
     }
     virtual_machine_scale_set = {
-      bootstrap_options = "type=dhcp-client"
-      zones             = null
+      zones = null
     }
     autoscaling_configuration = {
       default_count = 2
