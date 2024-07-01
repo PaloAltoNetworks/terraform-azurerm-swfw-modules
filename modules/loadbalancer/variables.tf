@@ -25,14 +25,14 @@ variable "zones" {
 
   For:
 
-  - public IPs  - these are zones in which the public IP resource is available.
+  - public IPs  - these are zones in which the Public IP resource is available.
   - private IPs - these are zones to which Azure will deploy paths leading to Load Balancer frontend IPs (all frontends are 
                   affected).
 
   Setting this variable to explicit `null` disables a zonal deployment.
   This can be helpful in regions where Availability Zones are not available.
 
-  For public Load Balancers, since this setting controls also Availability Zones for public IPs, you need to specify all zones
+  For public Load Balancers, since this setting controls also Availability Zones for Public IPs, you need to specify all zones
   available in a region (typically 3): `["1","2","3"]`.
   EOF
   default     = ["1", "2", "3"]
@@ -64,35 +64,45 @@ variable "frontend_ips" {
 
   Private Load Balancer:
 
-  - `name`                - (`string`, required) name of a frontend IP configuration
-  - `subnet_id`           - (`string`, required) an ID of an existing subnet that will host the private Load Balancer
-  - `private_ip_address`  - (`string`, required) the IP address of the Load Balancer
-  - `in_rules`            - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
-  - `gwlb_fip_id`         - (`string`, optional, defaults to `null`) an ID of a frontend IP configuration
-                            of a Gateway Load Balancer
+  - `name`                - (`string`, required) name of a frontend IP configuration.
+  - `subnet_id`           - (`string`, required) an ID of an existing subnet that will host the private Load Balancer.
+  - `private_ip_address`  - (`string`, required) the IP address of the Load Balancer.
+  - `in_rules`            - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below.
+  - `gwlb_fip_id`         - (`string`, optional, defaults to `null`) an ID of a frontend IP configuration of a Gateway
+                            Load Balancer (GWLB).
 
   Public Load Balancer:
 
-  - `name`                          - (`string`, required) name of a frontend IP configuration
-  - `public_ip_name`                - (`string`, required) name of a public IP resource
-  - `create_public_ip`              - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be
-                                      created, otherwise an existing resource will be used;
-                                      in both cases the name of the resource is controlled by `public_ip_name` property
-  - `public_ip_resource_group_name` - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
-                                      hosting an existing public IP resource
-  - `in_rules`                      - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
-  - `out_rules`                     - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below
+  - `name`                                 - (`string`, required) name of a frontend IP configuration.
+  - `public_ip_name`                       - (`string`, optional) name of a Public IP resource.
+  - `create_public_ip`                     - (`bool`, optional, defaults to `false`) when set to `true` a new Public IP will be
+                                             created, otherwise an existing resource will be used; in both cases the name of the
+                                             resource is controlled by `public_ip_name` property.
+  - `public_ip_resource_group_name`        - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
+                                             hosting an existing Public IP resource.
+  - `public_ip_prefix_name`                - (`string`, optional) name of a Public IP prefix resource.
+  - `create_public_ip_prefix`              - (`bool`, optional, defaults to `false`) when set to `true` a new Public IP prefix
+                                             will be created, otherwise an existing resource will be used; in both cases the name
+                                             of the resource is controlled by `public_ip_prefix_name` property.
+  - `public_ip_prefix_resource_group_name` - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
+                                             hosting an existing Public IP prefix resource.
+  - `public_ip_prefix_length`              - (`number`, optional, defaults to `28`) number of bits of the Public IP Prefix, this
+                                             value can be between `0` and `31` but can be limited on subscription level (Azure
+                                             default is `/28`).
+
+  - `in_rules`                      - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below.
+  - `out_rules`                     - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below.
 
   Below are the properties for the `in_rules` map:
 
-  - `name`                - (`string`, required) a name of an inbound rule
+  - `name`                - (`string`, required) a name of an inbound rule.
   - `protocol`            - (`string`, required) communication protocol, either 'Tcp', 'Udp' or 'All'.
   - `port`                - (`number`, required) communication port, this is both the front- and the backend port
-                            if `backend_port` is not set; value of `0` means all ports
+                            if `backend_port` is not set; value of `0` means all ports.
   - `backend_port`        - (`number`, optional, defaults to `null`) this is the backend port to forward traffic
-                            to in the backend pool
+                            to in the backend pool.
   - `health_probe_key`    - (`string`, optional, defaults to `default`) a key from the `var.health_probes` map defining
-                            a health probe to use with this rule
+                            a health probe to use with this rule.
   - `floating_ip`         - (`bool`, optional, defaults to `true`) enables floating IP for this rule.
   - `session_persistence` - (`string`, optional, defaults to `Default`) controls session persistance/load distribution,
                             three values are possible:
@@ -110,21 +120,20 @@ variable "frontend_ips" {
   single backend, and you cannot mix SNAT and outbound rules traffic in rules using the same backend, setting one `out_rule`
   switches the outgoing traffic route for **ALL** `in_rules`.
 
-  - `name`                      - (`string`, required) a name of an outbound rule
-  - `protocol`                  - (`string`, required) protocol used by the rule. One of `All`, `Tcp` or `Udp` is accepted
+  - `name`                      - (`string`, required) a name of an outbound rule.
+  - `protocol`                  - (`string`, required) protocol used by the rule. One of `All`, `Tcp` or `Udp` is accepted.
   - `allocated_outbound_ports`  - (`number`, optional, defaults to `null`) number of ports allocated per instance,
                                   when skipped provider defaults will be used (`1024`),
                                   when set to `0` port allocation will be set to default number (Azure defaults);
-                                  maximum value is `64000`
-  - `enable_tcp_reset`          - (`bool`, optional, defaults to Azure defaults) ignored when `protocol` is set to `Udp`
+                                  maximum value is `64000`.
+  - `enable_tcp_reset`          - (`bool`, optional, defaults to Azure defaults) ignored when `protocol` is set to `Udp`.
   - `idle_timeout_in_minutes`   - (`number`, optional, defaults to Azure defaults) TCP connection timeout in minutes
-                                  (between 4 and 120) 
-                                  in case the connection is idle, ignored when `protocol` is set to `Udp`
-
+                                  (between 4 and 120), in case the connection is idle, ignored when `protocol` is set to `Udp`.
+  
   Examples
 
   ```hcl
-  # rules for a public Load Balancer, reusing an existing public IP and doing port translation
+  # rules for a public Load Balancer, reusing an existing Public IP and doing port translation
   frontend_ips = {
     pip_existing = {
       create_public_ip              = false
@@ -178,13 +187,17 @@ variable "frontend_ips" {
   ```
   EOF
   type = map(object({
-    name                          = string
-    public_ip_name                = optional(string)
-    create_public_ip              = optional(bool, false)
-    public_ip_resource_group_name = optional(string)
-    subnet_id                     = optional(string)
-    private_ip_address            = optional(string)
-    gwlb_fip_id                   = optional(string)
+    name                                 = string
+    public_ip_name                       = optional(string)
+    create_public_ip                     = optional(bool, false)
+    public_ip_resource_group_name        = optional(string)
+    public_ip_prefix_name                = optional(string)
+    create_public_ip_prefix              = optional(bool, false)
+    public_ip_prefix_resource_group_name = optional(string)
+    public_ip_prefix_length              = optional(number, 28)
+    subnet_id                            = optional(string)
+    private_ip_address                   = optional(string)
+    gwlb_fip_id                          = optional(string)
     in_rules = optional(map(object({
       name                = string
       protocol            = string
@@ -206,8 +219,9 @@ variable "frontend_ips" {
   validation {
     condition = !( # unified LB type
       anytrue(
-        [for _, fip in var.frontend_ips : fip.public_ip_name != null]
-        ) && anytrue(
+        [for _, fip in var.frontend_ips : (fip.public_ip_name != null || fip.public_ip_prefix_name != null)]
+      ) &&
+      anytrue(
         [for _, fip in var.frontend_ips : fip.subnet_id != null]
       )
     )
@@ -222,6 +236,32 @@ variable "frontend_ips" {
     )
     error_message = <<-EOF
     The `name` property has to be unique among all frontend definitions.
+    EOF
+  }
+  validation { # public_ip_name, public_ip_prefix_name
+    condition = alltrue(
+      [for _, fip in var.frontend_ips : !(v.public_ip_name != null && v.public_ip_prefix_name != null)]
+    )
+    error_message = <<-EOF
+    You must specify either `public_ip_name` or `public_ip_prefix_name` property, you can't specify both.
+    EOF
+  }
+  validation { # create_public_ip, create_public_ip_prefix
+    condition = alltrue(
+      [for _, fip in var.frontend_ips : !(v.create_public_ip == true && v.create_public_ip_prefix == true)]
+    )
+    error_message = <<-EOF
+    You can set to "true" either `create_public_ip` or `create_public_ip_prefix` property, you can't set both.
+    EOF
+  }
+  validation { # public_ip_prefix_length
+    condition = alltrue(
+      [for _, fip in var.frontend_ips : (
+        v.public_ip_prefix_length >= 0 && v.public_ip_prefix_length <= 31
+      ) if v.public_ip_prefix_length != null]
+    )
+    error_message = <<-EOF
+    The `public_ip_prefix_length` property should be a number between 0 and 31.
     EOF
   }
   validation { # private_ip_address
