@@ -240,8 +240,12 @@ variable "frontend_ips" {
   }
   validation { # public_ip_name, public_ip_prefix_name
     condition = !(
-      anytrue([for _, fip in var.frontend_ips : (fip.public_ip_name != null && fip.public_ip_prefix_name != null) if fip.subnet_id == null]) ||
-      anytrue([for _, fip in var.frontend_ips : (fip.public_ip_name == null && fip.public_ip_prefix_name == null) if fip.subnet_id == null])
+      anytrue([
+        for _, fip in var.frontend_ips : (fip.public_ip_name != null && fip.public_ip_prefix_name != null)
+      if fip.subnet_id == null]) ||
+      anytrue([
+        for _, fip in var.frontend_ips : (fip.public_ip_name == null && fip.public_ip_prefix_name == null)
+      if fip.subnet_id == null])
     )
     error_message = <<-EOF
     You must specify either `public_ip_name` or `public_ip_prefix_name` property, you can't specify both.
