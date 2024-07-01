@@ -231,8 +231,8 @@ variable "frontend_ips" {
     EOF
   }
   validation { # name
-    condition = length(flatten([for _, v in var.frontend_ips : v.name])) == length(
-      distinct(flatten([for _, v in var.frontend_ips : v.name]))
+    condition = length(flatten([for _, fip in var.frontend_ips : fip.name])) == length(
+      distinct(flatten([for _, fip in var.frontend_ips : fip.name]))
     )
     error_message = <<-EOF
     The `name` property has to be unique among all frontend definitions.
@@ -240,7 +240,7 @@ variable "frontend_ips" {
   }
   validation { # public_ip_name, public_ip_prefix_name
     condition = alltrue(
-      [for _, fip in var.frontend_ips : !(v.public_ip_name != null && v.public_ip_prefix_name != null)]
+      [for _, fip in var.frontend_ips : !(fip.public_ip_name != null && fip.public_ip_prefix_name != null)]
     )
     error_message = <<-EOF
     You must specify either `public_ip_name` or `public_ip_prefix_name` property, you can't specify both.
@@ -248,7 +248,7 @@ variable "frontend_ips" {
   }
   validation { # create_public_ip, create_public_ip_prefix
     condition = alltrue(
-      [for _, fip in var.frontend_ips : !(v.create_public_ip == true && v.create_public_ip_prefix == true)]
+      [for _, fip in var.frontend_ips : !(fip.create_public_ip == true && fip.create_public_ip_prefix == true)]
     )
     error_message = <<-EOF
     You can set to "true" either `create_public_ip` or `create_public_ip_prefix` property, you can't set both.
@@ -257,8 +257,8 @@ variable "frontend_ips" {
   validation { # public_ip_prefix_length
     condition = alltrue(
       [for _, fip in var.frontend_ips : (
-        v.public_ip_prefix_length >= 0 && v.public_ip_prefix_length <= 31
-      ) if v.public_ip_prefix_length != null]
+        fip.public_ip_prefix_length >= 0 && fip.public_ip_prefix_length <= 31
+      ) if fip.public_ip_prefix_length != null]
     )
     error_message = <<-EOF
     The `public_ip_prefix_length` property should be a number between 0 and 31.
