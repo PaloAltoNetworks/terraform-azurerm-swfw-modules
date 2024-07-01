@@ -216,8 +216,8 @@ variable "frontend_ips" {
       idle_timeout_in_minutes  = optional(number)
     })), {})
   }))
-  validation {
-    condition = !( # unified LB type
+  validation { # unified LB type
+    condition = !(
       anytrue(
         [for _, fip in var.frontend_ips : (fip.public_ip_name != null || fip.public_ip_prefix_name != null)]
       ) &&
@@ -239,8 +239,9 @@ variable "frontend_ips" {
     EOF
   }
   validation { # public_ip_name, public_ip_prefix_name
-    condition = alltrue(
-      [for _, fip in var.frontend_ips : !(fip.public_ip_name != null && fip.public_ip_prefix_name != null)]
+    condition = !(
+      anytrue([for _, fip in var.frontend_ips : (fip.public_ip_name != null && fip.public_ip_prefix_name != null) if fip.subnet_id == null]) ||
+      anytrue([for _, fip in var.frontend_ips : (fip.public_ip_name == null && fip.public_ip_prefix_name == null) if fip.subnet_id == null])
     )
     error_message = <<-EOF
     You must specify either `public_ip_name` or `public_ip_prefix_name` property, you can't specify both.
