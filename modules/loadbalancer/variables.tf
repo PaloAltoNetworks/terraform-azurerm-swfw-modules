@@ -287,7 +287,15 @@ variable "frontend_ips" {
     The `private_ip_address` property should be in IPv4 format.
     EOF
   }
-  validation { # in_rule.name
+  validation { # in_rules
+    condition = alltrue([
+      for _, fip in var.frontend_ips : length(fip.in_rules) == 0 if fip.public_ip_prefix_name != null
+    ])
+    error_message = <<-EOF
+    You can't create Inbound Rules for the Frontend with Public IP Prefix.
+    EOF
+  }
+  validation { # in_rules.name
     condition = length(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules : in_rule.name
@@ -299,7 +307,7 @@ variable "frontend_ips" {
     The `in_rule.name` property has to be unique among all in rules definitions.
     EOF
   }
-  validation { # in_rule.protocol
+  validation { # in_rules.protocol
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules : contains(["Tcp", "Udp", "All"], in_rule.protocol)
@@ -309,7 +317,7 @@ variable "frontend_ips" {
     The `in_rule.protocol` property should be one of: \"Tcp\", \"Udp\", \"All\".
     EOF
   }
-  validation { # in_rule.port
+  validation { # in_rules.port
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules : (in_rule.port >= 0 && in_rule.port <= 65535)
@@ -319,7 +327,7 @@ variable "frontend_ips" {
     The `in_rule.port` should be a valid TCP port number or `0` for all ports.
     EOF
   }
-  validation { # in_rule.backend_port
+  validation { # in_rules.backend_port
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules :
@@ -331,7 +339,7 @@ variable "frontend_ips" {
     The `in_rule.backend_port` should be a valid TCP port number.
     EOF
   }
-  validation { # in_rule.sessions_persistence
+  validation { # in_rules.sessions_persistence
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules : contains(["Default", "SourceIP", "SourceIPProtocol"], in_rule.session_persistence)
@@ -341,7 +349,7 @@ variable "frontend_ips" {
     The `in_rule.session_persistence` property should be one of: \"Default\", \"SourceIP\", \"SourceIPProtocol\".
     EOF
   }
-  validation { # in_rule.nsg_priority
+  validation { # in_rules.nsg_priority
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules :
@@ -353,7 +361,7 @@ variable "frontend_ips" {
     The `in_rule.nsg_priority` property be a number between 100 and 4096.
     EOF
   }
-  validation { # out_rule.name
+  validation { # out_rules.name
     condition = length(flatten([
       for _, fip in var.frontend_ips : [
         for _, out_rule in fip.out_rules : out_rule.name
@@ -365,7 +373,7 @@ variable "frontend_ips" {
     The `out_rule.name` property has to be unique among all in rules definitions.
     EOF
   }
-  validation { # out_rule.protocol
+  validation { # out_rules.protocol
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, out_rule in fip.out_rules : contains(["Tcp", "Udp", "All"], out_rule.protocol)
@@ -375,7 +383,7 @@ variable "frontend_ips" {
     The `out_rule.protocol` property should be one of: \"Tcp\", \"Udp\", \"All\".
     EOF
   }
-  validation { # out_rule.allocated_outbound_ports
+  validation { # out_rules.allocated_outbound_ports
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, out_rule in fip.out_rules :
@@ -388,7 +396,7 @@ variable "frontend_ips" {
     of 64000.
     EOF
   }
-  validation { # out_rule.idle_timeout_in_minutes
+  validation { # out_rules.idle_timeout_in_minutes
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, out_rule in fip.out_rules :
