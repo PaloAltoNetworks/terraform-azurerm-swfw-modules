@@ -51,6 +51,29 @@ data "azurerm_public_ip" "this" {
   resource_group_name = coalesce(each.value.public_ip_resource_group_name, var.resource_group_name)
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip_prefix
+resource "azurerm_public_ip_prefix" "this" {
+  for_each = { for k, v in var.frontend_ips : k => v if v.create_public_ip_prefix }
+
+  name                = each.value.public_ip_prefix_name
+  resource_group_name = var.resource_group_name
+  location            = var.region
+  ip_version          = "IPv4"
+  prefix_length       = each.value.public_ip_prefix_length
+  sku                 = "Standard"
+  zones               = var.zones
+
+  tags = var.tags
+}
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip_prefix
+data "azurerm_public_ip_prefix" "this" {
+  for_each = { for k, v in var.frontend_ips : k => v if !v.create_public_ip_prefix && v.public_ip_prefix_name != null }
+
+  name                = each.value.public_ip_prefix_name
+  resource_group_name = coalesce(each.value.public_ip_prefix_resource_group_name, var.resource_group_name)
+}
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb
 resource "azurerm_lb" "this" {
   name                = var.name
@@ -67,6 +90,9 @@ resource "azurerm_lb" "this" {
       public_ip_address_id = frontend_ip.value.create_public_ip ? (
         azurerm_public_ip.this[frontend_ip.key].id
       ) : try(data.azurerm_public_ip.this[frontend_ip.key].id, null)
+      public_ip_prefix_id = frontend_ip.value.create_public_ip_prefix ? (
+        azurerm_public_ip_prefix.this[frontend_ip.key].id
+      ) : try(data.azurerm_public_ip_prefix.this[frontend_ip.key].id, null)
       subnet_id                     = frontend_ip.value.subnet_id
       private_ip_address_allocation = frontend_ip.value.private_ip_address != null ? "Static" : null
       private_ip_address            = frontend_ip.value.private_ip_address
@@ -180,9 +206,10 @@ resource "azurerm_lb_outbound_rule" "this" {
 }
 
 locals {
-  # Map of all frontend IP addresses, public or private.
+  # Map of all frontend IP prefixes/addresses, public or private.
   frontend_addresses = {
     for k, v in var.frontend_ips : k => try(
+      data.azurerm_public_ip_prefix.this[k].ip_prefix, azurerm_public_ip_prefix.this[k].ip_prefix,
       data.azurerm_public_ip.this[k].ip_address, azurerm_public_ip.this[k].ip_address, v.private_ip_address
     )
   }

@@ -492,13 +492,17 @@ map(object({
       base_priority           = optional(number)
     }))
     frontend_ips = optional(map(object({
-      name                          = string
-      subnet_key                    = optional(string)
-      public_ip_name                = optional(string)
-      create_public_ip              = optional(bool, false)
-      public_ip_resource_group_name = optional(string)
-      private_ip_address            = optional(string)
-      gwlb_key                      = optional(string)
+      name                                 = string
+      subnet_key                           = optional(string)
+      public_ip_name                       = optional(string)
+      create_public_ip                     = optional(bool, false)
+      public_ip_resource_group_name        = optional(string)
+      public_ip_prefix_name                = optional(string)
+      create_public_ip_prefix              = optional(bool, false)
+      public_ip_prefix_resource_group_name = optional(string)
+      public_ip_prefix_length              = optional(number)
+      private_ip_address                   = optional(string)
+      gwlb_key                             = optional(string)
       in_rules = optional(map(object({
         name                = string
         protocol            = string

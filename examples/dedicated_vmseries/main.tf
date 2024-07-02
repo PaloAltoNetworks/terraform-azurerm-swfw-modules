@@ -156,8 +156,13 @@ module "load_balancer" {
     for k, v in each.value.frontend_ips : k => merge(
       v,
       {
-        public_ip_name = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : v.public_ip_name,
-        subnet_id      = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
+        public_ip_name = try(
+          v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : v.public_ip_name, null
+        ),
+        public_ip_prefix_name = try(
+          v.create_public_ip_prefix ? "${var.name_prefix}${v.public_ip_prefix_name}" : v.public_ip_prefix_name, null
+        ),
+        subnet_id = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
       }
     )
   }

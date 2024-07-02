@@ -95,9 +95,10 @@ module "load_balancer" {
     for k, v in each.value.frontend_ips : k => merge(
       v,
       {
-        public_ip_name = v.create_public_ip ? v.public_ip_name : null
-        subnet_id      = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
-        gwlb_fip_id    = try(v.gwlb_fip_id, null)
+        public_ip_name        = try(v.public_ip_name, null)
+        public_ip_prefix_name = try(v.public_ip_prefix_name, null)
+        subnet_id             = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
+        gwlb_fip_id           = try(v.gwlb_fip_id, null)
       }
     )
   }
