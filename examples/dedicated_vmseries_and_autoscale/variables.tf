@@ -592,8 +592,8 @@ variable "scale_sets" {
     - `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in the
                                   `var.appgws`, network interface that has this property defined will be added to the Application
                                   Gateways's backend pool.
-    - `pip_domain_name_label`   - (`string`, optional, defaults to `null`) prefix which should be used for the Domain Name Label
-                                  for each VM instance.
+
+    For details on all properties refer to [module's documentation](../../modules/vmss/README.md#interfaces).
 
   - `autoscaling_profiles`      - (`list`, optional, defaults to `[]`) a list of autoscaling profiles, for details on available
                                   properties please refer to
@@ -642,12 +642,15 @@ variable "scale_sets" {
       webhooks_uris           = optional(map(string), {})
     }), {})
     interfaces = list(object({
-      name                    = string
-      subnet_key              = string
-      create_public_ip        = optional(bool)
-      load_balancer_key       = optional(string)
-      application_gateway_key = optional(string)
-      pip_domain_name_label   = optional(string)
+      name                           = string
+      subnet_key                     = string
+      create_public_ip               = optional(bool)
+      load_balancer_key              = optional(string)
+      application_gateway_key        = optional(string)
+      pip_domain_name_label          = optional(string)
+      pip_idle_timeout_in_minutes    = optional(number)
+      pip_prefix_name                = optional(string)
+      pip_prefix_resource_group_name = optional(string)
     }))
     autoscaling_profiles = optional(list(object({
       name          = string
