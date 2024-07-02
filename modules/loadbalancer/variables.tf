@@ -36,7 +36,6 @@ variable "zones" {
   available in a region (typically 3): `["1","2","3"]`.
   EOF
   default     = ["1", "2", "3"]
-  nullable    = false
   type        = list(string)
 }
 
