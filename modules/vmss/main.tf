@@ -2,6 +2,14 @@ locals {
   password = sensitive(var.authentication.password)
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip_prefix
+data "azurerm_public_ip_prefix" "this" {
+  for_each = { for pip in var.interfaces : pip.name => pip if pip.pip_prefix_name != null }
+
+  name                = each.value.pip_prefix_name
+  resource_group_name = coalesce(each.value.pip_prefix_resource_group_name, var.resource_group_name)
+}
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set
 resource "azurerm_linux_virtual_machine_scale_set" "this" {
   name                 = var.name
@@ -81,6 +89,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
       ip_configuration {
         name                                         = "primary"
         primary                                      = true
+        version                                      = "IPv4"
         subnet_id                                    = nic.value.subnet_id
         load_balancer_backend_address_pool_ids       = nic.value.lb_backend_pool_ids
         application_gateway_backend_address_pool_ids = nic.value.appgw_backend_pool_ids
@@ -90,8 +99,11 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
           iterator = pip
 
           content {
-            name              = nic.value.name
-            domain_name_label = nic.value.pip_domain_name_label
+            name                    = nic.value.name
+            version                 = "IPv4"
+            domain_name_label       = nic.value.pip_domain_name_label
+            idle_timeout_in_minutes = nic.value.pip_idle_timeout_in_minutes
+            public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.this[nic.value.name].id, null)
           }
         }
       }
