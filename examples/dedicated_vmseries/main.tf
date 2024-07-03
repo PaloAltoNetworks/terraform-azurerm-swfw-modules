@@ -456,6 +456,8 @@ module "test_infrastructure" {
     route_tables = { for kv, vv in v.route_tables : kv => merge(vv, {
       name = "${var.name_prefix}${vv.name}" })
     }
+    local_peer_config  = try(v.local_peer_config, {})
+    remote_peer_config = try(v.remote_peer_config, {})
   }) }
   load_balancers = { for k, v in each.value.load_balancers : k => merge(v, {
     name         = "${var.name_prefix}${v.name}"

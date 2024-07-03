@@ -46,14 +46,22 @@ module "vnet_peering" {
   for_each = { for k, v in var.vnets : k => v if v.hub_vnet_name != null }
 
   local_peer_config = {
-    name                = "peer-${each.value.name}-to-${each.value.hub_vnet_name}"
-    resource_group_name = local.resource_group.name
-    vnet_name           = each.value.name
+    name                         = "peer-${each.value.name}-to-${each.value.hub_vnet_name}"
+    resource_group_name          = local.resource_group.name
+    vnet_name                    = each.value.name
+    allow_virtual_network_access = each.value.local_peer_config.allow_virtual_network_access
+    allow_forwarded_traffic      = each.value.local_peer_config.allow_forwarded_traffic
+    allow_gateway_transit        = each.value.local_peer_config.allow_gateway_transit
+    use_remote_gateways          = each.value.local_peer_config.use_remote_gateways
   }
   remote_peer_config = {
-    name                = "peer-${each.value.hub_vnet_name}-to-${each.value.name}"
-    resource_group_name = try(each.value.hub_resource_group_name, local.resource_group.name)
-    vnet_name           = each.value.hub_vnet_name
+    name                         = "peer-${each.value.hub_vnet_name}-to-${each.value.name}"
+    resource_group_name          = try(each.value.hub_resource_group_name, local.resource_group.name)
+    vnet_name                    = each.value.hub_vnet_name
+    allow_virtual_network_access = each.value.remote_peer_config.allow_virtual_network_access
+    allow_forwarded_traffic      = each.value.remote_peer_config.allow_forwarded_traffic
+    allow_gateway_transit        = each.value.remote_peer_config.allow_gateway_transit
+    use_remote_gateways          = each.value.remote_peer_config.use_remote_gateways
   }
 
   depends_on = [module.vnet]
@@ -169,6 +177,8 @@ resource "azurerm_linux_virtual_machine" "this" {
   lifecycle {
     ignore_changes = [source_image_reference["version"]]
   }
+
+  tags = var.tags
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_backend_address_pool_association

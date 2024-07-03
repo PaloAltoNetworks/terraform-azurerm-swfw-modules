@@ -47,6 +47,13 @@ variable "vnets" {
                                 [VNET module documentation](../vnet/README.md#network_security_groups).
   - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
                                 [VNET module documentation](../vnet/README.md#route_tables).
+  - `local_peer_config`       - (`map`, optional) a map that contains local peer configuration parameters. This value allows to 
+                                set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
+                                `use_remote_gateways` parameters on the local VNet peering. 
+  - `remote_peer_config`      - (`map`, optional) a map that contains remote peer configuration parameters. This value allows to
+                                set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
+                                `use_remote_gateways` parameters on the remote VNet peering. 
+                                
   EOF
   type = map(object({
     name                    = string
@@ -90,6 +97,18 @@ variable "vnets" {
       route_table_key                 = optional(string)
       enable_storage_service_endpoint = optional(bool, false)
     })), {})
+    local_peer_config = optional(object({
+      allow_virtual_network_access = optional(bool, true)
+      allow_forwarded_traffic      = optional(bool, true)
+      allow_gateway_transit        = optional(bool, false)
+      use_remote_gateways          = optional(bool, false)
+    }), {})
+    remote_peer_config = optional(object({
+      allow_virtual_network_access = optional(bool, true)
+      allow_forwarded_traffic      = optional(bool, true)
+      allow_gateway_transit        = optional(bool, false)
+      use_remote_gateways          = optional(bool, false)
+    }), {})
   }))
 }
 
