@@ -4,7 +4,7 @@ locals {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip_prefix
 data "azurerm_public_ip_prefix" "this" {
-  for_each = { for pip in var.interfaces : pip.name => pip if pip.pip_prefix_name != null }
+  for_each = { for v in var.interfaces : v.name => v if v.pip_prefix_name != null }
 
   name                = each.value.pip_prefix_name
   resource_group_name = coalesce(each.value.pip_prefix_resource_group_name, var.resource_group_name)

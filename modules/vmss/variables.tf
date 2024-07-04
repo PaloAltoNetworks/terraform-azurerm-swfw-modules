@@ -275,8 +275,8 @@ variable "interfaces" {
   }
   validation { # pip_idle_timeout_in_minutes
     condition = alltrue([
-      for pip in var.interfaces : (pip.pip_idle_timeout_in_minutes >= 4 && pip.pip_idle_timeout_in_minutes <= 32)
-    if pip.pip_idle_timeout_in_minutes != null])
+      for v in var.interfaces : (v.pip_idle_timeout_in_minutes >= 4 && v.pip_idle_timeout_in_minutes <= 32)
+    if v.pip_idle_timeout_in_minutes != null])
     error_message = <<-EOF
     The `pip_idle_timeout_in_minutes` value must be a number between 4 and 32.
     EOF
