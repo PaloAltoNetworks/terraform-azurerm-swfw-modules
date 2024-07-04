@@ -1138,14 +1138,18 @@ map(object({
       identity_ids                 = optional(list(string))
     })
     interfaces = list(object({
-      name                          = string
-      subnet_key                    = string
-      create_public_ip              = optional(bool, false)
-      public_ip_name                = optional(string)
-      public_ip_resource_group_name = optional(string)
-      private_ip_address            = optional(string)
-      load_balancer_key             = optional(string)
-      application_gateway_key       = optional(string)
+      name                           = string
+      subnet_key                     = string
+      create_public_ip               = optional(bool, false)
+      public_ip_name                 = optional(string)
+      public_ip_resource_group_name  = optional(string)
+      pip_domain_name_label          = optional(string)
+      pip_idle_timeout_in_minutes    = optional(number)
+      pip_prefix_name                = optional(string)
+      pip_prefix_resource_group_name = optional(string)
+      private_ip_address             = optional(string)
+      load_balancer_key              = optional(string)
+      application_gateway_key        = optional(string)
     }))
   }))
 ```

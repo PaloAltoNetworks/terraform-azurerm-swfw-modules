@@ -408,10 +408,14 @@ module "vmseries" {
     public_ip_name = v.create_public_ip ? "${
       var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")
     }" : v.public_ip_name
-    public_ip_resource_group_name = v.public_ip_resource_group_name
-    private_ip_address            = v.private_ip_address
-    attach_to_lb_backend_pool     = v.load_balancer_key != null
-    lb_backend_pool_id            = try(module.load_balancer[v.load_balancer_key].backend_pool_id, null)
+    public_ip_resource_group_name  = v.public_ip_resource_group_name
+    pip_domain_name_label          = v.pip_domain_name_label
+    pip_idle_timeout_in_minutes    = v.pip_idle_timeout_in_minutes
+    pip_prefix_name                = v.pip_prefix_name
+    pip_prefix_resource_group_name = v.pip_prefix_resource_group_name
+    private_ip_address             = v.private_ip_address
+    attach_to_lb_backend_pool      = v.load_balancer_key != null
+    lb_backend_pool_id             = try(module.load_balancer[v.load_balancer_key].backend_pool_id, null)
   }]
 
   tags = var.tags
