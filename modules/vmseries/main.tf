@@ -18,7 +18,7 @@ resource "azurerm_public_ip" "this" {
   zones                   = var.virtual_machine.zone != null ? [var.virtual_machine.zone] : null
   domain_name_label       = each.value.pip_domain_name_label
   idle_timeout_in_minutes = each.value.pip_idle_timeout_in_minutes
-  public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.this[nic.value.name].id, null)
+  public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.this[each.value.name].id, null)
   tags                    = var.tags
 }
 
