@@ -645,12 +645,12 @@ variable "scale_sets" {
       name                           = string
       subnet_key                     = string
       create_public_ip               = optional(bool)
-      load_balancer_key              = optional(string)
-      application_gateway_key        = optional(string)
       pip_domain_name_label          = optional(string)
       pip_idle_timeout_in_minutes    = optional(number)
       pip_prefix_name                = optional(string)
       pip_prefix_resource_group_name = optional(string)
+      load_balancer_key              = optional(string)
+      application_gateway_key        = optional(string)
     }))
     autoscaling_profiles = optional(list(object({
       name          = string

@@ -222,10 +222,6 @@ variable "interfaces" {
   - `name`                           - (`string`, required) the interface name.
   - `subnet_id`                      - (`string`, required) ID of an existing subnet to create the interface in.
   - `create_public_ip`               - (`bool`, optional, defaults to `false`) if `true`, create a public IP for the interface.
-  - `lb_backend_pool_ids`            - (`list`, optional, defaults to `[]`) a list of identifiers of existing Load Balancer
-                                       backend pools to associate the interface with.
-  - `appgw_backend_pool_ids`         - (`list`, optional, defaults to `[]`) a list of identifier of Application Gateway's backend
-                                       pools to associate the interface with.
   - `pip_domain_name_label`          - (`string`, optional, defaults to `null`) the Prefix which should be used for the Domain
                                        Name Label for each Virtual Machine Instance.
   - `pip_idle_timeout_in_minutes`    - (`number`, optional, defaults to Azure default) the Idle Timeout in minutes for the Public
@@ -233,7 +229,11 @@ variable "interfaces" {
   - `pip_prefix_name`                - (`string`, optional) the name of an existing Public IP Address Prefix from where Public IP
                                        Addresses should be allocated.
   - `pip_prefix_resource_group_name` - (`string`, optional, defaults to the VMSS's RG) name of a Resource Group hosting an 
-                                       existing Public IP Prefix resource. 
+                                       existing Public IP Prefix resource.
+  - `lb_backend_pool_ids`            - (`list`, optional, defaults to `[]`) a list of identifiers of existing Load Balancer
+                                       backend pools to associate the interface with.
+  - `appgw_backend_pool_ids`         - (`list`, optional, defaults to `[]`) a list of identifier of Application Gateway's backend
+                                       pools to associate the interface with.
 
   Example:
 
@@ -260,12 +260,12 @@ variable "interfaces" {
     name                           = string
     subnet_id                      = string
     create_public_ip               = optional(bool, false)
-    lb_backend_pool_ids            = optional(list(string), [])
-    appgw_backend_pool_ids         = optional(list(string), [])
     pip_domain_name_label          = optional(string)
     pip_idle_timeout_in_minutes    = optional(number)
     pip_prefix_name                = optional(string)
     pip_prefix_resource_group_name = optional(string)
+    lb_backend_pool_ids            = optional(list(string), [])
+    appgw_backend_pool_ids         = optional(list(string), [])
   }))
   validation { # lb_backend_pool_ids & appgw_backend_pool_ids
     condition     = length(var.interfaces[0].lb_backend_pool_ids) == 0 && length(var.interfaces[0].appgw_backend_pool_ids) == 0
