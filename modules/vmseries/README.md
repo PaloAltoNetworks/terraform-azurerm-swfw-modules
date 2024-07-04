@@ -51,6 +51,7 @@ If your Region doesn't, use an alternative mechanism of Availability Set, which 
 - `network_interface_backend_address_pool_association` (managed)
 - `public_ip` (managed)
 - `public_ip` (data)
+- `public_ip_prefix` (data)
 
 ### Required Inputs
 
@@ -264,24 +265,32 @@ Interfaces will be attached to VM in the order you define here, therefore:
   
 Following configuration options are available:
 
-- `name`                          - (`string`, required) the interface name.
-- `subnet_id`                     - (`string`, required) ID of an existing subnet to create the interface in.
-- `private_ip_address`            - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
-                                    skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
-                                    to change as long as the VM is running. Any stop/deallocate/restart operation might cause
-                                    the IP to change.
-- `create_public_ip`              - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface.
-- `public_ip_name`                - (`string`, optional, defaults to `null`) name of the public IP to associate with the
-                                    interface. When `create_public_ip` is set to `true` this will become a name of a newly
-                                    created Public IP interface. Otherwise this is a name of an existing interfaces that will
-                                    be sourced and attached to the interface.
-- `public_ip_resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
-                                    contains public IP that that will be associated with the interface. Used only when 
-                                    `create_public_ip` is `false`.
-- `attach_to_lb_backend_pool`     - (`bool`, optional, defaults to `false`) set to `true` if you would like to associate this
-                                    interface with a Load Balancer backend pool.
-- `lb_backend_pool_id`            - (`string`, optional, defaults to `null`) ID of an existing backend pool to associate the
-                                    interface with.
+- `name`                           - (`string`, required) the interface name.
+- `subnet_id`                      - (`string`, required) ID of an existing subnet to create the interface in.
+- `private_ip_address`             - (`string`, optional, defaults to `null`) static private IP to assign to the interface. 
+                                     When skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is
+                                     guaranteed not to change as long as the VM is running. Any stop/deallocate/restart 
+                                     operation might cause the IP to change.
+- `create_public_ip`               - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface.
+- `public_ip_name`                 - (`string`, optional, defaults to `null`) name of the public IP to associate with the
+                                     interface. When `create_public_ip` is set to `true` this will become a name of a newly
+                                     created Public IP interface. Otherwise this is a name of an existing interfaces that will
+                                     be sourced and attached to the interface.
+- `public_ip_resource_group_name`  - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
+                                     contains public IP that that will be associated with the interface. Used only when 
+                                     `create_public_ip` is `false`.
+- `pip_domain_name_label`          - (`string`, optional, defaults to `null`) the Prefix which should be used for the Domain
+                                     Name Label for each Virtual Machine Instance.
+- `pip_idle_timeout_in_minutes`    - (`number`, optional, defaults to Azure default) the Idle Timeout in minutes for the Public
+                                     IP Address, possible values are in the range from 4 to 32.
+- `pip_prefix_name`                - (`string`, optional) the name of an existing Public IP Address Prefix from where Public IP
+                                     Addresses should be allocated.
+- `pip_prefix_resource_group_name` - (`string`, optional, defaults to the VMSS's RG) name of a Resource Group hosting an 
+                                     existing Public IP Prefix resource. 
+- `attach_to_lb_backend_pool`      - (`bool`, optional, defaults to `false`) set to `true` if you would like to associate this
+                                     interface with a Load Balancer backend pool.
+- `lb_backend_pool_id`             - (`string`, optional, defaults to `null`) ID of an existing backend pool to associate the
+                                     interface with.
 
 Example:
 
@@ -311,14 +320,18 @@ Type:
 
 ```hcl
 list(object({
-    name                          = string
-    subnet_id                     = string
-    create_public_ip              = optional(bool, false)
-    public_ip_name                = optional(string)
-    public_ip_resource_group_name = optional(string)
-    private_ip_address            = optional(string)
-    lb_backend_pool_id            = optional(string)
-    attach_to_lb_backend_pool     = optional(bool, false)
+    name                           = string
+    subnet_id                      = string
+    create_public_ip               = optional(bool, false)
+    public_ip_name                 = optional(string)
+    public_ip_resource_group_name  = optional(string)
+    private_ip_address             = optional(string)
+    pip_domain_name_label          = optional(string)
+    pip_idle_timeout_in_minutes    = optional(number)
+    pip_prefix_name                = optional(string)
+    pip_prefix_resource_group_name = optional(string)
+    lb_backend_pool_id             = optional(string)
+    attach_to_lb_backend_pool      = optional(bool, false)
   }))
 ```
 

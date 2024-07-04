@@ -1,14 +1,25 @@
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip_prefix
+data "azurerm_public_ip_prefix" "this" {
+  for_each = { for v in var.interfaces : v.name => v if v.pip_prefix_name != null }
+
+  name                = each.value.pip_prefix_name
+  resource_group_name = coalesce(each.value.pip_prefix_resource_group_name, var.resource_group_name)
+}
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
   for_each = { for v in var.interfaces : v.name => v if v.create_public_ip }
 
-  location            = var.region
-  resource_group_name = var.resource_group_name
-  name                = each.value.public_ip_name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-  zones               = var.virtual_machine.zone != null ? [var.virtual_machine.zone] : null
-  tags                = var.tags
+  location                = var.region
+  resource_group_name     = var.resource_group_name
+  name                    = each.value.public_ip_name
+  allocation_method       = "Static"
+  sku                     = "Standard"
+  zones                   = var.virtual_machine.zone != null ? [var.virtual_machine.zone] : null
+  domain_name_label       = each.value.pip_domain_name_label
+  idle_timeout_in_minutes = each.value.pip_idle_timeout_in_minutes
+  public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.this[nic.value.name].id, null)
+  tags                    = var.tags
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
