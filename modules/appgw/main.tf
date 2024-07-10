@@ -22,14 +22,6 @@ data "azurerm_public_ip_prefix" "this" {
   resource_group_name = coalesce(var.public_ip.prefix_resource_group_name, var.resource_group_name)
 }
 
-# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
-data "azurerm_public_ip" "this" {
-  count = var.public_ip.create ? 0 : 1
-
-  name                = var.public_ip.name
-  resource_group_name = coalesce(var.public_ip.resource_group_name, var.resource_group_name)
-}
-
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
   count = var.public_ip.create ? 1 : 0
@@ -42,8 +34,16 @@ resource "azurerm_public_ip" "this" {
   zones                   = var.zones
   domain_name_label       = var.public_ip.domain_name_label
   idle_timeout_in_minutes = var.public_ip.idle_timeout_in_minutes
-  public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.this[each.value.name].id, null)
+  public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.this[0].id, null)
   tags                    = var.tags
+}
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
+data "azurerm_public_ip" "this" {
+  count = var.public_ip.create ? 0 : 1
+
+  name                = var.public_ip.name
+  resource_group_name = coalesce(var.public_ip.resource_group_name, var.resource_group_name)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway
