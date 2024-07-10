@@ -80,6 +80,15 @@ variable "frontend_ips" {
                                              resource is controlled by `public_ip_name` property.
   - `public_ip_resource_group_name`        - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
                                              hosting an existing Public IP resource.
+  - `pip_domain_name_label`                - (`string`, optional, defaults to `null`) a label for the Domain Name, will be used
+                                             to make up the FQDN. If a domain name label is specified, an A DNS record is created
+                                             for the Public IP in the Microsoft Azure DNS system.
+  - `pip_idle_timeout_in_minutes`          - (`number`, optional, defaults to Azure default) the Idle Timeout in minutes for the
+                                             Public IP Address, possible values are in the range from 4 to 32.
+  - `pip_prefix_name`                      - (`string`, optional) the name of an existing Public IP Address Prefix from where
+                                             Public IP Addresses should be allocated (if new PIP is created by the module).
+  - `pip_prefix_resource_group_name`       - (`string`, optional, defaults to the VM's RG) name of a Resource Group hosting an
+                                             existing Public IP Prefix resource. 
   - `public_ip_prefix_name`                - (`string`, optional) name of a Public IP prefix resource.
   - `create_public_ip_prefix`              - (`bool`, optional, defaults to `false`) when set to `true` a new Public IP prefix
                                              will be created, otherwise an existing resource will be used; in both cases the name
@@ -191,6 +200,10 @@ variable "frontend_ips" {
     public_ip_name                       = optional(string)
     create_public_ip                     = optional(bool, false)
     public_ip_resource_group_name        = optional(string)
+    pip_domain_name_label                = optional(string)
+    pip_idle_timeout_in_minutes          = optional(number)
+    pip_prefix_name                      = optional(string)
+    pip_prefix_resource_group_name       = optional(string)
     public_ip_prefix_name                = optional(string)
     create_public_ip_prefix              = optional(bool, false)
     public_ip_prefix_resource_group_name = optional(string)
@@ -236,6 +249,14 @@ variable "frontend_ips" {
     )
     error_message = <<-EOF
     The `name` property has to be unique among all frontend definitions.
+    EOF
+  }
+  validation { # pip_idle_timeout_in_minutes
+    condition = alltrue([
+      for _, fip in var.frontend_ips : (fip.pip_idle_timeout_in_minutes >= 4 && fip.pip_idle_timeout_in_minutes <= 32)
+    if fip.pip_idle_timeout_in_minutes != null])
+    error_message = <<-EOF
+    The `pip_idle_timeout_in_minutes` value must be a number between 4 and 32.
     EOF
   }
   validation { # public_ip_name, public_ip_prefix_name

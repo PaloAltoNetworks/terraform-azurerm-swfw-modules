@@ -107,6 +107,7 @@ module "lbe" {
 - `public_ip_prefix` (managed)
 - `public_ip` (data)
 - `public_ip_prefix` (data)
+- `public_ip_prefix` (data)
 
 ### Required Inputs
 
@@ -199,6 +200,15 @@ Public Load Balancer:
                                            resource is controlled by `public_ip_name` property.
 - `public_ip_resource_group_name`        - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
                                            hosting an existing Public IP resource.
+- `pip_domain_name_label`                - (`string`, optional, defaults to `null`) a label for the Domain Name, will be used
+                                           to make up the FQDN. If a domain name label is specified, an A DNS record is created
+                                           for the Public IP in the Microsoft Azure DNS system.
+- `pip_idle_timeout_in_minutes`          - (`number`, optional, defaults to Azure default) the Idle Timeout in minutes for the
+                                           Public IP Address, possible values are in the range from 4 to 32.
+- `pip_prefix_name`                      - (`string`, optional) the name of an existing Public IP Address Prefix from where
+                                           Public IP Addresses should be allocated (if new PIP is created by the module).
+- `pip_prefix_resource_group_name`       - (`string`, optional, defaults to the VM's RG) name of a Resource Group hosting an
+                                           existing Public IP Prefix resource. 
 - `public_ip_prefix_name`                - (`string`, optional) name of a Public IP prefix resource.
 - `create_public_ip_prefix`              - (`bool`, optional, defaults to `false`) when set to `true` a new Public IP prefix
                                            will be created, otherwise an existing resource will be used; in both cases the name
@@ -314,6 +324,10 @@ map(object({
     public_ip_name                       = optional(string)
     create_public_ip                     = optional(bool, false)
     public_ip_resource_group_name        = optional(string)
+    pip_domain_name_label                = optional(string)
+    pip_idle_timeout_in_minutes          = optional(number)
+    pip_prefix_name                      = optional(string)
+    pip_prefix_resource_group_name       = optional(string)
     public_ip_prefix_name                = optional(string)
     create_public_ip_prefix              = optional(bool, false)
     public_ip_prefix_resource_group_name = optional(string)
