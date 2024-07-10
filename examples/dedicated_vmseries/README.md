@@ -476,9 +476,13 @@ map(object({
     zone                = optional(string)
     idle_timeout        = optional(number, 4)
     public_ip = optional(object({
-      create              = bool
-      name                = string
-      resource_group_name = optional(string)
+      create                     = bool
+      name                       = string
+      resource_group_name        = optional(string)
+      domain_name_label          = optional(string)
+      idle_timeout_in_minutes    = optional(number)
+      prefix_name                = optional(string)
+      prefix_resource_group_name = optional(string)
     }))
     public_ip_prefix = optional(object({
       create              = bool
