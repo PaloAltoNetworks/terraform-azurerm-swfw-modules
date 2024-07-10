@@ -1,6 +1,6 @@
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip_prefix
 data "azurerm_public_ip_prefix" "allocate" {
-  count = var.public_ip.prefix_name != null ? 1 : 0
+  count = var.public_ip != null ? (var.public_ip.prefix_name != null ? 1 : 0) : 0
 
   name                = var.public_ip.prefix_name
   resource_group_name = coalesce(var.public_ip.prefix_resource_group_name, var.resource_group_name)
