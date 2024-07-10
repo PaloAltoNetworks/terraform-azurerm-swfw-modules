@@ -1,5 +1,5 @@
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip_prefix
-data "azurerm_public_ip_prefix" "this" {
+data "azurerm_public_ip_prefix" "allocate" {
   for_each = { for v in var.interfaces : v.name => v if v.pip_prefix_name != null }
 
   name                = each.value.pip_prefix_name
@@ -18,7 +18,7 @@ resource "azurerm_public_ip" "this" {
   zones                   = var.virtual_machine.zone != null ? [var.virtual_machine.zone] : null
   domain_name_label       = each.value.pip_domain_name_label
   idle_timeout_in_minutes = each.value.pip_idle_timeout_in_minutes
-  public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.this[each.value.name].id, null)
+  public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.allocate[each.value.name].id, null)
   tags                    = var.tags
 }
 
