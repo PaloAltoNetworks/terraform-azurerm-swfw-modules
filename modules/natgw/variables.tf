@@ -130,7 +130,7 @@ variable "public_ip" {
     prefix_resource_group_name = optional(string)
   })
   validation { # idle_timeout_in_minutes
-    condition = var.public_ip.idle_timeout_in_minutes != null ? (
+    condition = var.public_ip != null && var.public_ip.idle_timeout_in_minutes != null ? (
       var.public_ip.idle_timeout_in_minutes >= 4 && var.public_ip.idle_timeout_in_minutes <= 32
     ) : true
     error_message = <<-EOF
