@@ -1,24 +1,33 @@
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip_prefix
+data "azurerm_public_ip_prefix" "allocate" {
+  for_each = { for k, v in var.ip_configurations : k => v if v.create_public_ip && v.pip_prefix_name != null }
+
+  name                = each.value.pip_prefix_name
+  resource_group_name = coalesce(each.value.pip_prefix_resource_group_name, var.resource_group_name)
+}
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
-  for_each = { for k, v in var.ip_configurations : k => v if try(v.create_public_ip, false) }
+  for_each = { for k, v in var.ip_configurations : k => v if v.create_public_ip }
 
-  resource_group_name = var.resource_group_name
-  location            = var.region
-  name                = each.value.public_ip_name
-
-  allocation_method = "Static"
-  sku               = "Standard"
-  zones             = var.zones
-
-  tags = var.tags
+  name                    = each.value.public_ip_name
+  resource_group_name     = coalesce(each.value.public_ip_resource_group_name, var.resource_group_name)
+  location                = var.region
+  allocation_method       = "Static"
+  sku                     = "Standard"
+  zones                   = var.zones
+  domain_name_label       = each.value.pip_domain_name_label
+  idle_timeout_in_minutes = each.value.pip_idle_timeout_in_minutes
+  public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.allocate[each.value.name].id, null)
+  tags                    = var.tags
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
-data "azurerm_public_ip" "exists" {
-  for_each = { for k, v in var.ip_configurations : k => v if !try(v.create_public_ip, true) }
+data "azurerm_public_ip" "this" {
+  for_each = { for k, v in var.ip_configurations : k => v if !v.create_public_ip }
 
   name                = each.value.public_ip_name
-  resource_group_name = var.resource_group_name
+  resource_group_name = coalesce(each.value.public_ip_resource_group_name, var.resource_group_name)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network_gateway
@@ -43,7 +52,7 @@ resource "azurerm_virtual_network_gateway" "this" {
       name = ip_configuration.value.name
       public_ip_address_id = ip_configuration.value.create_public_ip ? (
         azurerm_public_ip.this[ip_configuration.value.name].id
-      ) : data.azurerm_public_ip.exists[ip_configuration.value.name].id
+      ) : data.azurerm_public_ip.this[ip_configuration.value.name].id
       private_ip_address_allocation = ip_configuration.value.private_ip_address_allocation
       subnet_id                     = var.subnet_id
     }

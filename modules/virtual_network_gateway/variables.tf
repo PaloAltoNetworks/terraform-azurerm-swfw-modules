@@ -170,29 +170,51 @@ variable "ip_configurations" {
   
   Following properties are available:
   - `primary`   - (`map`, required) a map defining the primary Public IP address, following properties are available:
-    - `name`                          - (`string`, required) name of the IP config.
-    - `create_public_ip`              - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
-    - `public_ip_name`                - (`string`, required) name of a Public IP resource, depending on the value of 
-                                        `create_public_ip` property this will be a name of a newly create or existing resource
-                                        (for values of `true` and `false` accordingly).
-    - `dynamic_private_ip_allocation` - (`bool`, optional, defaults to `true`) controls if the private IP address is assigned
-                                        dynamically or statically.
+    - `name`                           - (`string`, required) name of the IP config.
+    - `create_public_ip`               - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
+    - `public_ip_name`                 - (`string`, required) name of a Public IP resource, depending on the value of 
+                                         `create_public_ip` property this will be a name of a newly create or existing resource
+                                         (for values of `true` and `false` accordingly).
+    - `public_ip_resource_group_name`  - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
+                                         hosting an existing Public IP resource.
+    - `pip_domain_name_label`          - (`string`, optional, defaults to `null`) a label for the Domain Name, will be used to
+                                         make up the FQDN. If a domain name label is specified, an A DNS record is created for
+                                         the Public IP in the Microsoft Azure DNS system.
+    - `pip_idle_timeout_in_minutes`    - (`number`, optional, defaults to Azure default) the Idle Timeout in minutes for the
+                                         Public IP Address, possible values are in the range from 4 to 32.
+    - `pip_prefix_name`                - (`string`, optional) the name of an existing Public IP Address Prefix from where
+                                         Public IP Addresses should be allocated (if new PIP is created by the module).
+    - `pip_prefix_resource_group_name` - (`string`, optional, defaults to the VM's RG) name of a Resource Group hosting an
+                                         existing Public IP Prefix resource. 
+    - `dynamic_private_ip_allocation`  - (`bool`, optional, defaults to `true`) controls if the private IP address is assigned
+                                         dynamically or statically.
+
   - `secondary` - (`map`, optional, defaults to `null`) a map defining the secondary Public IP address resource. Required only
                   for `type` set to `Vpn` and `active-active` set to `true`. Same properties available as for `primary` property.
 
   EOF
   type = object({
     primary = object({
-      name                          = string
-      create_public_ip              = optional(bool, true)
-      public_ip_name                = string
-      private_ip_address_allocation = optional(string, "Dynamic")
+      name                           = string
+      create_public_ip               = optional(bool, true)
+      public_ip_name                 = string
+      public_ip_resource_group_name  = optional(string)
+      pip_domain_name_label          = optional(string)
+      pip_idle_timeout_in_minutes    = optional(number)
+      pip_prefix_name                = optional(string)
+      pip_prefix_resource_group_name = optional(string)
+      private_ip_address_allocation  = optional(string, "Dynamic")
     })
     secondary = optional(object({
-      name                          = string
-      create_public_ip              = optional(bool, true)
-      public_ip_name                = string
-      private_ip_address_allocation = optional(string, "Dynamic")
+      name                           = string
+      create_public_ip               = optional(bool, true)
+      public_ip_name                 = string
+      public_ip_resource_group_name  = optional(string)
+      pip_domain_name_label          = optional(string)
+      pip_idle_timeout_in_minutes    = optional(number)
+      pip_prefix_name                = optional(string)
+      pip_prefix_resource_group_name = optional(string)
+      private_ip_address_allocation  = optional(string, "Dynamic")
     }))
   })
   validation { # primary/secondary.name
@@ -201,6 +223,22 @@ variable "ip_configurations" {
     ) : true
     error_message = <<-EOF
     The `name` property has to be unique among all IP configurations.
+    EOF
+  }
+  validation { # primary/secondary.pip_idle_timeout_in_minutes
+    condition = (
+      var.ip_configurations.primary.pip_idle_timeout_in_minutes != null ? (
+        var.ip_configurations.primary.pip_idle_timeout_in_minutes >= 4 &&
+        var.ip_configurations.primary.pip_idle_timeout_in_minutes <= 32
+      ) : true
+      ) && (
+      var.ip_configurations.secondary != null && var.ip_configurations.secondary.pip_idle_timeout_in_minutes != null ? (
+        var.ip_configurations.secondary.pip_idle_timeout_in_minutes >= 4 &&
+        var.ip_configurations.secondary.pip_idle_timeout_in_minutes <= 32
+      ) : true
+    )
+    error_message = <<-EOF
+    The `idle_timeout_in_minutes` value must be a number between 4 and 32.
     EOF
   }
   validation { # primary/secondary.private_ip_address_allocation
