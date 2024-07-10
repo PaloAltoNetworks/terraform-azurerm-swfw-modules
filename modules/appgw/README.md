@@ -827,6 +827,7 @@ appgws = {
 - `application_gateway` (managed)
 - `public_ip` (managed)
 - `public_ip` (data)
+- `public_ip_prefix` (data)
 
 ### Required Inputs
 
@@ -847,7 +848,6 @@ Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`zones`](#zones) | `list` | A list of zones the Application Gateway should be available in.
-[`domain_name_label`](#domain_name_label) | `string` | A label for the Domain Name.
 [`capacity`](#capacity) | `object` | A map defining whether static or autoscale configuration is used.
 [`enable_http2`](#enable_http2) | `bool` | Enable HTTP2 on the Application Gateway.
 [`waf`](#waf) | `object` | A map defining only the SKU and providing basic WAF (Web Application Firewall) configuration for Application Gateway.
@@ -908,19 +908,33 @@ Type: string
 A map defining listener's public IP configuration.
 
 Following properties are available:
-- `name`                - (`string`, required) name of the Public IP resource.
-- `create`              - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or sourced.
-- `resource_group_name` - (`string`, optional, defaults to `null`) name of the Resource Group hosting the Public IP resource, 
-                          used only for sourced resources.
+- `name`                       - (`string`, required) name of the Public IP resource.
+- `create`                     - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or 
+                                 sourced.
+- `resource_group_name`        - (`string`, optional, defaults to `null`) name of the Resource Group hosting the Public IP 
+                                 resource, used only for sourced resources.
+- `domain_name_label`          - (`string`, optional, defaults to `null`) a label for the Domain Name, will be used to make up
+                                 the FQDN. If a domain name label is specified, an A DNS record is created for the Public IP in
+                                 the Microsoft Azure DNS system.
+- `idle_timeout_in_minutes`    - (`number`, optional, defaults to Azure default) the Idle Timeout in minutes for the Public IP
+                                 Address, possible values are in the range from 4 to 32.
+- `prefix_name`                - (`string`, optional) the name of an existing Public IP Address Prefix from where Public IP
+                                 Addresses should be allocated.
+- `prefix_resource_group_name` - (`string`, optional, defaults to the APPGW's RG) name of a Resource Group hosting an existing
+                                 Public IP Prefix resource.
 
 
 Type: 
 
 ```hcl
 object({
-    name                = string
-    create              = optional(bool, true)
-    resource_group_name = optional(string)
+    name                       = string
+    create                     = optional(bool, true)
+    resource_group_name        = optional(string)
+    domain_name_label          = optional(string)
+    idle_timeout_in_minutes    = optional(number)
+    prefix_name                = optional(string)
+    prefix_resource_group_name = optional(string)
   })
 ```
 
@@ -1047,18 +1061,6 @@ For details on zones currently available in a region of your choice refer to
 Type: list(string)
 
 Default value: `[1 2 3]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### domain_name_label
-
-A label for the Domain Name. Will be used to make up the FQDN. 
-If a domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure DNS system.
-
-
-Type: string
-
-Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
