@@ -23,12 +23,12 @@ data "azurerm_public_ip" "this" {
 resource "azurerm_network_interface" "this" {
   for_each = { for k, v in var.interfaces : v.name => merge(v, { index = k }) }
 
-  name                          = each.value.name
-  location                      = var.region
-  resource_group_name           = var.resource_group_name
-  enable_accelerated_networking = false
-  enable_ip_forwarding          = false
-  tags                          = var.tags
+  name                           = each.value.name
+  location                       = var.region
+  resource_group_name            = var.resource_group_name
+  accelerated_networking_enabled = false
+  ip_forwarding_enabled          = false
+  tags                           = var.tags
 
   ip_configuration {
     name                          = "primary"
