@@ -3,7 +3,7 @@ locals {
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip_prefix
-data "azurerm_public_ip_prefix" "this" {
+data "azurerm_public_ip_prefix" "allocate" {
   for_each = { for v in var.interfaces : v.name => v if v.pip_prefix_name != null }
 
   name                = each.value.pip_prefix_name
@@ -103,7 +103,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
             version                 = "IPv4"
             domain_name_label       = nic.value.pip_domain_name_label
             idle_timeout_in_minutes = nic.value.pip_idle_timeout_in_minutes
-            public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.this[nic.value.name].id, null)
+            public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.allocate[nic.value.name].id, null)
           }
         }
       }
