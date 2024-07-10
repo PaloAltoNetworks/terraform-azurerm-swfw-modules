@@ -62,6 +62,7 @@ by Azure.
 - `nat_gateway` (data)
 - `public_ip` (data)
 - `public_ip_prefix` (data)
+- `public_ip_prefix` (data)
 
 ### Required Inputs
 
@@ -188,10 +189,19 @@ A map defining a Public IP resource.
 
 List of available properties:
 
-- `create`              - (`bool`, required) controls whether a Public IP is created, sourced, or not used at all.
-- `name`                - (`string`, required) name of a created or sourced Public IP.
-- `resource_group_name` - (`string`, optional) name of a resource group hosting the sourced Public IP resource, ignored when
-                          `create = true`.
+- `create`                     - (`bool`, required) controls whether a Public IP is created, sourced, or not used at all.
+- `name`                       - (`string`, required) name of a created or sourced Public IP.
+- `resource_group_name`        - (`string`, optional) name of a resource group hosting the sourced Public IP resource, ignored
+                                 when `create = true`.
+- `domain_name_label`          - (`string`, optional, defaults to `null`) a label for the Domain Name, will be used to make up
+                                 the FQDN. If a domain name label is specified, an A DNS record is created for the Public IP in
+                                 the Microsoft Azure DNS system.
+- `idle_timeout_in_minutes`    - (`number`, optional, defaults to Azure default) the Idle Timeout in minutes for the Public IP
+                                 Address, possible values are in the range from 4 to 32.
+- `prefix_name`                - (`string`, optional) the name of an existing Public IP Address Prefix from where Public IP
+                                 Addresses should be allocated.
+- `prefix_resource_group_name` - (`string`, optional, defaults to the NATGW's RG) name of a Resource Group hosting an existing
+                                 Public IP Prefix resource.
 
 The module operates in 3 modes, depending on combination of `create` and `name` properties:
 
@@ -224,9 +234,13 @@ Type:
 
 ```hcl
 object({
-    create              = bool
-    name                = string
-    resource_group_name = optional(string)
+    create                     = bool
+    name                       = string
+    resource_group_name        = optional(string)
+    domain_name_label          = optional(string)
+    idle_timeout_in_minutes    = optional(number)
+    prefix_name                = optional(string)
+    prefix_resource_group_name = optional(string)
   })
 ```
 

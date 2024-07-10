@@ -79,10 +79,19 @@ variable "public_ip" {
 
   List of available properties:
 
-  - `create`              - (`bool`, required) controls whether a Public IP is created, sourced, or not used at all.
-  - `name`                - (`string`, required) name of a created or sourced Public IP.
-  - `resource_group_name` - (`string`, optional) name of a resource group hosting the sourced Public IP resource, ignored when
-                            `create = true`.
+  - `create`                     - (`bool`, required) controls whether a Public IP is created, sourced, or not used at all.
+  - `name`                       - (`string`, required) name of a created or sourced Public IP.
+  - `resource_group_name`        - (`string`, optional) name of a resource group hosting the sourced Public IP resource, ignored
+                                   when `create = true`.
+  - `domain_name_label`          - (`string`, optional, defaults to `null`) a label for the Domain Name, will be used to make up
+                                   the FQDN. If a domain name label is specified, an A DNS record is created for the Public IP in
+                                   the Microsoft Azure DNS system.
+  - `idle_timeout_in_minutes`    - (`number`, optional, defaults to Azure default) the Idle Timeout in minutes for the Public IP
+                                   Address, possible values are in the range from 4 to 32.
+  - `prefix_name`                - (`string`, optional) the name of an existing Public IP Address Prefix from where Public IP
+                                   Addresses should be allocated.
+  - `prefix_resource_group_name` - (`string`, optional, defaults to the NATGW's RG) name of a Resource Group hosting an existing
+                                   Public IP Prefix resource.
 
   The module operates in 3 modes, depending on combination of `create` and `name` properties:
 
@@ -112,10 +121,22 @@ variable "public_ip" {
   EOF
   default     = null
   type = object({
-    create              = bool
-    name                = string
-    resource_group_name = optional(string)
+    create                     = bool
+    name                       = string
+    resource_group_name        = optional(string)
+    domain_name_label          = optional(string)
+    idle_timeout_in_minutes    = optional(number)
+    prefix_name                = optional(string)
+    prefix_resource_group_name = optional(string)
   })
+  validation { # idle_timeout_in_minutes
+    condition = var.public_ip.idle_timeout_in_minutes != null ? (
+      var.public_ip.idle_timeout_in_minutes >= 4 && var.public_ip.idle_timeout_in_minutes <= 32
+    ) : true
+    error_message = <<-EOF
+    The `idle_timeout_in_minutes` value must be a number between 4 and 32.
+    EOF
+  }
 }
 
 variable "public_ip_prefix" {

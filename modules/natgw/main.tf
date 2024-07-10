@@ -1,15 +1,25 @@
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip_prefix
+data "azurerm_public_ip_prefix" "allocate" {
+  count = var.public_ip.prefix_name != null ? 1 : 0
+
+  name                = var.public_ip.prefix_name
+  resource_group_name = coalesce(var.public_ip.prefix_resource_group_name, var.resource_group_name)
+}
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
   count = try(var.create_natgw && var.public_ip.create, false) ? 1 : 0
 
-  name                = var.public_ip.name
-  resource_group_name = var.resource_group_name
-  location            = var.region
-  allocation_method   = "Static"
-  sku                 = "Standard"
-  zones               = var.zone != null ? [var.zone] : null
-
-  tags = var.tags
+  name                    = var.public_ip.name
+  resource_group_name     = var.resource_group_name
+  location                = var.region
+  allocation_method       = "Static"
+  sku                     = "Standard"
+  zones                   = var.zone != null ? [var.zone] : null
+  domain_name_label       = var.public_ip.domain_name_label
+  idle_timeout_in_minutes = var.public_ip.idle_timeout_in_minutes
+  public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.allocate[0].id, null)
+  tags                    = var.tags
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
