@@ -15,7 +15,7 @@ locals {
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip_prefix
-data "azurerm_public_ip_prefix" "this" {
+data "azurerm_public_ip_prefix" "allocate" {
   count = var.public_ip.prefix_name != null ? 1 : 0
 
   name                = var.public_ip.prefix_name
@@ -34,7 +34,7 @@ resource "azurerm_public_ip" "this" {
   zones                   = var.zones
   domain_name_label       = var.public_ip.domain_name_label
   idle_timeout_in_minutes = var.public_ip.idle_timeout_in_minutes
-  public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.this[0].id, null)
+  public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.allocate[0].id, null)
   tags                    = var.tags
 }
 
