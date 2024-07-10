@@ -135,16 +135,26 @@ variable "virtual_network_gateways" {
     })
     ip_configurations = object({
       primary = object({
-        name                          = string
-        create_public_ip              = optional(bool)
-        public_ip_name                = string
-        private_ip_address_allocation = optional(string)
+        name                           = string
+        create_public_ip               = optional(bool)
+        public_ip_name                 = string
+        public_ip_resource_group_name  = optional(string)
+        pip_domain_name_label          = optional(string)
+        pip_idle_timeout_in_minutes    = optional(number)
+        pip_prefix_name                = optional(string)
+        pip_prefix_resource_group_name = optional(string)
+        private_ip_address_allocation  = optional(string)
       })
       secondary = optional(object({
-        name                          = string
-        create_public_ip              = optional(bool)
-        public_ip_name                = string
-        private_ip_address_allocation = optional(string)
+        name                           = string
+        create_public_ip               = optional(bool)
+        public_ip_name                 = string
+        public_ip_resource_group_name  = optional(string)
+        pip_domain_name_label          = optional(string)
+        pip_idle_timeout_in_minutes    = optional(number)
+        pip_prefix_name                = optional(string)
+        pip_prefix_resource_group_name = optional(string)
+        private_ip_address_allocation  = optional(string)
       }))
     })
     private_ip_address_enabled       = optional(bool)
