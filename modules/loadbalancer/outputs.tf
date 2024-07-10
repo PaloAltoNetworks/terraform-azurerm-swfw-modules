@@ -1,3 +1,8 @@
+output "lb_id" {
+  description = "The identifier of the Load Balancer resource."
+  value       = azurerm_lb.this.id
+}
+
 output "backend_pool_id" {
   description = "The identifier of the backend pool."
   value       = azurerm_lb_backend_address_pool.this.id
