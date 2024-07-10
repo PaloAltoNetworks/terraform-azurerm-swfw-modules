@@ -644,11 +644,14 @@ map(object({
     subnet_key = string
     zones      = optional(list(string))
     public_ip = object({
-      name                = string
-      create              = optional(bool, true)
-      resource_group_name = optional(string)
+      name                       = string
+      create                     = optional(bool, true)
+      resource_group_name        = optional(string)
+      domain_name_label          = optional(string)
+      idle_timeout_in_minutes    = optional(number)
+      prefix_name                = optional(string)
+      prefix_resource_group_name = optional(string)
     })
-    domain_name_label = optional(string)
     capacity = optional(object({
       static = optional(number)
       autoscale = optional(object({

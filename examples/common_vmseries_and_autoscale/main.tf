@@ -186,7 +186,6 @@ module "appgw" {
     each.value.public_ip,
     { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }
   )
-  domain_name_label              = each.value.domain_name_label
   capacity                       = each.value.capacity
   enable_http2                   = each.value.enable_http2
   waf                            = each.value.waf
