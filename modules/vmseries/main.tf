@@ -10,9 +10,9 @@ data "azurerm_public_ip_prefix" "this" {
 resource "azurerm_public_ip" "this" {
   for_each = { for v in var.interfaces : v.name => v if v.create_public_ip }
 
-  location                = var.region
-  resource_group_name     = var.resource_group_name
   name                    = each.value.public_ip_name
+  resource_group_name     = var.resource_group_name
+  location                = var.region
   allocation_method       = "Static"
   sku                     = "Standard"
   zones                   = var.virtual_machine.zone != null ? [var.virtual_machine.zone] : null

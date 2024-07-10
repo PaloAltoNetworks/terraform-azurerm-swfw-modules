@@ -285,8 +285,8 @@ Following configuration options are available:
                                      IP Address, possible values are in the range from 4 to 32.
 - `pip_prefix_name`                - (`string`, optional) the name of an existing Public IP Address Prefix from where Public IP
                                      Addresses should be allocated.
-- `pip_prefix_resource_group_name` - (`string`, optional, defaults to the VMSS's RG) name of a Resource Group hosting an 
-                                     existing Public IP Prefix resource. 
+- `pip_prefix_resource_group_name` - (`string`, optional, defaults to the VM's RG) name of a Resource Group hosting an existing
+                                     Public IP Prefix resource. 
 - `attach_to_lb_backend_pool`      - (`bool`, optional, defaults to `false`) set to `true` if you would like to associate this
                                      interface with a Load Balancer backend pool.
 - `lb_backend_pool_id`             - (`string`, optional, defaults to `null`) ID of an existing backend pool to associate the
