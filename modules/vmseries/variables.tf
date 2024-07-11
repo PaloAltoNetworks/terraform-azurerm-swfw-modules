@@ -163,7 +163,7 @@ variable "virtual_machine" {
       var.virtual_machine.avset_id == null
     ) : true
     error_message = <<-EOF
-    When `capacity_reservation_group_id` value is set, the `single_placement_group` value must equal to false.
+    When `capacity_reservation_group_id` value is set, the `avset_id` property must not be set.
     EOF
   }
   validation { # identity_type
