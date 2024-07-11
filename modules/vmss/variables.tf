@@ -132,47 +132,50 @@ variable "virtual_machine_scale_set" {
 
   List of other, optional properties:
 
-  - `accelerated_networking`       - (`bool`, optional, defaults to `true`) when set to `true` enables Azure accelerated
-                                     networking (SR-IOV) for all dataplane network interfaces, this does not affect the
-                                     management interface (always disabled).
-  - `allow_extension_operations`   - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM.
-  - `disk_encryption_set_id`       - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
-                                     used to encrypt this VM's disk.
-  - `encryption_at_host_enabled`   - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted by enabling
-                                     Encryption at Host.
-  - `overprovision`                - (`bool`, optional, defaults to `true`) See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set).
-  - `platform_fault_domain_count`  - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that
-                                     are used by this Virtual Machine Scale Set.
-  - `single_placement_group`       - (`bool`, defaults to Azure defaults) when `true` this Virtual Machine Scale Set will be
-                                     limited to a Single Placement Group, which means the number of instances will be capped
-                                     at 100 Virtual Machines.
-  - `enable_boot_diagnostics`      - (`bool`, optional, defaults to `false`) enables boot diagnostics for a VM.
-  - `boot_diagnostics_storage_uri` - (`string`, optional, defaults to `null`) Storage Account's Blob endpoint to hold
-                                     diagnostic files, when skipped a managed Storage Account will be used (preferred).
-  - `identity_type`                - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
-                                     should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
-                                     "SystemAssigned, UserAssigned".
-  - `identity_ids`                 - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
-                                     assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
+  - `accelerated_networking`        - (`bool`, optional, defaults to `true`) when set to `true` enables Azure accelerated
+                                      networking (SR-IOV) for all dataplane network interfaces, this does not affect the
+                                      management interface (always disabled).
+  - `allow_extension_operations`    - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM.
+  - `disk_encryption_set_id`        - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
+                                      used to encrypt this VM's disk.
+  - `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted by enabling
+                                      Encryption at Host.
+  - `overprovision`                 - (`bool`, optional, defaults to `true`) See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set).
+  - `platform_fault_domain_count`   - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that
+                                      are used by this Virtual Machine Scale Set.
+  - `single_placement_group`        - (`bool`, optional, defaults to Azure defaults) when `true` this Virtual Machine Scale Set
+                                      will be limited to a Single Placement Group, which means the number of instances will be
+                                      capped at 100 Virtual Machines.
+  - `capacity_reservation_group_id` - (`string`, optional, defaults to `null`) specifies the ID of the Capacity Reservation Group
+                                      which the Virtual Machine Scale Set should be allocated to.
+  - `enable_boot_diagnostics`       - (`bool`, optional, defaults to `false`) enables boot diagnostics for a VM.
+  - `boot_diagnostics_storage_uri`  - (`string`, optional, defaults to `null`) Storage Account's Blob endpoint to hold diagnostic
+                                      files, when skipped a managed Storage Account will be used (preferred).
+  - `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
+                                      should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
+                                      "SystemAssigned, UserAssigned".
+  - `identity_ids`                  - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
+                                      assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
   EOF
   default     = {}
   nullable    = false
   type = object({
-    size                         = optional(string, "Standard_D3_v2")
-    bootstrap_options            = optional(string)
-    zones                        = optional(list(string))
-    disk_type                    = optional(string, "StandardSSD_LRS")
-    accelerated_networking       = optional(bool, true)
-    allow_extension_operations   = optional(bool, false)
-    encryption_at_host_enabled   = optional(bool)
-    overprovision                = optional(bool, true)
-    platform_fault_domain_count  = optional(number)
-    single_placement_group       = optional(bool)
-    disk_encryption_set_id       = optional(string)
-    enable_boot_diagnostics      = optional(bool, false)
-    boot_diagnostics_storage_uri = optional(string)
-    identity_type                = optional(string, "SystemAssigned")
-    identity_ids                 = optional(list(string), [])
+    size                          = optional(string, "Standard_D3_v2")
+    bootstrap_options             = optional(string)
+    zones                         = optional(list(string))
+    disk_type                     = optional(string, "StandardSSD_LRS")
+    accelerated_networking        = optional(bool, true)
+    allow_extension_operations    = optional(bool, false)
+    encryption_at_host_enabled    = optional(bool)
+    overprovision                 = optional(bool, true)
+    platform_fault_domain_count   = optional(number)
+    single_placement_group        = optional(bool)
+    capacity_reservation_group_id = optional(string)
+    disk_encryption_set_id        = optional(string)
+    enable_boot_diagnostics       = optional(bool, false)
+    boot_diagnostics_storage_uri  = optional(string)
+    identity_type                 = optional(string, "SystemAssigned")
+    identity_ids                  = optional(list(string), [])
   })
   validation { # disk_type
     condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.virtual_machine_scale_set.disk_type)
@@ -180,12 +183,14 @@ variable "virtual_machine_scale_set" {
     The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`.
     EOF
   }
-  /* validation { # zones
-    condition     = length(var.virtual_machine_scale_set.zones) == 3 || var.virtual_machine_scale_set.zones == null
+  validation { # single_placement_group, capacity_reservation_group_id
+    condition = var.virtual_machine_scale_set.capacity_reservation_group_id != null ? (
+      var.virtual_machine_scale_set.single_placement_group == false
+    ) : true
     error_message = <<-EOF
-    The `var.virtual_machine_scale_set.zones` can either be a list of all Availability Zones or explicit `null`.
+    When `capacity_reservation_group_id` value is set, the `single_placement_group` value must equal to false.
     EOF
-  } */
+  }
   validation { # identity_type
     condition = contains(
       ["SystemAssigned", "UserAssigned", "SystemAssigned, UserAssigned"],
