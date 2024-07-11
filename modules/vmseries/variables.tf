@@ -159,8 +159,8 @@ variable "virtual_machine" {
     EOF
   }
   validation { # avset_id, capacity_reservation_group_id
-    condition = var.virtual_machine_scale_set.capacity_reservation_group_id != null ? (
-      var.virtual_machine_scale_set.avset_id == null
+    condition = var.virtual_machine.capacity_reservation_group_id != null ? (
+      var.virtual_machine.avset_id == null
     ) : true
     error_message = <<-EOF
     When `capacity_reservation_group_id` value is set, the `single_placement_group` value must equal to false.
