@@ -116,14 +116,14 @@ variable "virtual_machine" {
   List of other, optional properties: 
 
   - `avset_id`                      - (`string`, optional, default to `null`) identifier of the Availability Set to use.
+  - `capacity_reservation_group_id` - (`string`, optional, defaults to `null`) specifies the ID of the Capacity Reservation Group
+                                      which the Virtual Machine should be allocated to.
   - `accelerated_networking`        - (`bool`, optional, defaults to `true`) when set to `true`  enables Azure accelerated
                                       networking (SR-IOV) for all dataplane network interfaces, this does not affect the
                                       management interface (always disabled).
   - `allow_extension_operations`    - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM.
   - `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted
                                       by enabling Encryption at Host.
-  - `capacity_reservation_group_id` - (`string`, optional, defaults to `null`) specifies the ID of the Capacity Reservation Group
-                                      which the Virtual Machine should be allocated to.
   - `disk_encryption_set_id`        - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
                                       used to encrypt this VM's disk.
   - `enable_boot_diagnostics`       - (`bool`, optional, defaults to `false`) enables boot diagnostics for a VM.
@@ -142,10 +142,10 @@ variable "virtual_machine" {
     disk_type                     = optional(string, "StandardSSD_LRS")
     disk_name                     = string
     avset_id                      = optional(string)
+    capacity_reservation_group_id = optional(string)
     accelerated_networking        = optional(bool, true)
     allow_extension_operations    = optional(bool, false)
     encryption_at_host_enabled    = optional(bool)
-    capacity_reservation_group_id = optional(string)
     disk_encryption_set_id        = optional(string)
     enable_boot_diagnostics       = optional(bool, false)
     boot_diagnostics_storage_uri  = optional(string)
