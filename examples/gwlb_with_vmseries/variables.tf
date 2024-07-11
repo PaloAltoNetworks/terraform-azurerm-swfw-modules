@@ -597,13 +597,13 @@ variable "test_infrastructure" {
 
   Following properties are supported:
 
-  - `create_resource_group`  - (`bool`, optional, defaults to `true`) when set to `true`, a new Resource Group is created. When 
+  - `create_resource_group`  - (`bool`, optional, defaults to `true`) when set to `true`, a new Resource Group is created. When
                                set to `false`, an existing Resource Group is sourced.
   - `resource_group_name`    - (`string`, optional) name of the Resource Group to be created or sourced.
   - `vnets`                  - (`map`, required) a map defining VNETs and peerings for the test environment. The most basic
                                properties are as follows:
 
-    - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
+    - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET,
                                   `false` will source an existing VNET.
     - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = `false` this should be
                                   a full resource name, including prefixes.
@@ -617,9 +617,15 @@ variable "test_infrastructure" {
                                   [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
     - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
                                   [VNET module documentation](../../modules/vnet/README.md#route_tables).
+    - `local_peer_config`       - (`map`, optional) a map that contains local peer configuration parameters. This value allows to 
+                                  set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
+                                  `use_remote_gateways` parameters on the local VNet peering. 
+    - `remote_peer_config`      - (`map`, optional) a map that contains remote peer configuration parameters. This value allows to
+                                  set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
+                                  `use_remote_gateways` parameters on the remote VNet peering. 
 
     For all properties and their default values see [module's documentation](../../modules/test_infrastructure/README.md#vnets).
-  
+
   - `load_balancers`         - (`map`, optional) a map containing configuration for all (both private and public) Load Balancers.
                                The most basic properties are as follows:
 
@@ -636,8 +642,8 @@ variable "test_infrastructure" {
     - `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule that
                                   will be populated with `Allow` rules for each load balancing rule (`in_rules`), please refer to
                                   [loadbalancer module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings)
-                                  for available properties. 
-                                
+                                  for available properties.
+
     Please note that in this example two additional properties are available:
 
       - `nsg_vnet_key` - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition in the
@@ -668,10 +674,10 @@ variable "test_infrastructure" {
 
     For all properties and their default values see
     [module's documentation](../../modules/test_infrastructure/README.md#test_vms).
-  
+
   - `bastions`               - (`map`, required) a map containing Azure Bastion definitions. The most basic properties are as
                                follows:
-                               
+
     - `name`       - (`string`, required) an Azure Bastion name.
     - `vnet_key`   - (`string`, required) a key describing a VNET defined in `vnets` property. This VNET should already have an
                      existing subnet called `AzureBastionSubnet` (the name is hardcoded by Microsoft).
@@ -692,8 +698,7 @@ variable "test_infrastructure" {
       hub_resource_group_name = optional(string)
       hub_vnet_name           = string
       network_security_groups = optional(map(object({
-        name                          = string
-        disable_bgp_route_propagation = optional(bool)
+        name = string
         rules = optional(map(object({
           name                         = string
           priority                     = number
@@ -711,7 +716,8 @@ variable "test_infrastructure" {
         })), {})
       })), {})
       route_tables = optional(map(object({
-        name = string
+        name                          = string
+        disable_bgp_route_propagation = optional(bool)
         routes = map(object({
           name                = string
           address_prefix      = string
@@ -727,6 +733,18 @@ variable "test_infrastructure" {
         route_table_key                 = optional(string)
         enable_storage_service_endpoint = optional(bool, false)
       })), {})
+      local_peer_config = optional(object({
+        allow_virtual_network_access = optional(bool, true)
+        allow_forwarded_traffic      = optional(bool, true)
+        allow_gateway_transit        = optional(bool, false)
+        use_remote_gateways          = optional(bool, false)
+      }), {})
+      remote_peer_config = optional(object({
+        allow_virtual_network_access = optional(bool, true)
+        allow_forwarded_traffic      = optional(bool, true)
+        allow_gateway_transit        = optional(bool, false)
+        use_remote_gateways          = optional(bool, false)
+      }), {})
     }))
     load_balancers = optional(map(object({
       name         = string

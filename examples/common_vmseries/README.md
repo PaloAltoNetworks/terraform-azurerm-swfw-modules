@@ -1180,6 +1180,12 @@ Following properties are supported:
                                 [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
   - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
                                 [VNET module documentation](../../modules/vnet/README.md#route_tables).
+  - `local_peer_config`       - (`map`, optional) a map that contains local peer configuration parameters. This value allows to 
+                                set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
+                                `use_remote_gateways` parameters on the local VNet peering. 
+  - `remote_peer_config`      - (`map`, optional) a map that contains remote peer configuration parameters. This value allows to
+                                set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
+                                `use_remote_gateways` parameters on the remote VNet peering.  
 
   For all properties and their default values see [module's documentation](../../modules/test_infrastructure/README.md#vnets).
 
@@ -1257,8 +1263,7 @@ map(object({
       hub_resource_group_name = optional(string)
       hub_vnet_name           = string
       network_security_groups = optional(map(object({
-        name                          = string
-        disable_bgp_route_propagation = optional(bool)
+        name = string
         rules = optional(map(object({
           name                         = string
           priority                     = number
@@ -1276,7 +1281,8 @@ map(object({
         })), {})
       })), {})
       route_tables = optional(map(object({
-        name = string
+        name                          = string
+        disable_bgp_route_propagation = optional(bool)
         routes = map(object({
           name                = string
           address_prefix      = string
@@ -1292,6 +1298,18 @@ map(object({
         route_table_key                 = optional(string)
         enable_storage_service_endpoint = optional(bool, false)
       })), {})
+      local_peer_config = optional(object({
+        allow_virtual_network_access = optional(bool, true)
+        allow_forwarded_traffic      = optional(bool, true)
+        allow_gateway_transit        = optional(bool, false)
+        use_remote_gateways          = optional(bool, false)
+      }), {})
+      remote_peer_config = optional(object({
+        allow_virtual_network_access = optional(bool, true)
+        allow_forwarded_traffic      = optional(bool, true)
+        allow_gateway_transit        = optional(bool, false)
+        use_remote_gateways          = optional(bool, false)
+      }), {})
     }))
     load_balancers = optional(map(object({
       name         = string
