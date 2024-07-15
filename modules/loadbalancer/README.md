@@ -129,7 +129,7 @@ Name | Type | Description
 
 Name |  Description
 --- | ---
-`lb_id` | The identifier of the Load Balancer resource.
+`id` | The identifier of the Load Balancer resource.
 `backend_pool_id` | The identifier of the backend pool.
 `frontend_ip_configs` | Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it,
 private IP address otherwise.

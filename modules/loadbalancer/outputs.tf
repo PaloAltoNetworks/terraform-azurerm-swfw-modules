@@ -1,4 +1,4 @@
-output "lb_id" {
+output "id" {
   description = "The identifier of the Load Balancer resource."
   value       = azurerm_lb.this.id
 }
