@@ -223,17 +223,19 @@ variable "panoramas" {
       custom_id               = optional(string)
     })
     virtual_machine = object({
-      size                         = optional(string)
-      zone                         = string
-      disk_type                    = optional(string)
-      disk_name                    = optional(string)
-      avset_key                    = optional(string)
-      encryption_at_host_enabled   = optional(bool)
-      disk_encryption_set_id       = optional(string)
-      enable_boot_diagnostics      = optional(bool)
-      boot_diagnostics_storage_uri = optional(string)
-      identity_type                = optional(string)
-      identity_ids                 = optional(list(string))
+      size                          = optional(string)
+      zone                          = string
+      disk_type                     = optional(string)
+      disk_name                     = optional(string)
+      avset_key                     = optional(string)
+      capacity_reservation_group_id = optional(string)
+      allow_extension_operations    = optional(bool)
+      encryption_at_host_enabled    = optional(bool)
+      disk_encryption_set_id        = optional(string)
+      enable_boot_diagnostics       = optional(bool)
+      boot_diagnostics_storage_uri  = optional(string)
+      identity_type                 = optional(string)
+      identity_ids                  = optional(list(string))
     })
     interfaces = list(object({
       name                          = string

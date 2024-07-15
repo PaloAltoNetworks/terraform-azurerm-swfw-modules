@@ -109,39 +109,50 @@ variable "virtual_machine" {
 
   List of other, optional properties: 
 
-  - `avset_key`                    - (`string`, optional, default to `null`) identifier of the Availability Set to use.
-  - `disk_encryption_set_id`       - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
-                                     used to encrypt this VM's disk.
-  - `allow_extension_operations`   - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM.
-  - `encryption_at_host_enabled`   - (`bool`, optional, defaults to `false`) should all the disks be encrypted by enabling
-                                     Encryption at Host.
-  - `enable_boot_diagnostics`      - (`bool`, optional, defaults to `false`) enables boot diagnostics for a VM.
-  - `boot_diagnostics_storage_uri` - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold diagnostic
-                                     files.
-  - `identity_type`                - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
-                                     should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
-                                     "SystemAssigned, UserAssigned".
-  - `identity_ids`                 - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be
-                                     assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
+  - `avset_id`                      - (`string`, optional, default to `null`) identifier of the Availability Set to use.
+  - `capacity_reservation_group_id` - (`string`, optional, defaults to `null`) specifies the ID of the Capacity Reservation Group
+                                      which the Virtual Machine should be allocated to.
+  - `allow_extension_operations`    - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM.
+  - `encryption_at_host_enabled`    - (`bool`, optional, defaults to `false`) should all the disks be encrypted by enabling
+                                      Encryption at Host.
+  - `disk_encryption_set_id`        - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
+                                      used to encrypt this VM's disk.
+  - `enable_boot_diagnostics`       - (`bool`, optional, defaults to `false`) enables boot diagnostics for a VM.
+  - `boot_diagnostics_storage_uri`  - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold diagnostic
+                                      files.
+  - `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
+                                      should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
+                                      "SystemAssigned, UserAssigned".
+  - `identity_ids`                  - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be
+                                      assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
   EOF
   type = object({
-    size                         = optional(string, "Standard_D5_v2")
-    zone                         = string
-    disk_type                    = optional(string, "StandardSSD_LRS")
-    disk_name                    = string
-    avset_id                     = optional(string)
-    allow_extension_operations   = optional(bool, false)
-    encryption_at_host_enabled   = optional(bool, false)
-    disk_encryption_set_id       = optional(string)
-    enable_boot_diagnostics      = optional(bool, false)
-    boot_diagnostics_storage_uri = optional(string)
-    identity_type                = optional(string, "SystemAssigned")
-    identity_ids                 = optional(list(string), [])
+    size                          = optional(string, "Standard_D5_v2")
+    zone                          = string
+    disk_type                     = optional(string, "StandardSSD_LRS")
+    disk_name                     = string
+    avset_id                      = optional(string)
+    capacity_reservation_group_id = optional(string)
+    allow_extension_operations    = optional(bool, false)
+    encryption_at_host_enabled    = optional(bool, false)
+    disk_encryption_set_id        = optional(string)
+    enable_boot_diagnostics       = optional(bool, false)
+    boot_diagnostics_storage_uri  = optional(string)
+    identity_type                 = optional(string, "SystemAssigned")
+    identity_ids                  = optional(list(string), [])
   })
   validation { # disk_type
     condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.virtual_machine.disk_type)
     error_message = <<-EOF
     The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`.
+    EOF
+  }
+  validation { # avset_id, capacity_reservation_group_id
+    condition = var.virtual_machine.capacity_reservation_group_id != null ? (
+      var.virtual_machine.avset_id == null
+    ) : true
+    error_message = <<-EOF
+    When `capacity_reservation_group_id` value is set, the `avset_id` property must not be set.
     EOF
   }
   validation { # identity_type

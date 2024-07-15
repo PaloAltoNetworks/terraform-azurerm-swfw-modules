@@ -55,11 +55,12 @@ resource "azurerm_linux_virtual_machine" "this" {
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
-  size                       = var.virtual_machine.size
-  zone                       = var.virtual_machine.zone
-  availability_set_id        = var.virtual_machine.avset_id
-  allow_extension_operations = var.virtual_machine.allow_extension_operations
-  encryption_at_host_enabled = var.virtual_machine.encryption_at_host_enabled
+  size                          = var.virtual_machine.size
+  zone                          = var.virtual_machine.zone
+  availability_set_id           = var.virtual_machine.avset_id
+  capacity_reservation_group_id = var.virtual_machine.capacity_reservation_group_id
+  allow_extension_operations    = var.virtual_machine.allow_extension_operations
+  encryption_at_host_enabled    = var.virtual_machine.encryption_at_host_enabled
 
   network_interface_ids = [for v in var.interfaces : azurerm_network_interface.this[v.name].id]
 
