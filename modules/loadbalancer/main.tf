@@ -140,6 +140,10 @@ resource "azurerm_lb_probe" "this" {
   # this is to overcome the discrepancy between the provider and Azure defaults
   # for more details see here -> https://learn.microsoft.com/en-gb/azure/load-balancer/whats-new#known-issues:~:text=SNAT%20port%20exhaustion-,numberOfProbes,-%2C%20%22Unhealthy%20threshold%22
   number_of_probes = 1
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_rule
