@@ -41,6 +41,10 @@ resource "azurerm_public_ip" "this" {
   sku                 = "Standard"
   zones               = var.zones
   tags                = var.tags
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
