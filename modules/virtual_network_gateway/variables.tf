@@ -172,7 +172,7 @@ variable "ip_configurations" {
   - `primary`   - (`map`, required) a map defining the primary Public IP address, following properties are available:
     - `name`                          - (`string`, required) name of the IP config.
     - `create_public_ip`              - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
-    - `public_ip_name`                - (`string`, required) name of a Public IP resource, depending on the value of 
+    - `public_ip_name`                - (`string`, optional) name of a Public IP resource, depending on the value of 
                                         `create_public_ip` property this will be a name of a newly create or existing resource
                                         (for values of `true` and `false` accordingly).
     - `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
@@ -188,14 +188,14 @@ variable "ip_configurations" {
     primary = object({
       name                          = string
       create_public_ip              = optional(bool, true)
-      public_ip_name                = string
+      public_ip_name                = optional(string)
       public_ip_id                  = optional(string)
       private_ip_address_allocation = optional(string, "Dynamic")
     })
     secondary = optional(object({
       name                          = string
       create_public_ip              = optional(bool, true)
-      public_ip_name                = string
+      public_ip_name                = optional(string)
       public_ip_id                  = optional(string)
       private_ip_address_allocation = optional(string, "Dynamic")
     }))
