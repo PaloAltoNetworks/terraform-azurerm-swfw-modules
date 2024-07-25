@@ -49,8 +49,8 @@ variable "public_ip" {
   A map defining listener's public IP configuration.
 
   Following properties are available:
-  - `name`                - (`string`, required) name of the Public IP resource.
   - `create`              - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or sourced.
+  - `name`                - (`string`, optional) name of the Public IP resource.
   - `resource_group_name` - (`string`, optional, defaults to `null`) name of the Resource Group hosting the Public IP resource, 
                             used only for sourced resources.
   - `id`                  - (`string`, optional, defaults to `null`) ID of the Public IP to associate with the Listener. 
@@ -58,8 +58,8 @@ variable "public_ip" {
                             module instead.
   EOF
   type = object({
-    name                = string
     create              = optional(bool, true)
+    name                = optional(string)
     resource_group_name = optional(string)
     id                  = optional(string)
   })
