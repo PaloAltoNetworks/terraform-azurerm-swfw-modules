@@ -36,7 +36,7 @@ resource "azurerm_network_interface" "this" {
     private_ip_address_allocation = each.value.private_ip_address != null ? "Static" : "Dynamic"
     private_ip_address            = each.value.private_ip_address
     public_ip_address_id = try(
-      azurerm_public_ip.this[each.value.name].id, data.azurerm_public_ip.this[each.value.name].id, null
+      each.value.public_ip_id, azurerm_public_ip.this[each.value.name].id, data.azurerm_public_ip.this[each.value.name].id, null
     )
   }
 }

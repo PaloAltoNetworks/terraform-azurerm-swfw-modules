@@ -486,6 +486,9 @@ Following properties are available:
   - `public_ip_name`                - (`string`, required) name of a Public IP resource, depending on the value of 
                                       `create_public_ip` property this will be a name of a newly create or existing resource
                                       (for values of `true` and `false` accordingly).
+  - `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
+                                      interface. Property is used when public IP is not created or sourced within this module
+                                      but with the `public_ip` module instead.
   - `dynamic_private_ip_allocation` - (`bool`, optional, defaults to `true`) controls if the private IP address is assigned
                                       dynamically or statically.
 - `secondary` - (`map`, optional, defaults to `null`) a map defining the secondary Public IP address resource. Required only
@@ -501,12 +504,14 @@ object({
       name                          = string
       create_public_ip              = optional(bool, true)
       public_ip_name                = string
+      public_ip_id                  = optional(string)
       private_ip_address_allocation = optional(string, "Dynamic")
     })
     secondary = optional(object({
       name                          = string
       create_public_ip              = optional(bool, true)
       public_ip_name                = string
+      public_ip_id                  = optional(string)
       private_ip_address_allocation = optional(string, "Dynamic")
     }))
   })

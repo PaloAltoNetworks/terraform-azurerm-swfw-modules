@@ -912,6 +912,9 @@ Following properties are available:
 - `create`              - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or sourced.
 - `resource_group_name` - (`string`, optional, defaults to `null`) name of the Resource Group hosting the Public IP resource, 
                           used only for sourced resources.
+- `id`                  - (`string`, optional, defaults to `null`) ID of the Public IP to associate with the Listener. 
+                          Property is used when Public IP is not created or sourced within this module but with the `public_ip`
+                          module instead.
 
 
 Type: 
@@ -921,6 +924,7 @@ object({
     name                = string
     create              = optional(bool, true)
     resource_group_name = optional(string)
+    id                  = optional(string)
   })
 ```
 

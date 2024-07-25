@@ -281,6 +281,9 @@ Following configuration options are available:
 - `public_ip_resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
                                     contains public IP that that will be associated with the interface. Used only when 
                                     `create_public_ip` is `false`.
+- `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
+                                    interface. Property is used when public IP is not created or sourced within this module but
+                                    with the `public_ip` module instead.
 - `attach_to_lb_backend_pool`     - (`bool`, optional, defaults to `false`) set to `true` if you would like to associate this
                                     interface with a Load Balancer backend pool.
 - `lb_backend_pool_id`            - (`string`, optional, defaults to `null`) ID of an existing backend pool to associate the
@@ -319,6 +322,7 @@ list(object({
     create_public_ip              = optional(bool, false)
     public_ip_name                = optional(string)
     public_ip_resource_group_name = optional(string)
+    public_ip_id                  = optional(string)
     private_ip_address            = optional(string)
     lb_backend_pool_id            = optional(string)
     attach_to_lb_backend_pool     = optional(bool, false)

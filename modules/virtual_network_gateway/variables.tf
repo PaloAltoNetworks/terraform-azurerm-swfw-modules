@@ -175,6 +175,9 @@ variable "ip_configurations" {
     - `public_ip_name`                - (`string`, required) name of a Public IP resource, depending on the value of 
                                         `create_public_ip` property this will be a name of a newly create or existing resource
                                         (for values of `true` and `false` accordingly).
+    - `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
+                                        interface. Property is used when public IP is not created or sourced within this module
+                                        but with the `public_ip` module instead.
     - `dynamic_private_ip_allocation` - (`bool`, optional, defaults to `true`) controls if the private IP address is assigned
                                         dynamically or statically.
   - `secondary` - (`map`, optional, defaults to `null`) a map defining the secondary Public IP address resource. Required only
@@ -186,12 +189,14 @@ variable "ip_configurations" {
       name                          = string
       create_public_ip              = optional(bool, true)
       public_ip_name                = string
+      public_ip_id                  = optional(string)
       private_ip_address_allocation = optional(string, "Dynamic")
     })
     secondary = optional(object({
       name                          = string
       create_public_ip              = optional(bool, true)
       public_ip_name                = string
+      public_ip_id                  = optional(string)
       private_ip_address_allocation = optional(string, "Dynamic")
     }))
   })
@@ -201,6 +206,25 @@ variable "ip_configurations" {
     ) : true
     error_message = <<-EOF
     The `name` property has to be unique among all IP configurations.
+    EOF
+  }
+  validation { # public_ip_id
+    condition = alltrue([
+      (
+        var.ip_configurations.primary.public_ip_id != null ?
+        var.ip_configurations.primary.create_public_ip == false &&
+        var.ip_configurations.primary.public_ip_name == null : false
+      ),
+      (
+        var.ip_configurations.secondary != null ? (
+          var.ip_configurations.secondary.public_ip_id != null ?
+          var.ip_configurations.secondary.create_public_ip == false &&
+          var.ip_configurations.secondary.public_ip_name == null : false
+        ) : true
+      )
+    ])
+    error_message = <<-EOF
+    When using `public_ip_id` property, `create_public_ip` must be set to `false` and `public_ip_name` must not be set.
     EOF
   }
   validation { # primary/secondary.private_ip_address_allocation

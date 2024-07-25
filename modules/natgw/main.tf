@@ -66,10 +66,8 @@ data "azurerm_nat_gateway" "this" {
 }
 
 locals {
-  natgw_id = var.create_natgw ? azurerm_nat_gateway.this[0].id : data.azurerm_nat_gateway.this[0].id
-
-  pip = try(azurerm_public_ip.this[0], data.azurerm_public_ip.this[0], null)
-
+  natgw_id   = var.create_natgw ? azurerm_nat_gateway.this[0].id : data.azurerm_nat_gateway.this[0].id
+  pip        = try(azurerm_public_ip.this[0], data.azurerm_public_ip.this[0], null)
   pip_prefix = try(azurerm_public_ip_prefix.this[0], data.azurerm_public_ip_prefix.this[0], null)
 }
 
@@ -78,7 +76,7 @@ resource "azurerm_nat_gateway_public_ip_association" "this" {
   count = var.create_natgw && var.public_ip != null ? 1 : 0
 
   nat_gateway_id       = local.natgw_id
-  public_ip_address_id = local.pip.id
+  public_ip_address_id = try(var.public_ip.id, local.pip.id)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/nat_gateway_public_ip_prefix_association
@@ -86,7 +84,7 @@ resource "azurerm_nat_gateway_public_ip_prefix_association" "nat_ips" {
   count = var.create_natgw && var.public_ip_prefix != null ? 1 : 0
 
   nat_gateway_id      = local.natgw_id
-  public_ip_prefix_id = local.pip_prefix.id
+  public_ip_prefix_id = try(var.public_ip_prefix.id, local.pip_prefix.id)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_nat_gateway_association

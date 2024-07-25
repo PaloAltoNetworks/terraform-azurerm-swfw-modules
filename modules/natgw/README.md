@@ -189,9 +189,12 @@ A map defining a Public IP resource.
 List of available properties:
 
 - `create`              - (`bool`, required) controls whether a Public IP is created, sourced, or not used at all.
-- `name`                - (`string`, required) name of a created or sourced Public IP.
+- `name`                - (`string`, optional) name of a created or sourced Public IP.
 - `resource_group_name` - (`string`, optional) name of a resource group hosting the sourced Public IP resource, ignored when
                           `create = true`.
+- `id`                  - (`string`, optional, defaults to `null`) ID of the Public IP to associate with the NAT Gateway. 
+                          Property is used when Public IP is not created or sourced within this module but with the `public_ip`
+                          module instead.
 
 The module operates in 3 modes, depending on combination of `create` and `name` properties:
 
@@ -225,8 +228,9 @@ Type:
 ```hcl
 object({
     create              = bool
-    name                = string
+    name                = optional(string)
     resource_group_name = optional(string)
+    id                  = optional(string)
   })
 ```
 
@@ -247,6 +251,9 @@ List of available properties:
                           when `create = true`.
 - `length`              - (`number`, optional, defaults to `28`) number of bits of the Public IP Prefix, this value can be
                           between `0` and `31` but can be limited on subscription level (Azure default is `/28`).
+- `id`                  - (`string`, optional, defaults to `null`) ID of the Public IP Prefix to associate with the NAT Gateway.
+                          Property is used when Public IP is not created or sourced within this module but with the `public_ip`
+                          module instead.
 
 The module operates in 3 modes, depending on combination of `create` and `name` properties:
 
@@ -283,6 +290,7 @@ object({
     name                = string
     resource_group_name = optional(string)
     length              = optional(number, 28)
+    id                  = optional(string)
   })
 ```
 

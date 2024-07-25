@@ -252,6 +252,9 @@ Following configuration options are available:
 - `public_ip_resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
                                     contains public IP that that will be associated with the interface. Used only when 
                                     `create_public_ip` is `false`.
+- `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
+                                    interface. Property is used when public IP is not created or sourced within this module but
+                                    with the `public_ip` module instead.
 
 Example:
 
@@ -285,6 +288,7 @@ list(object({
     create_public_ip              = optional(bool, false)
     public_ip_name                = optional(string)
     public_ip_resource_group_name = optional(string)
+    public_ip_id                  = optional(string)
   }))
 ```
 
