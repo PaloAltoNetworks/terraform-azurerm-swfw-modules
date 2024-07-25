@@ -56,7 +56,9 @@ Name | Type | Description
 Name |  Description
 --- | ---
 `pip_ids` | The identifiers of the created or sourced Public IP Addresses.
+`pip_ip_addresses` | The IP values of the created or sourced Public IP Addresses.
 `ippre_ids` | The identifiers of the created or sourced Public IP Prefixes.
+`ippre_ip_prefixes` | The IP values of the created or sourced Public IP Prefixes.
 
 ### Required Inputs details
 
