@@ -246,7 +246,7 @@ A map defining a Public IP Prefix resource.
 List of available properties:
 
 - `create`              - (`bool`, required) controls whether a Public IP Prefix is created, sourced, or not used at all.
-- `name`                - (`string`, required) name of a created or sourced Public IP Prefix.
+- `name`                - (`string`, optional) name of a created or sourced Public IP Prefix.
 - `resource_group_name` - (`string`, optional) name of a resource group hosting the sourced Public IP Prefix resource, ignored
                           when `create = true`.
 - `length`              - (`number`, optional, defaults to `28`) number of bits of the Public IP Prefix, this value can be
@@ -287,7 +287,7 @@ Type:
 ```hcl
 object({
     create              = bool
-    name                = string
+    name                = optional(string)
     resource_group_name = optional(string)
     length              = optional(number, 28)
     id                  = optional(string)
