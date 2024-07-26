@@ -1,11 +1,11 @@
 output "pip_ids" {
   description = "The identifiers of the created or sourced Public IP Addresses."
-  value       = { for k, v in local.public_ips : k => v.id }
+  value       = { for k, v in local.public_ip_addresses : k => v.id }
 }
 
 output "pip_ip_addresses" {
   description = "The IP values of the created or sourced Public IP Addresses."
-  value       = { for k, v in local.public_ips : k => v.ip_address }
+  value       = { for k, v in local.public_ip_addresses : k => v.ip_address }
 }
 
 output "ippre_ids" {

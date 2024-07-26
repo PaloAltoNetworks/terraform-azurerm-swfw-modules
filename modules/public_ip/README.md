@@ -48,7 +48,7 @@ Name | Type | Description
 Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
-[`public_ips`](#public_ips) | `map` | Map of objects describing Public IP Addresses.
+[`public_ip_addresses`](#public_ip_addresses) | `map` | Map of objects describing Public IP Addresses.
 [`public_ip_prefixes`](#public_ip_prefixes) | `map` | Map of objects describing Public IP Prefixes.
 
 ### Outputs
@@ -82,7 +82,7 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### public_ips
+#### public_ip_addresses
 
 Map of objects describing Public IP Addresses.
 
@@ -109,7 +109,7 @@ Example:
 ```hcl
 # create two new Public IP Addresses, where the first IP is only in Availability Zone 1 
 # and the second IP is in all 3 Availability Zones (default) and is allocated from a specific Public IP Prefix
-public_ips = {
+public_ip_addresses = {
   pip1 = {
     create              = true
     name                = "new-public-ip-name1"
@@ -126,7 +126,7 @@ public_ips = {
 }
 
 # source an existing Public IP
-public_ips = {
+public_ip_addresses = {
   pip1 = {
     create              = false
     name                = "existing-public-ip-name"

@@ -9,7 +9,7 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "public_ips" {
+variable "public_ip_addresses" {
   description = <<-EOF
   Map of objects describing Public IP Addresses.
 
@@ -36,7 +36,7 @@ variable "public_ips" {
   ```hcl
   # create two new Public IP Addresses, where the first IP is only in Availability Zone 1 
   # and the second IP is in all 3 Availability Zones (default) and is allocated from a specific Public IP Prefix
-  public_ips = {
+  public_ip_addresses = {
     pip1 = {
       create              = true
       name                = "new-public-ip-name1"
@@ -53,7 +53,7 @@ variable "public_ips" {
   }
 
   # source an existing Public IP
-  public_ips = {
+  public_ip_addresses = {
     pip1 = {
       create              = false
       name                = "existing-public-ip-name"
@@ -75,8 +75,8 @@ variable "public_ips" {
   }))
   validation { # idle_timeout_in_minutes
     condition = alltrue([
-      for _, pip in var.public_ips : (pip.idle_timeout_in_minutes >= 4 && pip.idle_timeout_in_minutes <= 32)
-      if length(var.public_ips) > 0 && pip.idle_timeout_in_minutes != null
+      for _, pip in var.public_ip_addresses : (pip.idle_timeout_in_minutes >= 4 && pip.idle_timeout_in_minutes <= 32)
+      if length(var.public_ip_addresses) > 0 && pip.idle_timeout_in_minutes != null
     ])
     error_message = <<-EOF
     The `idle_timeout_in_minutes` value must be a number between 4 and 32.
