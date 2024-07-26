@@ -198,7 +198,7 @@ resource "azurerm_network_interface_backend_address_pool_association" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "bastion" {
-  for_each = { for k, v in var.var.bastions : k => v if v.create_public_ip }
+  for_each = { for k, v in var.bastions : k => v if v.create_public_ip }
 
   name                = each.value.public_ip_name
   location            = var.region
@@ -209,7 +209,7 @@ resource "azurerm_public_ip" "bastion" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
 data "azurerm_public_ip" "bastion" {
-  for_each = { for k, v in var.var.bastions : k => v if !v.create_public_ip && public_ip_name != null }
+  for_each = { for k, v in var.bastions : k => v if !v.create_public_ip && v.public_ip_name != null }
 
   name                = each.value.public_ip_name
   resource_group_name = coalesce(each.value.public_ip_resource_group_name, local.resource_group.name)
