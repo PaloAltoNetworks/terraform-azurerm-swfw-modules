@@ -197,7 +197,7 @@ variable "interfaces" {
   - `public_ip_name`                - (`string`, optional, defaults to `null`) name of the public IP to associate with the
                                       interface. When `create_public_ip` is set to `true` this will become a name of a newly
                                       created Public IP interface. Otherwise this is a name of an existing interfaces that will
-                                      be sourced and attached to the interface.
+                                      be sourced and attached to the interface. Not used when using `public_ip` module.
   - `public_ip_resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
                                       contains public IP that that will be associated with the interface. Used only when 
                                       `create_public_ip` is `false`.
@@ -235,7 +235,7 @@ variable "interfaces" {
     public_ip_resource_group_name = optional(string)
     public_ip_id                  = optional(string)
   }))
-  validation { # create_public_ip & public_ip_name
+  validation { # create_public_ip, public_ip_name
     condition = alltrue([
       for v in var.interfaces : v.public_ip_name != null
       if v.create_public_ip
@@ -244,7 +244,7 @@ variable "interfaces" {
     The `public_ip_name` property is required when `create_public_ip` is `true`.
     EOF
   }
-  validation { # public_ip_id
+  validation { # public_ip_id, create_public_ip, public_ip_name
     condition = alltrue([
       for v in var.interfaces : v.create_public_ip == false && v.public_ip_name == null if v.public_ip_id != null
     ])

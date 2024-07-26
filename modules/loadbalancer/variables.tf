@@ -76,7 +76,8 @@ variable "frontend_ips" {
   - `create_public_ip`              - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be
                                       created, otherwise an existing resource will be used;
                                       in both cases the name of the resource is controlled by `public_ip_name` property.
-  - `public_ip_name`                - (`string`, optional) name of a public IP resource.
+  - `public_ip_name`                - (`string`, optional) name of a public IP resource, required unless `public_ip` module and
+                                      `public_ip_id` property are used.
   - `public_ip_resource_group_name` - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
                                       hosting an existing public IP resource.
   - `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
@@ -209,10 +210,10 @@ variable "frontend_ips" {
       idle_timeout_in_minutes  = optional(number)
     })), {})
   }))
-  validation {
-    condition = !( # unified LB type
+  validation { # unified LB type
+    condition = !(
       anytrue(
-        [for _, fip in var.frontend_ips : fip.public_ip_name != null]
+        [for _, fip in var.frontend_ips : fip.public_ip_name != null || fip.public_ip_id != null]
         ) && anytrue(
         [for _, fip in var.frontend_ips : fip.subnet_id != null]
       )
@@ -230,7 +231,16 @@ variable "frontend_ips" {
     The `name` property has to be unique among all frontend definitions.
     EOF
   }
-  validation { # public_ip_id
+  validation { # public_ip_id, public_ip_name
+    condition = alltrue([
+      for _, fip in var.frontend_ips : fip.public_ip_name != null || fip.public_ip_id != null
+      if anytrue([for _, fip in var.frontend_ips : fip.public_ip_name != null || fip.public_ip_id != null])
+    ])
+    error_message = <<-EOF
+    If the LB type is public, all frontends need either `public_ip_name` or `public_ip_id` property set.
+    EOF
+  }
+  validation { # public_ip_id, create_public_ip, public_ip_name
     condition = alltrue([
       for _, fip in var.frontend_ips : fip.create_public_ip == false && fip.public_ip_name == null if fip.public_ip_id != null
     ])
@@ -238,12 +248,21 @@ variable "frontend_ips" {
     When using `public_ip_id` property, `create_public_ip` must be set to `false` and `public_ip_name` must not be set.
     EOF
   }
-  validation { # public_ip_address
+  validation { # public_ip_address, public_ip_id
     condition = alltrue([
       for _, fip in var.frontend_ips : fip.public_ip_id != null if fip.public_ip_address != null
     ])
     error_message = <<-EOF
     When using `public_ip_address` property, `public_ip_id` must be set too.
+    EOF
+  }
+  validation { # public_ip_address
+    condition = alltrue([
+      for _, fip in var.frontend_ips : can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", fip.public_ip_address))
+      if fip.public_ip_address != null
+    ])
+    error_message = <<-EOF
+    The `public_ip_address` property should be in IPv4 format.
     EOF
   }
   validation { # private_ip_address
@@ -256,8 +275,7 @@ variable "frontend_ips" {
   }
   validation { # private_ip_address
     condition = alltrue([
-      for _, fip in var.frontend_ips :
-      can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", fip.private_ip_address))
+      for _, fip in var.frontend_ips : can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", fip.private_ip_address))
       if fip.private_ip_address != null
     ])
     error_message = <<-EOF

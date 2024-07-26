@@ -483,9 +483,10 @@ Following properties are available:
 - `primary`   - (`map`, required) a map defining the primary Public IP address, following properties are available:
   - `name`                          - (`string`, required) name of the IP config.
   - `create_public_ip`              - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
-  - `public_ip_name`                - (`string`, optional) name of a Public IP resource, depending on the value of 
-                                      `create_public_ip` property this will be a name of a newly create or existing resource
-                                      (for values of `true` and `false` accordingly).
+  - `public_ip_name`                - (`string`, optional) name of a Public IP resource, required unless `public_ip` module and
+                                      `public_ip_id` property are used. Depending on the value of `create_public_ip` property,
+                                      this will be a name of a newly created or existing resource (for values of `true` and
+                                      `false` accordingly).
   - `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
                                       interface. Property is used when public IP is not created or sourced within this module
                                       but with the `public_ip` module instead.

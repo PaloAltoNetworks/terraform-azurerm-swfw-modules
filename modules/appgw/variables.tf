@@ -50,7 +50,8 @@ variable "public_ip" {
 
   Following properties are available:
   - `create`              - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or sourced.
-  - `name`                - (`string`, optional) name of the Public IP resource.
+  - `name`                - (`string`, optional) name of the Public IP resource, required unless `public_ip` module and `id`
+                            property are used.
   - `resource_group_name` - (`string`, optional, defaults to `null`) name of the Resource Group hosting the Public IP resource, 
                             used only for sourced resources.
   - `id`                  - (`string`, optional, defaults to `null`) ID of the Public IP to associate with the Listener. 
@@ -63,7 +64,13 @@ variable "public_ip" {
     resource_group_name = optional(string)
     id                  = optional(string)
   })
-  validation { # id
+  validation { # id, name
+    condition     = var.public_ip.name != null || var.public_ip.id != null
+    error_message = <<-EOF
+    Either `name` or `id` property must be set.
+    EOF
+  }
+  validation { # id, create, name
     condition = var.public_ip != null ? (
       var.public_ip.id != null ? var.public_ip.create == false && var.public_ip.name == null : true
     ) : true

@@ -909,7 +909,8 @@ A map defining listener's public IP configuration.
 
 Following properties are available:
 - `create`              - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or sourced.
-- `name`                - (`string`, optional) name of the Public IP resource.
+- `name`                - (`string`, optional) name of the Public IP resource, required unless `public_ip` module and `id`
+                          property are used.
 - `resource_group_name` - (`string`, optional, defaults to `null`) name of the Resource Group hosting the Public IP resource, 
                           used only for sourced resources.
 - `id`                  - (`string`, optional, defaults to `null`) ID of the Public IP to associate with the Listener. 

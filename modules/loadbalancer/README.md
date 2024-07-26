@@ -195,7 +195,8 @@ Public Load Balancer:
 - `create_public_ip`              - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be
                                     created, otherwise an existing resource will be used;
                                     in both cases the name of the resource is controlled by `public_ip_name` property.
-- `public_ip_name`                - (`string`, optional) name of a public IP resource.
+- `public_ip_name`                - (`string`, optional) name of a public IP resource, required unless `public_ip` module and
+                                    `public_ip_id` property are used.
 - `public_ip_resource_group_name` - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
                                     hosting an existing public IP resource.
 - `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
