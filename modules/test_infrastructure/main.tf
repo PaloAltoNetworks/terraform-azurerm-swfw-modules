@@ -198,13 +198,21 @@ resource "azurerm_network_interface_backend_address_pool_association" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "bastion" {
-  for_each = var.bastions
+  for_each = { for k, v in var.var.bastions : k => v if v.create_public_ip }
 
   name                = each.value.public_ip_name
   location            = var.region
   resource_group_name = local.resource_group.name
   allocation_method   = "Static"
   sku                 = "Standard"
+}
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
+data "azurerm_public_ip" "bastion" {
+  for_each = { for k, v in var.var.bastions : k => v if !v.create_public_ip && public_ip_name != null }
+
+  name                = each.value.public_ip_name
+  resource_group_name = coalesce(each.value.public_ip_resource_group_name, local.resource_group.name)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/bastion_host
@@ -216,8 +224,11 @@ resource "azurerm_bastion_host" "this" {
   resource_group_name = local.resource_group.name
 
   ip_configuration {
-    name                 = "bastion-ip-config"
-    subnet_id            = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
-    public_ip_address_id = azurerm_public_ip.bastion[each.key].id
+    name      = "bastion-ip-config"
+    subnet_id = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
+    public_ip_address_id = coalesce(
+      each.value.public_ip_id,
+      try(azurerm_public_ip.bastion[each.key].id, data.azurerm_public_ip.bastion[each.key].id)
+    )
   }
 }
