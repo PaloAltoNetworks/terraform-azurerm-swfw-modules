@@ -193,8 +193,10 @@ resource "azurerm_lb_outbound_rule" "this" {
 locals {
   # Map of all frontend IP addresses, public or private.
   frontend_addresses = {
-    for k, v in var.frontend_ips : k => try(
-      v.public_ip_address, data.azurerm_public_ip.this[k].ip_address, azurerm_public_ip.this[k].ip_address, v.private_ip_address
+    for k, v in var.frontend_ips : k => coalesce(
+      v.public_ip_address, try(
+        data.azurerm_public_ip.this[k].ip_address, azurerm_public_ip.this[k].ip_address, v.private_ip_address
+      )
     )
   }
 
