@@ -88,7 +88,7 @@ resource "azurerm_application_gateway" "this" {
 
   frontend_ip_configuration {
     name                 = var.frontend_ip_configuration_name
-    public_ip_address_id = try(var.public_ip.id, azurerm_public_ip.this[0].id, data.azurerm_public_ip.this[0].id)
+    public_ip_address_id = coalesce(var.public_ip.id, try(azurerm_public_ip.this[0].id, data.azurerm_public_ip.this[0].id))
   }
 
   # There is only a single backend - the VM-Series private IPs assigned to untrusted NICs

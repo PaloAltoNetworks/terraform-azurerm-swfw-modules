@@ -35,9 +35,10 @@ resource "azurerm_network_interface" "this" {
     subnet_id                     = each.value.subnet_id
     private_ip_address_allocation = each.value.private_ip_address != null ? "Static" : "Dynamic"
     private_ip_address            = each.value.private_ip_address
-    public_ip_address_id = try(
-      each.value.public_ip_id, azurerm_public_ip.this[each.value.name].id, data.azurerm_public_ip.this[each.value.name].id, null
-    )
+    public_ip_address_id = try(coalesce(
+      each.value.public_ip_id,
+      try(azurerm_public_ip.this[each.value.name].id, data.azurerm_public_ip.this[each.value.name].id, null)
+    ), null)
   }
 }
 

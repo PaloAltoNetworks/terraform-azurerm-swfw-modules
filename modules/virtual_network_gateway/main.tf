@@ -41,11 +41,9 @@ resource "azurerm_virtual_network_gateway" "this" {
 
     content {
       name = ip_configuration.value.name
-      public_ip_address_id = try(
+      public_ip_address_id = coalesce(
         ip_configuration.value.public_ip_id,
-        azurerm_public_ip.this[ip_configuration.value.name].id,
-        data.azurerm_public_ip.exists[ip_configuration.value.name].id,
-        null
+        try(azurerm_public_ip.this[ip_configuration.value.name].id, data.azurerm_public_ip.exists[ip_configuration.value.name].id)
       )
       private_ip_address_allocation = ip_configuration.value.private_ip_address_allocation
       subnet_id                     = var.subnet_id
