@@ -228,7 +228,7 @@ resource "azurerm_bastion_host" "this" {
     subnet_id = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
     public_ip_address_id = coalesce(
       each.value.public_ip_id,
-      try(azurerm_public_ip.bastion[each.key].id, data.azurerm_public_ip.bastion[each.key].id)
+      try(azurerm_public_ip.bastion[each.key].id, data.azurerm_public_ip.bastion[each.key].id, null)
     )
   }
 }

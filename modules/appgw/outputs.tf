@@ -1,11 +1,11 @@
 output "public_ip" {
   description = "A public IP assigned to the Application Gateway."
-  value       = try(azurerm_public_ip.this[0].ip_address, data.azurerm_public_ip.this[0].ip_address)
+  value       = try(azurerm_public_ip.this[0].ip_address, data.azurerm_public_ip.this[0].ip_address, null)
 }
 
 output "public_domain_name" {
   description = "Public domain name assigned to the Application Gateway."
-  value       = try(azurerm_public_ip.this[0].fqdn, data.azurerm_public_ip.this[0].fqdn)
+  value       = try(azurerm_public_ip.this[0].fqdn, data.azurerm_public_ip.this[0].fqdn, null)
 }
 
 output "backend_pool_id" {
