@@ -294,12 +294,15 @@ module "vmss" {
 
   interfaces = [
     for v in each.value.interfaces : {
-      name                   = v.name
-      subnet_id              = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
-      create_public_ip       = v.create_public_ip
-      pip_domain_name_label  = v.pip_domain_name_label
-      lb_backend_pool_ids    = try([module.load_balancer[v.load_balancer_key].backend_pool_id], [])
-      appgw_backend_pool_ids = try([module.appgw[v.application_gateway_key].backend_pool_id], [])
+      name                           = v.name
+      subnet_id                      = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
+      create_public_ip               = v.create_public_ip
+      pip_domain_name_label          = v.pip_domain_name_label
+      pip_idle_timeout_in_minutes    = v.pip_idle_timeout_in_minutes
+      pip_prefix_name                = v.pip_prefix_name
+      pip_prefix_resource_group_name = v.pip_prefix_resource_group_name
+      lb_backend_pool_ids            = try([module.load_balancer[v.load_balancer_key].backend_pool_id], [])
+      appgw_backend_pool_ids         = try([module.appgw[v.application_gateway_key].backend_pool_id], [])
     }
   ]
 
