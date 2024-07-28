@@ -25,14 +25,14 @@ variable "zones" {
 
   For:
 
-  - public IPs  - these are zones in which the public IP resource is available.
+  - public IPs  - these are zones in which the Public IP resource is available.
   - private IPs - these are zones to which Azure will deploy paths leading to Load Balancer frontend IPs (all frontends are 
                   affected).
 
   Setting this variable to explicit `null` disables a zonal deployment.
   This can be helpful in regions where Availability Zones are not available.
 
-  For public Load Balancers, since this setting controls also Availability Zones for public IPs, you need to specify all zones
+  For public Load Balancers, since this setting controls also Availability Zones for Public IPs, you need to specify all zones
   available in a region (typically 3): `["1","2","3"]`.
   EOF
   default     = ["1", "2", "3"]
@@ -73,19 +73,23 @@ variable "frontend_ips" {
   Public Load Balancer:
 
   - `name`                          - (`string`, required) name of a frontend IP configuration.
-  - `create_public_ip`              - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be
+  - `create_public_ip`              - (`bool`, optional, defaults to `false`) when set to `true` a new Public IP will be
                                       created, otherwise an existing resource will be used;
                                       in both cases the name of the resource is controlled by `public_ip_name` property.
-  - `public_ip_name`                - (`string`, optional) name of a public IP resource, required unless `public_ip` module and
+  - `public_ip_name`                - (`string`, optional) name of a Public IP resource, required unless `public_ip` module and
                                       `public_ip_id` property are used.
   - `public_ip_resource_group_name` - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
-                                      hosting an existing public IP resource.
-  - `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
-                                      Frontend. Property is used when public IP is not created or sourced within this module but
+                                      hosting an existing Public IP resource.
+  - `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the Public IP Address to associate with the
+                                      Frontend. Property is used when Public IP is not created or sourced within this module but
                                       with the `public_ip` module instead.
-  - `public_ip_address`             - (`string`, optional, defaults to `null`) IP address of the public IP to associate with the
-                                      Frontend. Property is used when public IP is not created or sourced within this module but
+  - `public_ip_address`             - (`string`, optional, defaults to `null`) IP address of the Public IP to associate with the
+                                      Frontend. Property is used when Public IP is not created or sourced within this module but
                                       with the `public_ip` module instead.
+  - `public_ip_prefix_id`           - (`string`, optional, defaults to `null`) ID of the Public IP Prefix to associate with the
+                                      Frontend. Property is used when Public IP Prefix is sourced with the `public_ip` module.
+  - `public_ip_prefix_address`      - (`string`, optional, defaults to `null`) IP address of the Public IP Prefix to associate
+                                      with the Frontend. Property is used when Public IP is sourced with the `public_ip` module.
   - `in_rules`                      - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below.
   - `out_rules`                     - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below.
 
@@ -129,7 +133,7 @@ variable "frontend_ips" {
   Examples
 
   ```hcl
-  # rules for a public Load Balancer, reusing an existing public IP and doing port translation
+  # rules for a public Load Balancer, reusing an existing Public IP and doing port translation
   frontend_ips = {
     pip_existing = {
       create_public_ip              = false
@@ -189,6 +193,8 @@ variable "frontend_ips" {
     public_ip_resource_group_name = optional(string)
     public_ip_id                  = optional(string)
     public_ip_address             = optional(string)
+    public_ip_prefix_id           = optional(string)
+    public_ip_prefix_address      = optional(string)
     subnet_id                     = optional(string)
     private_ip_address            = optional(string)
     gwlb_fip_id                   = optional(string)
@@ -213,7 +219,7 @@ variable "frontend_ips" {
   validation { # unified LB type
     condition = !(
       anytrue(
-        [for _, fip in var.frontend_ips : fip.public_ip_name != null || fip.public_ip_id != null]
+        [for _, fip in var.frontend_ips : fip.public_ip_name != null || fip.public_ip_id != null || fip.public_ip_prefix_id != null]
         ) && anytrue(
         [for _, fip in var.frontend_ips : fip.subnet_id != null]
       )
@@ -224,8 +230,8 @@ variable "frontend_ips" {
     EOF
   }
   validation { # name
-    condition = length(flatten([for _, v in var.frontend_ips : v.name])) == length(
-      distinct(flatten([for _, v in var.frontend_ips : v.name]))
+    condition = length(flatten([for _, fip in var.frontend_ips : fip.name])) == length(
+      distinct(flatten([for _, fip in var.frontend_ips : fip.name]))
     )
     error_message = <<-EOF
     The `name` property has to be unique among all frontend definitions.
@@ -265,6 +271,41 @@ variable "frontend_ips" {
     The `public_ip_address` property should be in IPv4 format.
     EOF
   }
+  validation { # public_ip_prefix_id, create_public_ip, public_ip_name
+    condition = alltrue([
+      for _, fip in var.frontend_ips : fip.create_public_ip == false && fip.public_ip_name == null
+      if fip.public_ip_prefix_id != null
+    ])
+    error_message = <<-EOF
+    When using `public_ip_prefix_id` property, `create_public_ip` must be set to `false` and `public_ip_name` must not be set.
+    EOF
+  }
+  validation { # public_ip_id, public_ip_prefix_id
+    condition = alltrue(
+      [for _, fip in var.frontend_ips : !(fip.public_ip_id != null && fip.public_ip_prefix_id != null)]
+    )
+    error_message = <<-EOF
+    You can set either `public_ip_id` or `public_ip_prefix_id` property, you can't set both.
+    EOF
+  }
+  validation { # public_ip_prefix_address, public_ip_prefix_id
+    condition = alltrue([
+      for _, fip in var.frontend_ips : fip.public_ip_prefix_id != null if fip.public_ip_prefix_address != null
+    ])
+    error_message = <<-EOF
+    When using `public_ip_prefix_address` property, `public_ip_prefix_id` must be set too.
+    EOF
+  }
+  validation { # public_ip_prefix_address
+    condition = alltrue([
+      for _, fip in var.frontend_ips : can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", fip.public_ip_prefix_address))
+      if fip.public_ip_prefix_address != null
+    ])
+    error_message = <<-EOF
+    The `public_ip_prefix_address` property should be in IPv4 format.
+    EOF
+  }
+
   validation { # private_ip_address
     condition = alltrue([
       for _, fip in var.frontend_ips : fip.private_ip_address != null if fip.subnet_id != null
@@ -282,7 +323,15 @@ variable "frontend_ips" {
     The `private_ip_address` property should be in IPv4 format.
     EOF
   }
-  validation { # in_rule.name
+  validation { # in_rules
+    condition = alltrue([
+      for _, fip in var.frontend_ips : length(fip.in_rules) == 0 if fip.public_ip_prefix_id != null
+    ])
+    error_message = <<-EOF
+    You can't create Inbound Rules for the Frontend with Public IP Prefix.
+    EOF
+  }
+  validation { # in_rules.name
     condition = length(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules : in_rule.name
@@ -294,7 +343,7 @@ variable "frontend_ips" {
     The `in_rule.name` property has to be unique among all in rules definitions.
     EOF
   }
-  validation { # in_rule.protocol
+  validation { # in_rules.protocol
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules : contains(["Tcp", "Udp", "All"], in_rule.protocol)
@@ -304,7 +353,7 @@ variable "frontend_ips" {
     The `in_rule.protocol` property should be one of: \"Tcp\", \"Udp\", \"All\".
     EOF
   }
-  validation { # in_rule.port
+  validation { # in_rules.port
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules : (in_rule.port >= 0 && in_rule.port <= 65535)
@@ -314,7 +363,7 @@ variable "frontend_ips" {
     The `in_rule.port` should be a valid TCP port number or `0` for all ports.
     EOF
   }
-  validation { # in_rule.backend_port
+  validation { # in_rules.backend_port
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules :
@@ -326,7 +375,7 @@ variable "frontend_ips" {
     The `in_rule.backend_port` should be a valid TCP port number.
     EOF
   }
-  validation { # in_rule.sessions_persistence
+  validation { # in_rules.sessions_persistence
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules : contains(["Default", "SourceIP", "SourceIPProtocol"], in_rule.session_persistence)
@@ -336,7 +385,7 @@ variable "frontend_ips" {
     The `in_rule.session_persistence` property should be one of: \"Default\", \"SourceIP\", \"SourceIPProtocol\".
     EOF
   }
-  validation { # in_rule.nsg_priority
+  validation { # in_rules.nsg_priority
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules :
@@ -348,7 +397,7 @@ variable "frontend_ips" {
     The `in_rule.nsg_priority` property be a number between 100 and 4096.
     EOF
   }
-  validation { # out_rule.name
+  validation { # out_rules.name
     condition = length(flatten([
       for _, fip in var.frontend_ips : [
         for _, out_rule in fip.out_rules : out_rule.name
@@ -360,7 +409,7 @@ variable "frontend_ips" {
     The `out_rule.name` property has to be unique among all in rules definitions.
     EOF
   }
-  validation { # out_rule.protocol
+  validation { # out_rules.protocol
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, out_rule in fip.out_rules : contains(["Tcp", "Udp", "All"], out_rule.protocol)
@@ -370,7 +419,7 @@ variable "frontend_ips" {
     The `out_rule.protocol` property should be one of: \"Tcp\", \"Udp\", \"All\".
     EOF
   }
-  validation { # out_rule.allocated_outbound_ports
+  validation { # out_rules.allocated_outbound_ports
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, out_rule in fip.out_rules :
@@ -383,7 +432,7 @@ variable "frontend_ips" {
     of 64000.
     EOF
   }
-  validation { # out_rule.idle_timeout_in_minutes
+  validation { # out_rules.idle_timeout_in_minutes
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, out_rule in fip.out_rules :

@@ -183,6 +183,8 @@ variable "load_balancers" {
       public_ip_resource_group_name = optional(string)
       public_ip_id                  = optional(string)
       public_ip_address             = optional(string)
+      public_ip_prefix_id           = optional(string)
+      public_ip_prefix_address      = optional(string)
       private_ip_address            = optional(string)
       gwlb_fip_id                   = optional(string)
       in_rules = optional(map(object({

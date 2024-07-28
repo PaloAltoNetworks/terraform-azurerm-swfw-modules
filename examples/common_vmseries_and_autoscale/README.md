@@ -633,6 +633,7 @@ map(object({
       public_ip_name                = optional(string)
       public_ip_resource_group_name = optional(string)
       public_ip_key                 = optional(string)
+      public_ip_prefix_key          = optional(string)
       private_ip_address            = optional(string)
       gwlb_key                      = optional(string)
       in_rules = optional(map(object({
@@ -1272,6 +1273,7 @@ map(object({
         public_ip_name                = optional(string)
         public_ip_resource_group_name = optional(string)
         public_ip_key                 = optional(string)
+        public_ip_prefix_key          = optional(string)
         private_ip_address            = optional(string)
         gwlb_key                      = optional(string)
         in_rules = optional(map(object({

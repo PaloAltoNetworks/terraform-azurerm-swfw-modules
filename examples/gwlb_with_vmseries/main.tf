@@ -368,9 +368,11 @@ module "test_infrastructure" {
       public_ip_name = vv.create_public_ip ? (
         "${var.name_prefix}${vv.public_ip_name}"
       ) : vv.public_ip_name
-      public_ip_id      = try(module.public_ip.pip_ids[vv.public_ip_key], null)
-      public_ip_address = try(module.public_ip.pip_ip_addresses[vv.public_ip_key], null)
-      gwlb_fip_id       = try(module.gwlb[vv.gwlb_key].frontend_ip_config_id, null)
+      public_ip_id             = try(module.public_ip.pip_ids[vv.public_ip_key], null)
+      public_ip_address        = try(module.public_ip.pip_ip_addresses[vv.public_ip_key], null)
+      public_ip_prefix_id      = try(module.public_ip.ippre_ids[vv.public_ip_prefix_key], null)
+      public_ip_prefix_address = try(module.public_ip.ippre_ip_prefixes[vv.public_ip_prefix_key], null)
+      gwlb_fip_id              = try(module.gwlb[vv.gwlb_key].frontend_ip_config_id, null)
     }) }
   }) }
   authentication = local.test_vm_authentication[each.key]

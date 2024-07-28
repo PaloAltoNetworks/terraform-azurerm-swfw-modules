@@ -181,10 +181,12 @@ module "load_balancer" {
     for k, v in each.value.frontend_ips : k => merge(
       v,
       {
-        public_ip_name    = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : v.public_ip_name,
-        public_ip_id      = try(module.public_ip.pip_ids[v.public_ip_key], null)
-        public_ip_address = try(module.public_ip.pip_ip_addresses[v.public_ip_key], null)
-        subnet_id         = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
+        public_ip_name           = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : v.public_ip_name,
+        public_ip_id             = try(module.public_ip.pip_ids[v.public_ip_key], null)
+        public_ip_address        = try(module.public_ip.pip_ip_addresses[v.public_ip_key], null)
+        public_ip_prefix_id      = try(module.public_ip.ippre_ids[v.public_ip_prefix_key], null)
+        public_ip_prefix_address = try(module.public_ip.ippre_ip_prefixes[v.public_ip_prefix_key], null)
+        subnet_id                = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
       }
     )
   }
@@ -353,8 +355,10 @@ module "test_infrastructure" {
     public_ip_name = v.frontend_ips.create_public_ip ? (
       "${var.name_prefix}${v.frontend_ips.public_ip_name}"
     ) : v.frontend_ips.public_ip_name
-    public_ip_id      = try(module.public_ip.pip_ids[v.frontend_ips.public_ip_key], null)
-    public_ip_address = try(module.public_ip.pip_ip_addresses[v.frontend_ips.public_ip_key], null)
+    public_ip_id             = try(module.public_ip.pip_ids[v.frontend_ips.public_ip_key], null)
+    public_ip_address        = try(module.public_ip.pip_ip_addresses[v.frontend_ips.public_ip_key], null)
+    public_ip_prefix_id      = try(module.public_ip.ippre_ids[v.frontend_ips.public_ip_prefix_key], null)
+    public_ip_prefix_address = try(module.public_ip.ippre_ip_prefixes[v.frontend_ips.public_ip_prefix_key], null)
   }) }
   authentication = local.test_vm_authentication[each.key]
   spoke_vms = { for k, v in each.value.spoke_vms : k => merge(v, {

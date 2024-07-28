@@ -131,8 +131,8 @@ Name |  Description
 --- | ---
 `id` | The identifier of the Load Balancer resource.
 `backend_pool_id` | The identifier of the backend pool.
-`frontend_ip_configs` | Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it,
-private IP address otherwise.
+`frontend_ip_configs` | Map of IP prefixes/addresses, one per each entry of `frontend_ips` input. Contains public IP prefix/address for the frontends
+that have it, private IP address otherwise.
 
 `health_probe` | The health probe object.
 
@@ -192,19 +192,23 @@ Private Load Balancer:
 Public Load Balancer:
 
 - `name`                          - (`string`, required) name of a frontend IP configuration.
-- `create_public_ip`              - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be
+- `create_public_ip`              - (`bool`, optional, defaults to `false`) when set to `true` a new Public IP will be
                                     created, otherwise an existing resource will be used;
                                     in both cases the name of the resource is controlled by `public_ip_name` property.
-- `public_ip_name`                - (`string`, optional) name of a public IP resource, required unless `public_ip` module and
+- `public_ip_name`                - (`string`, optional) name of a Public IP resource, required unless `public_ip` module and
                                     `public_ip_id` property are used.
 - `public_ip_resource_group_name` - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
-                                    hosting an existing public IP resource.
-- `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
-                                    Frontend. Property is used when public IP is not created or sourced within this module but
+                                    hosting an existing Public IP resource.
+- `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the Public IP Address to associate with the
+                                    Frontend. Property is used when Public IP is not created or sourced within this module but
                                     with the `public_ip` module instead.
-- `public_ip_address`             - (`string`, optional, defaults to `null`) IP address of the public IP to associate with the
-                                    Frontend. Property is used when public IP is not created or sourced within this module but
+- `public_ip_address`             - (`string`, optional, defaults to `null`) IP address of the Public IP to associate with the
+                                    Frontend. Property is used when Public IP is not created or sourced within this module but
                                     with the `public_ip` module instead.
+- `public_ip_prefix_id`           - (`string`, optional, defaults to `null`) ID of the Public IP Prefix to associate with the
+                                    Frontend. Property is used when Public IP Prefix is sourced with the `public_ip` module.
+- `public_ip_prefix_address`      - (`string`, optional, defaults to `null`) IP address of the Public IP Prefix to associate
+                                    with the Frontend. Property is used when Public IP is sourced with the `public_ip` module.
 - `in_rules`                      - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below.
 - `out_rules`                     - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below.
 
@@ -248,7 +252,7 @@ switches the outgoing traffic route for **ALL** `in_rules`.
 Examples
 
 ```hcl
-# rules for a public Load Balancer, reusing an existing public IP and doing port translation
+# rules for a public Load Balancer, reusing an existing Public IP and doing port translation
 frontend_ips = {
   pip_existing = {
     create_public_ip              = false
@@ -312,6 +316,8 @@ map(object({
     public_ip_resource_group_name = optional(string)
     public_ip_id                  = optional(string)
     public_ip_address             = optional(string)
+    public_ip_prefix_id           = optional(string)
+    public_ip_prefix_address      = optional(string)
     subnet_id                     = optional(string)
     private_ip_address            = optional(string)
     gwlb_fip_id                   = optional(string)
@@ -356,14 +362,14 @@ Controls zones for Load Balancer's fronted IP configurations.
 
 For:
 
-- public IPs  - these are zones in which the public IP resource is available.
+- public IPs  - these are zones in which the Public IP resource is available.
 - private IPs - these are zones to which Azure will deploy paths leading to Load Balancer frontend IPs (all frontends are 
                 affected).
 
 Setting this variable to explicit `null` disables a zonal deployment.
 This can be helpful in regions where Availability Zones are not available.
 
-For public Load Balancers, since this setting controls also Availability Zones for public IPs, you need to specify all zones
+For public Load Balancers, since this setting controls also Availability Zones for Public IPs, you need to specify all zones
 available in a region (typically 3): `["1","2","3"]`.
 
 
