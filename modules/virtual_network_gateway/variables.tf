@@ -227,13 +227,13 @@ variable "ip_configurations" {
       (
         var.ip_configurations.primary.public_ip_id != null ?
         var.ip_configurations.primary.create_public_ip == false &&
-        var.ip_configurations.primary.public_ip_name == null : false
+        var.ip_configurations.primary.public_ip_name == null : true
       ),
       (
         var.ip_configurations.secondary != null ? (
           var.ip_configurations.secondary.public_ip_id != null ?
           var.ip_configurations.secondary.create_public_ip == false &&
-          var.ip_configurations.secondary.public_ip_name == null : false
+          var.ip_configurations.secondary.public_ip_name == null : true
         ) : true
       )
     ])
