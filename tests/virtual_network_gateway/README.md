@@ -258,6 +258,7 @@ map(object({
         name                          = string
         create_public_ip              = optional(bool)
         public_ip_name                = optional(string)
+        public_ip_resource_group_name = optional(string)
         public_ip_key                 = optional(string)
         private_ip_address_allocation = optional(string)
       })
