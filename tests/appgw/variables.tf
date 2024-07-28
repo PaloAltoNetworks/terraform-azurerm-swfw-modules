@@ -115,6 +115,41 @@ variable "vnets" {
   }))
 }
 
+variable "public_ips" {
+  description = <<-EOF
+  A map defining Public IP Addresses and Prefixes.
+
+  Following properties are available:
+
+  - `public_ip_addresses` - (`map`, optional) map of objects describing Public IP Addresses, please refer to
+                            [module documentation](../../modules/public_ip/README.md#public_ip_addresses)
+                            for available properties.
+  - `public_ip_prefixes`  - (`map`, optional) map of objects describing Public IP Prefixes, please refer to
+                            [module documentation](../../modules/public_ip/README.md#public_ip_prefixes)
+                            for available properties.
+  EOF
+  default     = {}
+  type = object({
+    public_ip_addresses = optional(map(object({
+      create                     = bool
+      name                       = string
+      resource_group_name        = optional(string)
+      zones                      = optional(list(string))
+      domain_name_label          = optional(string)
+      idle_timeout_in_minutes    = optional(number)
+      prefix_name                = optional(string)
+      prefix_resource_group_name = optional(string)
+    })), {})
+    public_ip_prefixes = optional(map(object({
+      create              = bool
+      name                = string
+      resource_group_name = optional(string)
+      zones               = optional(list(string))
+      length              = optional(number)
+    })), {})
+  })
+}
+
 # LOAD BALANCING
 
 variable "appgws" {
@@ -163,9 +198,10 @@ variable "appgws" {
     subnet_key = string
     zones      = optional(list(string))
     public_ip = object({
-      name                = string
       create              = optional(bool, true)
+      name                = optional(string)
       resource_group_name = optional(string)
+      key                 = optional(string)
     })
     domain_name_label = optional(string)
     capacity = optional(object({

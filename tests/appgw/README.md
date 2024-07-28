@@ -18,6 +18,7 @@ The `README` is also in new, document-style format.
 Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | 
+`public_ip` | - | ../../modules/public_ip | 
 `appgw` | - | ../../modules/appgw | 
 
 ### Resources
@@ -42,6 +43,7 @@ Name | Type | Description
 [`tags`](#tags) | `map` | Map of tags to assign to the created resources.
 [`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
 [`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
+[`public_ips`](#public_ips) | `object` | A map defining Public IP Addresses and Prefixes.
 
 
 
@@ -188,9 +190,10 @@ map(object({
     subnet_key = string
     zones      = optional(list(string))
     public_ip = object({
-      name                = string
       create              = optional(bool, true)
+      name                = optional(string)
       resource_group_name = optional(string)
+      key                 = optional(string)
     })
     domain_name_label = optional(string)
     capacity = optional(object({
@@ -353,5 +356,48 @@ When set to `false` the `resource_group_name` parameter is used to specify a nam
 Type: bool
 
 Default value: `true`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### public_ips
+
+A map defining Public IP Addresses and Prefixes.
+
+Following properties are available:
+
+- `public_ip_addresses` - (`map`, optional) map of objects describing Public IP Addresses, please refer to
+                          [module documentation](../../modules/public_ip/README.md#public_ip_addresses)
+                          for available properties.
+- `public_ip_prefixes`  - (`map`, optional) map of objects describing Public IP Prefixes, please refer to
+                          [module documentation](../../modules/public_ip/README.md#public_ip_prefixes)
+                          for available properties.
+
+
+Type: 
+
+```hcl
+object({
+    public_ip_addresses = optional(map(object({
+      create                     = bool
+      name                       = string
+      resource_group_name        = optional(string)
+      zones                      = optional(list(string))
+      domain_name_label          = optional(string)
+      idle_timeout_in_minutes    = optional(number)
+      prefix_name                = optional(string)
+      prefix_resource_group_name = optional(string)
+    })), {})
+    public_ip_prefixes = optional(map(object({
+      create              = bool
+      name                = string
+      resource_group_name = optional(string)
+      zones               = optional(list(string))
+      length              = optional(number)
+    })), {})
+  })
+```
+
+
+Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>

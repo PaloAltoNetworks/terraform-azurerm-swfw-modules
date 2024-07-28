@@ -48,6 +48,26 @@ module "vnet" {
   tags = var.tags
 }
 
+module "public_ip" {
+  source = "../../modules/public_ip"
+
+  region = var.region
+  public_ip_addresses = {
+    for k, v in var.public_ips.public_ip_addresses : k => merge(v, {
+      name                = "${var.name_prefix}${v.name}"
+      resource_group_name = coalesce(v.resource_group_name, local.resource_group.name)
+    })
+  }
+  public_ip_prefixes = {
+    for k, v in var.public_ips.public_ip_prefixes : k => merge(v, {
+      name                = "${var.name_prefix}${v.name}"
+      resource_group_name = coalesce(v.resource_group_name, local.resource_group.name)
+    })
+  }
+
+  tags = var.tags
+}
+
 # Create Virtual Network Gateways
 
 module "vng" {
@@ -61,10 +81,18 @@ module "vng" {
 
   subnet_id = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
-  zones                            = each.value.zones
-  edge_zone                        = each.value.edge_zone
-  instance_settings                = each.value.instance_settings
-  ip_configurations                = each.value.ip_configurations
+  zones             = each.value.zones
+  edge_zone         = each.value.edge_zone
+  instance_settings = each.value.instance_settings
+  ip_configurations = {
+    primary = merge(each.value.ip_configurations.primary, {
+      public_ip_key = try(module.public_ip.pip_ids[each.value.ip_configurations.primary.public_ip_key], null)
+    })
+    secondary = each.value.instance_settings.active_active == true ? merge(each.value.ip_configurations.secondary, {
+      name          = try(each.value.ip_configurations.secondary.name, null)
+      public_ip_key = try(module.public_ip.pip_ids[each.value.ip_configurations.secondary.public_ip_key], null)
+    }) : null
+  }
   private_ip_address_enabled       = each.value.private_ip_address_enabled
   default_local_network_gateway_id = each.value.default_local_network_gateway_id
 

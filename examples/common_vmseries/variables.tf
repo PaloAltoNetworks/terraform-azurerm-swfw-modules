@@ -137,6 +137,41 @@ variable "vnet_peerings" {
   }))
 }
 
+variable "public_ips" {
+  description = <<-EOF
+  A map defining Public IP Addresses and Prefixes.
+
+  Following properties are available:
+
+  - `public_ip_addresses` - (`map`, optional) map of objects describing Public IP Addresses, please refer to
+                            [module documentation](../../modules/public_ip/README.md#public_ip_addresses)
+                            for available properties.
+  - `public_ip_prefixes`  - (`map`, optional) map of objects describing Public IP Prefixes, please refer to
+                            [module documentation](../../modules/public_ip/README.md#public_ip_prefixes)
+                            for available properties.
+  EOF
+  default     = {}
+  type = object({
+    public_ip_addresses = optional(map(object({
+      create                     = bool
+      name                       = string
+      resource_group_name        = optional(string)
+      zones                      = optional(list(string))
+      domain_name_label          = optional(string)
+      idle_timeout_in_minutes    = optional(number)
+      prefix_name                = optional(string)
+      prefix_resource_group_name = optional(string)
+    })), {})
+    public_ip_prefixes = optional(map(object({
+      create              = bool
+      name                = string
+      resource_group_name = optional(string)
+      zones               = optional(list(string))
+      length              = optional(number)
+    })), {})
+  })
+}
+
 variable "natgws" {
   description = <<-EOF
   A map defining NAT Gateways.
@@ -188,14 +223,16 @@ variable "natgws" {
     idle_timeout        = optional(number, 4)
     public_ip = optional(object({
       create              = bool
-      name                = string
+      name                = optional(string)
       resource_group_name = optional(string)
+      key                 = optional(string)
     }))
     public_ip_prefix = optional(object({
       create              = bool
-      name                = string
+      name                = optional(string)
       resource_group_name = optional(string)
       length              = optional(number)
+      key                 = optional(string)
     }))
   }))
 }
@@ -269,9 +306,10 @@ variable "load_balancers" {
     frontend_ips = optional(map(object({
       name                          = string
       subnet_key                    = optional(string)
-      public_ip_name                = optional(string)
       create_public_ip              = optional(bool, false)
+      public_ip_name                = optional(string)
       public_ip_resource_group_name = optional(string)
+      public_ip_key                 = optional(string)
       private_ip_address            = optional(string)
       gwlb_key                      = optional(string)
       in_rules = optional(map(object({
@@ -343,9 +381,10 @@ variable "appgws" {
     subnet_key = string
     zones      = optional(list(string))
     public_ip = object({
-      name                = string
       create              = optional(bool, true)
+      name                = optional(string)
       resource_group_name = optional(string)
+      key                 = optional(string)
     })
     domain_name_label = optional(string)
     capacity = optional(object({
@@ -831,6 +870,7 @@ variable "vmseries" {
       create_public_ip              = optional(bool, false)
       public_ip_name                = optional(string)
       public_ip_resource_group_name = optional(string)
+      public_ip_key                 = optional(string)
       private_ip_address            = optional(string)
       load_balancer_key             = optional(string)
       application_gateway_key       = optional(string)
@@ -1045,9 +1085,10 @@ variable "test_infrastructure" {
       frontend_ips = optional(map(object({
         name                          = string
         subnet_key                    = optional(string)
-        public_ip_name                = optional(string)
         create_public_ip              = optional(bool, false)
+        public_ip_name                = optional(string)
         public_ip_resource_group_name = optional(string)
+        public_ip_key                 = optional(string)
         private_ip_address            = optional(string)
         gwlb_key                      = optional(string)
         in_rules = optional(map(object({
@@ -1092,10 +1133,13 @@ variable "test_infrastructure" {
       custom_data = optional(string)
     }))
     bastions = map(object({
-      name           = string
-      public_ip_name = optional(string)
-      vnet_key       = string
-      subnet_key     = string
+      name                          = string
+      create_public_ip              = optional(bool, true)
+      public_ip_name                = optional(string)
+      public_ip_resource_group_name = optional(string)
+      public_ip_key                 = optional(string)
+      vnet_key                      = string
+      subnet_key                    = string
     }))
   }))
 }

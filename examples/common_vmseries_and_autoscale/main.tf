@@ -98,6 +98,26 @@ module "vnet_peering" {
   depends_on = [module.vnet]
 }
 
+module "public_ip" {
+  source = "../../modules/public_ip"
+
+  region = var.region
+  public_ip_addresses = {
+    for k, v in var.public_ips.public_ip_addresses : k => merge(v, {
+      name                = "${var.name_prefix}${v.name}"
+      resource_group_name = coalesce(v.resource_group_name, local.resource_group.name)
+    })
+  }
+  public_ip_prefixes = {
+    for k, v in var.public_ips.public_ip_prefixes : k => merge(v, {
+      name                = "${var.name_prefix}${v.name}"
+      resource_group_name = coalesce(v.resource_group_name, local.resource_group.name)
+    })
+  }
+
+  tags = var.tags
+}
+
 module "natgw" {
   source = "../../modules/natgw"
 
@@ -113,9 +133,11 @@ module "natgw" {
 
   public_ip = try(merge(each.value.public_ip, {
     name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}"
+    id   = try(module.public_ip.pip_ids[each.value.key], null)
   }), null)
   public_ip_prefix = try(merge(each.value.public_ip_prefix, {
     name = "${each.value.public_ip_prefix.create ? var.name_prefix : ""}${each.value.public_ip_prefix.name}"
+    id   = try(module.public_ip.ippre_ids[each.value.key], null)
   }), null)
 
   tags       = var.tags
@@ -159,8 +181,10 @@ module "load_balancer" {
     for k, v in each.value.frontend_ips : k => merge(
       v,
       {
-        public_ip_name = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : v.public_ip_name,
-        subnet_id      = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
+        public_ip_name    = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : v.public_ip_name,
+        public_ip_id      = try(module.public_ip.pip_ids[v.public_ip_key], null)
+        public_ip_address = try(module.public_ip.pip_ip_addresses[v.public_ip_key], null)
+        subnet_id         = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
       }
     )
   }
@@ -184,7 +208,10 @@ module "appgw" {
   zones = each.value.zones
   public_ip = merge(
     each.value.public_ip,
-    { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }
+    {
+      name = try("${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}", null)
+      id   = try(module.public_ip.pip_ids[each.value.public_ip.key], null)
+    }
   )
   domain_name_label              = each.value.domain_name_label
   capacity                       = each.value.capacity
@@ -323,6 +350,11 @@ module "test_infrastructure" {
   load_balancers = { for k, v in each.value.load_balancers : k => merge(v, {
     name         = "${var.name_prefix}${v.name}"
     backend_name = coalesce(v.backend_name, "${v.name}-backend")
+    public_ip_name = v.frontend_ips.create_public_ip ? (
+      "${var.name_prefix}${v.frontend_ips.public_ip_name}"
+    ) : v.frontend_ips.public_ip_name
+    public_ip_id      = try(module.public_ip.pip_ids[v.frontend_ips.public_ip_key], null)
+    public_ip_address = try(module.public_ip.pip_ip_addresses[v.frontend_ips.public_ip_key], null)
   }) }
   authentication = local.test_vm_authentication[each.key]
   spoke_vms = { for k, v in each.value.spoke_vms : k => merge(v, {
@@ -332,7 +364,8 @@ module "test_infrastructure" {
   }) }
   bastions = { for k, v in each.value.bastions : k => merge(v, {
     name           = "${var.name_prefix}${v.name}"
-    public_ip_name = "${var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")}"
+    public_ip_name = v.public_ip_key != null ? null : "${var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")}"
+    public_ip_id   = try(module.public_ip.pip_ids[v.public_ip_key], null)
   }) }
 
   tags       = var.tags

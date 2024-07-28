@@ -2,7 +2,7 @@
 
 region              = "North Europe"
 resource_group_name = "vng"
-name_prefix         = "example-"
+name_prefix         = "ac-example-"
 tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
@@ -77,8 +77,8 @@ virtual_network_gateways = {
     }
     ip_configurations = {
       primary = {
-        create_public_ip = true
         name             = "primary"
+        create_public_ip = true
         public_ip_name   = "expressroute_pip"
       }
     }
@@ -96,8 +96,8 @@ virtual_network_gateways = {
     }
     ip_configurations = {
       primary = {
-        create_public_ip = true
         name             = "primary"
+        create_public_ip = true
         public_ip_name   = "er_policy_pip"
       }
     }
@@ -111,12 +111,12 @@ virtual_network_gateways = {
       type       = "Vpn"
       vpn_type   = "PolicyBased"
       generation = "Generation1"
-      sku        = "VpnGw1"
+      sku        = "Basic"
     }
     ip_configurations = {
       primary = {
-        create_public_ip = true
         name             = "primary"
+        create_public_ip = true
         public_ip_name   = "simple_vpn_pip"
       }
     }
