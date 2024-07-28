@@ -364,13 +364,13 @@ module "test_infrastructure" {
   load_balancers = { for k, v in each.value.load_balancers : k => merge(v, {
     name         = "${var.name_prefix}${v.name}"
     backend_name = coalesce(v.backend_name, "${v.name}-backend")
-    public_ip_name = v.frontend_ips.create_public_ip ? (
-      "${var.name_prefix}${v.frontend_ips.public_ip_name}"
-    ) : v.frontend_ips.public_ip_name
-    public_ip_id      = try(module.public_ip.pip_ids[v.frontend_ips.public_ip_key], null)
-    public_ip_address = try(module.public_ip.pip_ip_addresses[v.frontend_ips.public_ip_key], null)
     frontend_ips = { for kv, vv in v.frontend_ips : kv => merge(vv, {
-      gwlb_fip_id = try(module.gwlb[vv.gwlb_key].frontend_ip_config_id, null)
+      public_ip_name = vv.create_public_ip ? (
+        "${var.name_prefix}${vv.public_ip_name}"
+      ) : vv.public_ip_name
+      public_ip_id      = try(module.public_ip.pip_ids[vv.public_ip_key], null)
+      public_ip_address = try(module.public_ip.pip_ip_addresses[vv.public_ip_key], null)
+      gwlb_fip_id       = try(module.gwlb[vv.gwlb_key].frontend_ip_config_id, null)
     }) }
   }) }
   authentication = local.test_vm_authentication[each.key]
