@@ -95,6 +95,26 @@ module "vnet_peering" {
   depends_on = [module.vnet]
 }
 
+module "public_ip" {
+  source = "../../modules/public_ip"
+
+  region = var.region
+  public_ip_addresses = {
+    for k, v in var.public_ips.public_ip_addresses : k => merge(v, {
+      name                = "${var.name_prefix}${v.name}"
+      resource_group_name = coalesce(v.resource_group_name, local.resource_group.name)
+    })
+  }
+  public_ip_prefixes = {
+    for k, v in var.public_ips.public_ip_prefixes : k => merge(v, {
+      name                = "${var.name_prefix}${v.name}"
+      resource_group_name = coalesce(v.resource_group_name, local.resource_group.name)
+    })
+  }
+
+  tags = var.tags
+}
+
 # Create Gateway Load Balancers
 
 module "gwlb" {
@@ -291,6 +311,7 @@ module "vmseries" {
       var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")
     }" : v.public_ip_name
     public_ip_resource_group_name = v.public_ip_resource_group_name
+    public_ip_id                  = try(module.public_ip.pip_ids[v.public_ip_key], null)
     private_ip_address            = v.private_ip_address
     attach_to_lb_backend_pool     = v.load_balancer_key != null || v.gwlb_key != null
     lb_backend_pool_id            = try(module.gwlb[v.gwlb_key].backend_pool_ids[v.gwlb_backend_key], null)
@@ -344,7 +365,14 @@ module "test_infrastructure" {
     name         = "${var.name_prefix}${v.name}"
     backend_name = coalesce(v.backend_name, "${v.name}-backend")
     frontend_ips = { for kv, vv in v.frontend_ips : kv => merge(vv, {
-      gwlb_fip_id = try(module.gwlb[vv.gwlb_key].frontend_ip_config_id, null)
+      public_ip_name = vv.create_public_ip ? (
+        "${var.name_prefix}${vv.public_ip_name}"
+      ) : vv.public_ip_name
+      public_ip_id             = try(module.public_ip.pip_ids[vv.public_ip_key], null)
+      public_ip_address        = try(module.public_ip.pip_ip_addresses[vv.public_ip_key], null)
+      public_ip_prefix_id      = try(module.public_ip.ippre_ids[vv.public_ip_prefix_key], null)
+      public_ip_prefix_address = try(module.public_ip.ippre_ip_prefixes[vv.public_ip_prefix_key], null)
+      gwlb_fip_id              = try(module.gwlb[vv.gwlb_key].frontend_ip_config_id, null)
     }) }
   }) }
   authentication = local.test_vm_authentication[each.key]
@@ -355,7 +383,8 @@ module "test_infrastructure" {
   }) }
   bastions = { for k, v in each.value.bastions : k => merge(v, {
     name           = "${var.name_prefix}${v.name}"
-    public_ip_name = "${var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")}"
+    public_ip_name = v.public_ip_key != null ? null : "${var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")}"
+    public_ip_id   = try(module.public_ip.pip_ids[v.public_ip_key], null)
   }) }
 
   tags       = var.tags

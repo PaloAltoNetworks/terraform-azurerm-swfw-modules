@@ -49,16 +49,34 @@ variable "public_ip" {
   A map defining listener's public IP configuration.
 
   Following properties are available:
-  - `name`                - (`string`, required) name of the Public IP resource.
   - `create`              - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or sourced.
+  - `name`                - (`string`, optional) name of the Public IP resource, required unless `public_ip` module and `id`
+                            property are used.
   - `resource_group_name` - (`string`, optional, defaults to `null`) name of the Resource Group hosting the Public IP resource, 
                             used only for sourced resources.
+  - `id`                  - (`string`, optional, defaults to `null`) ID of the Public IP to associate with the Listener. 
+                            Property is used when Public IP is not created or sourced within this module.
   EOF
   type = object({
-    name                = string
     create              = optional(bool, true)
+    name                = optional(string)
     resource_group_name = optional(string)
+    id                  = optional(string)
   })
+  validation { # id, name
+    condition     = var.public_ip.name != null || var.public_ip.id != null
+    error_message = <<-EOF
+    Either `name` or `id` property must be set.
+    EOF
+  }
+  validation { # id, create, name
+    condition = var.public_ip != null ? (
+      var.public_ip.id != null ? var.public_ip.create == false && var.public_ip.name == null : true
+    ) : true
+    error_message = <<-EOF
+    When using `id` property, `create` must be set to `false` and `name` must not be set.
+    EOF
+  }
 }
 
 variable "domain_name_label" {

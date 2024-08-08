@@ -170,13 +170,18 @@ variable "ip_configurations" {
   
   Following properties are available:
   - `primary`   - (`map`, required) a map defining the primary Public IP address, following properties are available:
-    - `name`                          - (`string`, required) name of the IP config.
-    - `create_public_ip`              - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
-    - `public_ip_name`                - (`string`, required) name of a Public IP resource, depending on the value of 
-                                        `create_public_ip` property this will be a name of a newly create or existing resource
-                                        (for values of `true` and `false` accordingly).
-    - `dynamic_private_ip_allocation` - (`bool`, optional, defaults to `true`) controls if the private IP address is assigned
-                                        dynamically or statically.
+    - `name`                           - (`string`, required) name of the IP config.
+    - `create_public_ip`               - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
+    - `public_ip_name`                 - (`string`, optional) name of a Public IP resource, required unless `public_ip` module
+                                         and `public_ip_id` property are used. Depending on the value of `create_public_ip`
+                                         property, this will be a name of a newly created or existing resource (for values of
+                                         `true` and `false` accordingly).
+    - `public_ip_resource_group_name`  - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
+                                         hosting an existing Public IP resource.
+    - `public_ip_id`                   - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
+                                         interface. Property is used when public IP is not created or sourced within this module.
+    - `dynamic_private_ip_allocation`  - (`bool`, optional, defaults to `true`) controls if the private IP address is assigned
+                                         dynamically or statically.
   - `secondary` - (`map`, optional, defaults to `null`) a map defining the secondary Public IP address resource. Required only
                   for `type` set to `Vpn` and `active-active` set to `true`. Same properties available as for `primary` property.
 
@@ -185,17 +190,20 @@ variable "ip_configurations" {
     primary = object({
       name                          = string
       create_public_ip              = optional(bool, true)
-      public_ip_name                = string
+      public_ip_name                = optional(string)
+      public_ip_resource_group_name = optional(string)
+      public_ip_id                  = optional(string)
       private_ip_address_allocation = optional(string, "Dynamic")
     })
     secondary = optional(object({
       name                          = string
       create_public_ip              = optional(bool, true)
-      public_ip_name                = string
+      public_ip_name                = optional(string)
+      public_ip_id                  = optional(string)
       private_ip_address_allocation = optional(string, "Dynamic")
     }))
   })
-  validation { # primary/secondary.name
+  validation { # name
     condition = var.ip_configurations.secondary != null ? (
       var.ip_configurations.primary.name != var.ip_configurations.secondary.name
     ) : true
@@ -203,7 +211,39 @@ variable "ip_configurations" {
     The `name` property has to be unique among all IP configurations.
     EOF
   }
-  validation { # primary/secondary.private_ip_address_allocation
+  validation { # public_ip_id, public_ip_name
+    condition = alltrue([
+      (var.ip_configurations.primary.public_ip_name != null || var.ip_configurations.primary.public_ip_id != null),
+      (
+        var.ip_configurations.secondary != null ? (
+          var.ip_configurations.secondary.public_ip_name != null || var.ip_configurations.secondary.public_ip_id != null
+        ) : true
+      )
+    ])
+    error_message = <<-EOF
+    Either `public_ip_name` or `public_ip_id` property must be set.
+    EOF
+  }
+  validation { # public_ip_id, create_public_ip, public_ip_name
+    condition = alltrue([
+      (
+        var.ip_configurations.primary.public_ip_id != null ?
+        var.ip_configurations.primary.create_public_ip == false &&
+        var.ip_configurations.primary.public_ip_name == null : true
+      ),
+      (
+        var.ip_configurations.secondary != null ? (
+          var.ip_configurations.secondary.public_ip_id != null ?
+          var.ip_configurations.secondary.create_public_ip == false &&
+          var.ip_configurations.secondary.public_ip_name == null : true
+        ) : true
+      )
+    ])
+    error_message = <<-EOF
+    When using `public_ip_id` property, `create_public_ip` must be set to `false` and `public_ip_name` must not be set.
+    EOF
+  }
+  validation { # private_ip_address_allocation
     condition = contains(["Dynamic", "Static"], var.ip_configurations.primary.private_ip_address_allocation) && (
       var.ip_configurations.secondary != null ? (
         contains(["Dynamic", "Static"], var.ip_configurations.secondary.private_ip_address_allocation)

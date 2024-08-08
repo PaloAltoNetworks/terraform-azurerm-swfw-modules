@@ -68,9 +68,11 @@ resource "azurerm_lb" "this" {
     iterator = frontend_ip
     content {
       name = frontend_ip.value.name
-      public_ip_address_id = frontend_ip.value.create_public_ip ? (
-        azurerm_public_ip.this[frontend_ip.key].id
-      ) : try(data.azurerm_public_ip.this[frontend_ip.key].id, null)
+      public_ip_address_id = try(coalesce(
+        frontend_ip.value.public_ip_id,
+        try(azurerm_public_ip.this[frontend_ip.key].id, data.azurerm_public_ip.this[frontend_ip.key].id, null)
+      ), null)
+      public_ip_prefix_id           = try(frontend_ip.value.public_ip_prefix_id, null)
       subnet_id                     = frontend_ip.value.subnet_id
       private_ip_address_allocation = frontend_ip.value.private_ip_address != null ? "Static" : null
       private_ip_address            = frontend_ip.value.private_ip_address
@@ -188,10 +190,11 @@ resource "azurerm_lb_outbound_rule" "this" {
 }
 
 locals {
-  # Map of all frontend IP addresses, public or private.
+  # Map of all frontend IP prefixes/addresses, public or private.
   frontend_addresses = {
-    for k, v in var.frontend_ips : k => try(
-      data.azurerm_public_ip.this[k].ip_address, azurerm_public_ip.this[k].ip_address, v.private_ip_address
+    for k, v in var.frontend_ips : k => coalesce(
+      v.public_ip_prefix_address, v.public_ip_address,
+      try(data.azurerm_public_ip.this[k].ip_address, azurerm_public_ip.this[k].ip_address, v.private_ip_address)
     )
   }
 

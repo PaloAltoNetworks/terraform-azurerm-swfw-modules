@@ -76,6 +76,26 @@ module "vnet" {
   tags = var.tags
 }
 
+module "public_ip" {
+  source = "../../modules/public_ip"
+
+  region = var.region
+  public_ip_addresses = {
+    for k, v in var.public_ips.public_ip_addresses : k => merge(v, {
+      name                = "${var.name_prefix}${v.name}"
+      resource_group_name = coalesce(v.resource_group_name, local.resource_group.name)
+    })
+  }
+  public_ip_prefixes = {
+    for k, v in var.public_ips.public_ip_prefixes : k => merge(v, {
+      name                = "${var.name_prefix}${v.name}"
+      resource_group_name = coalesce(v.resource_group_name, local.resource_group.name)
+    })
+  }
+
+  tags = var.tags
+}
+
 # Create Panorama VMs and closely associated resources
 
 resource "azurerm_availability_set" "this" {
@@ -117,6 +137,7 @@ module "panorama" {
       coalesce(v.public_ip_name, "${each.value.name}-pip")
     }" : v.public_ip_name
     public_ip_resource_group_name = v.public_ip_resource_group_name
+    public_ip_id                  = try(module.public_ip.pip_ids[v.public_ip_key], null)
     private_ip_address            = v.private_ip_address
   }]
 

@@ -60,6 +60,26 @@ module "vnet" {
   tags = var.tags
 }
 
+module "public_ip" {
+  source = "../../modules/public_ip"
+
+  region = var.region
+  public_ip_addresses = {
+    for k, v in var.public_ips.public_ip_addresses : k => merge(v, {
+      name                = "${var.name_prefix}${v.name}"
+      resource_group_name = coalesce(v.resource_group_name, local.resource_group.name)
+    })
+  }
+  public_ip_prefixes = {
+    for k, v in var.public_ips.public_ip_prefixes : k => merge(v, {
+      name                = "${var.name_prefix}${v.name}"
+      resource_group_name = coalesce(v.resource_group_name, local.resource_group.name)
+    })
+  }
+
+  tags = var.tags
+}
+
 # Create Application Gateways
 
 module "appgw" {
@@ -75,7 +95,10 @@ module "appgw" {
   zones = each.value.zones
   public_ip = merge(
     each.value.public_ip,
-    { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }
+    {
+      name = try("${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}", null)
+      id   = try(module.public_ip.pip_ids[each.value.public_ip.key], null)
+    }
   )
   domain_name_label              = each.value.domain_name_label
   capacity                       = each.value.capacity

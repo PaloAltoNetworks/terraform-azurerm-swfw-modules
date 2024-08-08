@@ -14,11 +14,11 @@ resource "azurerm_public_ip" "this" {
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
-data "azurerm_public_ip" "exists" {
+data "azurerm_public_ip" "this" {
   for_each = { for k, v in var.ip_configurations : k => v if !try(v.create_public_ip, true) }
 
   name                = each.value.public_ip_name
-  resource_group_name = var.resource_group_name
+  resource_group_name = coalesce(each.value.public_ip_resource_group_name, var.resource_group_name)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network_gateway
@@ -41,9 +41,10 @@ resource "azurerm_virtual_network_gateway" "this" {
 
     content {
       name = ip_configuration.value.name
-      public_ip_address_id = ip_configuration.value.create_public_ip ? (
-        azurerm_public_ip.this[ip_configuration.value.name].id
-      ) : data.azurerm_public_ip.exists[ip_configuration.value.name].id
+      public_ip_address_id = coalesce(
+        ip_configuration.value.public_ip_id,
+        try(azurerm_public_ip.this[ip_configuration.value.name].id, data.azurerm_public_ip.this[ip_configuration.value.name].id)
+      )
       private_ip_address_allocation = ip_configuration.value.private_ip_address_allocation
       subnet_id                     = var.subnet_id
     }

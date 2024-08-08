@@ -208,10 +208,12 @@ variable "interfaces" {
   - `public_ip_name`                - (`string`, optional, defaults to `null`) name of the public IP to associate with the
                                       interface. When `create_public_ip` is set to `true` this will become a name of a newly
                                       created Public IP interface. Otherwise this is a name of an existing interfaces that will
-                                      be sourced and attached to the interface.
+                                      be sourced and attached to the interface. Not used when using `public_ip` module.
   - `public_ip_resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
                                       contains public IP that that will be associated with the interface. Used only when 
                                       `create_public_ip` is `false`.
+  - `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
+                                      interface. Property is used when public IP is not created or sourced within this module.
   - `attach_to_lb_backend_pool`     - (`bool`, optional, defaults to `false`) set to `true` if you would like to associate this
                                       interface with a Load Balancer backend pool.
   - `lb_backend_pool_id`            - (`string`, optional, defaults to `null`) ID of an existing backend pool to associate the
@@ -246,16 +248,25 @@ variable "interfaces" {
     create_public_ip              = optional(bool, false)
     public_ip_name                = optional(string)
     public_ip_resource_group_name = optional(string)
+    public_ip_id                  = optional(string)
     private_ip_address            = optional(string)
     lb_backend_pool_id            = optional(string)
     attach_to_lb_backend_pool     = optional(bool, false)
   }))
-  validation { # create_public_ip & public_ip_name
+  validation { # create_public_ip, public_ip_name
     condition = alltrue([
       for v in var.interfaces : v.public_ip_name != null if v.create_public_ip
     ])
     error_message = <<-EOF
     The `public_ip_name` property is required when `create_public_ip` is set to `true`.
+    EOF
+  }
+  validation { # public_ip_id, create_public_ip, public_ip_name
+    condition = alltrue([
+      for v in var.interfaces : v.create_public_ip == false && v.public_ip_name == null if v.public_ip_id != null
+    ])
+    error_message = <<-EOF
+    When using `public_ip_id` property, `create_public_ip` must be set to `false` and `public_ip_name` must not be set.
     EOF
   }
   validation { # lb_backend_pool_id & attach_to_lb_backend_pool

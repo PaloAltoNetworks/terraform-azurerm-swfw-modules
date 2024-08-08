@@ -178,9 +178,13 @@ variable "load_balancers" {
     frontend_ips = optional(map(object({
       name                          = string
       subnet_key                    = optional(string)
-      public_ip_name                = optional(string)
       create_public_ip              = optional(bool, false)
+      public_ip_name                = optional(string)
       public_ip_resource_group_name = optional(string)
+      public_ip_id                  = optional(string)
+      public_ip_address             = optional(string)
+      public_ip_prefix_id           = optional(string)
+      public_ip_prefix_address      = optional(string)
       private_ip_address            = optional(string)
       gwlb_fip_id                   = optional(string)
       in_rules = optional(map(object({
@@ -275,16 +279,43 @@ variable "bastions" {
   A map containing Azure Bastion definition.
 
   This map follows resource definition convention, following values are available:
-  - `name`           - (`string`, required) an Azure Bastion name.
-  - `public_ip_name` - (`string`, required) a name of the public IP associated with the Bastion.
-  - `vnet_key`       - (`string`, required) a key describing a VNET defined in `var.vnets`. This VNET should already have an 
-                       existing subnet called `AzureBastionSubnet` (the name is hardcoded by Microsoft).
-  - `subnet_key`     - (`string`, required) a key pointing to a Subnet dedicated to the Bastion deployment.
+  - `name`                          - (`string`, required) an Azure Bastion name.
+  - `create_public_ip`              - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or
+                                      sourced.
+  - `public_ip_name`                - (`string`, optional) name of the Public IP resource, required unless `public_ip` module and 
+                                      `public_ip_id` property are used.
+  - `public_ip_resource_group_name` - (`string`, optional) name of the Resource Group hosting the Public IP resource, used only
+                                      for sourced resources.
+  - `public_ip_id`                  - (`string`, optional) ID of the Public IP to associate with the Bastion. Property is used
+                                      when Public IP is not created or sourced within this module.
+  - `vnet_key`                      - (`string`, required) a key describing a VNET defined in `var.vnets`. This VNET should
+                                      already have an existing subnet called `AzureBastionSubnet` (the name is hardcoded
+                                      by Microsoft).
+  - `subnet_key`                    - (`string`, required) a key pointing to a Subnet dedicated to the Bastion deployment.
   EOF
   type = map(object({
-    name           = string
-    public_ip_name = string
-    vnet_key       = string
-    subnet_key     = string
+    name                          = string
+    create_public_ip              = optional(bool, true)
+    public_ip_name                = optional(string)
+    public_ip_resource_group_name = optional(string)
+    public_ip_id                  = optional(string)
+    vnet_key                      = string
+    subnet_key                    = string
   }))
+  validation { # public_ip_id, public_ip_name
+    condition = alltrue([
+      for _, v in var.bastions : v.public_ip_name != null || v.public_ip_id != null
+    ])
+    error_message = <<-EOF
+    Either `public_ip_name` or `public_ip_id` property must be set.
+    EOF
+  }
+  validation { # public_ip_id, create_public_ip, public_ip_name
+    condition = alltrue([
+      for _, v in var.bastions : v.create_public_ip == false && v.public_ip_name == null if v.public_ip_id != null
+    ])
+    error_message = <<-EOF
+    When using `public_ip_id` property, `create_public_ip` must be set to `false` and `public_ip_name` must not be set.
+    EOF
+  }
 }

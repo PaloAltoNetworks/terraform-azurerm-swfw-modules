@@ -134,6 +134,7 @@ terraform destroy
 Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | 
+`public_ip` | - | ../../modules/public_ip | 
 `panorama` | - | ../../modules/panorama | 
 
 ### Resources
@@ -158,6 +159,7 @@ Name | Type | Description
 [`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
 [`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
 [`tags`](#tags) | `map` | Map of tags to assign to the created resources.
+[`public_ips`](#public_ips) | `object` | A map defining Public IP Addresses and Prefixes.
 [`availability_sets`](#availability_sets) | `map` | A map defining availability sets.
 [`panoramas`](#panoramas) | `map` | A map defining Azure Virtual Machine based on Palo Alto Networks Panorama image.
 
@@ -165,9 +167,9 @@ Name | Type | Description
 
 Name |  Description
 --- | ---
-`username` | Initial administrative username to use for VM-Series.
-`password` | Initial administrative password to use for VM-Series.
-`panorama_mgmt_ips` | 
+`username` | Initial administrative username to use for Panorama.
+`password` | Initial administrative password to use for Panorama.
+`panorama_mgmt_ips` | IP addresses for the Panorama management interface.
 
 ### Required Inputs details
 
@@ -312,6 +314,49 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+#### public_ips
+
+A map defining Public IP Addresses and Prefixes.
+
+Following properties are available:
+
+- `public_ip_addresses` - (`map`, optional) map of objects describing Public IP Addresses, please refer to
+                          [module documentation](../../modules/public_ip/README.md#public_ip_addresses)
+                          for available properties.
+- `public_ip_prefixes`  - (`map`, optional) map of objects describing Public IP Prefixes, please refer to
+                          [module documentation](../../modules/public_ip/README.md#public_ip_prefixes)
+                          for available properties.
+
+
+Type: 
+
+```hcl
+object({
+    public_ip_addresses = optional(map(object({
+      create                     = bool
+      name                       = string
+      resource_group_name        = optional(string)
+      zones                      = optional(list(string))
+      domain_name_label          = optional(string)
+      idle_timeout_in_minutes    = optional(number)
+      prefix_name                = optional(string)
+      prefix_resource_group_name = optional(string)
+    })), {})
+    public_ip_prefixes = optional(map(object({
+      create              = bool
+      name                = string
+      resource_group_name = optional(string)
+      zones               = optional(list(string))
+      length              = optional(number)
+    })), {})
+  })
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
 #### availability_sets
 
 A map defining availability sets. Can be used to provide infrastructure high availability when zones cannot be used.
@@ -441,10 +486,11 @@ map(object({
     interfaces = list(object({
       name                          = string
       subnet_key                    = string
-      private_ip_address            = optional(string)
       create_public_ip              = optional(bool, false)
       public_ip_name                = optional(string)
       public_ip_resource_group_name = optional(string)
+      public_ip_key                 = optional(string)
+      private_ip_address            = optional(string)
     }))
     logging_disks = optional(map(object({
       name      = string

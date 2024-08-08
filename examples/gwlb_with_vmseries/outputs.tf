@@ -17,7 +17,10 @@ output "metrics_instrumentation_keys" {
 
 output "vmseries_mgmt_ips" {
   description = "IP addresses for the VM-Series management interface."
-  value       = { for k, v in module.vmseries : k => v.mgmt_ip_address }
+  value = { for k, v in var.vmseries : k => coalesce(
+    try(module.public_ip.pip_ip_addresses[v.interfaces[0].public_ip_key], null),
+    module.vmseries[k].mgmt_ip_address
+  ) }
 }
 
 output "bootstrap_storage_urls" {
@@ -45,8 +48,8 @@ output "test_vms_ips" {
   value       = length(var.test_infrastructure) > 0 ? { for k, v in module.test_infrastructure : k => v.vm_private_ips } : null
 }
 
-output "app_lb_frontend_ips" {
-  description = "IP Addresses of the load balancers."
+output "test_lb_frontend_ips" {
+  description = "IP Addresses of the test load balancers."
   value = length({ for k, v in var.test_infrastructure : k => v if v.load_balancers != null }) > 0 ? {
     for k, v in module.test_infrastructure : k => v.frontend_ip_configs
   } : null

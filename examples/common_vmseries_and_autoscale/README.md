@@ -221,6 +221,7 @@ Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | 
 `vnet_peering` | - | ../../modules/vnet_peering | 
+`public_ip` | - | ../../modules/public_ip | 
 `natgw` | - | ../../modules/natgw | 
 `load_balancer` | - | ../../modules/loadbalancer | 
 `appgw` | - | ../../modules/appgw | 
@@ -250,6 +251,7 @@ Name | Type | Description
 [`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
 [`tags`](#tags) | `map` | Map of tags to assign to the created resources.
 [`vnet_peerings`](#vnet_peerings) | `map` | A map defining VNET peerings.
+[`public_ips`](#public_ips) | `object` | A map defining Public IP Addresses and Prefixes.
 [`natgws`](#natgws) | `map` | A map defining NAT Gateways.
 [`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (both private and public) Load Balancers.
 [`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
@@ -264,12 +266,13 @@ Name |  Description
 --- | ---
 `usernames` | Initial firewall administrative usernames for all deployed Scale Sets.
 `passwords` | Initial firewall administrative passwords for all deployed Scale Sets.
+`natgw_public_ips` | Nat Gateways Public IP resources.
 `metrics_instrumentation_keys` | The Instrumentation Key of the created instance(s) of Azure Application Insights.
 `lb_frontend_ips` | IP Addresses of the load balancers.
 `test_vms_usernames` | Initial administrative username to use for test VMs.
 `test_vms_passwords` | Initial administrative password to use for test VMs.
 `test_vms_ips` | IP Addresses of the test VMs.
-`app_lb_frontend_ips` | IP Addresses of the load balancers.
+`test_lb_frontend_ips` | IP Addresses of the test load balancers.
 
 ### Required Inputs details
 
@@ -441,6 +444,49 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+#### public_ips
+
+A map defining Public IP Addresses and Prefixes.
+
+Following properties are available:
+
+- `public_ip_addresses` - (`map`, optional) map of objects describing Public IP Addresses, please refer to
+                          [module documentation](../../modules/public_ip/README.md#public_ip_addresses)
+                          for available properties.
+- `public_ip_prefixes`  - (`map`, optional) map of objects describing Public IP Prefixes, please refer to
+                          [module documentation](../../modules/public_ip/README.md#public_ip_prefixes)
+                          for available properties.
+
+
+Type: 
+
+```hcl
+object({
+    public_ip_addresses = optional(map(object({
+      create                     = bool
+      name                       = string
+      resource_group_name        = optional(string)
+      zones                      = optional(list(string))
+      domain_name_label          = optional(string)
+      idle_timeout_in_minutes    = optional(number)
+      prefix_name                = optional(string)
+      prefix_resource_group_name = optional(string)
+    })), {})
+    public_ip_prefixes = optional(map(object({
+      create              = bool
+      name                = string
+      resource_group_name = optional(string)
+      zones               = optional(list(string))
+      length              = optional(number)
+    })), {})
+  })
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
 #### natgws
 
 A map defining NAT Gateways. 
@@ -497,12 +543,14 @@ map(object({
       create              = bool
       name                = string
       resource_group_name = optional(string)
+      key                 = optional(string)
     }))
     public_ip_prefix = optional(object({
       create              = bool
       name                = string
       resource_group_name = optional(string)
       length              = optional(number)
+      key                 = optional(string)
     }))
   }))
 ```
@@ -581,9 +629,11 @@ map(object({
     frontend_ips = optional(map(object({
       name                          = string
       subnet_key                    = optional(string)
-      public_ip_name                = optional(string)
       create_public_ip              = optional(bool, false)
+      public_ip_name                = optional(string)
       public_ip_resource_group_name = optional(string)
+      public_ip_key                 = optional(string)
+      public_ip_prefix_key          = optional(string)
       private_ip_address            = optional(string)
       gwlb_key                      = optional(string)
       in_rules = optional(map(object({
@@ -662,9 +712,10 @@ map(object({
     subnet_key = string
     zones      = optional(list(string))
     public_ip = object({
-      name                = string
       create              = optional(bool, true)
+      name                = optional(string)
       resource_group_name = optional(string)
+      key                 = optional(string)
     })
     domain_name_label = optional(string)
     capacity = optional(object({
@@ -930,8 +981,8 @@ The basic Scale Set configuration properties are as follows:
   - `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in the
                                 `var.appgws`, network interface that has this property defined will be added to the Application
                                 Gateways's backend pool.
-  - `pip_domain_name_label`   - (`string`, optional, defaults to `null`) prefix which should be used for the Domain Name Label
-                                for each VM instance.
+    
+  For details on all properties refer to [module's documentation](../../modules/vmss/README.md#interfaces).
 
 - `autoscaling_profiles`      - (`list`, optional, defaults to `[]`) a list of autoscaling profiles, for details on available
                                 properties please refer to
@@ -984,12 +1035,15 @@ map(object({
       webhooks_uris           = optional(map(string), {})
     }), {})
     interfaces = list(object({
-      name                    = string
-      subnet_key              = string
-      create_public_ip        = optional(bool)
-      load_balancer_key       = optional(string)
-      application_gateway_key = optional(string)
-      pip_domain_name_label   = optional(string)
+      name                           = string
+      subnet_key                     = string
+      create_public_ip               = optional(bool)
+      pip_domain_name_label          = optional(string)
+      pip_idle_timeout_in_minutes    = optional(number)
+      pip_prefix_name                = optional(string)
+      pip_prefix_resource_group_name = optional(string)
+      load_balancer_key              = optional(string)
+      application_gateway_key        = optional(string)
     }))
     autoscaling_profiles = optional(list(object({
       name          = string
@@ -1218,9 +1272,11 @@ map(object({
       frontend_ips = optional(map(object({
         name                          = string
         subnet_key                    = optional(string)
-        public_ip_name                = optional(string)
         create_public_ip              = optional(bool, false)
+        public_ip_name                = optional(string)
         public_ip_resource_group_name = optional(string)
+        public_ip_key                 = optional(string)
+        public_ip_prefix_key          = optional(string)
         private_ip_address            = optional(string)
         gwlb_key                      = optional(string)
         in_rules = optional(map(object({
@@ -1265,10 +1321,13 @@ map(object({
       custom_data = optional(string)
     }))
     bastions = map(object({
-      name           = string
-      public_ip_name = optional(string)
-      vnet_key       = string
-      subnet_key     = string
+      name                          = string
+      create_public_ip              = optional(bool, true)
+      public_ip_name                = optional(string)
+      public_ip_resource_group_name = optional(string)
+      public_ip_key                 = optional(string)
+      vnet_key                      = string
+      subnet_key                    = string
     }))
   }))
 ```
