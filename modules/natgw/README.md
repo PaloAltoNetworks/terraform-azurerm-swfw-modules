@@ -194,8 +194,7 @@ List of available properties:
 - `resource_group_name` - (`string`, optional) name of a resource group hosting the sourced Public IP resource, ignored when
                           `create = true`.
 - `id`                  - (`string`, optional, defaults to `null`) ID of the Public IP to associate with the NAT Gateway. 
-                          Property is used when Public IP is not created or sourced within this module but with the `public_ip`
-                          module instead.
+                          Property is used when Public IP Address is not created or sourced within this module.
 
 The module operates in 3 modes, depending on combination of `create` and `name` properties:
 
@@ -254,8 +253,7 @@ List of available properties:
 - `length`              - (`number`, optional, defaults to `28`) number of bits of the Public IP Prefix, this value can be
                           between `0` and `31` but can be limited on subscription level (Azure default is `/28`).
 - `id`                  - (`string`, optional, defaults to `null`) ID of the Public IP Prefix to associate with the NAT Gateway.
-                          Property is used when Public IP is not created or sourced within this module but with the `public_ip`
-                          module instead.
+                          Property is used when Public IP Prefix is not created or sourced within this module.
 
 The module operates in 3 modes, depending on combination of `create` and `name` properties:
 

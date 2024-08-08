@@ -490,8 +490,7 @@ Following properties are available:
   - `public_ip_resource_group_name`  - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
                                        hosting an existing Public IP resource.
   - `public_ip_id`                   - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
-                                       interface. Property is used when public IP is not created or sourced within this module
-                                       but with the `public_ip` module instead.
+                                       interface. Property is used when public IP is not created or sourced within this module.
   - `dynamic_private_ip_allocation`  - (`bool`, optional, defaults to `true`) controls if the private IP address is assigned
                                        dynamically or statically.
 - `secondary` - (`map`, optional, defaults to `null`) a map defining the secondary Public IP address resource. Required only

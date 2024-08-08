@@ -81,15 +81,13 @@ variable "frontend_ips" {
   - `public_ip_resource_group_name` - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
                                       hosting an existing Public IP resource.
   - `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the Public IP Address to associate with the
-                                      Frontend. Property is used when Public IP is not created or sourced within this module but
-                                      with the `public_ip` module instead.
+                                      Frontend. Property is used when Public IP is not created or sourced within this module.
   - `public_ip_address`             - (`string`, optional, defaults to `null`) IP address of the Public IP to associate with the
-                                      Frontend. Property is used when Public IP is not created or sourced within this module but
-                                      with the `public_ip` module instead.
+                                      Frontend. Property is used when Public IP is not created or sourced within this module.
   - `public_ip_prefix_id`           - (`string`, optional, defaults to `null`) ID of the Public IP Prefix to associate with the
-                                      Frontend. Property is used when Public IP Prefix is sourced with the `public_ip` module.
+                                      Frontend. Property is used when you need to source Public IP Prefix.
   - `public_ip_prefix_address`      - (`string`, optional, defaults to `null`) IP address of the Public IP Prefix to associate
-                                      with the Frontend. Property is used when Public IP is sourced with the `public_ip` module.
+                                      with the Frontend. Property is used when you need to source Public IP Prefix.
   - `in_rules`                      - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below.
   - `out_rules`                     - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below.
 

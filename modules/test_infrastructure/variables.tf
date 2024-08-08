@@ -287,8 +287,7 @@ variable "bastions" {
   - `public_ip_resource_group_name` - (`string`, optional) name of the Resource Group hosting the Public IP resource, used only
                                       for sourced resources.
   - `public_ip_id`                  - (`string`, optional) ID of the Public IP to associate with the Bastion. Property is used
-                                      when Public IP is not created or sourced within this module but with the `public_ip` module
-                                      instead.       
+                                      when Public IP is not created or sourced within this module.
   - `vnet_key`                      - (`string`, required) a key describing a VNET defined in `var.vnets`. This VNET should
                                       already have an existing subnet called `AzureBastionSubnet` (the name is hardcoded
                                       by Microsoft).

@@ -914,8 +914,7 @@ Following properties are available:
 - `resource_group_name` - (`string`, optional, defaults to `null`) name of the Resource Group hosting the Public IP resource, 
                           used only for sourced resources.
 - `id`                  - (`string`, optional, defaults to `null`) ID of the Public IP to associate with the Listener. 
-                          Property is used when Public IP is not created or sourced within this module but with the `public_ip`
-                          module instead.
+                          Property is used when Public IP is not created or sourced within this module.
 
 
 Type: 
