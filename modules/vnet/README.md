@@ -384,7 +384,7 @@ Map of objects describing a Route Tables.
 List of available properties:
 
 - `name`                          - (`string`, required) name of a Route Table.
-- `disable_bgp_route_propagation` - (`bool`, optional, defaults to `false`) controls propagation of routes learned by BGP.
+- `bgp_route_propagation_enabled` - (`bool`, optional, defaults to `true`) controls propagation of routes learned by BGP.
 - `routes`                        - (`map`, required) a map of Route Table entries (UDRs):
   - `name`                - (`string`, required) a name of a UDR.
   - `address_prefix`      - (`string`, required) the destination CIDR to which the route applies, such as `10.1.0.0/16`.
@@ -431,7 +431,7 @@ Type:
 ```hcl
 map(object({
     name                          = string
-    disable_bgp_route_propagation = optional(bool, false)
+    bgp_route_propagation_enabled = optional(bool, true)
     routes = map(object({
       name                = string
       address_prefix      = string

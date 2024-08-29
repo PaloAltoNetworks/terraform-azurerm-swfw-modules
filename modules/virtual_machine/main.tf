@@ -22,12 +22,12 @@ resource "azurerm_public_ip" "this" {
 resource "azurerm_network_interface" "this" {
   count = length(var.interfaces)
 
-  name                          = var.interfaces[count.index].name
-  location                      = var.region
-  resource_group_name           = var.resource_group_name
-  enable_accelerated_networking = var.accelerated_networking
-  enable_ip_forwarding          = true
-  tags                          = try(var.interfaces[count.index].tags, var.tags)
+  name                           = var.interfaces[count.index].name
+  location                       = var.region
+  resource_group_name            = var.resource_group_name
+  accelerated_networking_enabled = var.accelerated_networking
+  ip_forwarding_enabled          = true
+  tags                           = try(var.interfaces[count.index].tags, var.tags)
 
   ip_configuration {
     name                          = "primary"
