@@ -218,6 +218,10 @@ variable "interfaces" {
                                       interface with a Load Balancer backend pool.
   - `lb_backend_pool_id`            - (`string`, optional, defaults to `null`) ID of an existing backend pool to associate the
                                       interface with.
+  - `appgw_backend_pool_id`         - (`string`, optional, defaults to `null`) ID of an existing Application Gateway backend pool
+                                      to associate the interface with.
+  - `attach_to_appgw_backend_pool`  - (`bool`, optional, defaults to `false`) set to `true` if you would like to associate this
+                                      interface with an Application Gateway backend pool.
 
   Example:
 
@@ -252,6 +256,8 @@ variable "interfaces" {
     private_ip_address            = optional(string)
     lb_backend_pool_id            = optional(string)
     attach_to_lb_backend_pool     = optional(bool, false)
+    appgw_backend_pool_id         = optional(string)
+    attach_to_appgw_backend_pool  = optional(bool, false)
   }))
   validation { # create_public_ip, public_ip_name
     condition = alltrue([
@@ -275,6 +281,14 @@ variable "interfaces" {
     ])
     error_message = <<-EOF
     The `lb_backend_pool_id` cannot be `null` when `attach_to_lb_backend_pool` is set to `true`.
+    EOF
+  }
+  validation {
+    condition = alltrue([
+      for v in var.interfaces : v.appgw_backend_pool_id != null if v.attach_to_appgw_backend_pool
+    ])
+    error_message = <<-EOF
+    The `appgw_backend_pool_id` cannot be `null` when `attach_to_appgw_backend_pool` is set to `true`.
     EOF
   }
 }
