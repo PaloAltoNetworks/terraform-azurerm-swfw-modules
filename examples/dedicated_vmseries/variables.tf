@@ -920,7 +920,6 @@ variable "vmseries" {
   EOF
   }
 }
-}
 
 # TEST INFRASTRUCTURE
 
