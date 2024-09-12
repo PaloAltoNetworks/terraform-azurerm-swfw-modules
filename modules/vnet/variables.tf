@@ -49,6 +49,21 @@ variable "address_space" {
   }
 }
 
+variable "dns_servers" {
+  description = "List of IP addresses of custom DNS servers (by default Azure DNS is used)."
+  default     = null
+  type        = list(string)
+  validation {
+    condition = alltrue([
+      for v in coalesce(var.dns_servers, []) :
+      can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", v))
+    ])
+    error_message = <<-EOF
+    All items in var.dns_servers should be valid IP addresses.
+    EOF
+  }
+}
+
 variable "vnet_encryption" {
   description = <<-EOF
   Enables Azure Virtual Network encryption feature (in `AllowUnencrypted` mode by default).

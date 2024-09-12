@@ -162,6 +162,7 @@ Name | Type | Description
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`create_virtual_network`](#create_virtual_network) | `bool` | Controls Virtual Network creation.
 [`address_space`](#address_space) | `list` | The address space used by the virtual network.
+[`dns_servers`](#dns_servers) | `list` | List of IP addresses of custom DNS servers (by default Azure DNS is used).
 [`vnet_encryption`](#vnet_encryption) | `string` | Enables Azure Virtual Network encryption feature (in `AllowUnencrypted` mode by default).
 [`network_security_groups`](#network_security_groups) | `map` | Map of objects describing Network Security Groups.
 [`route_tables`](#route_tables) | `map` | Map of objects describing a Route Tables.
@@ -236,6 +237,16 @@ The address space used by the virtual network.
   
 You can supply more than one address space. Required only when you create a VNET.
 
+
+Type: list(string)
+
+Default value: `&{}`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### dns_servers
+
+List of IP addresses of custom DNS servers (by default Azure DNS is used).
 
 Type: list(string)
 
