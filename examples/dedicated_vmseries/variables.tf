@@ -903,8 +903,7 @@ variable "vmseries" {
     The `private_snet_key` and `public_snet_key` are required when `bootstrap_xml_template` is set.
     EOF
   }
-  validation {
-    # Ensure only one of `application_gateway_key` or `appgw_backend_pool_id` is set under an interface.
+  validation { # interfaces.application_gateway_key & interfaces.appgw_backend_pool_id
     condition = alltrue([
       for _, v in var.vmseries : alltrue([
         for nic in v.interfaces :
