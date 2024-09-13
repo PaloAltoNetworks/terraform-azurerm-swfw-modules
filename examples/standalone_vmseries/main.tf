@@ -443,6 +443,8 @@ module "vmseries" {
     private_ip_address            = v.private_ip_address
     attach_to_lb_backend_pool     = v.load_balancer_key != null
     lb_backend_pool_id            = try(module.load_balancer[v.load_balancer_key].backend_pool_id, null)
+    attach_to_appgw_backend_pool  = v.appgw_backend_pool_id != null
+    appgw_backend_pool_id         = try(v.appgw_backend_pool_id, null)
   }]
 
   tags = var.tags

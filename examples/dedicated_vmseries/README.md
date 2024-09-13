@@ -1139,7 +1139,9 @@ The most basic properties are as follows:
                                 backend pool.
   - `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in `var.appgws`
                                 variable, network interface that has this property defined will be added to the Application
-                                Gateway's backend pool.
+                                Gateway's backend pool. Mutually exclusive with `appgw_backend_pool_id`.
+  - `appgw_backend_pool_id`   - (`string`, optional, defaults to `null`) ID of the Application Gateway backend pool to which
+                                the network interface will be added. Mutually exclusive with `application_gateway_key`.
 
   For details on all properties refer to [module's documentation](../../modules/panorama/README.md#interfaces).
 
@@ -1201,6 +1203,7 @@ map(object({
       private_ip_address            = optional(string)
       load_balancer_key             = optional(string)
       application_gateway_key       = optional(string)
+      appgw_backend_pool_id         = optional(string)
     }))
   }))
 ```
