@@ -283,7 +283,7 @@ variable "interfaces" {
     The `lb_backend_pool_id` cannot be `null` when `attach_to_lb_backend_pool` is set to `true`.
     EOF
   }
-  validation {
+  validation { # appgw_backend_pool_id & attach_to_appgw_backend_pool
     condition = alltrue([
       for v in var.interfaces : v.appgw_backend_pool_id != null if v.attach_to_appgw_backend_pool
     ])
