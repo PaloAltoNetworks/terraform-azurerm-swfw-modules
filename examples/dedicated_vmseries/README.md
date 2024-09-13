@@ -284,6 +284,8 @@ For detailed documentation on each property refer to [module documentation](../.
 - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a
                               full resource name, including prefixes.
 - `address_space`           - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET.
+- `dns_servers`             - (`list`, optional, defaults to module defaults) a list of IP addresses of custom DNS servers (by
+                              default Azure DNS is used).
 - `vnet_encryption`         - (`string`, optional, defaults to module default) enables Azure Virtual Network Encryption when
                               set, only possible value at the moment is `AllowUnencrypted`. When set to `null`, the feature is 
                               disabled.
@@ -307,6 +309,7 @@ map(object({
     resource_group_name    = optional(string)
     create_virtual_network = optional(bool, true)
     address_space          = optional(list(string))
+    dns_servers            = optional(list(string))
     vnet_encryption        = optional(string)
     network_security_groups = optional(map(object({
       name = string
@@ -1136,7 +1139,9 @@ The most basic properties are as follows:
                                 backend pool.
   - `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in `var.appgws`
                                 variable, network interface that has this property defined will be added to the Application
-                                Gateway's backend pool.
+                                Gateway's backend pool. Mutually exclusive with `appgw_backend_pool_id`.
+  - `appgw_backend_pool_id`   - (`string`, optional, defaults to `null`) ID of the Application Gateway backend pool to which
+                                the network interface will be added. Mutually exclusive with `application_gateway_key`.
 
   For details on all properties refer to [module's documentation](../../modules/panorama/README.md#interfaces).
 
@@ -1198,6 +1203,7 @@ map(object({
       private_ip_address            = optional(string)
       load_balancer_key             = optional(string)
       application_gateway_key       = optional(string)
+      appgw_backend_pool_id         = optional(string)
     }))
   }))
 ```
@@ -1316,6 +1322,7 @@ map(object({
       name                    = string
       create_virtual_network  = optional(bool, true)
       address_space           = optional(list(string))
+      dns_servers             = optional(list(string))
       hub_resource_group_name = optional(string)
       hub_vnet_name           = string
       network_security_groups = optional(map(object({

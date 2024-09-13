@@ -46,6 +46,7 @@ module "vnet" {
   region                 = var.region
 
   address_space = each.value.address_space
+  dns_servers   = each.value.dns_servers
 
   create_subnets = each.value.create_subnets
   subnets        = each.value.subnets

@@ -80,6 +80,8 @@ For detailed documentation on each property refer to [module documentation](../.
 - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a
                               full resource name, including prefixes.
 - `address_space`           - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET.
+- `dns_servers`             - (`list`, optional, defaults to module defaults) a list of IP addresses of custom DNS servers (by
+                              default Azure DNS is used).
 - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
                               VNET will reside or is sourced from.
 - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
@@ -100,6 +102,7 @@ map(object({
     resource_group_name    = optional(string)
     create_virtual_network = optional(bool, true)
     address_space          = optional(list(string))
+    dns_servers            = optional(list(string))
     network_security_groups = optional(map(object({
       name = string
       rules = optional(map(object({

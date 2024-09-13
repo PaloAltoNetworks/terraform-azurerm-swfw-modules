@@ -48,6 +48,7 @@ If your Region doesn't, use an alternative mechanism of Availability Set, which 
 
 - `linux_virtual_machine` (managed)
 - `network_interface` (managed)
+- `network_interface_application_gateway_backend_address_pool_association` (managed)
 - `network_interface_backend_address_pool_association` (managed)
 - `public_ip` (managed)
 - `public_ip` (data)
@@ -287,6 +288,10 @@ Following configuration options are available:
                                     interface with a Load Balancer backend pool.
 - `lb_backend_pool_id`            - (`string`, optional, defaults to `null`) ID of an existing backend pool to associate the
                                     interface with.
+- `appgw_backend_pool_id`         - (`string`, optional, defaults to `null`) ID of an existing Application Gateway backend pool
+                                    to associate the interface with.
+- `attach_to_appgw_backend_pool`  - (`bool`, optional, defaults to `false`) set to `true` if you would like to associate this
+                                    interface with an Application Gateway backend pool.
 
 Example:
 
@@ -325,6 +330,8 @@ list(object({
     private_ip_address            = optional(string)
     lb_backend_pool_id            = optional(string)
     attach_to_lb_backend_pool     = optional(bool, false)
+    appgw_backend_pool_id         = optional(string)
+    attach_to_appgw_backend_pool  = optional(bool, false)
   }))
 ```
 

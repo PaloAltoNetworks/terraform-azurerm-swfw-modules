@@ -58,22 +58,25 @@ variable "vnets" {
   - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false`
                                 this should be a full resource name, including prefixes.
   - `address_space`           - (`list(string)`, required when `create_virtual_network = false`) a list of CIDRs
-                                for a newly created VNET
+                                for a newly created VNET.
+  - `dns_servers`             - (`list`, optional, defaults to module defaults) a list of IP addresses of custom DNS servers (by
+                                default Azure DNS is used).
   - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group
-                                in which the VNET will reside or is sourced from
+                                in which the VNET will reside or is sourced from.
   - `create_subnets`          - (`bool`, optinoal, defaults to `true`) if `true`,
-                                create Subnets inside the Virtual Network, otherwise use source existing subnets
+                                create Subnets inside the Virtual Network, otherwise use source existing subnets.
   - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
-                                [VNET module documentation](../../modules/vnet/README.md#subnets)
+                                [VNET module documentation](../../modules/vnet/README.md#subnets).
   - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
-                                [VNET module documentation](../../modules/vnet/README.md#network_security_groups)
+                                [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
   - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
-                                [VNET module documentation](../../modules/vnet/README.md#route_tables)
+                                [VNET module documentation](../../modules/vnet/README.md#route_tables).
   EOF
   type = map(object({
     name                   = string
     create_virtual_network = optional(bool, true)
     address_space          = optional(list(string), [])
+    dns_servers            = optional(list(string))
     resource_group_name    = optional(string)
     network_security_groups = optional(map(object({
       name     = string

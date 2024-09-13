@@ -61,6 +61,7 @@ module "vnet" {
   region                 = var.region
 
   address_space   = each.value.address_space
+  dns_servers     = each.value.dns_servers
   vnet_encryption = each.value.vnet_encryption
 
   create_subnets = each.value.create_subnets
@@ -315,6 +316,8 @@ module "vmseries" {
     private_ip_address            = v.private_ip_address
     attach_to_lb_backend_pool     = v.load_balancer_key != null || v.gwlb_key != null
     lb_backend_pool_id            = try(module.gwlb[v.gwlb_key].backend_pool_ids[v.gwlb_backend_key], null)
+    attach_to_appgw_backend_pool  = v.appgw_backend_pool_id != null
+    appgw_backend_pool_id         = try(v.appgw_backend_pool_id, null)
   }]
 
   tags = var.tags
