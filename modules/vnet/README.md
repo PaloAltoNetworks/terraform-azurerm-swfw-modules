@@ -11,6 +11,7 @@ This module is designed to work in several *modes* depending on which variables 
   name                = "transit"
   resource_group_name = "existing-rg"
   address_space       = ["10.0.0.0/25"]
+  region              = "North Europe"
   network_security_groups = {
     inbound = {
       name = "inbound-nsg"
@@ -34,42 +35,53 @@ This module is designed to work in several *modes* depending on which variables 
       name = "default-rt"
       routes = {
         "default" = {
-          name                   = "default-udr"
-          address_prefix         = "0.0.0.0/0"
-          next_hop_type          = "VirtualAppliance"
-          next_hop_in_ip_address = "5.6.7.8"
+          name                = "default-udr"
+          address_prefix      = "0.0.0.0/0"
+          next_hop_type       = "VirtualAppliance"
+          next_hop_ip_address = "5.6.7.8"
         }
       }
     }
   }
   subnets = {
     "subnet" = {
-      name                   = "snet"
-      address_prefixes       = ["10.0.0.0/28"]
-      network_security_group = "inbound"
-      route_table            = "default"
+      name                       = "snet"
+      address_prefixes           = ["10.0.0.0/28"]
+      network_security_group_key = "inbound"
+      route_table_key            = "default"
     }
   }
   ```
 
-- source a VNET but create Subnets, NSGs and Route Tables. This is a similar example to the above one, NSG and Route Table are empty this time:
+- source a VNET but create Subnets, NSGs and Route Tables. This is a similar example to the above one, NSG is empty this time:
 
   ```hcl
   create_virtual_network = false
   name                   = "existing-vnet"
   resource_group_name    = "existing-rg"
+  region                 = "North Europe"
   network_security_groups = {
     inbound = { name = "inbound-nsg" }
   }
   route_tables = {
-    default = { name = "default-rt" }
+    default = {
+      name = "default-rt"
+      routes = {
+        "default" = {
+          name           = "default-udr"
+          address_prefix = "0.0.0.0/0"
+          next_hop_type       = "VirtualAppliance"
+          next_hop_ip_address = "5.6.7.8"
+        }
+      }
+    }
   }
   subnets = {
     "subnet" = {
-      name                   = "snet"
-      address_prefixes       = ["10.0.0.0/28"]
-      network_security_group = "inbound"
-      route_table            = "default"
+      name                       = "snet"
+      address_prefixes           = ["10.0.0.0/28"]
+      network_security_group_key = "inbound"
+      route_table_key            = "default"
     }
   }
   ```
@@ -78,8 +90,9 @@ This module is designed to work in several *modes* depending on which variables 
 
   ```hcl
   create_virtual_network = false
-  name                   = "existing-vnet"
-  resource_group_name    = "existing-rg"
+  name                   = azurerm_virtual_network.this.name
+  resource_group_name    = azurerm_resource_group.this.name
+  region                 = "North Europe"
   network_security_groups = {
     inbound = {
       name = "inbound-nsg"
@@ -103,10 +116,10 @@ This module is designed to work in several *modes* depending on which variables 
       name = "default-rt"
       routes = {
         "default" = {
-          name                   = "default-udr"
-          address_prefix         = "0.0.0.0/0"
-          next_hop_type          = "VirtualAppliance"
-          next_hop_in_ip_address = "5.6.7.8"
+          name                = "default-udr"
+          address_prefix      = "0.0.0.0/0"
+          next_hop_type       = "VirtualAppliance"
+          next_hop_ip_address = "5.6.7.8"
         }
       }
     }
@@ -114,9 +127,9 @@ This module is designed to work in several *modes* depending on which variables 
   create_subnets = false
   subnets = {
     "subnet" = {
-      name                   = "snet"
-      network_security_group = "inbound"
-      route_table            = "default"
+      name                       = "snet"
+      network_security_group_key = "inbound"
+      route_table_key            = "default"
     }
   }
   ```

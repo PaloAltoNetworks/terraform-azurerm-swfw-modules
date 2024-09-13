@@ -32,11 +32,12 @@ module "lbi" {
   name                = "private-lb"
   region              = "West Europe"
   resource_group_name = "existing-rg"
+  backend_name = "vmseries_backend"
 
   frontend_ips = {
     ha = {
       name               = "HA"
-      subnet_id          = "/subscription/xxxx/......."
+      subnet_id          = azurerm_subnet.this.id
       private_ip_address = "10.0.0.1"
       in_rules = {
         ha = {
@@ -64,6 +65,7 @@ module "lbe" {
   name                = "public-lb"
   region              = "West Europe"
   resource_group_name = "existing-rg"
+  backend_name = "vmseries_backend"
 
   frontend_ips = {
     web = {
@@ -74,7 +76,7 @@ module "lbe" {
         http = {
           name     = "http"
           port     = 80
-          protocol = "TCP"
+          protocol = "Tcp"
         }
       }
     }

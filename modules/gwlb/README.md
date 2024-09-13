@@ -15,11 +15,12 @@ In order to use GWLB, below minimal definition of Gateway Load Balancer can be u
 
 ```hcl
   gwlb = {
-    name = "vmseries-gwlb"
-
-    frontend_ip = {
-      vnet_key   = "security"
-      subnet_key = "data"
+    vmseries_gwlb = {                
+      name = "vmseries-gwlb"          
+      frontend_ip = {                 
+        vnet_key   = "security"
+        subnet_key = "data"
+      }
     }
   }
 ```
@@ -33,7 +34,8 @@ For more customized requirements, below extended definition of GWLB can be appli
 - 2 backends are defined (external and internal)
 
 ```hcl
-  gwlb2 = {
+ gwlb = {
+  vmseries_gwlb = {
     name  = "vmseries-gwlb2"
     zones = []
 
@@ -51,6 +53,7 @@ For more customized requirements, below extended definition of GWLB can be appli
     health_probe = {
       name = "custom-name-health-probe"
       port = 80
+      protocol = "Tcp"
     }
 
     backends = {
@@ -78,6 +81,7 @@ For more customized requirements, below extended definition of GWLB can be appli
       }
     }
   }
+}
 ```
 
 ## Reference
