@@ -5,7 +5,7 @@ output "virtual_network_id" {
 
 output "vnet_cidr" {
   description = "VNET address space."
-  value       = local.virtual_network.address_space
+  value       = tolist(local.virtual_network.address_space)
 }
 
 output "subnet_ids" {

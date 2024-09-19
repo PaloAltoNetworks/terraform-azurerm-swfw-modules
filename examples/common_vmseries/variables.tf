@@ -102,7 +102,7 @@ variable "vnets" {
     })), {})
     route_tables = optional(map(object({
       name                          = string
-      disable_bgp_route_propagation = optional(bool)
+      bgp_route_propagation_enabled = optional(bool)
       routes = map(object({
         name                = string
         address_prefix      = string
@@ -1055,7 +1055,7 @@ variable "test_infrastructure" {
       })), {})
       route_tables = optional(map(object({
         name                          = string
-        disable_bgp_route_propagation = optional(bool)
+        bgp_route_propagation_enabled = optional(bool)
         routes = map(object({
           name                = string
           address_prefix      = string
