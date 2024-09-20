@@ -30,7 +30,7 @@ module "natgw" {
   name                = "NATGW_name"
   resource_group_name = "resource_group_name"
   location            = "region_name"
-  subnet_ids          = { "a_subnet_name" = module.vnet.subnet_ids["a_subnet_name"] }
+  subnet_ids          = { "subnet_name" = "/subscription/xxxx/......." }
   idle_timeout        = 120
 }
 ```

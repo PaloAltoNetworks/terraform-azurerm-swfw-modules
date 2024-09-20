@@ -90,8 +90,8 @@ This module is designed to work in several *modes* depending on which variables 
 
   ```hcl
   create_virtual_network = false
-  name                   = azurerm_virtual_network.this.name
-  resource_group_name    = azurerm_resource_group.this.name
+  name                   = "existing-vnet"
+  resource_group_name    = "existing-rg"
   region                 = "North Europe"
   network_security_groups = {
     inbound = {

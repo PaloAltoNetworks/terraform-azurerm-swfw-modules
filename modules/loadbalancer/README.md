@@ -37,7 +37,7 @@ module "lbi" {
   frontend_ips = {
     ha = {
       name               = "HA"
-      subnet_id          = azurerm_subnet.this.id
+      subnet_id          = "/subscription/xxxx/......."
       private_ip_address = "10.0.0.1"
       in_rules = {
         ha = {

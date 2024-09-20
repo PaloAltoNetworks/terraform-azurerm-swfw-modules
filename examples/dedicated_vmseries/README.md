@@ -187,8 +187,8 @@ terraform destroy
 ### Providers
 
 - `random`
-- `azurerm`
 - `local`
+- `azurerm`
 
 ### Modules
 Name | Version | Source | Description

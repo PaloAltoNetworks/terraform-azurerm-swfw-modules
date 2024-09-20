@@ -20,7 +20,7 @@ module "vng" {
 
   ip_configurations = each.value.ip_configurations
   instance_settings = each.value.instance_settings
-  subnet_id         = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
+  subnet_id         = "/subscription/xxxx/......."
 
   azure_bgp_peer_addresses = each.value.azure_bgp_peer_addresses
   bgp                      = each.value.bgp
