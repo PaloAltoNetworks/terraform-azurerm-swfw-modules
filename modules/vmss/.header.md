@@ -59,7 +59,7 @@ Therefore each Scale Set instance should be configured with a dedicated Applicat
 Below you can find a simple example deploying a Scale Set w/o autoscaling, using defaults where possible:
 
 ```hcl
-  module "vmss" {
+module "vmss" {
   source = "PaloAltoNetworks/swfw-modules/azurerm//modules/vmss"
 
   name                = "ngfw-vmss"
@@ -74,8 +74,8 @@ Below you can find a simple example deploying a Scale Set w/o autoscaling, using
   }
 
   authentication = {
-    username = "panadmin"
-    password = "c0mpl1c@t3d"
+    username                        = "panadmin"
+    password                        = "c0mpl1c@t3d"
     disable_password_authentication = false
   }
 
