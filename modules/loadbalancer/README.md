@@ -32,6 +32,7 @@ module "lbi" {
   name                = "private-lb"
   region              = "West Europe"
   resource_group_name = "existing-rg"
+  backend_name = "vmseries_backend"
 
   frontend_ips = {
     ha = {
@@ -64,6 +65,7 @@ module "lbe" {
   name                = "public-lb"
   region              = "West Europe"
   resource_group_name = "existing-rg"
+  backend_name = "vmseries_backend"
 
   frontend_ips = {
     web = {
@@ -74,7 +76,7 @@ module "lbe" {
         http = {
           name     = "http"
           port     = 80
-          protocol = "TCP"
+          protocol = "Tcp"
         }
       }
     }
