@@ -392,16 +392,43 @@ variable "vmseries_universal" {
   - `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
   - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
                           Deployment Guide* as only a few selected sizes are supported.
-  - `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
+  - `bootstrap_options` - (`map`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
                           when launched for the 1st time, for details see module documentation.
   - `bootstrap_package` - (`map`, optional, mutually exclusive with `bootstrap_options`) a map defining content of the bootstrap
                           package. For details and available properties refer to `vmseries` variable.
   EOF
   default     = {}
   type = object({
-    version           = optional(string)
-    size              = optional(string)
-    bootstrap_options = optional(string)
+    version = optional(string)
+    size    = optional(string)
+    bootstrap_options = optional(object({
+      type                                  = optional(string)
+      ip-address                            = optional(string)
+      default-gateway                       = optional(string)
+      netmask                               = optional(string)
+      ipv6-address                          = optional(string)
+      ipv6-default-gateway                  = optional(string)
+      hostname                              = optional(string)
+      panorama-server                       = optional(string)
+      panorama-server-2                     = optional(string)
+      tplname                               = optional(string)
+      dgname                                = optional(string)
+      cgname                                = optional(string)
+      dns-primary                           = optional(string)
+      dns-secondary                         = optional(string)
+      vm-auth-key                           = optional(string)
+      op-command-modes                      = optional(string)
+      op-cmd-dpdk-pkt-io                    = optional(string)
+      plugin-op-commands                    = optional(string)
+      dhcp-send-hostname                    = optional(string)
+      dhcp-send-client-id                   = optional(string)
+      dhcp-accept-server-hostname           = optional(string)
+      dhcp-accept-server-domain             = optional(string)
+      vm-series-auto-registration-pin-id    = optional(string)
+      vm-series-auto-registration-pin-value = optional(string)
+      auth-key                              = optional(string)
+      authcodes                             = optional(string)
+    }))
     bootstrap_package = optional(object({
       bootstrap_storage_key  = string
       static_files           = optional(map(string), {})
@@ -478,7 +505,7 @@ variable "vmseries" {
     - `disk_type`         - (`string`, optional, defaults to module default) type of a Managed Disk which should be created,
                             possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
                             `size` values).
-    - `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
+    - `bootstrap_options` - (`map`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
                             when launched for the 1st time, for details see module documentation.
     - `bootstrap_package` - (`map`, optional, mutually exclusive with `bootstrap_options`) a map defining content of the
                             bootstrap package.
@@ -525,7 +552,7 @@ variable "vmseries" {
                                    private networks. When set it will override the private Subnet CIDR for inbound traffic
                                    static routes.
       
-      For details on all properties refer to [module's documentation](../../modules/panorama/README.md#virtual_machine).
+      For details on all properties refer to [module's documentation](../../modules/vmseries/README.md#virtual_machine).
 
   - `interfaces`      - (`list`, required) configuration of all network interfaces. Order of the interfaces does matter - the
                         1<sup>st</sup> interface is the management one. Most common properties are:
@@ -565,8 +592,35 @@ variable "vmseries" {
       custom_id               = optional(string)
     }))
     virtual_machine = object({
-      size              = optional(string)
-      bootstrap_options = optional(string)
+      size = optional(string)
+      bootstrap_options = optional(object({
+        type                                  = optional(string)
+        ip-address                            = optional(string)
+        default-gateway                       = optional(string)
+        netmask                               = optional(string)
+        ipv6-address                          = optional(string)
+        ipv6-default-gateway                  = optional(string)
+        hostname                              = optional(string)
+        panorama-server                       = optional(string)
+        panorama-server-2                     = optional(string)
+        tplname                               = optional(string)
+        dgname                                = optional(string)
+        cgname                                = optional(string)
+        dns-primary                           = optional(string)
+        dns-secondary                         = optional(string)
+        vm-auth-key                           = optional(string)
+        op-command-modes                      = optional(string)
+        op-cmd-dpdk-pkt-io                    = optional(string)
+        plugin-op-commands                    = optional(string)
+        dhcp-send-hostname                    = optional(string)
+        dhcp-send-client-id                   = optional(string)
+        dhcp-accept-server-hostname           = optional(string)
+        dhcp-accept-server-domain             = optional(string)
+        vm-series-auto-registration-pin-id    = optional(string)
+        vm-series-auto-registration-pin-value = optional(string)
+        auth-key                              = optional(string)
+        authcodes                             = optional(string)
+      }))
       bootstrap_package = optional(object({
         bootstrap_storage_key  = string
         static_files           = optional(map(string), {})
@@ -640,7 +694,7 @@ variable "vmseries" {
     ])
     error_message = <<-EOF
     Only one of `application_gateway_key` or `appgw_backend_pool_id` can be set under an interface, but not both.
-  EOF
+    EOF
   }
 }
 

@@ -540,6 +540,95 @@ variable "ngfw_metrics" {
   })
 }
 
+variable "bootstrap_storages" {
+  description = <<-EOF
+  A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs.
+
+  You can create or re-use an existing Storage Account and/or File Share. For details on all available properties please refer to
+  [module's documentation](../../modules/bootstrap/README.md). Following is just an extract of the most important ones:
+
+  - `name`                      - (`string`, required) name of the Storage Account that will be created or sourced.
+
+    **Note** \
+    For new Storage Accounts this name will not be prefixed with `var.name_prefix`. \
+    Please note the limitations on naming. This has to be a globally unique name, between 3 and 63 chars, only lower-case letters
+    and numbers.
+
+  - `resource_group_name`       - (`string`, optional, defaults to `null`) name of the Resource Group that hosts (sourced) or
+                                  will host (created) a Storage Account. When skipped the code will fall back to
+                                  `var.resource_group_name`.
+  - `storage_account`           - (`map`, optional, defaults to `{}`) a map controlling basic Storage Account configuration.
+
+    The property you should pay attention to is:
+
+    - `create` - (`bool`, optional, defaults to module default) controls if the Storage Account specified in the `name` property
+                 will be created or sourced.
+
+    For detailed documentation see [module's documentation](../../modules/bootstrap/README.md#storage_account).
+
+  - `storage_network_security`  - (`map`, optional, defaults to `{}`) a map defining network security settings for a **new**
+                                  storage account.
+
+    The properties you should pay attention to are:
+
+    - `allowed_subnet_keys` - (`list`, optional, defaults to `[]`) a list of keys pointing to Subnet definitions in the
+                              `var.vnets` map. These Subnets will have dedicated access to the Storage Account. For this to work
+                              they also need to have the Storage Account Service Endpoint enabled.
+    - `vnet_key`            - (`string`, optional) a key pointing to a VNET definition in the `var.vnets` map that stores the
+                              Subnets described in `allowed_subnet_keys`.
+
+    For detailed documentation see [module's documentation](../../modules/bootstrap/README.md#storage_network_security).
+
+  - `file_shares_configuration` - (`map`, optional, defaults to `{}`) a map defining common File Share setting.
+
+    The properties you should pay attention to are:
+
+    - `create_file_shares`            - (`bool`, optional, defaults to module default) controls if the File Shares defined in the
+                                        `file_shares` property will be created or sourced.
+    - `disable_package_dirs_creation` - (`bool`, optional, defaults to module default) for sourced File Shares, controls if the
+                                        bootstrap package folder structure will be created.
+
+    For detailed documentation see [module's documentation](../../modules/bootstrap/README.md#file_shares_configuration).
+
+  - `file_shares`               - (`map`, optional, defaults to `{}`) a map that holds File Shares and bootstrap package
+                                  configuration. For detailed description see
+                                  [module's documentation](../../modules/bootstrap/README.md#file_shares).
+  EOF
+  default     = {}
+  nullable    = false
+  type = map(object({
+    name                = string
+    resource_group_name = optional(string)
+    storage_account = optional(object({
+      create           = optional(bool)
+      replication_type = optional(string)
+      kind             = optional(string)
+      tier             = optional(string)
+      blob_retention   = optional(number)
+    }), {})
+    storage_network_security = optional(object({
+      min_tls_version     = optional(string)
+      allowed_public_ips  = optional(list(string))
+      vnet_key            = optional(string)
+      allowed_subnet_keys = optional(list(string), [])
+    }), {})
+    file_shares_configuration = optional(object({
+      create_file_shares            = optional(bool)
+      disable_package_dirs_creation = optional(bool)
+      quota                         = optional(number)
+      access_tier                   = optional(string)
+    }), {})
+    file_shares = optional(map(object({
+      name                   = string
+      bootstrap_package_path = optional(string)
+      bootstrap_files        = optional(map(string))
+      bootstrap_files_md5    = optional(map(string))
+      quota                  = optional(number)
+      access_tier            = optional(string)
+    })), {})
+  }))
+}
+
 variable "scale_sets_universal" {
   description = <<-EOF
   A map defining common settings for all created VM-Series Scale Sets. 
@@ -553,14 +642,53 @@ variable "scale_sets_universal" {
   - `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
   - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
                           Deployment Guide* as only a few selected sizes are supported.
-  - `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
+  - `bootstrap_options` - (`map`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
                           when launched for the 1st time, for details see module documentation.
+  - `bootstrap_package` - (`map`, optional, mutually exclusive with `bootstrap_options`) a map defining content of the bootstrap
+                          package. For details and available properties refer to `scale_sets` variable.
   EOF
   default     = {}
   type = object({
-    version           = optional(string)
-    size              = optional(string)
-    bootstrap_options = optional(string)
+    version = optional(string)
+    size    = optional(string)
+    bootstrap_options = optional(object({
+      type                                  = optional(string)
+      ip-address                            = optional(string)
+      default-gateway                       = optional(string)
+      netmask                               = optional(string)
+      ipv6-address                          = optional(string)
+      ipv6-default-gateway                  = optional(string)
+      hostname                              = optional(string)
+      panorama-server                       = optional(string)
+      panorama-server-2                     = optional(string)
+      tplname                               = optional(string)
+      dgname                                = optional(string)
+      cgname                                = optional(string)
+      dns-primary                           = optional(string)
+      dns-secondary                         = optional(string)
+      vm-auth-key                           = optional(string)
+      op-command-modes                      = optional(string)
+      op-cmd-dpdk-pkt-io                    = optional(string)
+      plugin-op-commands                    = optional(string)
+      dhcp-send-hostname                    = optional(string)
+      dhcp-send-client-id                   = optional(string)
+      dhcp-accept-server-hostname           = optional(string)
+      dhcp-accept-server-domain             = optional(string)
+      vm-series-auto-registration-pin-id    = optional(string)
+      vm-series-auto-registration-pin-value = optional(string)
+      auth-key                              = optional(string)
+      authcodes                             = optional(string)
+    }))
+    bootstrap_package = optional(object({
+      bootstrap_storage_key  = string
+      static_files           = optional(map(string), {})
+      bootstrap_package_path = optional(string)
+      bootstrap_xml_template = optional(string)
+      private_snet_key       = optional(string)
+      public_snet_key        = optional(string)
+      ai_update_interval     = optional(number, 5)
+      intranet_cidr          = optional(string)
+    }))
   })
 }
 
@@ -609,7 +737,57 @@ variable "scale_sets" {
       - `disk_type`         - (`string`, optional, defaults to module default) type of Managed Disk which should be created,
                               possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
                               `vm_size` values).
-      - `bootstrap_options` - (`string`, optional, defaults to module default) bootstrap options to pass to VM-Series instance.
+      - `bootstrap_options` - (`map`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
+                              when launched for the 1st time, for details see module documentation.
+      - `bootstrap_package` - (`map`, optional, mutually exclusive with `bootstrap_options`) a map defining content of the
+                              bootstrap package.
+
+        **Note!** \
+        At least one of `static_files`, `bootstrap_xml_template` or `bootstrap_package_path` is required. You can use a
+        combination of all 3. The `bootstrap_package_path` is the less important. For details on this mechanism and for details
+        on the other properties see the [`bootstrap` module documentation](../../modules/bootstrap/README.md).
+
+        Following properties are available:
+
+        - `bootstrap_storage_key`  - (`string`, required) a key of a bootstrap storage defined in `var.bootstrap_storages` that
+                                    will host bootstrap packages. Each package will be hosted on a separate File Share. The File
+                                    Shares will be created automatically, one for each firewall.
+        - `static_files`           - (`map`, optional, defaults to `{}`) a map containing files that will be copied to a File
+                                    Share, see [`file_shares.bootstrap_files`](../../modules/bootstrap/README.md#file_shares)
+                                    property documentation for details.
+        - `bootstrap_package_path` - (`string`, optional, defaults to `null`) a path to a folder containing a full bootstrap
+                                    package.
+        - `bootstrap_xml_template` - (`string`, optional, defaults to `null`) a path to a `bootstrap.xml` template. If this
+                                     example is using full bootstrap method, the sample templates are in
+                                     [`templates`](./templates) folder.
+
+          The templates are used to provide `day0` like configuration which consists of:
+
+          - network interfaces configuration.
+          - one or more (depending on the architecture) Virtual Routers configurations. This config contains static routes
+            required for the Load Balancer (and Application Gateway, if defined) health checks to work and routes that allow
+            Inbound and OBEW traffic.
+          - *any-any* security rule.
+          - an outbound NAT rule that will allow the Outbound traffic to flow to the Internet.
+
+          **Note!** \
+          Day0 configuration is **not meant** to be **secure**. It's here merely to help with the basic firewall setup. When
+          `bootstrap_xml_template` is set, one of the following properties might be required.
+
+        - `private_snet_key`       - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
+                                    pointing to a private Subnet definition in `var.vnets` (the `vnet_key` property is used to
+                                    identify a VNET). The Subnet definition is used to calculate static routes for a private
+                                    Load Balancer health checks and for Inbound traffic.
+        - `public_snet_key`        - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
+                                    pointing to a public Subnet definition in `var.vnets` (the `vnet_key` property is used to
+                                    identify a VNET). The Subnet definition is used to calculate static routes for a public
+                                    Load Balancer health checks and for Outbound traffic.
+        - `ai_update_interval`     - (`number`, optional, defaults to `5`) Application Insights update interval, used only when
+                                    `ngfw_metrics` module is defined and used in this example. The Application Insights
+                                    Instrumentation Key will be populated automatically.
+        - `intranet_cidr`          - (`string`, optional, defaults to `null`) a CIDR of the Intranet - combined CIDR of all
+                                    private networks. When set it will override the private Subnet CIDR for inbound traffic
+                                    static routes.
 
       For details on all properties refer to [module's documentation](../../modules/vmss/README.md#virtual_machine_scale_set).
 
@@ -662,10 +840,47 @@ variable "scale_sets" {
       custom_id               = optional(string)
     }))
     virtual_machine_scale_set = optional(object({
-      size                          = optional(string)
-      bootstrap_options             = optional(string)
-      zones                         = optional(list(string))
-      disk_type                     = optional(string)
+      size      = optional(string)
+      zones     = optional(list(string))
+      disk_type = optional(string)
+      bootstrap_options = optional(object({
+        type                                  = optional(string)
+        ip-address                            = optional(string)
+        default-gateway                       = optional(string)
+        netmask                               = optional(string)
+        ipv6-address                          = optional(string)
+        ipv6-default-gateway                  = optional(string)
+        hostname                              = optional(string)
+        panorama-server                       = optional(string)
+        panorama-server-2                     = optional(string)
+        tplname                               = optional(string)
+        dgname                                = optional(string)
+        cgname                                = optional(string)
+        dns-primary                           = optional(string)
+        dns-secondary                         = optional(string)
+        vm-auth-key                           = optional(string)
+        op-command-modes                      = optional(string)
+        op-cmd-dpdk-pkt-io                    = optional(string)
+        plugin-op-commands                    = optional(string)
+        dhcp-send-hostname                    = optional(string)
+        dhcp-send-client-id                   = optional(string)
+        dhcp-accept-server-hostname           = optional(string)
+        dhcp-accept-server-domain             = optional(string)
+        vm-series-auto-registration-pin-id    = optional(string)
+        vm-series-auto-registration-pin-value = optional(string)
+        auth-key                              = optional(string)
+        authcodes                             = optional(string)
+      }))
+      bootstrap_package = optional(object({
+        bootstrap_storage_key  = string
+        static_files           = optional(map(string), {})
+        bootstrap_package_path = optional(string)
+        bootstrap_xml_template = optional(string)
+        private_snet_key       = optional(string)
+        public_snet_key        = optional(string)
+        ai_update_interval     = optional(number, 5)
+        intranet_cidr          = optional(string)
+      }))
       accelerated_networking        = optional(bool)
       allow_extension_operations    = optional(bool)
       encryption_at_host_enabled    = optional(bool)
@@ -733,6 +948,29 @@ variable "scale_sets" {
       })), [])
     })), [])
   }))
+  validation { # virtual_machine_scale_set.bootstrap_options & virtual_machine_scale_set.bootstrap_package
+    condition = alltrue([
+      for _, v in var.scale_sets :
+      v.virtual_machine_scale_set.bootstrap_options != null && v.virtual_machine_scale_set.bootstrap_package == null ||
+      v.virtual_machine_scale_set.bootstrap_options == null && v.virtual_machine_scale_set.bootstrap_package != null ||
+      v.virtual_machine_scale_set.bootstrap_options == null && v.virtual_machine_scale_set.bootstrap_package == null
+    ])
+    error_message = <<-EOF
+    Either `bootstrap_options` or `bootstrap_package` property can be set.
+    EOF
+  }
+  validation { # virtual_machine_scale_set.bootstrap_package
+    condition = alltrue([
+      for _, v in var.scale_sets :
+      v.virtual_machine_scale_set.bootstrap_package.bootstrap_xml_template != null ? (
+        v.virtual_machine_scale_set.bootstrap_package.private_snet_key != null &&
+        v.virtual_machine_scale_set.bootstrap_package.public_snet_key != null
+      ) : true if v.virtual_machine_scale_set.bootstrap_package != null
+    ])
+    error_message = <<-EOF
+    The `private_snet_key` and `public_snet_key` are required when `bootstrap_xml_template` is set.
+    EOF
+  }
 }
 
 # TEST INFRASTRUCTURE
