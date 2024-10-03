@@ -281,7 +281,7 @@ vmseries_universal = {
   bootstrap_package = {
     bootstrap_storage_key  = "bootstrap"
     static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" } # TODO: Modify the map key to reflect a path to init-cfg file
-    bootstrap_xml_template = "templates/bootstrap_inbound.tmpl"               # TODO: Insert a path to bootstrap template file
+    bootstrap_xml_template = "templates/bootstrap_common.tmpl"                # TODO: Insert a path to bootstrap template file
     private_snet_key       = "private"
     public_snet_key        = "public"
     intranet_cidr          = "10.0.0.0/8"
