@@ -7,6 +7,7 @@ resource "azurerm_storage_account" "this" {
   resource_group_name             = var.resource_group_name
   min_tls_version                 = var.storage_network_security.min_tls_version
   allow_nested_items_to_be_public = false
+  local_user_enabled              = false
   account_replication_type        = var.storage_account.replication_type
   account_tier                    = var.storage_account.tier
   account_kind                    = var.storage_account.kind
