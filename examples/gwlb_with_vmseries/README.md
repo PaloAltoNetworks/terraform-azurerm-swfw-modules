@@ -79,7 +79,7 @@ terraform plan
 terraform apply
 ```
 
-- At this stage you have to wait a few minutes for the firewalls to bootstrap.
+- at this stage you have to wait couple of minutes for the firewalls to bootstrap.
 
 ### Post deploy
 
