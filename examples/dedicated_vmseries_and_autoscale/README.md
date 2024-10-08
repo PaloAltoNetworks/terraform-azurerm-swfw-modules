@@ -122,7 +122,10 @@ requirements:
   look at the `TODO` markers). If you already have a configured Panorama (with at least minimum configuration described above) you
   might want to also adjust the `bootstrap_options` for each scale set ([inbound](./example.tfvars#L205) and
   [obew](./example.tfvars#L249) separately).
-- _(optional)_ authenticate to AzureRM, switch to the Subscription of your choice if necessary
+- _(optional)_ authenticate to AzureRM, switch to the Subscription of your choice
+- provide `subscription_id` property under the `azurerm` provider block in [`versions.tf`](./versions.tf) file or create an
+  environment variable named `ARM_SUBSCRIPTION_ID` with Subscription ID as value in your shell (required since AzureRM provider
+  version 4 as per [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#subscription_id))
 - initialize the Terraform module:
 
   ```bash

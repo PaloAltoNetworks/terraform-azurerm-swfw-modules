@@ -90,7 +90,10 @@ A list of requirements might vary depending on the platform used to deploy the i
 - checkout the code locally (if you haven't done so yet)
 - copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs
   (take a closer look at the `TODO` markers)
-- _(optional)_ authenticate to AzureRM, switch to the Subscription of your choice if necessary
+- _(optional)_ authenticate to AzureRM, switch to the Subscription of your choice
+- provide `subscription_id` property under the `azurerm` provider block in [`versions.tf`](./versions.tf) file or create an
+  environment variable named `ARM_SUBSCRIPTION_ID` with Subscription ID as value in your shell (required since AzureRM provider
+  version 4 as per [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#subscription_id))
 - initialize the Terraform module:
 
   ```bash

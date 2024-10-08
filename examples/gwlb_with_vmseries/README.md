@@ -52,43 +52,46 @@ A list of requirements might vary depending on the platform used to deploy the i
 
 ### Deployment Steps
 
-* Checkout the code locally.
-* Copy `example.tfvars` to `terraform.tfvars` and adjust it to your needs.
-* Copy `files/init-cfg.txt.sample` to `files/init-cfg.txt` and fill it in with required bootstrap parameters (see this
+- checkout the code locally
+- copy `example.tfvars` to `terraform.tfvars` and adjust it to your needs
+- copy `files/init-cfg.txt.sample` to `files/init-cfg.txt` and fill it in with required bootstrap parameters (see this
 [documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components)
-for details).
-* _(optional)_ Authenticate to AzureRM, switch to the Subscription of your choice if necessary.
-* Initialize the Terraform module:
+for details)
+- _(optional)_ Authenticate to AzureRM, switch to the Subscription of your choice
+- provide `subscription_id` property under the `azurerm` provider block in [`versions.tf`](./versions.tf) file or create an
+  environment variable named `ARM_SUBSCRIPTION_ID` with Subscription ID as value in your shell (required since AzureRM provider
+  version 4 as per [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#subscription_id))
+- initialize the Terraform module:
 
 ```bash
 terraform init
 ```
 
-* _(optional)_ Plan you infrastructure to see what will be actually deployed:
+- _(optional)_ plan you infrastructure to see what will be actually deployed:
 
 ```bash
 terraform plan
 ```
 
-* Deploy the infrastructure:
+- deploy the infrastructure (you will have to confirm it with typing in `yes`):
 
 ```bash
 terraform apply
 ```
 
-* At this stage you have to wait a few minutes for the firewalls to bootstrap.
+- At this stage you have to wait a few minutes for the firewalls to bootstrap.
 
 ### Post deploy
 
 Firewalls in this example are configured with password authentication. To retrieve the initial credentials run:
 
-* for username:
+- for username:
 
 ```bash
 terraform output username
 ```
 
-* for password:
+- for password:
 
 ```bash
 terraform output password
@@ -102,8 +105,8 @@ terraform output vmseries_mgmt_ips
 
 You can now login to the devices using either:
 
-* CLI - ssh client is required
-* Web UI (https) - any modern web browser, note that initially the traffic is encrypted with a self-signed certificate.
+- CLI - ssh client is required
+- Web UI (https) - any modern web browser, note that initially the traffic is encrypted with a self-signed certificate.
 
 With default example configuration, the devices already contain `DAY0` configuration, so all network interfaces should be
 configured and Azure Gateway Load Balancer should already report that the devices are healthy.
