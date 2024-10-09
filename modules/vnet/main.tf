@@ -45,6 +45,16 @@ resource "azurerm_subnet" "this" {
   virtual_network_name = local.virtual_network.name
   address_prefixes     = each.value.address_prefixes
   service_endpoints    = each.value.enable_storage_service_endpoint ? ["Microsoft.Storage"] : null
+
+  dynamic "delegation" {
+    for_each = each.value.enable_cloudngfw_delegation ? [1] : []
+    content {
+      name = "cloudngfw_delegation"
+      service_delegation {
+        name = "PaloAltoNetworks.Cloudngfw/firewalls"
+      }
+    }
+  }
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subnet
