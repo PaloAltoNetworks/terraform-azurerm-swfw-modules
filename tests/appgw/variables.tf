@@ -1,5 +1,16 @@
 # GENERAL
 
+variable "subscription_id" {
+  description = <<-EOF
+  Azure Subscription ID is a required argument since AzureRM provider v4.
+
+  **Note!** \
+  Instead of putting the Subscription ID directly in the code, it's recommended to use an environment variable. Create an
+  environment variable named `ARM_SUBSCRIPTION_ID` with your Subscription ID as value and leave this variable set to `null`.
+  EOF
+  type        = string
+}
+
 variable "tags" {
   description = "Map of tags to assign to the created resources."
   default     = {}

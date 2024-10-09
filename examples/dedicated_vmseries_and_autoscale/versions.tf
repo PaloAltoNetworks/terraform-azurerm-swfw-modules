@@ -11,6 +11,7 @@ terraform {
 }
 
 provider "azurerm" {
+  subscription_id = var.subscription_id
   features {
     virtual_machine_scale_set {
       # Make upgrade_policy_mode = "Manual" actually work. On a default setting:

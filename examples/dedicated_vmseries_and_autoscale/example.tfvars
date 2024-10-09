@@ -1,5 +1,7 @@
 # GENERAL
 
+subscription_id = null # TODO: Put the Azure Subscription ID here only in case you cannot use an environment variable!
+
 region              = "North Europe"
 resource_group_name = "autoscale-dedicated"
 name_prefix         = "example-"
