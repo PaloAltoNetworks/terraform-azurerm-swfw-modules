@@ -58,27 +58,25 @@ variable "vnets" {
                                 an existing VNET.
   - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a
                                 full resource name, including prefixes.
+  - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
+                                VNET will reside or is sourced from.
   - `address_space`           - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET.
   - `dns_servers`             - (`list`, optional, defaults to module defaults) a list of IP addresses of custom DNS servers (by
                                 default Azure DNS is used).
   - `vnet_encryption`         - (`string`, optional, defaults to module default) enables Azure Virtual Network Encryption when
                                 set, only possible value at the moment is `AllowUnencrypted`. When set to `null`, the feature is 
                                 disabled.
-  - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
-                                VNET will reside or is sourced from.
-  - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
-                                otherwise use source existing subnets.
-  - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
-                                [VNET module documentation](../../modules/vnet/README.md#subnets).
   - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
                                 [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
   - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
                                 [VNET module documentation](../../modules/vnet/README.md#route_tables).
+  - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
+                                [VNET module documentation](../../modules/vnet/README.md#subnets).
   EOF
   type = map(object({
+    create_virtual_network = optional(bool, true)
     name                   = string
     resource_group_name    = optional(string)
-    create_virtual_network = optional(bool, true)
     address_space          = optional(list(string))
     dns_servers            = optional(list(string))
     vnet_encryption        = optional(string)
@@ -110,13 +108,14 @@ variable "vnets" {
         next_hop_ip_address = optional(string)
       }))
     })), {})
-    create_subnets = optional(bool, true)
     subnets = optional(map(object({
+      create                          = optional(bool, true)
       name                            = string
       address_prefixes                = optional(list(string), [])
       network_security_group_key      = optional(string)
       route_table_key                 = optional(string)
-      enable_storage_service_endpoint = optional(bool, false)
+      enable_storage_service_endpoint = optional(bool)
+      enable_cloudngfw_delegation     = optional(bool)
     })), {})
   }))
 }
@@ -946,14 +945,12 @@ variable "test_infrastructure" {
                                   a full resource name, including prefixes.
     - `address_space`           - (`list(string)`, required when `create_virtual_network = `false`) a list of CIDRs for a newly
                                   created VNET.
-    - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
-                                  otherwise use source existing subnets.
-    - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
-                                  [VNET module documentation](../../modules/vnet/README.md#subnets).
     - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
                                   [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
     - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
                                   [VNET module documentation](../../modules/vnet/README.md#route_tables).
+    - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
+                                  [VNET module documentation](../../modules/vnet/README.md#subnets).
     - `local_peer_config`       - (`map`, optional) a map that contains local peer configuration parameters. This value allows to 
                                   set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
                                   `use_remote_gateways` parameters on the local VNet peering. 
@@ -1029,8 +1026,8 @@ variable "test_infrastructure" {
     create_resource_group = optional(bool, true)
     resource_group_name   = optional(string)
     vnets = map(object({
-      name                    = string
       create_virtual_network  = optional(bool, true)
+      name                    = string
       address_space           = optional(list(string))
       dns_servers             = optional(list(string))
       hub_resource_group_name = optional(string)
@@ -1063,13 +1060,14 @@ variable "test_infrastructure" {
           next_hop_ip_address = optional(string)
         }))
       })), {})
-      create_subnets = optional(bool, true)
       subnets = optional(map(object({
+        create                          = optional(bool, true)
         name                            = string
         address_prefixes                = optional(list(string), [])
         network_security_group_key      = optional(string)
         route_table_key                 = optional(string)
-        enable_storage_service_endpoint = optional(bool, false)
+        enable_storage_service_endpoint = optional(bool)
+        enable_cloudngfw_delegation     = optional(bool)
       })), {})
       local_peer_config = optional(object({
         allow_virtual_network_access = optional(bool, true)
