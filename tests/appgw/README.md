@@ -71,38 +71,38 @@ A map defining VNETs.
 
 For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-- `create_virtual_network`  - (`bool`, optional, defaults to `false`) when set to `true` will create a VNET,
-                              `false` will source an existing VNET.
-- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false`
-                              this should be a full resource name, including prefixes.
-- `address_space`           - (`list(string)`, required when `create_virtual_network = false`) a list of CIDRs
-                              for a newly created VNET.
+- `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, `false` will source
+                              an existing VNET.
+- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a
+                              full resource name, including prefixes.
+- `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
+                              VNET will reside or is sourced from.
+- `address_space`           - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET.
 - `dns_servers`             - (`list`, optional, defaults to module defaults) a list of IP addresses of custom DNS servers (by
                               default Azure DNS is used).
-- `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group
-                              in which the VNET will reside or is sourced from.
-- `create_subnets`          - (`bool`, optinoal, defaults to `true`) if `true`,
-                              create Subnets inside the Virtual Network, otherwise use source existing subnets.
-- `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
-                              [VNET module documentation](../../modules/vnet/README.md#subnets).
+- `vnet_encryption`         - (`string`, optional, defaults to module default) enables Azure Virtual Network Encryption when
+                              set, only possible value at the moment is `AllowUnencrypted`. When set to `null`, the feature is 
+                              disabled.
 - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
                               [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
 - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
                               [VNET module documentation](../../modules/vnet/README.md#route_tables).
+- `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
+                              [VNET module documentation](../../modules/vnet/README.md#subnets).
 
 
 Type: 
 
 ```hcl
 map(object({
-    name                   = string
     create_virtual_network = optional(bool, true)
-    address_space          = optional(list(string), [])
-    dns_servers            = optional(list(string))
+    name                   = string
     resource_group_name    = optional(string)
+    address_space          = optional(list(string))
+    dns_servers            = optional(list(string))
+    vnet_encryption        = optional(string)
     network_security_groups = optional(map(object({
-      name     = string
-      location = optional(string)
+      name = string
       rules = optional(map(object({
         name                         = string
         priority                     = number
@@ -120,22 +120,23 @@ map(object({
       })), {})
     })), {})
     route_tables = optional(map(object({
-      name     = string
-      location = optional(string)
+      name                          = string
+      bgp_route_propagation_enabled = optional(bool)
       routes = map(object({
-        name                   = string
-        address_prefix         = string
-        next_hop_type          = string
-        next_hop_in_ip_address = optional(string)
+        name                = string
+        address_prefix      = string
+        next_hop_type       = string
+        next_hop_ip_address = optional(string)
       }))
     })), {})
-    create_subnets = optional(bool, true)
     subnets = optional(map(object({
+      create                          = optional(bool, true)
       name                            = string
       address_prefixes                = optional(list(string), [])
       network_security_group_key      = optional(string)
       route_table_key                 = optional(string)
-      enable_storage_service_endpoint = optional(bool, false)
+      enable_storage_service_endpoint = optional(bool)
+      enable_cloudngfw_delegation     = optional(bool)
     })), {})
   }))
 ```
