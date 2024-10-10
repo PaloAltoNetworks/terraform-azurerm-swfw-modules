@@ -519,35 +519,17 @@ variable "route_tables" {
   }
 }
 
-variable "create_subnets" {
-  description = <<-EOF
-  Controls subnet creation.
-  
-  Possible variants:
-
-  - `true`  - create subnets described in `var.subnets`.
-  - `false` - source subnets described in `var.subnets`.
-  
-  **Note!** \
-  When this variable is `false` and `var.subnets` variable is empty, subnets management is skipped.
-  EOF
-  default     = true
-  nullable    = false
-  type        = bool
-}
-
 variable "subnets" {
   description = <<-EOF
   Map of objects describing subnets to manage.
   
-  By the default the described subnets will be created. If however `create_subnets` is set to `false` this is just a mapping
-  between the existing subnets and UDRs and NSGs that should be assigned to them.
-  
   List of available attributes of each subnet entry:
 
+  - `create`                          - (`bool`, optional, defaults to `true`) controls subnet creation, subnets are created when
+                                        set to `true` or sourced when set to `false`.
   - `name`                            - (`string`, required) name of a subnet.
-  - `address_prefixes`                - (`list(string)`, required when `create_subnets = true`) a list of address prefixes within
-                                        VNET's address space to assign to a created subnet.
+  - `address_prefixes`                - (`list(string)`, required when `create` = true`) a list of address prefixes within VNET's
+                                        address space to assign to a created subnet.
   - `network_security_group_key`      - (`string`, optional, defaults to `null`) a key identifying an NSG defined in
                                         `network_security_groups` that should be assigned to this subnet.
   - `route_table_key`                 - (`string`, optional, defaults to `null`) a key identifying a Route Table defined in
@@ -555,6 +537,9 @@ variable "subnets" {
   - `enable_storage_service_endpoint` - (`bool`, optional, defaults to `false`) a flag that enables `Microsoft.Storage` service
                                         endpoint on a subnet. This is a suggested setting for the management interface when full
                                         bootstrapping using an Azure Storage Account is used.
+  - `enable_cloudngfw_delegation`     - (`bool`, optional, defaults to `false`) a flag that enables subnet delegation to
+                                        `PaloAltoNetworks.Cloudngfw/firewalls` service. This is required for Cloud NGFW to work
+                                        in a VNET-based deployment.
 
   Example:
   ```hcl
@@ -580,16 +565,24 @@ variable "subnets" {
   default     = {}
   nullable    = false
   type = map(object({
+    create                          = optional(bool, true)
     name                            = string
     address_prefixes                = optional(list(string), [])
     network_security_group_key      = optional(string)
     route_table_key                 = optional(string)
     enable_storage_service_endpoint = optional(bool, false)
+    enable_cloudngfw_delegation     = optional(bool, false)
   }))
   validation { # name
     condition     = length([for _, v in var.subnets : v.name]) == length(distinct([for _, v in var.subnets : v.name]))
     error_message = <<-EOF
     The `name` property has to be unique.
+    EOF
+  }
+  validation { # create, address_prefixes
+    condition     = alltrue(flatten([for _, snet in var.subnets : [snet.create ? length(snet.address_prefixes) > 0 : true]]))
+    error_message = <<-EOF
+    When subnet is created, the `address_prefixes` list must not be empty.
     EOF
   }
   validation { # address_prefixes

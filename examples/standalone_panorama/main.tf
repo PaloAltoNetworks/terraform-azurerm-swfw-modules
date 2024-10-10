@@ -64,8 +64,7 @@ module "vnet" {
   dns_servers     = each.value.dns_servers
   vnet_encryption = each.value.vnet_encryption
 
-  create_subnets = each.value.create_subnets
-  subnets        = each.value.subnets
+  subnets = each.value.subnets
 
   network_security_groups = {
     for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })

@@ -38,18 +38,28 @@ locals {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet
 resource "azurerm_subnet" "this" {
-  for_each = { for k, v in var.subnets : k => v if var.create_subnets }
+  for_each = { for k, v in var.subnets : k => v if v.create }
 
   name                 = each.value.name
   resource_group_name  = var.resource_group_name
   virtual_network_name = local.virtual_network.name
   address_prefixes     = each.value.address_prefixes
   service_endpoints    = each.value.enable_storage_service_endpoint ? ["Microsoft.Storage"] : null
+
+  dynamic "delegation" {
+    for_each = each.value.enable_cloudngfw_delegation ? [1] : []
+    content {
+      name = "cloudngfw_delegation"
+      service_delegation {
+        name = "PaloAltoNetworks.Cloudngfw/firewalls"
+      }
+    }
+  }
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subnet
 data "azurerm_subnet" "this" {
-  for_each = { for k, v in var.subnets : k => v if var.create_subnets == false }
+  for_each = { for k, v in var.subnets : k => v if !v.create }
 
   name                 = each.value.name
   resource_group_name  = var.resource_group_name
@@ -57,7 +67,7 @@ data "azurerm_subnet" "this" {
 }
 
 locals {
-  subnets = var.create_subnets ? azurerm_subnet.this : data.azurerm_subnet.this
+  subnets = merge(azurerm_subnet.this, data.azurerm_subnet.this)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group

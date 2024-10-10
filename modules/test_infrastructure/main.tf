@@ -30,8 +30,7 @@ module "vnet" {
 
   address_space = each.value.address_space
 
-  create_subnets = each.value.create_subnets
-  subnets        = each.value.subnets
+  subnets = each.value.subnets
 
   network_security_groups = each.value.network_security_groups
   route_tables            = each.value.route_tables
