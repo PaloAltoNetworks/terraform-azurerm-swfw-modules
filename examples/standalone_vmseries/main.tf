@@ -281,22 +281,29 @@ module "ngfw_metrics" {
 # https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file
 resource "local_file" "bootstrap_xml" {
   for_each = {
-    for k, v in var.vmseries :
-    k => merge(v.virtual_machine, { vnet_key = v.vnet_key })
-    if try(v.virtual_machine.bootstrap_package.bootstrap_xml_template != null, false)
+    for k, v in var.vmseries : k => merge(v.virtual_machine, { vnet_key = v.vnet_key })
+    if try(
+      v.virtual_machine.bootstrap_package.bootstrap_xml_template != null,
+      var.vmseries_universal.bootstrap_package.bootstrap_xml_template != null,
+      false
+    )
   }
 
   filename = "files/${each.key}-bootstrap.xml"
   content = templatefile(
-    each.value.bootstrap_package.bootstrap_xml_template,
+    try(each.value.bootstrap_package.bootstrap_xml_template, var.vmseries_universal.bootstrap_package.bootstrap_xml_template),
     {
       private_azure_router_ip = cidrhost(
-        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.private_snet_key],
+        module.vnet[each.value.vnet_key].subnet_cidrs[
+          try(each.value.bootstrap_package.private_snet_key, var.vmseries_universal.bootstrap_package.private_snet_key)
+        ],
         1
       )
 
       public_azure_router_ip = cidrhost(
-        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.public_snet_key],
+        module.vnet[each.value.vnet_key].subnet_cidrs[
+          try(each.value.bootstrap_package.public_snet_key, var.vmseries_universal.bootstrap_package.public_snet_key)
+        ],
         1
       )
 
@@ -305,10 +312,12 @@ resource "local_file" "bootstrap_xml" {
         null
       )
 
-      ai_update_interval = each.value.bootstrap_package.ai_update_interval
+      ai_update_interval = try(
+        each.value.bootstrap_package.ai_update_interval, var.vmseries_universal.bootstrap_package.ai_update_interval
+      )
 
       private_network_cidr = coalesce(
-        each.value.bootstrap_package.intranet_cidr,
+        try(each.value.bootstrap_package.intranet_cidr, var.vmseries_universal.bootstrap_package.intranet_cidr, null),
         module.vnet[each.value.vnet_key].vnet_cidr[0]
       )
 
@@ -327,8 +336,8 @@ resource "local_file" "bootstrap_xml" {
 locals {
   bootstrap_file_shares_flat = flatten([
     for k, v in var.vmseries :
-    merge(v.virtual_machine.bootstrap_package, { vm_key = k })
-    if v.virtual_machine.bootstrap_package != null
+    merge(try(coalesce(v.virtual_machine.bootstrap_package, var.vmseries_universal.bootstrap_package), null), { vm_key = k })
+    if try(v.virtual_machine.bootstrap_package != null || var.vmseries_universal.bootstrap_package != null, false)
   ])
 
   bootstrap_file_shares = { for k, v in var.bootstrap_storages : k => {
@@ -408,20 +417,24 @@ module "vmseries" {
       avset_id  = try(azurerm_availability_set.this[each.value.virtual_machine.avset_key].id, null)
       size      = try(coalesce(each.value.virtual_machine.size, var.vmseries_universal.size), null)
       bootstrap_options = try(
-        coalesce(
-          each.value.virtual_machine.bootstrap_options,
-          var.vmseries_universal.bootstrap_options,
-          try(
-            join(",", [
-              "storage-account=${module.bootstrap[
-              each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_name}",
-              "access-key=${module.bootstrap[
-              each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_primary_access_key}",
-              "file-share=${each.key}",
-              "share-directory=None"
-            ]),
-          null),
-        ),
+        join(";", [for k, v in each.value.virtual_machine.bootstrap_options : "${k}=${v}" if v != null]),
+        join(";", [for k, v in var.vmseries_universal.bootstrap_options : "${k}=${v}" if v != null]),
+        join(";", [
+          "storage-account=${module.bootstrap[
+          each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_name}",
+          "access-key=${module.bootstrap[
+          each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_primary_access_key}",
+          "file-share=${each.key}",
+          "share-directory=None"
+        ]),
+        join(";", [
+          "storage-account=${module.bootstrap[
+          var.vmseries_universal.bootstrap_package.bootstrap_storage_key].storage_account_name}",
+          "access-key=${module.bootstrap[
+          var.vmseries_universal.bootstrap_package.bootstrap_storage_key].storage_account_primary_access_key}",
+          "file-share=${each.key}",
+          "share-directory=None"
+        ]),
         null
       )
       bootstrap_package = try(

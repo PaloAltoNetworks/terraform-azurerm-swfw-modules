@@ -266,6 +266,111 @@ module "ngfw_metrics" {
   tags = var.tags
 }
 
+# https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file
+resource "local_file" "bootstrap_xml" {
+  for_each = {
+    for k, v in var.scale_sets : k => merge(v.virtual_machine_scale_set, { vnet_key = v.vnet_key })
+    if try(
+      v.virtual_machine_scale_set.bootstrap_package.bootstrap_xml_template != null,
+      var.scale_sets_universal.bootstrap_package.bootstrap_xml_template != null,
+      false
+    )
+  }
+
+  filename = "files/${each.key}-bootstrap.xml"
+  content = templatefile(
+    try(each.value.bootstrap_package.bootstrap_xml_template, var.scale_sets_universal.bootstrap_package.bootstrap_xml_template),
+    {
+      private_azure_router_ip = cidrhost(
+        module.vnet[each.value.vnet_key].subnet_cidrs[
+          try(each.value.bootstrap_package.private_snet_key, var.scale_sets_universal.bootstrap_package.private_snet_key)
+        ],
+        1
+      )
+
+      public_azure_router_ip = cidrhost(
+        module.vnet[each.value.vnet_key].subnet_cidrs[
+          try(each.value.bootstrap_package.public_snet_key, var.scale_sets_universal.bootstrap_package.public_snet_key)
+        ],
+        1
+      )
+
+      ai_instr_key = try(
+        module.ngfw_metrics[0].metrics_instrumentation_keys[each.key],
+        null
+      )
+
+      ai_update_interval = try(
+        each.value.bootstrap_package.ai_update_interval, var.scale_sets_universal.bootstrap_package.ai_update_interval
+      )
+
+      private_network_cidr = coalesce(
+        try(each.value.bootstrap_package.intranet_cidr, var.scale_sets_universal.bootstrap_package.intranet_cidr, null),
+        module.vnet[each.value.vnet_key].vnet_cidr[0]
+      )
+
+      mgmt_profile_appgw_cidr = flatten([
+        for _, v in var.appgws : var.vnets[v.vnet_key].subnets[v.subnet_key].address_prefixes
+      ])
+    }
+  )
+
+  depends_on = [
+    module.ngfw_metrics,
+    module.vnet
+  ]
+}
+
+locals {
+  bootstrap_file_shares_flat = flatten([
+    for k, v in var.scale_sets :
+    merge(try(
+      coalesce(v.virtual_machine_scale_set.bootstrap_package, var.scale_sets_universal.bootstrap_package), null
+    ), { vm_key = k })
+    if try(v.virtual_machine_scale_set.bootstrap_package != null || var.scale_sets_universal.bootstrap_package != null, false)
+  ])
+
+  bootstrap_file_shares = { for k, v in var.bootstrap_storages : k => {
+    for file_share in local.bootstrap_file_shares_flat : file_share.vm_key => {
+      name                   = file_share.vm_key
+      bootstrap_package_path = file_share.bootstrap_package_path
+      bootstrap_files = merge(
+        file_share.static_files,
+        file_share.bootstrap_xml_template == null ? {} : {
+          "files/${file_share.vm_key}-bootstrap.xml" = "config/bootstrap.xml"
+        }
+      )
+      bootstrap_files_md5 = file_share.bootstrap_xml_template == null ? {} : {
+        "files/${file_share.vm_key}-bootstrap.xml" = local_file.bootstrap_xml[file_share.vm_key].content_md5
+      }
+    } if file_share.bootstrap_storage_key == k }
+  }
+}
+
+module "bootstrap" {
+  source = "../../modules/bootstrap"
+
+  for_each = var.bootstrap_storages
+
+  storage_account     = each.value.storage_account
+  name                = each.value.name
+  resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
+  region              = var.region
+
+  storage_network_security = merge(
+    each.value.storage_network_security,
+    each.value.storage_network_security.vnet_key == null ? {} : {
+      allowed_subnet_ids = [
+        for v in each.value.storage_network_security.allowed_subnet_keys :
+        module.vnet[each.value.storage_network_security.vnet_key].subnet_ids[v]
+    ] }
+  )
+  file_shares_configuration = each.value.file_shares_configuration
+  file_shares               = local.bootstrap_file_shares[each.key]
+
+  tags = var.tags
+}
+
 module "vmss" {
   source = "../../modules/vmss"
 
@@ -287,7 +392,28 @@ module "vmss" {
     {
       size = try(coalesce(each.value.virtual_machine_scale_set.size, var.scale_sets_universal.size), null)
       bootstrap_options = try(
-        coalesce(each.value.virtual_machine_scale_set.bootstrap_options, var.scale_sets_universal.bootstrap_options),
+        join(";", [for k, v in each.value.virtual_machine_scale_set.bootstrap_options : "${k}=${v}" if v != null]),
+        join(";", [for k, v in var.scale_sets_universal.bootstrap_options : "${k}=${v}" if v != null]),
+        join(";", [
+          "storage-account=${module.bootstrap[
+          each.value.virtual_machine_scale_set.bootstrap_package.bootstrap_storage_key].storage_account_name}",
+          "access-key=${module.bootstrap[
+          each.value.virtual_machine_scale_set.bootstrap_package.bootstrap_storage_key].storage_account_primary_access_key}",
+          "file-share=${each.key}",
+          "share-directory=None"
+        ]),
+        join(";", [
+          "storage-account=${module.bootstrap[
+          var.scale_sets_universal.bootstrap_package.bootstrap_storage_key].storage_account_name}",
+          "access-key=${module.bootstrap[
+          var.scale_sets_universal.bootstrap_package.bootstrap_storage_key].storage_account_primary_access_key}",
+          "file-share=${each.key}",
+          "share-directory=None"
+        ]),
+        null
+      )
+      bootstrap_package = try(
+        coalesce(each.value.virtual_machine_scale_set.bootstrap_package, var.scale_sets_universal.bootstrap_package),
         null
       )
     }
