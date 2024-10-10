@@ -31,6 +31,7 @@ Name | Version | Source | Description
 
 Name | Type | Description
 --- | --- | ---
+[`subscription_id`](#subscription_id) | `string` | Azure Subscription ID is a required argument since AzureRM provider v4.
 [`region`](#region) | `string` | The Azure region to use.
 [`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
@@ -48,6 +49,19 @@ Name | Type | Description
 
 
 ### Required Inputs details
+
+#### subscription_id
+
+Azure Subscription ID is a required argument since AzureRM provider v4.
+
+**Note!** \
+Instead of putting the Subscription ID directly in the code, it's recommended to use an environment variable. Create an
+environment variable named `ARM_SUBSCRIPTION_ID` with your Subscription ID as value and leave this variable set to `null`.
+
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
 
 #### region
 

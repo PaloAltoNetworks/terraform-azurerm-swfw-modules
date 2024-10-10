@@ -40,7 +40,10 @@ Steps to deploy the infrastructure are as following:
 - checkout the code locally (if you haven't done so yet)
 - copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs
   (take a closer look at the `TODO` markers)
-- _(optional)_ authenticate to AzureRM, switch to the Subscription of your choice if necessary
+- _(optional)_ authenticate to AzureRM, switch to the Subscription of your choice
+- provide `subscription_id` either by creating an environment variable named `ARM_SUBSCRIPTION_ID` with Subscription ID as value
+  in your shell (recommended option) or by setting the value of `subscription_id` variable within your `tfvars` file (discouraged
+  option, we don't recommend putting the Subscription ID in clear text inside the code).
 - initialize the Terraform module:
 
   ```bash
@@ -150,6 +153,7 @@ Name | Version | Source | Description
 
 Name | Type | Description
 --- | --- | ---
+[`subscription_id`](#subscription_id) | `string` | Azure Subscription ID is a required argument since AzureRM provider v4.
 [`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group.
 [`region`](#region) | `string` | The Azure region to use.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
@@ -190,6 +194,19 @@ Name |  Description
 `test_lb_frontend_ips` | IP Addresses of the test load balancers.
 
 ### Required Inputs details
+
+#### subscription_id
+
+Azure Subscription ID is a required argument since AzureRM provider v4.
+
+**Note!** \
+Instead of putting the Subscription ID directly in the code, it's recommended to use an environment variable. Create an
+environment variable named `ARM_SUBSCRIPTION_ID` with your Subscription ID as value and leave this variable set to `null`.
+
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
 
 #### resource_group_name
 
