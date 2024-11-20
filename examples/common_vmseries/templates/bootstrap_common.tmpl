@@ -283,107 +283,6 @@
           </profile>
         </qos>
         <virtual-router>
-          <entry name="private">
-            <protocol>
-              <bgp>
-                <enable>no</enable>
-                <dampening-profile>
-                  <entry name="default">
-                    <cutoff>1.25</cutoff>
-                    <reuse>0.5</reuse>
-                    <max-hold-time>900</max-hold-time>
-                    <decay-half-life-reachable>300</decay-half-life-reachable>
-                    <decay-half-life-unreachable>900</decay-half-life-unreachable>
-                    <enable>yes</enable>
-                  </entry>
-                </dampening-profile>
-                <routing-options>
-                  <graceful-restart>
-                    <enable>yes</enable>
-                  </graceful-restart>
-                </routing-options>
-              </bgp>
-              <rip>
-                <enable>no</enable>
-              </rip>
-              <ospf>
-                <enable>no</enable>
-              </ospf>
-              <ospfv3>
-                <enable>no</enable>
-              </ospfv3>
-            </protocol>
-            <interface>
-              <member>ethernet1/1</member>
-            </interface>
-            <ecmp>
-              <algorithm>
-                <ip-modulo/>
-              </algorithm>
-            </ecmp>
-            <routing-table>
-              <ip>
-                <static-route>
-                  <entry name="lb_health_check">
-                    <nexthop>
-                      <ip-address>${private_azure_router_ip}</ip-address>
-                    </nexthop>
-                    <bfd>
-                      <profile>None</profile>
-                    </bfd>
-                    <path-monitor>
-                      <enable>no</enable>
-                      <failure-condition>any</failure-condition>
-                      <hold-time>2</hold-time>
-                    </path-monitor>
-                    <interface>ethernet1/1</interface>
-                    <metric>10</metric>
-                    <destination>168.63.129.16/32</destination>
-                    <route-table>
-                      <unicast/>
-                    </route-table>
-                  </entry>
-                  <entry name="intranet">
-                    <nexthop>
-                      <ip-address>${private_azure_router_ip}</ip-address>
-                    </nexthop>
-                    <bfd>
-                      <profile>None</profile>
-                    </bfd>
-                    <path-monitor>
-                      <enable>no</enable>
-                      <failure-condition>any</failure-condition>
-                      <hold-time>2</hold-time>
-                    </path-monitor>
-                    <interface>ethernet1/1</interface>
-                    <metric>10</metric>
-                    <destination>${private_network_cidr}</destination>
-                    <route-table>
-                      <unicast/>
-                    </route-table>
-                  </entry>
-                  <entry name="internet">
-                    <path-monitor>
-                      <enable>no</enable>
-                      <failure-condition>any</failure-condition>
-                      <hold-time>2</hold-time>
-                    </path-monitor>
-                    <nexthop>
-                      <next-vr>public</next-vr>
-                    </nexthop>
-                    <bfd>
-                      <profile>None</profile>
-                    </bfd>
-                    <metric>10</metric>
-                    <destination>0.0.0.0/0</destination>
-                    <route-table>
-                      <unicast/>
-                    </route-table>
-                  </entry>
-                </static-route>
-              </ip>
-            </routing-table>
-          </entry>
           <entry name="public">
             <ecmp>
               <algorithm>
@@ -410,7 +309,7 @@
               </ospfv3>
             </protocol>
             <interface>
-              <member>ethernet1/2</member>
+              <member>ethernet1/1</member>
             </interface>
             <routing-table>
               <ip>
@@ -427,7 +326,7 @@
                       <failure-condition>any</failure-condition>
                       <hold-time>2</hold-time>
                     </path-monitor>
-                    <interface>ethernet1/2</interface>
+                    <interface>ethernet1/1</interface>
                     <metric>10</metric>
                     <destination>0.0.0.0/0</destination>
                     <route-table>
@@ -464,9 +363,110 @@
                     <bfd>
                       <profile>None</profile>
                     </bfd>
+                    <interface>ethernet1/1</interface>
+                    <metric>10</metric>
+                    <destination>168.63.129.16/32</destination>
+                    <route-table>
+                      <unicast/>
+                    </route-table>
+                  </entry>
+                </static-route>
+              </ip>
+            </routing-table>
+          </entry>
+          <entry name="private">
+            <protocol>
+              <bgp>
+                <enable>no</enable>
+                <dampening-profile>
+                  <entry name="default">
+                    <cutoff>1.25</cutoff>
+                    <reuse>0.5</reuse>
+                    <max-hold-time>900</max-hold-time>
+                    <decay-half-life-reachable>300</decay-half-life-reachable>
+                    <decay-half-life-unreachable>900</decay-half-life-unreachable>
+                    <enable>yes</enable>
+                  </entry>
+                </dampening-profile>
+                <routing-options>
+                  <graceful-restart>
+                    <enable>yes</enable>
+                  </graceful-restart>
+                </routing-options>
+              </bgp>
+              <rip>
+                <enable>no</enable>
+              </rip>
+              <ospf>
+                <enable>no</enable>
+              </ospf>
+              <ospfv3>
+                <enable>no</enable>
+              </ospfv3>
+            </protocol>
+            <interface>
+              <member>ethernet1/2</member>
+            </interface>
+            <ecmp>
+              <algorithm>
+                <ip-modulo/>
+              </algorithm>
+            </ecmp>
+            <routing-table>
+              <ip>
+                <static-route>
+                  <entry name="lb_health_check">
+                    <nexthop>
+                      <ip-address>${private_azure_router_ip}</ip-address>
+                    </nexthop>
+                    <bfd>
+                      <profile>None</profile>
+                    </bfd>
+                    <path-monitor>
+                      <enable>no</enable>
+                      <failure-condition>any</failure-condition>
+                      <hold-time>2</hold-time>
+                    </path-monitor>
                     <interface>ethernet1/2</interface>
                     <metric>10</metric>
                     <destination>168.63.129.16/32</destination>
+                    <route-table>
+                      <unicast/>
+                    </route-table>
+                  </entry>
+                  <entry name="intranet">
+                    <nexthop>
+                      <ip-address>${private_azure_router_ip}</ip-address>
+                    </nexthop>
+                    <bfd>
+                      <profile>None</profile>
+                    </bfd>
+                    <path-monitor>
+                      <enable>no</enable>
+                      <failure-condition>any</failure-condition>
+                      <hold-time>2</hold-time>
+                    </path-monitor>
+                    <interface>ethernet1/2</interface>
+                    <metric>10</metric>
+                    <destination>${private_network_cidr}</destination>
+                    <route-table>
+                      <unicast/>
+                    </route-table>
+                  </entry>
+                  <entry name="internet">
+                    <path-monitor>
+                      <enable>no</enable>
+                      <failure-condition>any</failure-condition>
+                      <hold-time>2</hold-time>
+                    </path-monitor>
+                    <nexthop>
+                      <next-vr>public</next-vr>
+                    </nexthop>
+                    <bfd>
+                      <profile>None</profile>
+                    </bfd>
+                    <metric>10</metric>
+                    <destination>0.0.0.0/0</destination>
                     <route-table>
                       <unicast/>
                     </route-table>
@@ -555,14 +555,14 @@
           <application/>
           <application-group/>
           <zone>
-            <entry name="private">
+            <entry name="public">
               <network>
                 <layer3>
                   <member>ethernet1/1</member>
                 </layer3>
               </network>
             </entry>
-            <entry name="public">
+            <entry name="private">
               <network>
                 <layer3>
                   <member>ethernet1/2</member>
@@ -617,7 +617,7 @@
                   <source-translation>
                     <dynamic-ip-and-port>
                       <interface-address>
-                        <interface>ethernet1/2</interface>
+                        <interface>ethernet1/1</interface>
                       </interface-address>
                     </dynamic-ip-and-port>
                   </source-translation>
