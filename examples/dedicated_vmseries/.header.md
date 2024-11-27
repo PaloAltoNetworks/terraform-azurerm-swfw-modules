@@ -40,7 +40,7 @@ The second set of VM-Series firewalls services all outbound, east-west, and ente
 choice offers increased scale and operational resiliency and reduces the chances of high bandwidth use from the inbound traffic
 flows affecting other traffic flows within the deployment.
 
-![Detailed Topology Diagram](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/135693994/a5054270-514e-4c90-9601-133c6dc2ca66)
+![Detailed Topology Diagram](https://github.com/user-attachments/assets/8f7a8530-c2a8-4bf2-845d-200b6f5675f2)
 
 This reference architecture consists of:
 
