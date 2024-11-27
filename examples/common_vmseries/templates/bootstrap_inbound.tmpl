@@ -96,6 +96,7 @@
                 <lldp>
                   <enable>no</enable>
                 </lldp>
+                <interface-management-profile>lb_health_check</interface-management-profile>
               </layer3>
             </entry>
             <entry name="ethernet1/2">
@@ -116,7 +117,6 @@
                 <lldp>
                   <enable>no</enable>
                 </lldp>
-                <interface-management-profile>lb_health_check</interface-management-profile>
               </layer3>
             </entry>
           </ethernet>
@@ -326,7 +326,7 @@
                       <failure-condition>any</failure-condition>
                       <hold-time>2</hold-time>
                     </path-monitor>
-                    <interface>ethernet1/2</interface>
+                    <interface>ethernet1/1</interface>
                     <metric>10</metric>
                     <destination>0.0.0.0/0</destination>
                     <route-table>
@@ -345,7 +345,7 @@
                       <failure-condition>any</failure-condition>
                       <hold-time>2</hold-time>
                     </path-monitor>
-                    <interface>ethernet1/1</interface>
+                    <interface>ethernet1/2</interface>
                     <metric>10</metric>
                     <destination>${private_network_cidr}</destination>
                     <route-table>
@@ -364,7 +364,7 @@
                     <bfd>
                       <profile>None</profile>
                     </bfd>
-                    <interface>ethernet1/2</interface>
+                    <interface>ethernet1/1</interface>
                     <metric>10</metric>
                     <destination>168.63.129.16/32</destination>
                     <route-table>
@@ -455,14 +455,14 @@
           <application/>
           <application-group/>
           <zone>
-            <entry name="private">
+            <entry name="public">
               <network>
                 <layer3>
                   <member>ethernet1/1</member>
                 </layer3>
               </network>
             </entry>
-            <entry name="public">
+            <entry name="private">
               <network>
                 <layer3>
                   <member>ethernet1/2</member>
