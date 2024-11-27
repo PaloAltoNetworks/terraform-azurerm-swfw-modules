@@ -39,7 +39,7 @@ and may present scale limitations with all traffic flowing through a single set 
 that occurs when traffic crosses virtual routers. This option is suitable for proof-of-concepts and smaller scale deployments
 because the number of firewalls low. However, the technical integration complexity is high.
 
-![Detailed Topology Diagram](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/135693994/9e330a37-3679-419a-8aa3-aa963cb4faf2)
+![Detailed Topology Diagram](https://github.com/user-attachments/assets/798c4559-f218-4351-b0ee-c0dfb864ad3b)
 
 This reference architecture consists of:
 

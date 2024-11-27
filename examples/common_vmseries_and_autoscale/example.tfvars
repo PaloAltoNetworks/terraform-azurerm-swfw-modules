@@ -42,39 +42,13 @@ vnets = {
       "management" = {
         name = "mgmt-rt"
         routes = {
-          "private_blackhole" = {
-            name           = "private-blackhole-udr"
+          "public_blackhole" = {
+            name           = "public-blackhole-udr"
             address_prefix = "10.0.0.16/28"
             next_hop_type  = "None"
           }
-          "public_blackhole" = {
-            name           = "public-blackhole-udr"
-            address_prefix = "10.0.0.32/28"
-            next_hop_type  = "None"
-          }
-          "appgw_blackhole" = {
-            name           = "appgw-blackhole-udr"
-            address_prefix = "10.0.0.48/28"
-            next_hop_type  = "None"
-          }
-        }
-      }
-      "private" = {
-        name = "private-rt"
-        routes = {
-          "default" = {
-            name                = "default-udr"
-            address_prefix      = "0.0.0.0/0"
-            next_hop_type       = "VirtualAppliance"
-            next_hop_ip_address = "10.0.0.30"
-          }
-          "mgmt_blackhole" = {
-            name           = "mgmt-blackhole-udr"
-            address_prefix = "10.0.0.0/28"
-            next_hop_type  = "None"
-          }
-          "public_blackhole" = {
-            name           = "public-blackhole-udr"
+          "private_blackhole" = {
+            name           = "private-blackhole-udr"
             address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
@@ -95,7 +69,33 @@ vnets = {
           }
           "private_blackhole" = {
             name           = "private-blackhole-udr"
+            address_prefix = "10.0.0.32/28"
+            next_hop_type  = "None"
+          }
+        }
+      }
+      "private" = {
+        name = "private-rt"
+        routes = {
+          "default" = {
+            name                = "default-udr"
+            address_prefix      = "0.0.0.0/0"
+            next_hop_type       = "VirtualAppliance"
+            next_hop_ip_address = "10.0.0.46"
+          }
+          "mgmt_blackhole" = {
+            name           = "mgmt-blackhole-udr"
+            address_prefix = "10.0.0.0/28"
+            next_hop_type  = "None"
+          }
+          "public_blackhole" = {
+            name           = "public-blackhole-udr"
             address_prefix = "10.0.0.16/28"
+            next_hop_type  = "None"
+          }
+          "appgw_blackhole" = {
+            name           = "appgw-blackhole-udr"
+            address_prefix = "10.0.0.48/28"
             next_hop_type  = "None"
           }
         }
@@ -109,16 +109,16 @@ vnets = {
         route_table_key                 = "management"
         enable_storage_service_endpoint = true
       }
-      "private" = {
-        name             = "private-snet"
-        address_prefixes = ["10.0.0.16/28"]
-        route_table_key  = "private"
-      }
       "public" = {
         name                       = "public-snet"
-        address_prefixes           = ["10.0.0.32/28"]
+        address_prefixes           = ["10.0.0.16/28"]
         network_security_group_key = "public"
         route_table_key            = "public"
+      }
+      "private" = {
+        name             = "private-snet"
+        address_prefixes = ["10.0.0.32/28"]
+        route_table_key  = "private"
       }
       "appgw" = {
         name             = "appgw-snet"
@@ -170,7 +170,7 @@ load_balancers = {
       "ha-ports" = {
         name               = "private-vmseries"
         subnet_key         = "private"
-        private_ip_address = "10.0.0.30"
+        private_ip_address = "10.0.0.46"
         in_rules = {
           HA_PORTS = {
             name     = "HA-ports"
@@ -314,16 +314,16 @@ scale_sets = {
         create_public_ip = false
       },
       {
-        name              = "private"
-        subnet_key        = "private"
-        load_balancer_key = "private"
-      },
-      {
         name                    = "public"
         subnet_key              = "public"
         load_balancer_key       = "public"
         application_gateway_key = "public"
         create_public_ip        = true
+      },
+      {
+        name              = "private"
+        subnet_key        = "private"
+        load_balancer_key = "private"
       }
     ]
     autoscaling_profiles = [
@@ -407,7 +407,7 @@ test_infrastructure = {
                 name                = "toNVA-udr"
                 address_prefix      = "0.0.0.0/0"
                 next_hop_type       = "VirtualAppliance"
-                next_hop_ip_address = "10.0.0.30"
+                next_hop_ip_address = "10.0.0.46"
               }
             }
           }
@@ -484,7 +484,7 @@ test_infrastructure = {
                 name                = "toNVA-udr"
                 address_prefix      = "0.0.0.0/0"
                 next_hop_type       = "VirtualAppliance"
-                next_hop_ip_address = "10.0.0.30"
+                next_hop_ip_address = "10.0.0.46"
               }
             }
           }

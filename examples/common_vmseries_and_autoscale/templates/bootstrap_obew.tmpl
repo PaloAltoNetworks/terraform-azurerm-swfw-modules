@@ -93,7 +93,6 @@
                 <dhcp-client>
                   <create-default-route>no</create-default-route>
                 </dhcp-client>
-                <interface-management-profile>lb_health_check</interface-management-profile>
                 <lldp>
                   <enable>no</enable>
                 </lldp>
@@ -117,6 +116,7 @@
                 <lldp>
                   <enable>no</enable>
                 </lldp>
+                <interface-management-profile>lb_health_check</interface-management-profile>
               </layer3>
             </entry>
           </ethernet>
@@ -321,21 +321,21 @@
             <routing-table>
               <ip>
                 <static-route>
-                  <entry name="lb_health_check">
-                    <nexthop>
-                      <ip-address>${private_azure_router_ip}</ip-address>
-                    </nexthop>
-                    <bfd>
-                      <profile>None</profile>
-                    </bfd>
+                  <entry name="internet">
                     <path-monitor>
                       <enable>no</enable>
                       <failure-condition>any</failure-condition>
                       <hold-time>2</hold-time>
                     </path-monitor>
+                    <nexthop>
+                      <ip-address>${public_azure_router_ip}</ip-address>
+                    </nexthop>
+                    <bfd>
+                      <profile>None</profile>
+                    </bfd>
                     <interface>ethernet1/1</interface>
                     <metric>10</metric>
-                    <destination>168.63.129.16/32</destination>
+                    <destination>0.0.0.0/0</destination>
                     <route-table>
                       <unicast/>
                     </route-table>
@@ -352,28 +352,28 @@
                       <failure-condition>any</failure-condition>
                       <hold-time>2</hold-time>
                     </path-monitor>
-                    <interface>ethernet1/1</interface>
+                    <interface>ethernet1/2</interface>
                     <metric>10</metric>
                     <destination>${private_network_cidr}</destination>
                     <route-table>
                       <unicast/>
                     </route-table>
                   </entry>
-                  <entry name="internet">
+                  <entry name="lb_health_check">
+                    <nexthop>
+                      <ip-address>${private_azure_router_ip}</ip-address>
+                    </nexthop>
+                    <bfd>
+                      <profile>None</profile>
+                    </bfd>
                     <path-monitor>
                       <enable>no</enable>
                       <failure-condition>any</failure-condition>
                       <hold-time>2</hold-time>
                     </path-monitor>
-                    <nexthop>
-                      <ip-address>${public_azure_router_ip}</ip-address>
-                    </nexthop>
-                    <bfd>
-                      <profile>None</profile>
-                    </bfd>
                     <interface>ethernet1/2</interface>
                     <metric>10</metric>
-                    <destination>0.0.0.0/0</destination>
+                    <destination>168.63.129.16/32</destination>
                     <route-table>
                       <unicast/>
                     </route-table>
@@ -462,14 +462,14 @@
           <application/>
           <application-group/>
           <zone>
-            <entry name="private">
+            <entry name="public">
               <network>
                 <layer3>
                   <member>ethernet1/1</member>
                 </layer3>
               </network>
             </entry>
-            <entry name="public">
+            <entry name="private">
               <network>
                 <layer3>
                   <member>ethernet1/2</member>
