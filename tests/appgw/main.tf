@@ -45,8 +45,11 @@ module "vnet" {
   resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
   region                 = var.region
 
-  address_space = each.value.address_space
-  dns_servers   = each.value.dns_servers
+  address_space                            = each.value.address_space
+  dns_servers                              = each.value.dns_servers
+  vnet_encryption                          = each.value.vnet_encryption
+  ddos_protection_plan_name                = each.value.ddos_protection_plan_name
+  ddos_protection_plan_resource_group_name = each.value.ddos_protection_plan_resource_group_name
 
   subnets = each.value.subnets
 

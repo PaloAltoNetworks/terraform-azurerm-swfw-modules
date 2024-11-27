@@ -1,3 +1,11 @@
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/network_ddos_protection_plan
+data "azurerm_network_ddos_protection_plan" "this" {
+  count = var.ddos_protection_plan_name != null ? 1 : 0
+
+  name                = var.ddos_protection_plan_name
+  resource_group_name = var.ddos_protection_plan_resource_group_name
+}
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network
 resource "azurerm_virtual_network" "this" {
   count = var.create_virtual_network ? 1 : 0
@@ -13,6 +21,14 @@ resource "azurerm_virtual_network" "this" {
     for_each = var.vnet_encryption != null ? [1] : []
     content {
       enforcement = var.vnet_encryption
+    }
+  }
+
+  dynamic "ddos_protection_plan" {
+    for_each = var.ddos_protection_plan_name != null ? [1] : []
+    content {
+      id     = data.azurerm_network_ddos_protection_plan.this.id
+      enable = true
     }
   }
 
