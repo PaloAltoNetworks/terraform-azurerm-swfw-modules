@@ -27,7 +27,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to manage the appliances
+            source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist IP addresses that will be used to manage the appliances
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -311,7 +311,7 @@ scale_sets = {
       {
         name             = "management"
         subnet_key       = "management"
-        create_public_ip = true
+        create_public_ip = false
       },
       {
         name              = "private"

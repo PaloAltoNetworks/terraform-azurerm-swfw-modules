@@ -27,7 +27,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to manage the appliances
+            source_address_prefixes    = ["1.1.1.1/32"] # TODO: Whitelist IP addresses that will be used to manage the appliances
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -245,7 +245,7 @@ vmseries = {
       {
         name             = "vm-in-01-mgmt"
         subnet_key       = "management"
-        create_public_ip = true
+        create_public_ip = false
       },
       {
         name       = "vm-in-01-private"
@@ -309,7 +309,7 @@ vmseries = {
       {
         name             = "vm-in-02-mgmt"
         subnet_key       = "management"
-        create_public_ip = true
+        create_public_ip = false
       },
       {
         name       = "vm-in-02-private"
@@ -372,7 +372,7 @@ vmseries = {
       {
         name             = "vm-obew-01-mgmt"
         subnet_key       = "management"
-        create_public_ip = true
+        create_public_ip = false
       },
       {
         name              = "vm-obew-01-private"
@@ -436,7 +436,7 @@ vmseries = {
       {
         name             = "vm-obew-02-mgmt"
         subnet_key       = "management"
-        create_public_ip = true
+        create_public_ip = false
       },
       {
         name              = "vm-obew-02-private"
