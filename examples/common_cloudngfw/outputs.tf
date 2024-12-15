@@ -19,8 +19,8 @@ output "test_vms_ips" {
   value       = length(var.test_infrastructure) > 0 ? { for k, v in module.test_infrastructure : k => v.vm_private_ips } : null
 }
 
-output "cngfws_ips" {
-  description = "IP Addresses of the CNGFWs."
-  value       = { for k, v in module.cngfw : k => v.cngfw_public_ip_address }
-}
+# output "cngfws_ips" {
+#   description = "IP Addresses of the CNGFWs."
+#   value       = { for k, v in module.cngfw : k => v.cngfw_public_ip_address }
+# }
 

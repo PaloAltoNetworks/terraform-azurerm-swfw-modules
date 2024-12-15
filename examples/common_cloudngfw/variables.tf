@@ -129,6 +129,41 @@ variable "vnets" {
   }))
 }
 
+#PUBLIC_IP
+variable "public_ips" {
+  description = <<-EOF
+  A map defining Public IP Addresses and Prefixes.
+
+  Following properties are available:
+
+  - `public_ip_addresses` - (`map`, optional) map of objects describing Public IP Addresses, please refer to
+                            [module documentation](../../modules/public_ip/README.md#public_ip_addresses)
+                            for available properties.
+  - `public_ip_prefixes`  - (`map`, optional) map of objects describing Public IP Prefixes, please refer to
+                            [module documentation](../../modules/public_ip/README.md#public_ip_prefixes)
+                            for available properties.
+  EOF
+  default     = {}
+  type = object({
+    public_ip_addresses = optional(map(object({
+      create                     = bool
+      name                       = string
+      resource_group_name        = optional(string)
+      zones                      = optional(list(string))
+      domain_name_label          = optional(string)
+      idle_timeout_in_minutes    = optional(number)
+      prefix_name                = optional(string)
+      prefix_resource_group_name = optional(string)
+    })), {})
+    public_ip_prefixes = optional(map(object({
+      create              = bool
+      name                = string
+      resource_group_name = optional(string)
+      zones               = optional(list(string))
+      length              = optional(number)
+    })), {})
+  })
+}
 
 #CNGFW
 variable "cngfws" {
@@ -168,17 +203,17 @@ variable "cngfws" {
     trusted_subnet_key   = optional(string)
     untrusted_subnet_key = optional(string)
     cngfw_config = object({
-      cngfw_name                    = string
-      create_public_ip              = optional(bool, true)
-      public_ip_name                = string
-      public_ip_resource_group_name = optional(string)
-      panorama_base64_config        = optional(string)
+      cngfw_name                 = string
+      public_ip_keys             = list(string)
+      egress_nat_ip_address_keys = list(string)
+      panorama_base64_config     = optional(string)
       destination_nat = optional(map(object({
-        destination_nat_name      = string
-        destination_nat_protocol  = string
-        frontend_port             = number
-        backend_port              = number
-        backend_public_ip_address = string
+        destination_nat_name     = string
+        destination_nat_protocol = string
+        frontend_public_ip_key   = string
+        frontend_port            = number
+        backend_port             = number
+        backend_ip_address       = string
       })), {})
     })
   }))

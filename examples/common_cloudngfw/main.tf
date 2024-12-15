@@ -60,6 +60,27 @@ module "vnet" {
   tags = var.tags
 }
 
+#PUBLIC_IP
+module "public_ip" {
+  source = "../../modules/public_ip"
+
+  region = var.region
+  public_ip_addresses = {
+    for k, v in var.public_ips.public_ip_addresses : k => merge(v, {
+      name                = "${var.name_prefix}${v.name}"
+      resource_group_name = coalesce(v.resource_group_name, local.resource_group.name)
+    })
+  }
+  public_ip_prefixes = {
+    for k, v in var.public_ips.public_ip_prefixes : k => merge(v, {
+      name                = "${var.name_prefix}${v.name}"
+      resource_group_name = coalesce(v.resource_group_name, local.resource_group.name)
+    })
+  }
+
+  tags = var.tags
+}
+
 #CNGFW
 module "cngfw" {
   source = "../../modules/cngfw"
@@ -69,11 +90,13 @@ module "cngfw" {
   attachment_type     = each.value.attachment_type
   management_mode     = each.value.management_mode
   cngfw_config        = each.value.cngfw_config
+  public_ip_ids       = module.public_ip.pip_ids
   resource_group_name = local.resource_group.name
   region              = var.region
   virtual_network_id  = each.value.attachment_type == "vnet" ? module.vnet[each.value.virtual_network_key].virtual_network_id : null
   trusted_subnet_id   = each.value.attachment_type == "vnet" ? module.vnet[each.value.virtual_network_key].subnet_ids[each.value.trusted_subnet_key] : null
   untrusted_subnet_id = each.value.attachment_type == "vnet" ? module.vnet[each.value.virtual_network_key].subnet_ids[each.value.untrusted_subnet_key] : null
+  name_prefix         = var.name_prefix
   tags                = var.tags
 }
 

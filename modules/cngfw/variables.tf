@@ -14,34 +14,60 @@ variable "tags" {
   type        = map(string)
 }
 
+variable "name_prefix" {
+  description = <<-EOF
+  A prefix that will be added to all created resources.
+  There is no default delimiter applied between the prefix and the resource name.
+  Please include the delimiter in the actual prefix.
+  EOF
+  default     = ""
+  type        = string
+}
+
 variable "virtual_hub_id" {
-  description = "The ID of the Azure Virtual Hub used for connecting various network resources."
+  description = <<-EOF
+  The ID of the Azure Virtual Hub used for connecting various network resources.
+  This variable is required when `attachment_type` is set to "vwan".
+  EOF
   default     = null
   type        = string
 }
 
 variable "virtual_network_id" {
-  description = "The ID of the Azure Virtual Network (VNet) to be used for connecting to cngfw."
+  description = <<-EOF
+  The ID of the Azure Virtual Network (VNet) to be used for connecting to cngfw.
+  This variable is required when `attachment_type` is set to "vnet".
+  EOF
   default     = null
   type        = string
 }
 
 variable "trusted_subnet_id" {
-  description = "The ID of the subnet designated for trusted resources within the virtual network."
+  description = <<-EOF
+  The ID of the subnet designated for trusted resources within the virtual network.
+  This variable is required when `attachment_type` is set to "vnet".
+  EOF
   default     = null
   type        = string
 }
 
 variable "untrusted_subnet_id" {
-  description = "The ID of the subnet designated for untrusted resources within the virtual network."
+  description = <<-EOF
+  The ID of the subnet designated for untrusted resources within the virtual network.
+  This variable is required when `attachment_type` is set to "vnet".
+  EOF
   default     = null
   type        = string
+}
+
+variable "public_ip_ids" {
+  description = "A map of public IP resource IDs."
+  type        = map(string)
 }
 
 variable "attachment_type" {
   description = <<-EOF
   Defines how the cngfw (Cloud NGFW) is attached.
-
   - When set to `vnet`, the cngfw is used to filter traffic between trusted and untrusted subnets within a Virtual Network (VNet).
   - When set to `vwan`, the cngfw is used to filter traffic within the Azure Virtual Wan.
   EOF
@@ -56,14 +82,14 @@ variable "attachment_type" {
 variable "management_mode" {
   description = <<-EOF
   Defines how the cngfw is managed.
-
   - When set to `panorama`, the cngfw policies are managed through Panorama.
+  - When set to `rulestack`, the cngfw policies are managed through Azure Rulestack.
   EOF
   type        = string
 
   validation {
-    condition     = var.management_mode == "panorama"
-    error_message = "The management_mode must be set to 'panorama'."
+    condition     = var.management_mode == "panorama" || var.management_mode == "rulestack"
+    error_message = "The management_mode must be set to 'panorama' or 'rulestack'."
   }
 }
 
@@ -89,47 +115,45 @@ variable "cngfw_config" {
 
   List of available properties:
 
-  - `cngfw_name`                      - (`string`, required) The name of the Palo Alto Next Generation Firewall VHub Panorama. 
-  - `public_ip_name`                  - (`string`, required) The name of the Public IP address resource.
-  - `create_public_ip`                - (`bool`, optional) Determines whether a new Public IP address should be created. Defaults to `true`.
-  - `public_ip_resource_group_name`   - (`string`, optional, required when `create_public_ip` is `false`) The name of the resource group where the Public IP address is located when using an existing Public IP.
-  - `palo_alto_virtual_appliance_key` - (`string`, optional) The key that references the Palo Alto Virtual Appliance if used.
-  - `panorama_base64_config`          - (`string`, optional) The Base64 encoded configuration for connecting to the Panorama Configuration server.
-  - `destination_nat`                 - (`map`, optional) Defines one or more destination NAT configurations. Each object supports the following properties:
+  - `cngfw_name`                      - (`string`, required) The name of the Palo Alto Next Generation Firewall instance.
+  - `public_ip_keys`                  - (`list(string)`, required) A list of keys referencing the public IPs used by the firewall.
+  - `egress_nat_ip_address_keys`      - (`list(string)`, required) A list of keys referencing public IPs used for egress NAT traffic.
+  - `rulestack_id`                    - (`string`, optional) The ID of the Local Rulestack which will be used to configure this 
+                                        Firewall Resource. This field is required when `management_mode` is set to "rulestack".
+  - `panorama_base64_config`          - (`string`, optional) The Base64-encoded configuration for connecting to the Panorama server. 
+                                        This field is required when `management_mode` is set to "panorama".
+  - `palo_alto_virtual_appliance_key` - (`string`, optional) The key referencing a Palo Alto Virtual Appliance, if applicable. 
+                                        This field is required when `attachment_type` is set to "vwan".
+  - `destination_nat`                 - (`map`, optional) Defines one or more destination NAT configurations. Each object supports 
+                                        the following properties:
     - `destination_nat_name`      - (`string`, required) The name of the Destination NAT. Must be unique within this map.
     - `destination_nat_protocol`  - (`string`, required) The protocol for this Destination NAT. Possible values are `TCP` or `UDP`.
     - `frontend_port`             - (`number`, required) The port on which traffic will be received. Must be in the range 1 to 65535.
-    - `frontend_public_ip_key`    - (`string`, required) The key that references the Public IP address receiving the traffic.
+    - `frontend_public_ip_key`    - (`string`, required) The key referencing the public IP that receives the traffic.
     - `backend_port`              - (`number`, required) The port number to which traffic will be sent. Must be in the range 1 to 65535.
-    - `backend_public_ip_address` - (`string`, required) The Public IP address to which traffic will be sent. Must be a valid IPv4 address.
-
-  - `dns_settings`                 - (`map`, optional) Defines DNS settings for the cngfw. Each object supports the following properties:
-    - `dns_servers`   - (`list(string)`, optional) A list of DNS servers to proxy. Cannot be used with `use_azure_dns`.
-    - `use_azure_dns` - (`bool`, optional) Specifies whether Azure DNS should be used. Defaults to `false`. Cannot be used with `dns_servers`.
-
-  If `create_public_ip` is set to `true`, a new Public IP will be created using the provided `public_ip_name`.
-  If `create_public_ip` is set to `false`, the existing Public IP with `public_ip_name` will be used, and `public_ip_resource_group_name` is required.
+    - `backend_ip_address`        - (`string`, required) The IPv4 address to which traffic will be forwarded.
   EOF
-
   type = object({
     cngfw_name                      = string
-    create_public_ip                = optional(bool, true)
-    public_ip_name                  = string
-    public_ip_resource_group_name   = optional(string)
+    public_ip_keys                  = list(string)
+    egress_nat_ip_address_keys      = list(string)
+    rulestack_id                    = optional(string)
     panorama_base64_config          = optional(string)
     palo_alto_virtual_appliance_key = optional(string)
     destination_nat = optional(map(object({
-      destination_nat_name      = string
-      destination_nat_protocol  = string
-      frontend_port             = number
-      backend_port              = number
-      backend_public_ip_address = string
+      destination_nat_name     = string
+      destination_nat_protocol = string
+      frontend_public_ip_key   = string
+      frontend_port            = number
+      backend_port             = number
+      backend_ip_address       = string
     })), {})
   })
 
   validation { # destination_nat_name
     condition = alltrue([
-      length([for _, nat in var.cngfw_config.destination_nat : nat.destination_nat_name]) == length(distinct([for _, nat in var.cngfw_config.destination_nat : nat.destination_nat_name]))
+      length([for _, nat in var.cngfw_config.destination_nat : nat.destination_nat_name])
+      == length(distinct([for _, nat in var.cngfw_config.destination_nat : nat.destination_nat_name]))
     ])
     error_message = "The `destination_nat_name` property has to be unique in a particular destination_nat."
   }
@@ -157,13 +181,13 @@ variable "cngfw_config" {
     ]))
     error_message = "Each destination_nat `backend_port` property must be between 1 and 65535."
   }
-  validation { #backend_public_ip_address
+  validation { #backend_ip_address
     condition = alltrue(flatten([
       for _, nat in var.cngfw_config.destination_nat : [
-        can(regex("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", nat.backend_public_ip_address))
+        can(regex("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", nat.backend_ip_address))
       ]
     ]))
-    error_message = "Each destination_nat `backend_public_ip_address` property must be a valid IPv4 address."
+    error_message = "Each destination_nat `backend_ip_address` property must be a valid IPv4 address."
   }
 }
 
