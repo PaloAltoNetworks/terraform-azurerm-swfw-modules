@@ -61,7 +61,13 @@ variable "untrusted_subnet_id" {
 }
 
 variable "public_ip_ids" {
-  description = "A map of public IP resource IDs."
+  description = <<-EOF
+  A map of IDs for public IP addresses. Each key represents a logical identifier, and the value is the resource ID of a public IP. 
+
+  This variable can be populated manually with existing public IP IDs or dynamically through outputs from other modules, 
+  such as the `public_ip` module.
+  EOF
+  default     = null
   type        = map(string)
 }
 
@@ -116,34 +122,48 @@ variable "cngfw_config" {
   List of available properties:
 
   - `cngfw_name`                      - (`string`, required) The name of the Palo Alto Next Generation Firewall instance.
-  - `public_ip_keys`                  - (`list(string)`, required) A list of keys referencing the public IPs used by the firewall.
-  - `egress_nat_ip_address_keys`      - (`list(string)`, required) A list of keys referencing public IPs used for egress NAT traffic.
-  - `rulestack_id`                    - (`string`, optional) The ID of the Local Rulestack which will be used to configure this 
-                                        Firewall Resource. This field is required when `management_mode` is set to "rulestack".
+  - `create_public_ip`                - (`bool`, optional, defaults to `true`) Controls if the Public IP resource is created or 
+                                        sourced. This field is ignored when the variable `public_ip_ids` is used.
+  - `public_ip_name`                  - (`string`, optional) The name of the Public IP resource. This field is required unless 
+                                        the variable `public_ip_ids` is used.
+  - `public_ip_resource_group_name`   - (`string`, optional) The name of the Resource Group hosting the Public IP resource. 
+                                        This is used only for sourced resources.
+  - `public_ip_keys`                  - (`list(string)`, optional) A list of keys referencing the public IPs whose IDs are 
+                                        provided in the variable `public_ip_ids`. This is used only when the variable 
+                                        `public_ip_ids` is utilized.
+  - `egress_nat_ip_address_keys`      - (`list(string)`, optional) A list of keys referencing public IPs used for egress NAT 
+                                        traffic. This is used only when the variable `public_ip_ids` is utilized.
+  - `rulestack_id`                    - (`string`, optional) The ID of the Local Rulestack used to configure this Firewall 
+                                        Resource. This field is required when `management_mode` is set to "rulestack".
   - `panorama_base64_config`          - (`string`, optional) The Base64-encoded configuration for connecting to the Panorama server. 
                                         This field is required when `management_mode` is set to "panorama".
   - `palo_alto_virtual_appliance_key` - (`string`, optional) The key referencing a Palo Alto Virtual Appliance, if applicable. 
                                         This field is required when `attachment_type` is set to "vwan".
-  - `destination_nat`                 - (`map`, optional) Defines one or more destination NAT configurations. Each object supports 
-                                        the following properties:
+  - `destination_nat`                 - (`map`, optional) Defines one or more destination NAT configurations. 
+                                        Each object supports the following properties:
     - `destination_nat_name`      - (`string`, required) The name of the Destination NAT. Must be unique within this map.
     - `destination_nat_protocol`  - (`string`, required) The protocol for this Destination NAT. Possible values are `TCP` or `UDP`.
     - `frontend_port`             - (`number`, required) The port on which traffic will be received. Must be in the range 1 to 65535.
-    - `frontend_public_ip_key`    - (`string`, required) The key referencing the public IP that receives the traffic.
-    - `backend_port`              - (`number`, required) The port number to which traffic will be sent. Must be in the range 1 to 65535.
+    - `frontend_public_ip_key`    - (`string`, optional) The key referencing the public IP that receives the traffic. 
+                                    This is used only when the variable `public_ip_ids` is utilized.
+    - `backend_port`              - (`number`, required) The port number to which traffic will be sent. 
+                                    Must be in the range 1 to 65535.
     - `backend_ip_address`        - (`string`, required) The IPv4 address to which traffic will be forwarded.
   EOF
   type = object({
     cngfw_name                      = string
-    public_ip_keys                  = list(string)
-    egress_nat_ip_address_keys      = list(string)
+    create_public_ip                = optional(bool, true)
+    public_ip_name                  = optional(string)
+    public_ip_resource_group_name   = optional(string)
+    public_ip_keys                  = optional(list(string))
+    egress_nat_ip_address_keys      = optional(list(string))
     rulestack_id                    = optional(string)
     panorama_base64_config          = optional(string)
     palo_alto_virtual_appliance_key = optional(string)
     destination_nat = optional(map(object({
       destination_nat_name     = string
       destination_nat_protocol = string
-      frontend_public_ip_key   = string
+      frontend_public_ip_key   = optional(string)
       frontend_port            = number
       backend_port             = number
       backend_ip_address       = string

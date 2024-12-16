@@ -34,6 +34,8 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
+# Create or source a Network resources
+
 module "vnet" {
   source = "../../modules/vnet"
 
@@ -60,7 +62,8 @@ module "vnet" {
   tags = var.tags
 }
 
-#PUBLIC_IP
+# Create or source a Public IPs
+
 module "public_ip" {
   source = "../../modules/public_ip"
 
@@ -81,7 +84,8 @@ module "public_ip" {
   tags = var.tags
 }
 
-#CNGFW
+# Create a CNGFWs
+
 module "cngfw" {
   source = "../../modules/cngfw"
 
@@ -100,7 +104,7 @@ module "cngfw" {
   tags                = var.tags
 }
 
-#VNET-PEERING
+
 module "vnet_peering" {
   source = "../../modules/vnet_peering"
 
@@ -121,6 +125,7 @@ module "vnet_peering" {
 }
 
 # Create test infrastructure
+
 locals {
   test_vm_authentication = {
     for k, v in var.test_infrastructure : k =>
