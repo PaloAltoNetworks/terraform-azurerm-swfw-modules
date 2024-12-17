@@ -77,7 +77,7 @@ cngfws = {
       cngfw_name                 = "cngfw"
       public_ip_keys             = ["cngfw_public_ip_app1", "cngfw_public_ip_app2"]
       egress_nat_ip_address_keys = ["cngfw_public_ip_app1"]
-      panorama_base64_config     = "123abc" # TODO: Put panorama connection string
+      panorama_base64_config     = "eyJkZ25hbWUiOiAiY25nZnctYXotdmh1YiIsICJ0cGxuYW1lIjogImNuZ2Z3LWF6LXZodWIiLCAicGFub3JhbWEtc2VydmVyIjogIjE5Mi4xNjguMS4xMCIsICJjZ25hbWUiOiAiY29sbGVjdG9yX0ciLCAidm0tYXV0aC1rZXkiOiAiMDgxOTgxODY4NzU5MzI4IiwgImV4cGlyeSI6ICIyMDI1LzExLzE0In0=" # TODO: Put panorama connection string
       destination_nat = {
         "app1-443tcp-dnat" = {
           destination_nat_name     = "app1-443tcp-dnat"
