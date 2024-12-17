@@ -1,5 +1,5 @@
 # GENERAL
-subscription_id = "" # TODO: Put the Azure Subscription ID here only in case you cannot use an environment variable!
+subscription_id = null # TODO: Put the Azure Subscription ID here only in case you cannot use an environment variable!
 
 region              = "East US"
 resource_group_name = "common-cloudngfw"
