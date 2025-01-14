@@ -157,7 +157,6 @@ This module is designed to work in several *modes* depending on which variables 
 - `subnet_network_security_group_association` (managed)
 - `subnet_route_table_association` (managed)
 - `virtual_network` (managed)
-- `network_ddos_protection_plan` (data)
 - `subnet` (data)
 - `virtual_network` (data)
 
@@ -178,8 +177,7 @@ Name | Type | Description
 [`address_space`](#address_space) | `list` | The address space used by the virtual network.
 [`dns_servers`](#dns_servers) | `list` | List of IP addresses of custom DNS servers (by default Azure DNS is used).
 [`vnet_encryption`](#vnet_encryption) | `string` | Enables Azure Virtual Network encryption feature (in `AllowUnencrypted` mode by default).
-[`ddos_protection_plan_name`](#ddos_protection_plan_name) | `string` | Name of an existing Azure Network DDOS Protection Plan to be associated with the VNET.
-[`ddos_protection_plan_resource_group_name`](#ddos_protection_plan_resource_group_name) | `string` | Resource Group name containing an existing Azure Network DDOS Protection Plan to be associated with the VNET.
+[`ddos_protection_plan_id`](#ddos_protection_plan_id) | `string` | ID of an existing Azure Network DDOS Protection Plan to be associated with the VNET.
 [`network_security_groups`](#network_security_groups) | `map` | Map of objects describing Network Security Groups.
 [`route_tables`](#route_tables) | `map` | Map of objects describing a Route Tables.
 [`subnets`](#subnets) | `map` | Map of objects describing subnets to manage.
@@ -281,19 +279,9 @@ Default value: `AllowUnencrypted`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### ddos_protection_plan_name
+#### ddos_protection_plan_id
 
-Name of an existing Azure Network DDOS Protection Plan to be associated with the VNET.
-
-Type: string
-
-Default value: `&{}`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### ddos_protection_plan_resource_group_name
-
-Resource Group name containing an existing Azure Network DDOS Protection Plan to be associated with the VNET.
+ID of an existing Azure Network DDOS Protection Plan to be associated with the VNET.
 
 Type: string
 

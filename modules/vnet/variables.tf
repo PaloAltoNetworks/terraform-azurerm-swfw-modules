@@ -79,14 +79,8 @@ variable "vnet_encryption" {
   }
 }
 
-variable "ddos_protection_plan_name" {
-  description = "Name of an existing Azure Network DDOS Protection Plan to be associated with the VNET."
-  default     = null
-  type        = string
-}
-
-variable "ddos_protection_plan_resource_group_name" {
-  description = "Resource Group name containing an existing Azure Network DDOS Protection Plan to be associated with the VNET."
+variable "ddos_protection_plan_id" {
+  description = "ID of an existing Azure Network DDOS Protection Plan to be associated with the VNET."
   default     = null
   type        = string
 }

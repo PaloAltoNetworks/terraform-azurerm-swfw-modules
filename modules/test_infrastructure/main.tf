@@ -28,7 +28,10 @@ module "vnet" {
   resource_group_name    = local.resource_group.name
   region                 = var.region
 
-  address_space = each.value.address_space
+  address_space           = each.value.address_space
+  dns_servers             = each.value.dns_servers
+  vnet_encryption         = each.value.vnet_encryption
+  ddos_protection_plan_id = each.value.ddos_protection_plan_id
 
   subnets = each.value.subnets
 
