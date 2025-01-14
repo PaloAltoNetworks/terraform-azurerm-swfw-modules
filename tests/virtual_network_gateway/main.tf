@@ -89,11 +89,11 @@ module "vng" {
   instance_settings = each.value.instance_settings
   ip_configurations = {
     primary = merge(each.value.ip_configurations.primary, {
-      public_ip_key = try(module.public_ip.pip_ids[each.value.ip_configurations.primary.public_ip_key], null)
+      public_ip_id = try(module.public_ip.pip_ids[each.value.ip_configurations.primary.public_ip_key], null)
     })
     secondary = each.value.instance_settings.active_active == true ? merge(each.value.ip_configurations.secondary, {
-      name          = try(each.value.ip_configurations.secondary.name, null)
-      public_ip_key = try(module.public_ip.pip_ids[each.value.ip_configurations.secondary.public_ip_key], null)
+      name         = try(each.value.ip_configurations.secondary.name, null)
+      public_ip_id = try(module.public_ip.pip_ids[each.value.ip_configurations.secondary.public_ip_key], null)
     }) : null
   }
   private_ip_address_enabled       = each.value.private_ip_address_enabled
