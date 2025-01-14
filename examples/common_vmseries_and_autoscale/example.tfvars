@@ -311,7 +311,7 @@ scale_sets = {
       {
         name             = "management"
         subnet_key       = "management"
-        create_public_ip = false
+        create_public_ip = true
       },
       {
         name                    = "public"
