@@ -55,18 +55,18 @@ locals {
 resource "azurerm_storage_share" "this" {
   for_each = var.file_shares_configuration.create_file_shares ? var.file_shares : {}
 
-  name                 = each.value.name
-  storage_account_name = local.storage_account.name
-  quota                = coalesce(each.value.quota, var.file_shares_configuration.quota)
-  access_tier          = coalesce(each.value.access_tier, var.file_shares_configuration.access_tier)
+  name               = each.value.name
+  storage_account_id = local.storage_account.id
+  quota              = coalesce(each.value.quota, var.file_shares_configuration.quota)
+  access_tier        = coalesce(each.value.access_tier, var.file_shares_configuration.access_tier)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/storage_share
 data "azurerm_storage_share" "this" {
   for_each = var.file_shares_configuration.create_file_shares ? {} : var.file_shares
 
-  name                 = each.value.name
-  storage_account_name = local.storage_account.name
+  name               = each.value.name
+  storage_account_id = local.storage_account.id
 
   lifecycle {
     precondition {
