@@ -69,7 +69,7 @@ panoramas = {
         name               = "management"
         subnet_key         = "panorama"
         private_ip_address = "10.1.0.10"
-        create_public_ip   = false
+        create_public_ip   = true
       }
     ]
     logging_disks = {
