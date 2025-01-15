@@ -1,6 +1,6 @@
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
-  for_each = { for k, v in var.ip_configurations : k => v if try(v.create_public_ip, false) }
+  for_each = { for k, v in var.ip_configurations : k => v if v.create_public_ip }
 
   resource_group_name = var.resource_group_name
   location            = var.region
@@ -15,7 +15,7 @@ resource "azurerm_public_ip" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
 data "azurerm_public_ip" "this" {
-  for_each = { for k, v in var.ip_configurations : k => v if !try(v.create_public_ip, true) }
+  for_each = { for k, v in var.ip_configurations : k => v if !v.create_public_ip && v.public_ip_name != null }
 
   name                = each.value.public_ip_name
   resource_group_name = coalesce(each.value.public_ip_resource_group_name, var.resource_group_name)
@@ -30,7 +30,7 @@ resource "azurerm_virtual_network_gateway" "this" {
   type                             = var.instance_settings.type
   vpn_type                         = var.instance_settings.vpn_type
   sku                              = var.instance_settings.sku
-  generation                       = var.instance_settings.type == "VPN" ? var.instance_settings.generation : null
+  generation                       = var.instance_settings.type == "Vpn" ? var.instance_settings.generation : null
   active_active                    = var.instance_settings.active_active
   default_local_network_gateway_id = var.default_local_network_gateway_id
   edge_zone                        = var.edge_zone
@@ -43,7 +43,7 @@ resource "azurerm_virtual_network_gateway" "this" {
       name = ip_configuration.value.name
       public_ip_address_id = coalesce(
         ip_configuration.value.public_ip_id,
-        try(azurerm_public_ip.this[ip_configuration.value.name].id, data.azurerm_public_ip.this[ip_configuration.value.name].id)
+        try(azurerm_public_ip.this[ip_configuration.value.name].id, data.azurerm_public_ip.this[ip_configuration.value.name].id, null)
       )
       private_ip_address_allocation = ip_configuration.value.private_ip_address_allocation
       subnet_id                     = var.subnet_id
@@ -59,9 +59,10 @@ resource "azurerm_virtual_network_gateway" "this" {
 
       peering_addresses {
         ip_configuration_name = var.bgp.configuration.primary_peering_addresses.name
-        apipa_addresses = [
-          for i in var.bgp.configuration.primary_peering_addresses.apipa_address_keys : var.azure_bgp_peer_addresses[i]
-        ]
+        apipa_addresses = try(
+          [for i in var.bgp.configuration.primary_peering_addresses.apipa_address_keys : var.azure_bgp_peer_addresses[i]],
+          null
+        )
         default_addresses = var.bgp.configuration.primary_peering_addresses.default_addresses
       }
 
@@ -69,9 +70,10 @@ resource "azurerm_virtual_network_gateway" "this" {
         for_each = var.bgp.configuration.secondary_peering_addresses != null ? [1] : []
         content {
           ip_configuration_name = var.bgp.configuration.secondary_peering_addresses.name
-          apipa_addresses = [
-            for i in var.bgp.configuration.secondary_peering_addresses.apipa_address_keys : var.azure_bgp_peer_addresses[i]
-          ]
+          apipa_addresses = try(
+            [for i in var.bgp.configuration.secondary_peering_addresses.apipa_address_keys : var.azure_bgp_peer_addresses[i]],
+            null
+          )
           default_addresses = var.bgp.configuration.secondary_peering_addresses.default_addresses
         }
       }
