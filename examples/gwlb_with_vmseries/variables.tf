@@ -755,7 +755,7 @@ variable "test_infrastructure" {
     - `name`                    - (`string`, required) a name of the Load Balancer.
     - `vnet_key`                - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets`
                                   map that stores the Subnet described by `subnet_key`.
-    - `zones`                   - (`list`, optional, defaults to module default) a list of zones for Load Balancer's frontend IP
+    - `zones`                   - (`list`, optional, defaults to ["1", "2", "3"]) a list of zones for Load Balancer's frontend IP
                                   configurations.
     - `backend_name`            - (`string`, optional) a name of the backend pool to create.
     - `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by load
@@ -874,7 +874,7 @@ variable "test_infrastructure" {
     load_balancers = optional(map(object({
       name         = string
       vnet_key     = optional(string)
-      zones        = optional(list(string))
+      zones        = optional(list(string), ["1", "2", "3"])
       backend_name = optional(string)
       health_probes = optional(map(object({
         name                = string
