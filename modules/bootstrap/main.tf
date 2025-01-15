@@ -7,6 +7,7 @@ resource "azurerm_storage_account" "this" {
   resource_group_name             = var.resource_group_name
   min_tls_version                 = var.storage_network_security.min_tls_version
   allow_nested_items_to_be_public = false
+  shared_access_key_enabled       = true
   local_user_enabled              = false
   account_replication_type        = var.storage_account.replication_type
   account_tier                    = var.storage_account.tier
@@ -17,6 +18,11 @@ resource "azurerm_storage_account" "this" {
     delete_retention_policy {
       days = var.storage_account.blob_retention
     }
+  }
+
+  sas_policy {
+    expiration_period = "90.00:00:00"
+    expiration_action = "Log"
   }
 
   lifecycle {
