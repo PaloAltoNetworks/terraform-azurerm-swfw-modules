@@ -17,7 +17,7 @@ repos:
     - --args=--only=terraform_workspace_remote
     id: terraform_tflint
   repo: https://github.com/antonbabenko/pre-commit-terraform
-  rev: v1.94.2
+  rev: v1.97.0
 - hooks:
   - args:
     - --compact
@@ -27,4 +27,4 @@ repos:
     id: checkov
     verbose: true
   repo: https://github.com/bridgecrewio/checkov.git
-  rev: 3.2.255
+  rev: 3.2.360
