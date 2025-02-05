@@ -21,6 +21,7 @@ data "azurerm_public_ip" "this" {
   resource_group_name = coalesce(var.public_ip.resource_group_name, var.resource_group_name)
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/route_server
 resource "azurerm_route_server" "this" {
   name                = var.name
   resource_group_name = var.resource_group_name
@@ -32,8 +33,11 @@ resource "azurerm_route_server" "this" {
   )
   subnet_id                        = var.subnet_id
   branch_to_branch_traffic_enabled = var.branch_to_branch_traffic
+
+  tags = var.tags
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/route_server_bgp_connection
 resource "azurerm_route_server_bgp_connection" "this" {
   for_each = var.bgp_connections
 
