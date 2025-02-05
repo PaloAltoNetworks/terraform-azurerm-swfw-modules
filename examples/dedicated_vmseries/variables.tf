@@ -1098,6 +1098,8 @@ variable "test_infrastructure" {
       name                    = string
       address_space           = optional(list(string))
       dns_servers             = optional(list(string))
+      vnet_encryption         = optional(string)
+      ddos_protection_plan_id = optional(string)
       hub_resource_group_name = optional(string)
       hub_vnet_name           = string
       network_security_groups = optional(map(object({
