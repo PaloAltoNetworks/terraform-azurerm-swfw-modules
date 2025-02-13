@@ -1,6 +1,6 @@
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
-  for_each = { for k, v in var.ip_configurations : k => v if v.create_public_ip }
+  for_each = { for k, v in var.ip_configurations : k => v if try(v.create_public_ip, false) }
 
   resource_group_name = var.resource_group_name
   location            = var.region
@@ -15,7 +15,8 @@ resource "azurerm_public_ip" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
 data "azurerm_public_ip" "this" {
-  for_each = { for k, v in var.ip_configurations : k => v if !v.create_public_ip && v.public_ip_name != null }
+  for_each = { for k, v in var.ip_configurations : k => v
+  if !try(v.create_public_ip, false) && try(v.public_ip_name, null) != null }
 
   name                = each.value.public_ip_name
   resource_group_name = coalesce(each.value.public_ip_resource_group_name, var.resource_group_name)
