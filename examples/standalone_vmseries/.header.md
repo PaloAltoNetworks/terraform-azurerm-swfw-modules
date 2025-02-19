@@ -85,13 +85,13 @@ Firewall in this example is configured with password authentication. To retrieve
 - for username:
 
   ```bash
-  terraform output username
+  terraform output usernames
   ```
 
 - for password:
 
   ```bash
-  terraform output password
+  terraform output passwords
   ```
 
 The management public IP addresses are available in the `vmseries_mgmt_ips`:
