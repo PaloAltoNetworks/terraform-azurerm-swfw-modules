@@ -141,6 +141,7 @@ Name | Type | Description
 [`trusted_subnet_id`](#trusted_subnet_id) | `string` | The ID of the subnet designated for trusted resources within the virtual network.
 [`untrusted_subnet_id`](#untrusted_subnet_id) | `string` | The ID of the subnet designated for untrusted resources within the virtual network.
 [`public_ip_ids`](#public_ip_ids) | `map` | A map of IDs for public IP addresses.
+[`billing_plan_id`](#billing_plan_id) | `string` | The former plan_id panw-cloud-ngfw-payg is defined as stop sell, but has been set as the default to not break any existing resources that were originally provisioned with it.
 [`palo_alto_virtual_appliance`](#palo_alto_virtual_appliance) | `map` | Map of objects describing Palo Alto Virtual Appliance instances.
 
 ### Outputs
@@ -336,6 +337,17 @@ such as the `public_ip` module.
 Type: map(string)
 
 Default value: `&{}`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### billing_plan_id
+
+The former plan_id panw-cloud-ngfw-payg is defined as stop sell, but has been set as the default to not break any existing resources that were originally provisioned with it. Users need to explicitly set plan_id to panw-cngfw-payg when creating new resources.
+
+
+Type: string
+
+Default value: `panw-cngfw-payg`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
