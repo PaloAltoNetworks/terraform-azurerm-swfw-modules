@@ -185,13 +185,13 @@ To retrieve the initial credentials run:
 - for username:
 
   ```bash
-  terraform output username
+  terraform output usernames
   ```
 
 - for password:
 
   ```bash
-  terraform output password
+  terraform output passwords
   ```
 
 ### Cleanup
