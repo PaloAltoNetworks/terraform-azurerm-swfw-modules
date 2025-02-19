@@ -35,6 +35,8 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_hub_panorama" "this
   resource_group_name = var.resource_group_name
   location            = var.region
 
+  plan_id = var.billing_plan_id
+
   network_profile {
     public_ip_address_ids = (var.public_ip_ids != null ?
       [for v in var.cngfw_config.public_ip_keys : var.public_ip_ids[v]] :
@@ -76,6 +78,8 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_network_panorama" "
   location               = var.region
   panorama_base64_config = var.cngfw_config.panorama_base64_config
 
+  plan_id = var.billing_plan_id
+
   network_profile {
     public_ip_address_ids = (var.public_ip_ids != null ?
       [for v in var.cngfw_config.public_ip_keys : var.public_ip_ids[v]] :
@@ -116,6 +120,8 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_hub_local_rulestack
   resource_group_name = var.resource_group_name
   rulestack_id        = var.cngfw_config.rulestack_id
 
+  plan_id = var.billing_plan_id
+
   network_profile {
     public_ip_address_ids = (var.public_ip_ids != null ?
       [for v in var.cngfw_config.public_ip_keys : var.public_ip_ids[v]] :
@@ -154,6 +160,8 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_network_local_rules
   name                = "${var.name_prefix}${var.cngfw_config.cngfw_name}"
   resource_group_name = var.resource_group_name
   rulestack_id        = var.cngfw_config.rulestack_id
+
+  plan_id = var.billing_plan_id
 
   network_profile {
     public_ip_address_ids = (var.public_ip_ids != null ?
