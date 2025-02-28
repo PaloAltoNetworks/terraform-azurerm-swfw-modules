@@ -4,13 +4,13 @@ type: refarch
 show_in_hub: false
 swfw: cloudngfw
 ---
-# Reference Architecture with Terraform: CNGFW in Azure, Virtual Network Design Model.
+# Reference Architecture with Terraform: Cloud NGFW in Azure, Virtual Network Design Model.
 
 Palo Alto Networks produces several [validated reference architecture design and deployment documentation guides](https://www.paloaltonetworks.com/resources/reference-architectures),which describe well-architected and tested deployments.
-When deploying CNGFWs in a public cloud, the reference architecturesguide users toward the best security outcomes,
+When deploying Cloud NGFWs in a public cloud, the reference architecturesguide users toward the best security outcomes,
 whilst reducing rollout time and avoiding common integration efforts.
 
-The Terraform code presented here will deploy Palo Alto Networks Cloud NGFW firewall in Azure based on a centralized virtual network design model with common CNGFW for all traffic; for a discussion of other options, please see the design guide from
+The Terraform code presented here will deploy Palo Alto Networks Cloud NGFW firewall in Azure based on a centralized virtual network design model with common Cloud NGFW for all traffic; for a discussion of other options, please see the design guide from
 [the reference architecture guides](https://www.paloaltonetworks.com/resources/reference-architectures).
 
 ## Detailed Architecture and Design
@@ -19,21 +19,21 @@ The Terraform code presented here will deploy Palo Alto Networks Cloud NGFW fire
 
 This code implements:
 
-- a *centralized virtual network design*, a hub-and-spoke topology with a Transit VNet containing CNGFW to inspect all inbound, outbound,
+- a *centralized virtual network design*, a hub-and-spoke topology with a Transit VNet containing Cloud NGFW to inspect all inbound, outbound,
   east-west, and enterprise traffic
 
 This design uses a Transit VNet. Application functions and resources are deployed across multiple VNets that are connected in
 a hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound,
-outbound, east-west, and enterprise traffic. You integrate CNGFW with the transit VNet. Please see the [CNGFW design guide](https://www.paloaltonetworks.com/apps/pan/public/downloadResource?pagePath=/content/pan/en_US/resources/guides/securing-apps-with-cloud-ngfw-for-azure-design-guide).
+outbound, east-west, and enterprise traffic. You integrate Cloud NGFW with the transit VNet. Please see the [Cloud NGFW design guide](https://www.paloaltonetworks.com/apps/pan/public/downloadResource?pagePath=/content/pan/en_US/resources/guides/securing-apps-with-cloud-ngfw-for-azure-design-guide).
 
-![Azure NGFW hub README diagrams - cngfw_vnet (1)](https://github.com/user-attachments/assets/12b99d93-f5fb-4960-bc8d-069616e2c599)
+![Azure NGFW hub README diagrams - Cloud NGFW_vnet (1)](https://github.com/user-attachments/assets/12b99d93-f5fb-4960-bc8d-069616e2c599)
 
 This reference architecture consists of:
 
 - a VNET containing:
-  - 2 subnets dedicated to the CNGFW: private and public
+  - 2 subnets dedicated to the Cloud NGFW: private and public
   - Route Tables and Network Security Groups
-- 1 CNGFW:
+- 1 Cloud NGFW:
   - with 2 network interfaces: public, private
   - with 2 public IP addresses assigned to public interface
   - Destination Network Address Translation rules
@@ -56,7 +56,7 @@ A list of requirements might vary depending on the platform used to deploy the i
 
 **NOTE!**
 - after the deployment the firewalls remain not configured and not licensed
-- to manage CNGFW via Panorama, an existing Panorama instance is required. Please see the [Panorama integration guide](https://docs.paloaltonetworks.com/cloud-ngfw/azure/cloud-ngfw-for-azure/panorama-policy-management/panorama-integration-overview).
+- to manage Cloud NGFW via Panorama, an existing Panorama instance is required. Please see the [Panorama integration guide](https://docs.paloaltonetworks.com/cloud-ngfw/azure/cloud-ngfw-for-azure/panorama-policy-management/panorama-integration-overview).
 
 ## Usage
 
@@ -118,7 +118,7 @@ Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | 
 `public_ip` | - | ../../modules/public_ip | 
-`cngfw` | - | ../../modules/cngfw | 
+`cngfw` | - | ../../modules/cloudngfw | 
 `vnet_peering` | - | ../../modules/vnet_peering | 
 `test_infrastructure` | - | ../../modules/test_infrastructure | 
 
@@ -273,65 +273,53 @@ A map of objects defining the configuration for Cloud Next-Gen Firewalls (cngfws
 
 Each cngfw entry in the map supports the following attributes:
 
-- `attachment_type`                 - (`string`, required) Specifies whether the firewall is attached to a Virtual Network 
+- `name`                            - (`string`, required) the name of the Palo Alto Next Generation Firewall instance.
+- `attachment_type`                 - (`string`, required) specifies whether the firewall is attached to a Virtual Network 
                                       (`vnet`) or a Virtual WAN (`vwan`).
-- `management_mode`                 - (`string`, required) Defines the management mode for the firewall. When set to `panorama`,
+- `management_mode`                 - (`string`, required) defines the management mode for the firewall. When set to `panorama`,
                                       the firewall's policies are managed via Panorama.
-- `virtual_network_key`             - (`string`, optional) Key referencing the Virtual Network associated with this firewall. 
+- `virtual_network_key`             - (`string`, optional) key referencing the Virtual Network associated with this firewall. 
                                       Required if the `attachment_type` is `vnet`.
-- `trusted_subnet_key`              - (`string`, optional) Key of the subnet designated as trusted within the Virtual Network.
-- `untrusted_subnet_key`            - (`string`, optional) Key of the subnet designated as untrusted within the Virtual Network.
-- `cngfw_config`                    - (`object`, required) Configuration details for the Cloud NGFW instance, with the following 
+- `trusted_subnet_key`              - (`string`, optional) key of the subnet designated as trusted within the Virtual Network.
+- `untrusted_subnet_key`            - (`string`, optional) key of the subnet designated as untrusted within the Virtual Network.
+- `cngfw_config`                    - (`object`, required) configuration details for the Cloud NGFW instance, with the following 
                                       properties:
-  - `cngfw_name`                      - (`string`, required) The name of the Palo Alto Next Generation Firewall instance.
-  - `create_public_ip`                - (`bool`, optional, defaults to `true`) Controls if the Public IP resource is created or 
+  - `create_public_ip`                - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or 
                                         sourced. This field is ignored when the variable `public_ip_ids` is used.
-  - `public_ip_name`                  - (`string`, optional) The name of the Public IP resource. This field is required unless 
+  - `public_ip_name`                  - (`string`, optional) the name of the Public IP resource. This field is required unless 
                                         the variable `public_ip_ids` is used.
-  - `public_ip_resource_group_name`   - (`string`, optional) The name of the Resource Group hosting the Public IP resource. 
+  - `public_ip_resource_group_name`   - (`string`, optional) the name of the Resource Group hosting the Public IP resource. 
                                         This is used only for sourced resources.
-  - `public_ip_keys`                  - (`list(string)`, optional) A list of keys referencing the public IPs whose IDs are 
-                                        provided in the variable `public_ip_ids`. This is used only when the variable 
-                                        `public_ip_ids` is utilized.
-  - `egress_nat_ip_address_keys`      - (`list(string)`, optional) A list of keys referencing public IPs used for egress NAT 
-                                        traffic. This is used only when the variable `public_ip_ids` is utilized.
-  - `rulestack_id`                    - (`string`, optional) The ID of the Local Rulestack used to configure this Firewall 
-                                        Resource. This field is required when `management_mode` is set to "rulestack".
-  - `panorama_base64_config`          - (`string`, optional) The Base64-encoded configuration for connecting to the Panorama server. 
+  - `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to the Panorama server. 
                                         This field is required when `management_mode` is set to "panorama".
-  - `palo_alto_virtual_appliance_key` - (`string`, optional) The key referencing a Palo Alto Virtual Appliance, if applicable. 
-                                        This field is required when `attachment_type` is set to "vwan".
-  - `destination_nat`                 - (`map`, optional) Defines one or more destination NAT configurations. 
+  - `destination_nats`                 - (`map`, optional) defines one or more destination NAT configurations. 
                                         Each object supports the following properties:
-    - `destination_nat_name`      - (`string`, required) The name of the Destination NAT. Must be unique within this map.
-    - `destination_nat_protocol`  - (`string`, required) The protocol for this Destination NAT. Possible values are `TCP` or `UDP`.
-    - `frontend_port`             - (`number`, required) The port on which traffic will be received. Must be in the range 1 to 65535.
-    - `frontend_public_ip_key`    - (`string`, optional) The key referencing the public IP that receives the traffic. 
+    - `destination_nat_name`      - (`string`, required) the name of the Destination NAT. Must be unique within this map.
+    - `destination_nat_protocol`  - (`string`, required) the protocol for this Destination NAT. Possible values are `TCP` or `UDP`.
+    - `frontend_port`             - (`number`, required) the port on which traffic will be received. Must be in the range 1 to 65535.
+    - `frontend_public_ip_key`    - (`string`, optional) the key referencing the public IP that receives the traffic. 
                                     This is used only when the variable `public_ip_ids` is utilized.
-    - `backend_port`              - (`number`, required) The port number to which traffic will be sent. 
+    - `backend_port`              - (`number`, required) the port number to which traffic will be sent. 
                                     Must be in the range 1 to 65535.
-    - `backend_ip_address`        - (`string`, required) The IPv4 address to which traffic will be forwarded.
+    - `backend_ip_address`        - (`string`, required) the IPv4 address to which traffic will be forwarded.
 
 
 Type: 
 
 ```hcl
 map(object({
+    name                 = string
     attachment_type      = string
     management_mode      = string
     virtual_network_key  = optional(string)
     trusted_subnet_key   = optional(string)
     untrusted_subnet_key = optional(string)
     cngfw_config = object({
-      cngfw_name                    = string
       create_public_ip              = optional(bool)
       public_ip_name                = optional(string)
       public_ip_resource_group_name = optional(string)
-      public_ip_keys                = optional(list(string))
-      egress_nat_ip_address_keys    = optional(list(string))
-      rulestack_id                  = optional(string)
       panorama_base64_config        = optional(string)
-      destination_nat = optional(map(object({
+      destination_nats = optional(map(object({
         destination_nat_name     = string
         destination_nat_protocol = string
         frontend_public_ip_key   = optional(string)

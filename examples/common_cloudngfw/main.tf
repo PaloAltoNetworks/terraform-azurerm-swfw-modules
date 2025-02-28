@@ -87,20 +87,27 @@ module "public_ip" {
 # Create a CNGFWs
 
 module "cngfw" {
-  source = "../../modules/cngfw"
+  source = "../../modules/cloudngfw"
 
   for_each = var.cngfws
 
-  attachment_type     = each.value.attachment_type
-  management_mode     = each.value.management_mode
-  cngfw_config        = each.value.cngfw_config
+  name            = each.value.name
+  attachment_type = each.value.attachment_type
+  management_mode = each.value.management_mode
+  cngfw_config = merge(each.value.cngfw_config, {
+    destination_nats = {
+      for k, v in each.value.cngfw_config.destination_nats : k => merge(v, {
+        frontend_public_ip_address_id = v.frontend_public_ip_key != null ? lookup(module.public_ip.pip_ids, v.frontend_public_ip_key, null) : null
+      })
+    }
+  })
   public_ip_ids       = module.public_ip.pip_ids
+  egress_nat_ip_ids   = module.public_ip.pip_ids
   resource_group_name = local.resource_group.name
   region              = var.region
   virtual_network_id  = each.value.attachment_type == "vnet" ? module.vnet[each.value.virtual_network_key].virtual_network_id : null
   trusted_subnet_id   = each.value.attachment_type == "vnet" ? module.vnet[each.value.virtual_network_key].subnet_ids[each.value.trusted_subnet_key] : null
   untrusted_subnet_id = each.value.attachment_type == "vnet" ? module.vnet[each.value.virtual_network_key].subnet_ids[each.value.untrusted_subnet_key] : null
-  name_prefix         = var.name_prefix
   tags                = var.tags
 }
 
@@ -120,7 +127,6 @@ module "vnet_peering" {
     resource_group_name = coalesce(each.value.remote_resource_group_name, local.resource_group.name)
     vnet_name           = each.value.remote_vnet_name
   }
-
   depends_on = [module.vnet]
 }
 

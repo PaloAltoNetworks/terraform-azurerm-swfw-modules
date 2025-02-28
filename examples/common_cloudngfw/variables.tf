@@ -129,7 +129,7 @@ variable "vnets" {
   }))
 }
 
-#PUBLIC_IP
+# PUBLIC_IP
 variable "public_ips" {
   description = <<-EOF
   A map defining Public IP Addresses and Prefixes.
@@ -165,68 +165,56 @@ variable "public_ips" {
   })
 }
 
-#CNGFW
+# CNGFW
 variable "cngfws" {
   description = <<-EOF
   A map of objects defining the configuration for Cloud Next-Gen Firewalls (cngfws) in the environment.
 
   Each cngfw entry in the map supports the following attributes:
 
-  - `attachment_type`                 - (`string`, required) Specifies whether the firewall is attached to a Virtual Network 
+  - `name`                            - (`string`, required) the name of the Palo Alto Next Generation Firewall instance.
+  - `attachment_type`                 - (`string`, required) specifies whether the firewall is attached to a Virtual Network 
                                         (`vnet`) or a Virtual WAN (`vwan`).
-  - `management_mode`                 - (`string`, required) Defines the management mode for the firewall. When set to `panorama`,
+  - `management_mode`                 - (`string`, required) defines the management mode for the firewall. When set to `panorama`,
                                         the firewall's policies are managed via Panorama.
-  - `virtual_network_key`             - (`string`, optional) Key referencing the Virtual Network associated with this firewall. 
+  - `virtual_network_key`             - (`string`, optional) key referencing the Virtual Network associated with this firewall. 
                                         Required if the `attachment_type` is `vnet`.
-  - `trusted_subnet_key`              - (`string`, optional) Key of the subnet designated as trusted within the Virtual Network.
-  - `untrusted_subnet_key`            - (`string`, optional) Key of the subnet designated as untrusted within the Virtual Network.
-  - `cngfw_config`                    - (`object`, required) Configuration details for the Cloud NGFW instance, with the following 
+  - `trusted_subnet_key`              - (`string`, optional) key of the subnet designated as trusted within the Virtual Network.
+  - `untrusted_subnet_key`            - (`string`, optional) key of the subnet designated as untrusted within the Virtual Network.
+  - `cngfw_config`                    - (`object`, required) configuration details for the Cloud NGFW instance, with the following 
                                         properties:
-    - `cngfw_name`                      - (`string`, required) The name of the Palo Alto Next Generation Firewall instance.
-    - `create_public_ip`                - (`bool`, optional, defaults to `true`) Controls if the Public IP resource is created or 
+    - `create_public_ip`                - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or 
                                           sourced. This field is ignored when the variable `public_ip_ids` is used.
-    - `public_ip_name`                  - (`string`, optional) The name of the Public IP resource. This field is required unless 
+    - `public_ip_name`                  - (`string`, optional) the name of the Public IP resource. This field is required unless 
                                           the variable `public_ip_ids` is used.
-    - `public_ip_resource_group_name`   - (`string`, optional) The name of the Resource Group hosting the Public IP resource. 
+    - `public_ip_resource_group_name`   - (`string`, optional) the name of the Resource Group hosting the Public IP resource. 
                                           This is used only for sourced resources.
-    - `public_ip_keys`                  - (`list(string)`, optional) A list of keys referencing the public IPs whose IDs are 
-                                          provided in the variable `public_ip_ids`. This is used only when the variable 
-                                          `public_ip_ids` is utilized.
-    - `egress_nat_ip_address_keys`      - (`list(string)`, optional) A list of keys referencing public IPs used for egress NAT 
-                                          traffic. This is used only when the variable `public_ip_ids` is utilized.
-    - `rulestack_id`                    - (`string`, optional) The ID of the Local Rulestack used to configure this Firewall 
-                                          Resource. This field is required when `management_mode` is set to "rulestack".
-    - `panorama_base64_config`          - (`string`, optional) The Base64-encoded configuration for connecting to the Panorama server. 
+    - `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to the Panorama server. 
                                           This field is required when `management_mode` is set to "panorama".
-    - `palo_alto_virtual_appliance_key` - (`string`, optional) The key referencing a Palo Alto Virtual Appliance, if applicable. 
-                                          This field is required when `attachment_type` is set to "vwan".
-    - `destination_nat`                 - (`map`, optional) Defines one or more destination NAT configurations. 
+    - `destination_nats`                 - (`map`, optional) defines one or more destination NAT configurations. 
                                           Each object supports the following properties:
-      - `destination_nat_name`      - (`string`, required) The name of the Destination NAT. Must be unique within this map.
-      - `destination_nat_protocol`  - (`string`, required) The protocol for this Destination NAT. Possible values are `TCP` or `UDP`.
-      - `frontend_port`             - (`number`, required) The port on which traffic will be received. Must be in the range 1 to 65535.
-      - `frontend_public_ip_key`    - (`string`, optional) The key referencing the public IP that receives the traffic. 
+      - `destination_nat_name`      - (`string`, required) the name of the Destination NAT. Must be unique within this map.
+      - `destination_nat_protocol`  - (`string`, required) the protocol for this Destination NAT. Possible values are `TCP` or `UDP`.
+      - `frontend_port`             - (`number`, required) the port on which traffic will be received. Must be in the range 1 to 65535.
+      - `frontend_public_ip_key`    - (`string`, optional) the key referencing the public IP that receives the traffic. 
                                       This is used only when the variable `public_ip_ids` is utilized.
-      - `backend_port`              - (`number`, required) The port number to which traffic will be sent. 
+      - `backend_port`              - (`number`, required) the port number to which traffic will be sent. 
                                       Must be in the range 1 to 65535.
-      - `backend_ip_address`        - (`string`, required) The IPv4 address to which traffic will be forwarded.
+      - `backend_ip_address`        - (`string`, required) the IPv4 address to which traffic will be forwarded.
   EOF
   type = map(object({
+    name                 = string
     attachment_type      = string
     management_mode      = string
     virtual_network_key  = optional(string)
     trusted_subnet_key   = optional(string)
     untrusted_subnet_key = optional(string)
     cngfw_config = object({
-      cngfw_name                    = string
       create_public_ip              = optional(bool)
       public_ip_name                = optional(string)
       public_ip_resource_group_name = optional(string)
-      public_ip_keys                = optional(list(string))
-      egress_nat_ip_address_keys    = optional(list(string))
-      rulestack_id                  = optional(string)
       panorama_base64_config        = optional(string)
-      destination_nat = optional(map(object({
+      destination_nats = optional(map(object({
         destination_nat_name     = string
         destination_nat_protocol = string
         frontend_public_ip_key   = optional(string)
@@ -238,7 +226,7 @@ variable "cngfws" {
   }))
 }
 
-#VNET-PEERING
+# VNET-PEERING
 variable "vnet_peerings" {
   description = <<-EOF
   A map defining VNET peerings.
