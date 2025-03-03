@@ -75,7 +75,6 @@ cngfws = {
     trusted_subnet_key   = "trusted"
     untrusted_subnet_key = "untrusted"
     cngfw_config = {
-      public_ip_name         = "test"
       panorama_base64_config = "eyJkZ25hbWUiOiAiY25nZnctYXotdmh1YiIsICJ0cGxuYW1lIjogImNuZ2Z3LWF6LXZodWIiLCAicGFub3JhbWEtc2VydmVyIjogIjE5Mi4xNjguMS4xMCIsICJjZ25hbWUiOiAiY29sbGVjdG9yX0ciLCAidm0tYXV0aC1rZXkiOiAiMDgxOTgxODY4NzU5MzI4IiwgImV4cGlyeSI6ICIyMDI1LzExLzE0In0=" # TODO: Put panorama connection string
       destination_nats = {
         "app1-443tcp-dnat" = {
