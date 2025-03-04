@@ -84,25 +84,25 @@ module "public_ip" {
   tags = var.tags
 }
 
-# Create a CNGFWs
+# Create a cloudngfws
 
-module "cngfw" {
+module "cloudngfw" {
   source = "../../modules/cloudngfw"
 
-  for_each = var.cngfws
+  for_each = var.cloudngfws
 
   name            = each.value.name
   attachment_type = each.value.attachment_type
   management_mode = each.value.management_mode
-  cngfw_config = merge(each.value.cngfw_config, {
+  cloudngfw_config = merge(each.value.cloudngfw_config, {
+    public_ip_ids     = module.public_ip.pip_ids,
+    egress_nat_ip_ids = module.public_ip.pip_ids,
     destination_nats = {
-      for k, v in each.value.cngfw_config.destination_nats : k => merge(v, {
+      for k, v in each.value.cloudngfw_config.destination_nats : k => merge(v, {
         frontend_public_ip_address_id = v.frontend_public_ip_key != null ? lookup(module.public_ip.pip_ids, v.frontend_public_ip_key, null) : null
       })
     }
   })
-  public_ip_ids       = module.public_ip.pip_ids
-  egress_nat_ip_ids   = module.public_ip.pip_ids
   resource_group_name = local.resource_group.name
   region              = var.region
   virtual_network_id  = each.value.attachment_type == "vnet" ? module.vnet[each.value.virtual_network_key].virtual_network_id : null

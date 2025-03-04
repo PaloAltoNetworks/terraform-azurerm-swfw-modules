@@ -12,15 +12,15 @@ tags = {
 
 # NETWORK
 vnets = {
-  "cngfw-vnet" = {
-    name          = "cngfw-vnet"
+  "cloudngfw-vnet" = {
+    name          = "cloudngfw-vnet"
     address_space = ["10.0.0.0/25"]
     network_security_groups = {
-      "cngfw-dnat-ports-allow-nsg" = {
-        name = "cngfw-dnat-ports-allow-nsg"
+      "cloudngfw-dnat-ports-allow-nsg" = {
+        name = "cloudngfw-dnat-ports-allow-nsg"
         rules = {
-          cngfw-dnat-ports-allow = {
-            name                         = "cngfw-dnat-ports-allow"
+          cloudngfw-dnat-ports-allow = {
+            name                         = "cloudngfw-dnat-ports-allow"
             priority                     = 100
             direction                    = "Inbound"
             access                       = "Allow"
@@ -37,14 +37,14 @@ vnets = {
       "trusted" = {
         name                        = "trusted"
         address_prefixes            = ["10.0.0.0/26"]
-        network_security_group_key  = "cngfw-dnat-ports-allow-nsg"
+        network_security_group_key  = "cloudngfw-dnat-ports-allow-nsg"
         enable_cloudngfw_delegation = true
 
       }
       "untrusted" = {
         name                        = "untrusted"
         address_prefixes            = ["10.0.0.64/26"]
-        network_security_group_key  = "cngfw-dnat-ports-allow-nsg"
+        network_security_group_key  = "cloudngfw-dnat-ports-allow-nsg"
         enable_cloudngfw_delegation = true
       }
     }
@@ -54,33 +54,33 @@ vnets = {
 # PUBLIC_IP
 public_ips = {
   public_ip_addresses = {
-    cngfw_public_ip_app1 = {
+    cloudngfw_public_ip_app1 = {
       create = true
-      name   = "cngfw_public_ip_app1"
+      name   = "cloudngfw_public_ip_app1"
     }
-    cngfw_public_ip_app2 = {
+    cloudngfw_public_ip_app2 = {
       create = true
-      name   = "cngfw_public_ip_app2"
+      name   = "cloudngfw_public_ip_app2"
     }
   }
 }
 
-# CNGFW 
-cngfws = {
-  "cngfw" = {
-    name                 = "cngfw"
+# CLOUDNGFW 
+cloudngfws = {
+  "cloudngfw" = {
+    name                 = "cloudngfw"
     attachment_type      = "vnet"
     management_mode      = "panorama"
-    virtual_network_key  = "cngfw-vnet"
+    virtual_network_key  = "cloudngfw-vnet"
     trusted_subnet_key   = "trusted"
     untrusted_subnet_key = "untrusted"
-    cngfw_config = {
+    cloudngfw_config = {
       panorama_base64_config = "eyJkZ25hbWUiOiAiY25nZnctYXotdmh1YiIsICJ0cGxuYW1lIjogImNuZ2Z3LWF6LXZodWIiLCAicGFub3JhbWEtc2VydmVyIjogIjE5Mi4xNjguMS4xMCIsICJjZ25hbWUiOiAiY29sbGVjdG9yX0ciLCAidm0tYXV0aC1rZXkiOiAiMDgxOTgxODY4NzU5MzI4IiwgImV4cGlyeSI6ICIyMDI1LzExLzE0In0=" # TODO: Put panorama connection string
       destination_nats = {
         "app1-443tcp-dnat" = {
           destination_nat_name     = "app1-443tcp-dnat"
           destination_nat_protocol = "TCP"
-          frontend_public_ip_key   = "cngfw_public_ip_app1"
+          frontend_public_ip_key   = "cloudngfw_public_ip_app1"
           frontend_port            = 443
           backend_port             = 443
           backend_ip_address       = "10.100.0.4"
@@ -88,7 +88,7 @@ cngfws = {
         "app1-80tcp-dnat" = {
           destination_nat_name     = "app1-80tcp-dnat"
           destination_nat_protocol = "TCP"
-          frontend_public_ip_key   = "cngfw_public_ip_app1"
+          frontend_public_ip_key   = "cloudngfw_public_ip_app1"
           frontend_port            = 80
           backend_port             = 80
           backend_ip_address       = "10.100.0.4"
@@ -96,7 +96,7 @@ cngfws = {
         "app2-443tcp-dnat" = {
           destination_nat_name     = "app2-443tcp-dnat"
           destination_nat_protocol = "TCP"
-          frontend_public_ip_key   = "cngfw_public_ip_app2"
+          frontend_public_ip_key   = "cloudngfw_public_ip_app2"
           frontend_port            = 443
           backend_port             = 443
           backend_ip_address       = "10.100.1.4"
@@ -104,7 +104,7 @@ cngfws = {
         "app2-80tcp-dnat" = {
           destination_nat_name     = "app2-80tcp-dnat"
           destination_nat_protocol = "TCP"
-          frontend_public_ip_key   = "cngfw_public_ip_app2"
+          frontend_public_ip_key   = "cloudngfw_public_ip_app2"
           frontend_port            = 80
           backend_port             = 80
           backend_ip_address       = "10.100.1.4"
@@ -115,9 +115,9 @@ cngfws = {
 }
 
 # # VNET-PEERING
-# vnet_peerings = { #Uncomment the section below to peer CNGFW VNET with Panorama VNET to manage cngfw through Panorama.
-#   "cngfw-to-panorama" = {
-#     local_vnet_name            = "example-cngfw-vnet"
+# vnet_peerings = { #Uncomment the section below to peer cloudngfw VNET with Panorama VNET to manage cloudngfw through Panorama.
+#   "cloudngfw-to-panorama" = {
+#     local_vnet_name            = "example-cloudngfw-vnet"
 #     remote_vnet_name           = "example-panorama-vnet"
 #     remote_resource_group_name = "example-panorama"
 # }
@@ -129,7 +129,7 @@ test_infrastructure = {
       "app1" = {
         name          = "app1-vnet"
         address_space = ["10.100.0.0/25"]
-        hub_vnet_name = "cngfw-vnet" # Name prefix is added to the beginning of this string
+        hub_vnet_name = "cloudngfw-vnet" # Name prefix is added to the beginning of this string
         network_security_groups = {
           "app1" = {
             name = "app1-nsg"
@@ -206,7 +206,7 @@ test_infrastructure = {
       "app2" = {
         name          = "app2-vnet"
         address_space = ["10.100.1.0/25"]
-        hub_vnet_name = "cngfw-vnet" # Name prefix is added to the beginning of this string
+        hub_vnet_name = "cloudngfw-vnet" # Name prefix is added to the beginning of this string
         network_security_groups = {
           "app2" = {
             name = "app2-nsg"

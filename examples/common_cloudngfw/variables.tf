@@ -165,12 +165,12 @@ variable "public_ips" {
   })
 }
 
-# CNGFW
-variable "cngfws" {
+# CLOUDNGFW
+variable "cloudngfws" {
   description = <<-EOF
-  A map of objects defining the configuration for Cloud Next-Gen Firewalls (cngfws) in the environment.
+  A map of objects defining the configuration for Cloud Next-Gen Firewalls (cloudngfws) in the environment.
 
-  Each cngfw entry in the map supports the following attributes:
+  Each cloudngfw entry in the map supports the following attributes:
 
   - `name`                            - (`string`, required) the name of the Palo Alto Next Generation Firewall instance.
   - `attachment_type`                 - (`string`, required) specifies whether the firewall is attached to a Virtual Network 
@@ -181,7 +181,7 @@ variable "cngfws" {
                                         Required if the `attachment_type` is `vnet`.
   - `trusted_subnet_key`              - (`string`, optional) key of the subnet designated as trusted within the Virtual Network.
   - `untrusted_subnet_key`            - (`string`, optional) key of the subnet designated as untrusted within the Virtual Network.
-  - `cngfw_config`                    - (`object`, required) configuration details for the Cloud NGFW instance, with the following 
+  - `cloudngfw_config`                    - (`object`, required) configuration details for the Cloud NGFW instance, with the following 
                                         properties:
     - `create_public_ip`                - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or 
                                           sourced. This field is ignored when the variable `public_ip_ids` is used.
@@ -209,7 +209,7 @@ variable "cngfws" {
     virtual_network_key  = optional(string)
     trusted_subnet_key   = optional(string)
     untrusted_subnet_key = optional(string)
-    cngfw_config = object({
+    cloudngfw_config = object({
       create_public_ip              = optional(bool)
       public_ip_name                = optional(string)
       public_ip_resource_group_name = optional(string)

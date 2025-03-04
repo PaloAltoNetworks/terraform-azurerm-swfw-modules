@@ -1,4 +1,3 @@
-
 output "test_vms_usernames" {
   description = "Initial administrative username to use for test VMs."
   value = length(var.test_infrastructure) > 0 ? {
