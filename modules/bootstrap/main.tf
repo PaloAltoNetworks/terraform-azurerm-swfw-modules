@@ -101,7 +101,7 @@ resource "azurerm_storage_share_directory" "this" {
   }
 
   name             = each.value.folder_name
-  storage_share_id = local.file_shares[each.value.share_key].id
+  storage_share_id = local.file_shares[each.value.share_key].url
 }
 
 
