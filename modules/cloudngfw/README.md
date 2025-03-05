@@ -10,69 +10,69 @@ This module is designed to work in several *modes* depending on which variables 
 managed via Panorama (using panorama_base64_config). Supports creation or referencing of public IP addresses for connectivity.
 
 ```hcl
-cngfws = {
-  "cngfw" = {
-    name                 = "cngfw"
+cloudngfws = {
+  "cloudngfw" = {
+    name                 = "cloudngfw"
     attachment_type      = "vnet"
     management_mode      = "panorama"
-    virtual_network_key  = "cngfw-vnet"
-    cngfw_config = {
+    virtual_network_key  = "cloudngfw-vnet"
+    cloudngfw_config = {
       panorama_base64_config     = "" # TODO: Put panorama connection string
     }
   }
 }
 ```
-- management_mode = "panorama" & attachment_type ="vhub" - deploys CNGFW attached to a Virtual Hub in a Virtual WAN environment,
+- management_mode = "panorama" & attachment_type ="vhub" - deploys Cloud NGFW attached to a Virtual Hub in a Virtual WAN environment,
 managed via Panorama (using panorama_base64_config). Supports creation or referencing of public IP addresses for connectivity.
 
 ```hcl
-cngfws = {
-  "cngfw" = {
-    name                 = "cngfw"
+cloudngfws = {
+  "cloudngfw" = {
+    name                 = "cloudngfw"
     attachment_type      = "vhub"
     management_mode      = "panorama"
     virtual_wan_key = "virtual_wan"
     virtual_hub_key = "virtual_hub"
-    palo_alto_virtual_appliance_name = "cngfw-vhub-nva"
-    cngfw_config = {
+    palo_alto_virtual_appliance_name = "cloudngfw-vhub-nva"
+    cloudngfw_config = {
       panorama_base64_config     = "" # TODO: Put panorama connection string
     }
   }
 }
 ```
 
-- management_mode = "rulestack" & attachment_type ="vnet" - deploys CNGFW attached to a Virtual Network (VNet) with a local
+- management_mode = "rulestack" & attachment_type ="vnet" - deploys Cloud NGFW attached to a Virtual Network (VNet) with a local
 rulestack for policy management. Requires VNet-related parameters such as trusted and untrusted subnets, along with the rulestack ID.
 
 ```hcl
-cngfws = {
-  "cngfw" = {
-    name                 = "cngfw"
+cloudngfws = {
+  "cloudngfw" = {
+    name                 = "cloudngfw"
     attachment_type      = "vnet"
     management_mode      = "rulestack"
-    virtual_network_key  = "cngfw-vnet"
+    virtual_network_key  = "cloudngfw-vnet"
     trusted_subnet_key   = "trusted"
     untrusted_subnet_key = "untrusted"
-    cngfw_config = {
+    cloudngfw_config = {
       rulestack_id               = "" # TODO: Put rulestack ID
     }
   }
 }
 ```
 
-- management_mode = "rulestack" & attachment_type ="vhub" - deploys CNGFW attached to a Virtual Hub in a Virtual WAN environment,
+- management_mode = "rulestack" & attachment_type ="vhub" - deploys Cloud NGFW attached to a Virtual Hub in a Virtual WAN environment,
 managed through a local rulestack. Includes options to create or reference public IP addresses.
 
 ```hcl
-cngfws = {
-  "cngfw" = {
-    name                 = "cngfw"
+cloudngfws = {
+  "cloudngfw" = {
+    name                 = "cloudngfw"
     attachment_type      = "vhub"
     management_mode      = "panorama"
     virtual_wan_key = "virtual_wan"
     virtual_hub_key = "virtual_hub"
-    palo_alto_virtual_appliance_name = "cngfw-vhub-nva"
-    cngfw_config = {
+    palo_alto_virtual_appliance_name = "cloudngfw-vhub-nva"
+    cloudngfw_config = {
       rulestack_id               = "" # TODO: Put rulestack ID
     }
   }
@@ -106,12 +106,12 @@ cngfws = {
 
 Name | Type | Description
 --- | --- | ---
-[`name`](#name) | `string` | The name of the Palo Alto Next Generation Firewall instance.
+[`name`](#name) | `string` | The name of the Azure Cloud Next-Generation Firewall by Palo Alto Networks.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`region`](#region) | `string` | The name of the Azure region to deploy the resources in.
-[`attachment_type`](#attachment_type) | `string` | Defines how the cngfw (Cloud NGFW) is attached.
-[`management_mode`](#management_mode) | `string` | Defines how the cngfw is managed.
-[`cngfw_config`](#cngfw_config) | `object` | Map of objects describing Palo Alto Next Generation Firewalls (cngfw).
+[`attachment_type`](#attachment_type) | `string` | Defines how the cloudngfw (Cloud NGFW) is attached.
+[`management_mode`](#management_mode) | `string` | Defines how the cloudngfw is managed.
+[`cloudngfw_config`](#cloudngfw_config) | `object` | Map of objects describing Palo Alto Next Generation Firewalls (cloudngfw).
 
 ### Optional Inputs
 
@@ -119,27 +119,24 @@ Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`virtual_hub_id`](#virtual_hub_id) | `string` | The ID of the Azure Virtual Hub used for connecting various network resources.
-[`virtual_network_id`](#virtual_network_id) | `string` | The ID of the Azure Virtual Network (VNet) to be used for connecting to cngfw.
+[`virtual_network_id`](#virtual_network_id) | `string` | The ID of the Azure Virtual Network (VNet) to be used for connecting to cloudngfw.
 [`trusted_subnet_id`](#trusted_subnet_id) | `string` | The ID of the subnet designated for trusted resources within the virtual network.
 [`untrusted_subnet_id`](#untrusted_subnet_id) | `string` | The ID of the subnet designated for untrusted resources within the virtual network.
-[`public_ip_ids`](#public_ip_ids) | `map` | A map of IDs for public IP addresses.
-[`egress_nat_ip_ids`](#egress_nat_ip_ids) | `map` | A map of IDs for egress NAT public IP addresses.
-[`plan_id`](#plan_id) | `string` | The former plan_id panw-cloud-ngfw-payg is defined as stop sell, but has been set as the default to not break any existing 
+[`plan_id`](#plan_id) | `string` | The former plan_id `panw-cloud-ngfw-payg` is defined as stop sell, but has been set as the default to not break any existing 
 resources that were originally provisioned with it.
 [`marketplace_offer_id`](#marketplace_offer_id) | `string` | The marketplace offer ID.
-[`palo_alto_virtual_appliance_name`](#palo_alto_virtual_appliance_name) | `string` | The name of the Palo Alto Virtual Appliance.
 
 ### Outputs
 
 Name |  Description
 --- | ---
-`palo_alto_virtual_network_appliance_ids` | The identifiers of the created Palo Alto Virtual Network Appliances.
+`palo_alto_virtual_network_appliance_id` | The identifier of the created Palo Alto Virtual Network Appliance.
 
 ### Required Inputs details
 
 #### name
 
-The name of the Palo Alto Next Generation Firewall instance.
+The name of the Azure Cloud Next-Generation Firewall by Palo Alto Networks.
 
 Type: string
 
@@ -163,9 +160,9 @@ Type: string
 
 #### attachment_type
 
-Defines how the cngfw (Cloud NGFW) is attached.
-- When set to `vnet`, the cngfw is used to filter traffic between trusted and untrusted subnets within a Virtual Network (VNet).
-- When set to `vwan`, the cngfw is used to filter traffic within the Azure Virtual Wan.
+Defines how the cloudngfw (Cloud NGFW) is attached.
+- When set to `vnet`, the cloudngfw is used to filter traffic between trusted and untrusted subnets within a Virtual Network (VNet).
+- When set to `vwan`, the cloudngfw is used to filter traffic within the Azure Virtual Wan.
 
 
 Type: string
@@ -174,18 +171,18 @@ Type: string
 
 #### management_mode
 
-Defines how the cngfw is managed.
-- When set to `panorama`, the cngfw policies are managed through Panorama.
-- When set to `rulestack`, the cngfw policies are managed through Azure Rulestack.
+Defines how the cloudngfw is managed.
+- When set to `panorama`, the cloudngfw policies are managed through Panorama.
+- When set to `rulestack`, the cloudngfw policies are managed through Azure Rulestack.
 
 
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### cngfw_config
+#### cloudngfw_config
 
-Map of objects describing Palo Alto Next Generation Firewalls (cngfw).
+Map of objects describing Palo Alto Next Generation Firewalls (cloudngfw).
 
 List of available properties:
 
@@ -195,12 +192,14 @@ List of available properties:
                                       the variable `public_ip_ids` is used.
 - `public_ip_resource_group_name`   - (`string`, optional) the name of the Resource Group hosting the Public IP resource. 
                                       This is used only for sourced resources.
+- `public_ip_ids`                   - (`map`, optional) a map of IDs for public IP addresses. Each key represents a logical identifier, 
+                                      and the value is the resource ID of a public IP. 
+- `egress_nat_ip_ids`               - (`map`, optional) a map of IDs for egress NAT public IP addresses. Each key represents a logical 
+                                      identifier, and the value is the resource ID of a public IP.
 - `rulestack_id`                    - (`string`, optional) the ID of the Local Rulestack used to configure this Firewall 
                                       Resource. This field is required when `management_mode` is set to `rulestack`.
 - `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to the Panorama server. 
                                       This field is required when `management_mode` is set to "panorama".
-- `palo_alto_virtual_appliance_key` - (`string`, optional) the key referencing a Palo Alto Virtual Appliance, if applicable. 
-                                      This field is required when `attachment_type` is set to `vwan`.
 - `destination_nats`                 - (`map`, optional) defines one or more destination NAT configurations. 
                                       Each object supports the following properties:
   - `destination_nat_name`              - (`string`, required) the name of the Destination NAT. Must be unique within this map.
@@ -220,13 +219,15 @@ object({
     create_public_ip              = optional(bool, true)
     public_ip_name                = optional(string)
     public_ip_resource_group_name = optional(string)
+    public_ip_ids                 = optional(map(string))
+    egress_nat_ip_ids             = optional(map(string))
     rulestack_id                  = optional(string)
     panorama_base64_config        = optional(string)
     destination_nats = optional(map(object({
       destination_nat_name          = string
       destination_nat_protocol      = string
-      frontend_public_ip_address_id = optional(string)
       frontend_port                 = number
+      frontend_public_ip_address_id = optional(string)
       backend_port                  = number
       backend_ip_address            = string
     })), {})
@@ -262,7 +263,7 @@ Default value: `&{}`
 
 #### virtual_network_id
 
-The ID of the Azure Virtual Network (VNet) to be used for connecting to cngfw.
+The ID of the Azure Virtual Network (VNet) to be used for connecting to cloudngfw.
 This variable is required when `attachment_type` is set to "vnet".
 
 
@@ -296,38 +297,10 @@ Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### public_ip_ids
-
-A map of IDs for public IP addresses. Each key represents a logical identifier, and the value is the resource ID of a public IP. 
-This variable can be populated manually with existing public IP IDs or dynamically through outputs from other modules, 
-such as the `public_ip` module.
-
-
-Type: map(string)
-
-Default value: `&{}`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### egress_nat_ip_ids
-
-A map of IDs for egress NAT public IP addresses. Each key represents a logical identifier, and the value is the resource ID of a public IP. 
-These IPs are used for outbound traffic from the firewall to the internet. 
-
-This variable can be manually populated with existing public IP IDs or dynamically derived from other modules, 
-such as the `public_ip` module, to ensure proper outbound connectivity.
-
-
-Type: map(string)
-
-Default value: `&{}`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
 #### plan_id
 
-The former plan_id panw-cloud-ngfw-payg is defined as stop sell, but has been set as the default to not break any existing 
-resources that were originally provisioned with it. Users need to explicitly set plan_id to panw-cngfw-payg when creating new resources.
+The former plan_id `panw-cloud-ngfw-payg` is defined as stop sell, but has been set as the default to not break any existing 
+resources that were originally provisioned with it. Users need to explicitly set plan_id to `panw-cngfw-payg` when creating new resources.
 
 
 Type: string
@@ -338,26 +311,11 @@ Default value: `panw-cngfw-payg`
 
 #### marketplace_offer_id
 
-The marketplace offer ID. Defaults to pan_swfw_cloud_ngfw. Changing this forces a new resource to be created.
+The marketplace offer ID. Defaults to `pan_swfw_cloud_ngfw`. Changing this forces a new resource to be created.
 
 
 Type: string
 
 Default value: `pan_swfw_cloud_ngfw`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### palo_alto_virtual_appliance_name
-
-The name of the Palo Alto Virtual Appliance. 
-
-This variable is required when `attachment_type` is set to "vwan" and defines the name of the appliance 
-to be deployed in the virtual WAN environment. Changing this value will force the creation of a new 
-Palo Alto Local Network Virtual Appliance.
-
-
-Type: string
-
-Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
