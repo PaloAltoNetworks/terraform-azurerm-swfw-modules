@@ -19,27 +19,42 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "virtual_hub_id" {
+variable "plan_id" {
   description = <<-EOF
-  The ID of the Azure Virtual Hub used for connecting various network resources.
-  This variable is required when `attachment_type` is set to "vwan".
+  The former plan_id `panw-cloud-ngfw-payg` is defined as stop sell, but has been set as the default to not break any existing 
+  resources that were originally provisioned with it. Users need to explicitly set the `plan_id` to `panw-cngfw-payg` when
+  creating new resources.
   EOF
-  default     = null
   type        = string
+  default     = "panw-cngfw-payg"
+}
+
+variable "marketplace_offer_id" {
+  description = <<-EOF
+  The marketplace offer ID. Defaults to `pan_swfw_cloud_ngfw`. Changing this forces a new resource to be created.
+  EOF
+  type        = string
+  default     = "pan_swfw_cloud_ngfw"
+}
+
+variable "attachment_type" {
+  description = <<-EOF
+  Defines how the cloudngfw (Cloud NGFW) is attached.
+  - When set to `vnet`, the cloudngfw is used to filter traffic between trusted and untrusted subnets within a Virtual Network.
+  - When set to `vwan`, the cloudngfw is used to filter traffic within the Azure Virtual WAN.
+  EOF
+  type        = string
+  validation {
+    condition     = contains(["vnet", "vwan"], var.attachment_type)
+    error_message = <<-EOF
+    The `attachment_type` must be either \"vnet\" or \"vwan\".
+    EOF
+  }
 }
 
 variable "virtual_network_id" {
   description = <<-EOF
-  The ID of the Azure Virtual Network (VNet) to be used for connecting to cloudngfw.
-  This variable is required when `attachment_type` is set to "vnet".
-  EOF
-  default     = null
-  type        = string
-}
-
-variable "trusted_subnet_id" {
-  description = <<-EOF
-  The ID of the subnet designated for trusted resources within the virtual network.
+  The ID of the Azure Virtual Network (VNET) to be used for connecting to cloudngfw.
   This variable is required when `attachment_type` is set to "vnet".
   EOF
   default     = null
@@ -55,36 +70,22 @@ variable "untrusted_subnet_id" {
   type        = string
 }
 
-variable "attachment_type" {
+variable "trusted_subnet_id" {
   description = <<-EOF
-  Defines how the cloudngfw (Cloud NGFW) is attached.
-  - When set to `vnet`, the cloudngfw is used to filter traffic between trusted and untrusted subnets within a Virtual Network (VNet).
-  - When set to `vwan`, the cloudngfw is used to filter traffic within the Azure Virtual Wan.
+  The ID of the subnet designated for trusted resources within the virtual network.
+  This variable is required when `attachment_type` is set to "vnet".
   EOF
+  default     = null
   type        = string
-  validation {
-    condition     = var.attachment_type == "vnet" || var.attachment_type == "vwan"
-    error_message = <<-EOF
-    The `attachment_type` must be either \"vnet"\ or \"vwan"\.
-    EOF
-  }
 }
 
-variable "plan_id" {
+variable "virtual_hub_id" {
   description = <<-EOF
-  The former plan_id `panw-cloud-ngfw-payg` is defined as stop sell, but has been set as the default to not break any existing 
-  resources that were originally provisioned with it. Users need to explicitly set plan_id to `panw-cngfw-payg` when creating new resources.
+  The ID of the Azure Virtual Hub used for connecting various network resources.
+  This variable is required when `attachment_type` is set to "vwan".
   EOF
+  default     = null
   type        = string
-  default     = "panw-cngfw-payg"
-}
-
-variable "marketplace_offer_id" {
-  description = <<-EOF
-  The marketplace offer ID. Defaults to `pan_swfw_cloud_ngfw`. Changing this forces a new resource to be created.
-  EOF
-  type        = string
-  default     = "pan_swfw_cloud_ngfw"
 }
 
 variable "management_mode" {
@@ -95,9 +96,9 @@ variable "management_mode" {
   EOF
   type        = string
   validation {
-    condition     = var.management_mode == "panorama" || var.management_mode == "rulestack"
+    condition     = contains(["panorama", "rulestack"], var.management_mode)
     error_message = <<-EOF
-    The `management_mode` must be set to \"panorama"\ or \"rulestack"\.
+    The `management_mode` must be set to \"panorama\" or \"rulestack\".
     EOF
   }
 }
@@ -114,24 +115,26 @@ variable "cloudngfw_config" {
                                         the variable `public_ip_ids` is used.
   - `public_ip_resource_group_name`   - (`string`, optional) the name of the Resource Group hosting the Public IP resource. 
                                         This is used only for sourced resources.
-  - `public_ip_ids`                   - (`map`, optional) a map of IDs for public IP addresses. Each key represents a logical identifier, 
-                                        and the value is the resource ID of a public IP. 
-  - `egress_nat_ip_ids`               - (`map`, optional) a map of IDs for egress NAT public IP addresses. Each key represents a logical 
-                                        identifier, and the value is the resource ID of a public IP.
+  - `public_ip_ids`                   - (`map`, optional) a map of IDs for public IP addresses. Each key represents a logical
+                                        identifier and the value is the resource ID of the public IP. 
+  - `egress_nat_ip_ids`               - (`map`, optional) a map of IDs for egress NAT public IP addresses. Each key represents
+                                        a logical identifier and the value is the resource ID of the public IP.
   - `rulestack_id`                    - (`string`, optional) the ID of the Local Rulestack used to configure this Firewall 
                                         Resource. This field is required when `management_mode` is set to `rulestack`.
-  - `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to the Panorama server. 
+  - `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to Panorama server. 
                                         This field is required when `management_mode` is set to "panorama".
-  - `destination_nats`                 - (`map`, optional) defines one or more destination NAT configurations. 
+  - `destination_nats`                - (`map`, optional) defines one or more destination NAT configurations.
                                         Each object supports the following properties:
-    - `destination_nat_name`              - (`string`, required) the name of the Destination NAT. Must be unique within this map.
-    - `destination_nat_protocol`          - (`string`, required) the protocol for this Destination NAT. Possible values are `TCP` or `UDP`.
-    - `frontend_port`                     - (`number`, required) the port on which traffic will be received. Must be in the range 1 to 65535.
-    - `frontend_public_ip_address_id`     - (`string`, optional) the id referencing the public IP that receives the traffic. 
-                                            This is used only when the variable `public_ip_ids` is utilized.
-    - `backend_port`                      - (`number`, required) the port number to which traffic will be sent. 
-                                             Must be in the range 1 to 65535.
-    - `backend_ip_address`                - (`string`, required) the IPv4 address to which traffic will be forwarded.
+    - `destination_nat_name`          - (`string`, required) the name of the Destination NAT. Must be unique within this map.
+    - `destination_nat_protocol`      - (`string`, required) the protocol for this Destination NAT. Possible values are `TCP` or
+                                        `UDP`.
+    - `frontend_public_ip_address_id` - (`string`, optional) the ID referencing the public IP that receives the traffic. 
+                                        This is used only when the variable `public_ip_ids` is utilized.
+    - `frontend_port`                 - (`number`, required) the port on which traffic will be received. Must be in the range
+                                        from 1 to 65535.
+    - `backend_ip_address`            - (`string`, required) the IPv4 address to which traffic will be forwarded.
+    - `backend_port`                  - (`number`, required) the port number to which traffic will be sent. Must be in the range
+                                        from 1 to 65535.
   EOF
   type = object({
     create_public_ip              = optional(bool, true)
@@ -144,10 +147,10 @@ variable "cloudngfw_config" {
     destination_nats = optional(map(object({
       destination_nat_name          = string
       destination_nat_protocol      = string
-      frontend_port                 = number
       frontend_public_ip_address_id = optional(string)
-      backend_port                  = number
+      frontend_port                 = number
       backend_ip_address            = string
+      backend_port                  = number
     })), {})
   })
   validation { # destination_nat_name
@@ -166,7 +169,7 @@ variable "cloudngfw_config" {
       ]
     ]))
     error_message = <<-EOF
-    Each `destination_nat` entry must have a valid protocol /"TCP"/ or /"UDP"/.
+    Each `destination_nat` entry must have a valid protocol of /"TCP"/ or /"UDP"/.
     EOF
   }
   validation { # frontend_port
@@ -179,16 +182,6 @@ variable "cloudngfw_config" {
     Each destination_nat `frontend_port` property value must be between 1 and 65535.
     EOF
   }
-  validation { # backend_port
-    condition = alltrue(flatten([
-      for _, nat in var.cloudngfw_config.destination_nats : [
-        nat.backend_port >= 1 && nat.backend_port <= 65535
-      ]
-    ]))
-    error_message = <<-EOF
-    Each destination_nat `backend_port` property value must be between 1 and 65535.
-    EOF
-  }
   validation { # backend_ip_address
     condition = alltrue(flatten([
       for _, nat in var.cloudngfw_config.destination_nats : [
@@ -199,8 +192,14 @@ variable "cloudngfw_config" {
     Each destination_nat `backend_ip_address` property value must be a valid IPv4 address.
     EOF
   }
+  validation { # backend_port
+    condition = alltrue(flatten([
+      for _, nat in var.cloudngfw_config.destination_nats : [
+        nat.backend_port >= 1 && nat.backend_port <= 65535
+      ]
+    ]))
+    error_message = <<-EOF
+    Each destination_nat `backend_port` property value must be between 1 and 65535.
+    EOF
+  }
 }
-
-
-
-

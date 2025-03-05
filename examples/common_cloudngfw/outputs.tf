@@ -17,4 +17,3 @@ output "test_vms_ips" {
   description = "IP Addresses of the test VMs."
   value       = length(var.test_infrastructure) > 0 ? { for k, v in module.test_infrastructure : k => v.vm_private_ips } : null
 }
-

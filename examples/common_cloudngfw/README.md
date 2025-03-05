@@ -6,7 +6,7 @@ swfw: cloudngfw
 ---
 # Reference Architecture with Terraform: Cloud NGFW in Azure, Virtual Network Design Model.
 
-Palo Alto Networks produces several [validated reference architecture design and deployment documentation guides](https://www.paloaltonetworks.com/resources/reference-architectures),which describe well-architected and tested deployments.
+Palo Alto Networks produces several [validated reference architecture design and deployment documentation guides](https://www.paloaltonetworks.com/resources/reference-architectures), which describe well-architected and tested deployments.
 When deploying Cloud NGFWs in a public cloud, the reference architecturesguide users toward the best security outcomes,
 whilst reducing rollout time and avoiding common integration efforts.
 
@@ -19,8 +19,7 @@ The Terraform code presented here will deploy Palo Alto Networks Cloud NGFW fire
 
 This code implements:
 
-- a *centralized virtual network design*, a hub-and-spoke topology with a Transit VNet containing Cloud NGFW to inspect all inbound, outbound,
-  east-west, and enterprise traffic
+- a *centralized virtual network design*, a hub-and-spoke topology with a Transit VNet containing Cloud NGFW to inspect all inbound, outbound, east-west, and enterprise traffic.
 
 This design uses a Transit VNet. Application functions and resources are deployed across multiple VNets that are connected in
 a hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound,
@@ -117,9 +116,9 @@ terraform destroy
 Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | 
+`vnet_peering` | - | ../../modules/vnet_peering | 
 `public_ip` | - | ../../modules/public_ip | 
 `cloudngfw` | - | ../../modules/cloudngfw | 
-`vnet_peering` | - | ../../modules/vnet_peering | 
 `test_infrastructure` | - | ../../modules/test_infrastructure | 
 
 ### Resources
@@ -145,8 +144,8 @@ Name | Type | Description
 [`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
 [`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
 [`tags`](#tags) | `map` | Map of tags to assign to the created resources.
-[`public_ips`](#public_ips) | `object` | A map defining Public IP Addresses and Prefixes.
 [`vnet_peerings`](#vnet_peerings) | `map` | A map defining VNET peerings.
+[`public_ips`](#public_ips) | `object` | A map defining Public IP Addresses and Prefixes.
 [`test_infrastructure`](#test_infrastructure) | `map` | A map defining test infrastructure including test VMs and Azure Bastion hosts.
 
 ### Outputs
@@ -276,32 +275,36 @@ Each cloudngfw entry in the map supports the following attributes:
 - `name`                            - (`string`, required) the name of the Palo Alto Next Generation Firewall instance.
 - `attachment_type`                 - (`string`, required) specifies whether the firewall is attached to a Virtual Network 
                                       (`vnet`) or a Virtual WAN (`vwan`).
-- `management_mode`                 - (`string`, required) defines the management mode for the firewall. When set to `panorama`,
-                                      the firewall's policies are managed via Panorama.
 - `virtual_network_key`             - (`string`, optional) key referencing the Virtual Network associated with this firewall. 
                                       Required if the `attachment_type` is `vnet`.
-- `trusted_subnet_key`              - (`string`, optional) key of the subnet designated as trusted within the Virtual Network.
 - `untrusted_subnet_key`            - (`string`, optional) key of the subnet designated as untrusted within the Virtual Network.
-- `cloudngfw_config`                    - (`object`, required) configuration details for the Cloud NGFW instance, with the following 
-                                      properties:
-  - `create_public_ip`                - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or 
-                                        sourced. This field is ignored when the variable `public_ip_ids` is used.
-  - `public_ip_name`                  - (`string`, optional) the name of the Public IP resource. This field is required unless 
-                                        the variable `public_ip_ids` is used.
-  - `public_ip_resource_group_name`   - (`string`, optional) the name of the Resource Group hosting the Public IP resource. 
-                                        This is used only for sourced resources.
-  - `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to the Panorama server. 
-                                        This field is required when `management_mode` is set to "panorama".
-  - `destination_nats`                 - (`map`, optional) defines one or more destination NAT configurations. 
-                                        Each object supports the following properties:
-    - `destination_nat_name`      - (`string`, required) the name of the Destination NAT. Must be unique within this map.
-    - `destination_nat_protocol`  - (`string`, required) the protocol for this Destination NAT. Possible values are `TCP` or `UDP`.
-    - `frontend_port`             - (`number`, required) the port on which traffic will be received. Must be in the range 1 to 65535.
-    - `frontend_public_ip_key`    - (`string`, optional) the key referencing the public IP that receives the traffic. 
-                                    This is used only when the variable `public_ip_ids` is utilized.
-    - `backend_port`              - (`number`, required) the port number to which traffic will be sent. 
-                                    Must be in the range 1 to 65535.
-    - `backend_ip_address`        - (`string`, required) the IPv4 address to which traffic will be forwarded.
+- `trusted_subnet_key`              - (`string`, optional) key of the subnet designated as trusted within the Virtual Network.
+- `management_mode`                 - (`string`, required) defines the management mode for the firewall. When set to `panorama`,
+                                      the firewall's policies are managed via Panorama.
+- `cloudngfw_config`                - (`object`, required) configuration details for the Cloud NGFW instance, with the
+                                      following properties:
+
+  - `create_public_ip`              - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or 
+                                      sourced. This field is ignored when the variable `public_ip_ids` is used.
+  - `public_ip_name`                - (`string`, optional) the name of the Public IP resource. This field is required unless 
+                                      the variable `public_ip_ids` is used.
+  - `public_ip_resource_group_name` - (`string`, optional) the name of the Resource Group hosting the Public IP resource. 
+                                      This is used only for sourced resources.
+  - `panorama_base64_config`        - (`string`, optional) the Base64-encoded configuration for connecting to Panorama server. 
+                                      This field is required when `management_mode` is set to "panorama".
+  - `destination_nats`              - (`map`, optional) defines one or more destination NAT configurations. Each object
+                                      supports the following properties:
+
+    - `destination_nat_name`     - (`string`, required) the name of the Destination NAT. Must be unique within this map.
+    - `destination_nat_protocol` - (`string`, required) the protocol for this Destination NAT. Possible values are `TCP` or
+                                   `UDP`.
+    - `frontend_public_ip_key`   - (`string`, optional) the key referencing the public IP that receives the traffic. 
+                                   This is used only when the variable `public_ip_ids` is utilized.
+    - `frontend_port`            - (`number`, required) the port on which traffic will be received. Must be in the range from
+                                   1 to 65535.
+    - `backend_ip_address`       - (`string`, required) the IPv4 address to which traffic will be forwarded.
+    - `backend_port`             - (`number`, required) the port number to which traffic will be sent. 
+                                   Must be in the range 1 to 65535.
 
 
 Type: 
@@ -309,11 +312,13 @@ Type:
 ```hcl
 map(object({
     name                 = string
+    plan_id              = optional(string)
+    marketplace_offer_id = optional(string)
     attachment_type      = string
-    management_mode      = string
     virtual_network_key  = optional(string)
-    trusted_subnet_key   = optional(string)
     untrusted_subnet_key = optional(string)
+    trusted_subnet_key   = optional(string)
+    management_mode      = string
     cloudngfw_config = object({
       create_public_ip              = optional(bool)
       public_ip_name                = optional(string)
@@ -324,8 +329,8 @@ map(object({
         destination_nat_protocol = string
         frontend_public_ip_key   = optional(string)
         frontend_port            = number
-        backend_port             = number
         backend_ip_address       = string
+        backend_port             = number
       })), {})
     })
   }))
@@ -382,6 +387,33 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+#### vnet_peerings
+
+A map defining VNET peerings.
+
+Following properties are supported:
+- `local_vnet_name`            - (`string`, required) name of the local VNET.
+- `local_resource_group_name`  - (`string`, optional) name of the resource group, in which local VNET exists.
+- `remote_vnet_name`           - (`string`, required) name of the remote VNET.
+- `remote_resource_group_name` - (`string`, optional) name of the resource group, in which remote VNET exists.
+
+
+Type: 
+
+```hcl
+map(object({
+    local_vnet_name            = string
+    local_resource_group_name  = optional(string)
+    remote_vnet_name           = string
+    remote_resource_group_name = optional(string)
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
 #### public_ips
 
 A map defining Public IP Addresses and Prefixes.
@@ -418,33 +450,6 @@ object({
       length              = optional(number)
     })), {})
   })
-```
-
-
-Default value: `map[]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### vnet_peerings
-
-A map defining VNET peerings.
-
-Following properties are supported:
-- `local_vnet_name`            - (`string`, required) name of the local VNET.
-- `local_resource_group_name`  - (`string`, optional) name of the resource group, in which local VNET exists.
-- `remote_vnet_name`           - (`string`, required) name of the remote VNET.
-- `remote_resource_group_name` - (`string`, optional) name of the resource group, in which remote VNET exists.
-
-
-Type: 
-
-```hcl
-map(object({
-    local_vnet_name            = string
-    local_resource_group_name  = optional(string)
-    remote_vnet_name           = string
-    remote_resource_group_name = optional(string)
-  }))
 ```
 
 

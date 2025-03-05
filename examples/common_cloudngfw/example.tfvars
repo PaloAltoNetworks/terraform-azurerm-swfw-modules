@@ -1,23 +1,25 @@
 # GENERAL
+
 subscription_id = null # TODO: Put the Azure Subscription ID here only in case you cannot use an environment variable!
 
-region              = "East US"
-resource_group_name = "common-cloudngfw"
+region              = "North Europe"
+resource_group_name = "cloudngfw-vnet-common"
 name_prefix         = "example-"
 tags = {
-  "CreatedBy"     = "palo-alto-networks"
+  "CreatedBy"     = "Palo Alto Networks"
   "CreatedWith"   = "Terraform"
   "xdr-exclusion" = "yes"
 }
 
 # NETWORK
+
 vnets = {
-  "cloudngfw-vnet" = {
-    name          = "cloudngfw-vnet"
+  "transit" = {
+    name          = "transit"
     address_space = ["10.0.0.0/25"]
     network_security_groups = {
-      "cloudngfw-dnat-ports-allow-nsg" = {
-        name = "cloudngfw-dnat-ports-allow-nsg"
+      "cloudngfw-dnat" = {
+        name = "cloudngfw-dnat-nsg"
         rules = {
           cloudngfw-dnat-ports-allow = {
             name                         = "cloudngfw-dnat-ports-allow"
@@ -25,7 +27,7 @@ vnets = {
             direction                    = "Inbound"
             access                       = "Allow"
             protocol                     = "Tcp"
-            source_address_prefixes      = ["0.0.0.0/0"] # TODO: Whitelist public IP addresses that will be used to access test infrastructure
+            source_address_prefixes      = ["1.1.1.1/32"] # TODO: Whitelist IP addresses that will be used to access test infrastructure
             source_port_range            = "*"
             destination_address_prefixes = ["0.0.0.0/0"]
             destination_port_ranges      = ["80", "443"]
@@ -34,24 +36,33 @@ vnets = {
       }
     }
     subnets = {
-      "trusted" = {
-        name                        = "trusted"
+      "public" = {
+        name                        = "public"
+        address_prefixes            = ["10.0.0.64/26"]
+        network_security_group_key  = "cloudngfw-dnat"
+        enable_cloudngfw_delegation = true
+      }
+      "private" = {
+        name                        = "private"
         address_prefixes            = ["10.0.0.0/26"]
-        network_security_group_key  = "cloudngfw-dnat-ports-allow-nsg"
+        network_security_group_key  = "cloudngfw-dnat"
         enable_cloudngfw_delegation = true
 
-      }
-      "untrusted" = {
-        name                        = "untrusted"
-        address_prefixes            = ["10.0.0.64/26"]
-        network_security_group_key  = "cloudngfw-dnat-ports-allow-nsg"
-        enable_cloudngfw_delegation = true
       }
     }
   }
 }
 
-# PUBLIC_IP
+vnet_peerings = {
+  /* Uncomment the section below to peer Transit VNET with Panorama VNET (to manage Cloud NGFW through Panorama)
+  "cloudngfw-to-panorama" = {
+    local_vnet_name            = "example-transit"
+    remote_vnet_name           = "example-panorama-vnet"
+    remote_resource_group_name = "example-panorama"
+  }
+  */
+}
+
 public_ips = {
   public_ip_addresses = {
     cloudngfw_public_ip_app1 = {
@@ -65,44 +76,45 @@ public_ips = {
   }
 }
 
-# CLOUDNGFW 
+# CLOUDNGFW
+
 cloudngfws = {
   "cloudngfw" = {
     name                 = "cloudngfw"
     attachment_type      = "vnet"
+    virtual_network_key  = "transit"
+    untrusted_subnet_key = "public"
+    trusted_subnet_key   = "private"
     management_mode      = "panorama"
-    virtual_network_key  = "cloudngfw-vnet"
-    trusted_subnet_key   = "trusted"
-    untrusted_subnet_key = "untrusted"
     cloudngfw_config = {
-      panorama_base64_config = "eyJkZ25hbWUiOiAiY25nZnctYXotdmh1YiIsICJ0cGxuYW1lIjogImNuZ2Z3LWF6LXZodWIiLCAicGFub3JhbWEtc2VydmVyIjogIjE5Mi4xNjguMS4xMCIsICJjZ25hbWUiOiAiY29sbGVjdG9yX0ciLCAidm0tYXV0aC1rZXkiOiAiMDgxOTgxODY4NzU5MzI4IiwgImV4cGlyeSI6ICIyMDI1LzExLzE0In0=" # TODO: Put panorama connection string
+      panorama_base64_config = "" # TODO: Put panorama connection string
       destination_nats = {
-        "app1-443tcp-dnat" = {
-          destination_nat_name     = "app1-443tcp-dnat"
+        "app1-tcp443-dnat" = {
+          destination_nat_name     = "app1-tcp443-dnat"
           destination_nat_protocol = "TCP"
           frontend_public_ip_key   = "cloudngfw_public_ip_app1"
           frontend_port            = 443
           backend_port             = 443
           backend_ip_address       = "10.100.0.4"
         }
-        "app1-80tcp-dnat" = {
-          destination_nat_name     = "app1-80tcp-dnat"
+        "app1-tcp80-dnat" = {
+          destination_nat_name     = "app1-tcp80-dnat"
           destination_nat_protocol = "TCP"
           frontend_public_ip_key   = "cloudngfw_public_ip_app1"
           frontend_port            = 80
           backend_port             = 80
           backend_ip_address       = "10.100.0.4"
         }
-        "app2-443tcp-dnat" = {
-          destination_nat_name     = "app2-443tcp-dnat"
+        "app2-tcp443-dnat" = {
+          destination_nat_name     = "app2-tcp443-dnat"
           destination_nat_protocol = "TCP"
           frontend_public_ip_key   = "cloudngfw_public_ip_app2"
           frontend_port            = 443
           backend_port             = 443
           backend_ip_address       = "10.100.1.4"
         }
-        "app2-80tcp-dnat" = {
-          destination_nat_name     = "app2-80tcp-dnat"
+        "app2-tcp80-dnat" = {
+          destination_nat_name     = "app2-tcp80-dnat"
           destination_nat_protocol = "TCP"
           frontend_public_ip_key   = "cloudngfw_public_ip_app2"
           frontend_port            = 80
@@ -114,22 +126,15 @@ cloudngfws = {
   }
 }
 
-# # VNET-PEERING
-# vnet_peerings = { #Uncomment the section below to peer cloudngfw VNET with Panorama VNET to manage cloudngfw through Panorama.
-#   "cloudngfw-to-panorama" = {
-#     local_vnet_name            = "example-cloudngfw-vnet"
-#     remote_vnet_name           = "example-panorama-vnet"
-#     remote_resource_group_name = "example-panorama"
-# }
-
 # TEST INFRASTRUCTURE
+
 test_infrastructure = {
   "app1_testenv" = {
     vnets = {
       "app1" = {
         name          = "app1-vnet"
         address_space = ["10.100.0.0/25"]
-        hub_vnet_name = "cloudngfw-vnet" # Name prefix is added to the beginning of this string
+        hub_vnet_name = "transit" # Name prefix is added to the beginning of this string
         network_security_groups = {
           "app1" = {
             name = "app1-nsg"
@@ -206,7 +211,7 @@ test_infrastructure = {
       "app2" = {
         name          = "app2-vnet"
         address_space = ["10.100.1.0/25"]
-        hub_vnet_name = "cloudngfw-vnet" # Name prefix is added to the beginning of this string
+        hub_vnet_name = "transit" # Name prefix is added to the beginning of this string
         network_security_groups = {
           "app2" = {
             name = "app2-nsg"

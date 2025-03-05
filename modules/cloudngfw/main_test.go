@@ -1,4 +1,4 @@
-package cngfw
+package cloudngfw
 
 import (
 	"testing"

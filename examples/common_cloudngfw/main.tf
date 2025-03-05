@@ -34,7 +34,7 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
-# Create or source a Network resources
+# Manage the network required for the topology
 
 module "vnet" {
   source = "../../modules/vnet"
@@ -62,7 +62,23 @@ module "vnet" {
   tags = var.tags
 }
 
-# Create or source a Public IPs
+module "vnet_peering" {
+  source = "../../modules/vnet_peering"
+
+  for_each = var.vnet_peerings
+
+  local_peer_config = {
+    name                = "peer-${each.value.local_vnet_name}-to-${each.value.remote_vnet_name}"
+    resource_group_name = coalesce(each.value.local_resource_group_name, local.resource_group.name)
+    vnet_name           = each.value.local_vnet_name
+  }
+  remote_peer_config = {
+    name                = "peer-${each.value.remote_vnet_name}-to-${each.value.local_vnet_name}"
+    resource_group_name = coalesce(each.value.remote_resource_group_name, local.resource_group.name)
+    vnet_name           = each.value.remote_vnet_name
+  }
+  depends_on = [module.vnet]
+}
 
 module "public_ip" {
   source = "../../modules/public_ip"
@@ -84,15 +100,30 @@ module "public_ip" {
   tags = var.tags
 }
 
-# Create a cloudngfws
+# Create Cloud Next-Generation Firewalls
 
 module "cloudngfw" {
   source = "../../modules/cloudngfw"
 
   for_each = var.cloudngfws
 
-  name            = each.value.name
+  name                = each.value.name
+  resource_group_name = local.resource_group.name
+  region              = var.region
+
+  plan_id              = each.value.plan_id
+  marketplace_offer_id = each.value.marketplace_offer_id
+
   attachment_type = each.value.attachment_type
+  virtual_network_id = each.value.attachment_type == "vnet" ? (
+    module.vnet[each.value.virtual_network_key].virtual_network_id
+  ) : null
+  untrusted_subnet_id = each.value.attachment_type == "vnet" ? (
+    module.vnet[each.value.virtual_network_key].subnet_ids[each.value.untrusted_subnet_key]
+  ) : null
+  trusted_subnet_id = each.value.attachment_type == "vnet" ? (
+    module.vnet[each.value.virtual_network_key].subnet_ids[each.value.trusted_subnet_key]
+  ) : null
   management_mode = each.value.management_mode
   cloudngfw_config = merge(each.value.cloudngfw_config, {
     public_ip_ids     = module.public_ip.pip_ids,
@@ -103,31 +134,8 @@ module "cloudngfw" {
       })
     }
   })
-  resource_group_name = local.resource_group.name
-  region              = var.region
-  virtual_network_id  = each.value.attachment_type == "vnet" ? module.vnet[each.value.virtual_network_key].virtual_network_id : null
-  trusted_subnet_id   = each.value.attachment_type == "vnet" ? module.vnet[each.value.virtual_network_key].subnet_ids[each.value.trusted_subnet_key] : null
-  untrusted_subnet_id = each.value.attachment_type == "vnet" ? module.vnet[each.value.virtual_network_key].subnet_ids[each.value.untrusted_subnet_key] : null
-  tags                = var.tags
-}
 
-
-module "vnet_peering" {
-  source = "../../modules/vnet_peering"
-
-  for_each = var.vnet_peerings
-
-  local_peer_config = {
-    name                = "peer-${each.value.local_vnet_name}-to-${each.value.remote_vnet_name}"
-    resource_group_name = coalesce(each.value.local_resource_group_name, local.resource_group.name)
-    vnet_name           = each.value.local_vnet_name
-  }
-  remote_peer_config = {
-    name                = "peer-${each.value.remote_vnet_name}-to-${each.value.local_vnet_name}"
-    resource_group_name = coalesce(each.value.remote_resource_group_name, local.resource_group.name)
-    vnet_name           = each.value.remote_vnet_name
-  }
-  depends_on = [module.vnet]
+  tags = var.tags
 }
 
 # Create test infrastructure
@@ -176,6 +184,7 @@ module "test_infrastructure" {
     name           = "${var.name_prefix}${v.name}"
     public_ip_name = v.public_ip_key != null ? null : "${var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")}"
   }) }
+
   tags       = var.tags
   depends_on = [module.vnet]
 }
