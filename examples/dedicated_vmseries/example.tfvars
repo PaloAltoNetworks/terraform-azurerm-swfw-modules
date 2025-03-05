@@ -245,7 +245,7 @@ vmseries = {
       {
         name             = "vm-in-01-mgmt"
         subnet_key       = "management"
-        create_public_ip = false
+        create_public_ip = true
       },
       {
         name              = "vm-in-01-public"
@@ -309,7 +309,7 @@ vmseries = {
       {
         name             = "vm-in-02-mgmt"
         subnet_key       = "management"
-        create_public_ip = false
+        create_public_ip = true
       },
       {
         name              = "vm-in-02-public"
@@ -372,7 +372,7 @@ vmseries = {
       {
         name             = "vm-obew-01-mgmt"
         subnet_key       = "management"
-        create_public_ip = false
+        create_public_ip = true
       },
       {
         name             = "vm-obew-01-public"
@@ -436,7 +436,7 @@ vmseries = {
       {
         name             = "vm-obew-02-mgmt"
         subnet_key       = "management"
-        create_public_ip = false
+        create_public_ip = true
       },
       {
         name             = "vm-obew-02-public"

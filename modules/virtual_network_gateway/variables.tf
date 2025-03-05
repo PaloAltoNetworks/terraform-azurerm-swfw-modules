@@ -100,10 +100,10 @@ variable "instance_settings" {
                       or `ExpressRoute`.
   - `vpn_type`      - (`string`, optional, defaults to `RouteBased`) the routing type of the Virtual Network Gateway, possible
                       values are: `RouteBased` or `PolicyBased`.
-  - `generation`    - (`string`, optional, defaults to `Generation1`) the Generation of the Virtual Network gateway, possible
+  - `generation`    - (`string`, optional, defaults to `Generation1`) the Generation of the Virtual Network Gateway, possible
                       values are: `None`, `Generation1` or `Generation2`. This property is ignored when type is set to 
                       `ExpressRoute`.
-  - `sku`           - (`string`, optional, defaults to `Basic`) sets the size and capacity of the virtual network gateway.
+  - `sku`           - (`string`, optional, defaults to `Basic`) sets the size and capacity of the Virtual Network Gateway.
   - `active_active` - (`bool`, optional, defaults to `false`) when set to true creates an active-active Virtual Network Gateway,
                       active-passive otherwise. Not supported for `Basic` and `Standard` SKUs.
   EOF
@@ -263,10 +263,10 @@ variable "private_ip_address_enabled" {
 
 variable "default_local_network_gateway_id" {
   description = <<-EOF
-  The ID of the local network gateway.
+  The ID of the Local Network Gateway.
 
-  When set, the outbound Internet traffic from the virtual network, in which the gateway is created, will be routed through local
-  network gateway (forced tunnelling).
+  When set, the outbound Internet traffic from the Virtual Network, in which the gateway is created, will be routed through Local
+  Network Gateway (forced tunnelling).
   EOF
   default     = null
   type        = string
@@ -366,11 +366,11 @@ variable "bgp" {
 
 variable "local_network_gateways" {
   description = <<-EOF
-  Map of local network gateways and their connections.
+  Map of Local Network Gateways and their connections.
 
   Every object in the map contains following attributes:
   
-  - `name`                 - (`string`, required) the name of the local network gateway.
+  - `name`                 - (`string`, required) the name of the Local Network Gateway.
   - `remote_bgp_settings`  - (`list`, optional, defaults to `[]`) block containing Local Network Gateway's BGP speaker settings:
     - `asn`                 - (`string`, required) the BGP speaker's ASN.
     - `bgp_peering_address` - (`string`, required) the BGP peering address and BGP identifier of this BGP speaker.
@@ -386,7 +386,7 @@ variable "local_network_gateways" {
                         azurerm_virtual_network_gateway ip_configuration (second one)
   - `connection`           - (`map`, required) a map defining configuration for a VPN connection between Azure VNG and on-premises
                              VPN device. Contains the following properties:
-    - `name`            - (`string`, required) the name of the virtual network gateway connection.
+    - `name`            - (`string`, required) the name of the Virtual Network Gateway connection.
     - `ipsec_policies`  - (`list`, required) list of IPsec policies used for Virtual Network Connection. A single policy consist
                           of the following properties:
       - `dh_group`         - (`string`, required) the DH group used in IKE phase 1 for initial SA.
@@ -560,7 +560,7 @@ variable "vpn_clients" {
                               The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with
                               the use of aad_tenant, aad_audience and aad_issuer.
   - `vpn_auth_types`        - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for
-                              the virtual network gateway. The supported values are AAD, Radius and Certificate.
+                              the Virtual Network Gateway. The supported values are AAD, Radius and Certificate.
   - `custom_routes`         - (`map`, optional, defaults to `{}`) a map defining custom routes. Each route is a list of address
                               blocks reserved for this Virtual Network (in CIDR notation). Keys in this map are only to identify
                               the CIDR blocks, values are lists of the actual address blocks.

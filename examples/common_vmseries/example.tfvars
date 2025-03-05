@@ -302,7 +302,7 @@ vmseries = {
       {
         name             = "vm01-mgmt"
         subnet_key       = "management"
-        create_public_ip = false
+        create_public_ip = true
       },
       {
         name                    = "vm01-public"
@@ -328,7 +328,7 @@ vmseries = {
       {
         name             = "vm02-mgmt"
         subnet_key       = "management"
-        create_public_ip = false
+        create_public_ip = true
       },
       {
         name                    = "vm02-public"

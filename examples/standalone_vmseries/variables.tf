@@ -65,39 +65,35 @@ variable "vnets" {
 
   For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-  - `create_virtual_network`                   - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET,
-                                                 `false` will source an existing VNET.
-  - `name`                                     - (`string`, required) a name of a VNET. In case `create_virtual_network = false`
-                                                 this should be a full resource name, including prefixes.
-  - `resource_group_name`                      - (`string`, optional, defaults to current RG) a name of an existing Resource
-                                                 Group in which the VNET will reside or is sourced from.
-  - `address_space`                            - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a
-                                                 newly created VNET.
-  - `dns_servers`                              - (`list`, optional, defaults to module defaults) a list of IP addresses of custom
-                                                 DNS servers (by default Azure DNS is used).
-  - `vnet_encryption`                          - (`string`, optional, defaults to module default) enables Azure Virtual Network
-                                                 Encryption when set, only possible value at the moment is `AllowUnencrypted`. 
-                                                 When set to `null`, the feature is disabled.
-  - `ddos_protection_plan_name`                - (`string`, optional, defaults to `null`) name of an existing Azure Network DDOS
-                                                 Protection Plan to be associated with the VNET.
-  - `ddos_protection_plan_resource_group_name` - (`string`, optional, defaults to `null`) name of the Resource Group containing
-                                                 an existing Azure Network DDOS Protection Plan to be associated with the VNET.
-  - `network_security_groups`                  - (`map`, optional) map of Network Security Groups to create, for details see
-                                                 [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
-  - `route_tables`                             - (`map`, optional) map of Route Tables to create, for details see
-                                                 [VNET module documentation](../../modules/vnet/README.md#route_tables).
-  - `subnets`                                  - (`map`, optional) map of Subnets to create or source, for details see
-                                                 [VNET module documentation](../../modules/vnet/README.md#subnets).
+  - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, `false` will source
+                                an existing VNET.
+  - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a
+                                full resource name, including prefixes.
+  - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
+                                VNET will reside or is sourced from.
+  - `address_space`           - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET.
+  - `dns_servers`             - (`list`, optional, defaults to module defaults) a list of IP addresses of custom DNS servers
+                                (by default Azure DNS is used).
+  - `vnet_encryption`         - (`string`, optional, defaults to module default) enables Azure Virtual Network Encryption when
+                                set, only possible value at the moment is `AllowUnencrypted`. When set to `null`, the feature is
+                                disabled.
+  - `ddos_protection_plan_id` - (`string`, optional, defaults to `null`) ID of an existing Azure Network DDOS Protection Plan to
+                                be associated with the VNET.
+  - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
+                                [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
+  - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
+                                [VNET module documentation](../../modules/vnet/README.md#route_tables).
+  - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
+                                [VNET module documentation](../../modules/vnet/README.md#subnets).
   EOF
   type = map(object({
-    create_virtual_network                   = optional(bool, true)
-    name                                     = string
-    resource_group_name                      = optional(string)
-    address_space                            = optional(list(string))
-    dns_servers                              = optional(list(string))
-    vnet_encryption                          = optional(string)
-    ddos_protection_plan_name                = optional(string)
-    ddos_protection_plan_resource_group_name = optional(string)
+    create_virtual_network  = optional(bool, true)
+    name                    = string
+    resource_group_name     = optional(string)
+    address_space           = optional(list(string))
+    dns_servers             = optional(list(string))
+    vnet_encryption         = optional(string)
+    ddos_protection_plan_id = optional(string)
     network_security_groups = optional(map(object({
       name = string
       rules = optional(map(object({
@@ -271,7 +267,7 @@ variable "load_balancers" {
   - `name`                    - (`string`, required) a name of the Load Balancer.
   - `vnet_key`                - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets`
                                 map that stores the Subnet described by `subnet_key`.
-  - `zones`                   - (`list`, optional, defaults to module default) a list of zones for Load Balancer's frontend IP
+  - `zones`                   - (`list`, optional, defaults to ["1", "2", "3"]) a list of zones for Load Balancer's frontend IP
                                 configurations.
   - `backend_name`            - (`string`, optional, defaults to "vmseries_backend") a name of the backend pool to create.
   - `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by load
@@ -305,7 +301,7 @@ variable "load_balancers" {
   type = map(object({
     name         = string
     vnet_key     = optional(string)
-    zones        = optional(list(string))
+    zones        = optional(list(string), ["1", "2", "3"])
     backend_name = optional(string, "vmseries_backend")
     health_probes = optional(map(object({
       name                = string
@@ -1038,7 +1034,7 @@ variable "test_infrastructure" {
     - `name`                    - (`string`, required) a name of the Load Balancer.
     - `vnet_key`                - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets`
                                   map that stores the Subnet described by `subnet_key`.
-    - `zones`                   - (`list`, optional, defaults to module default) a list of zones for Load Balancer's frontend IP
+    - `zones`                   - (`list`, optional, defaults to ["1", "2", "3"]) a list of zones for Load Balancer's frontend IP
                                   configurations.
     - `backend_name`            - (`string`, optional) a name of the backend pool to create.
     - `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by load
@@ -1102,6 +1098,8 @@ variable "test_infrastructure" {
       name                    = string
       address_space           = optional(list(string))
       dns_servers             = optional(list(string))
+      vnet_encryption         = optional(string)
+      ddos_protection_plan_id = optional(string)
       hub_resource_group_name = optional(string)
       hub_vnet_name           = string
       network_security_groups = optional(map(object({
@@ -1157,7 +1155,7 @@ variable "test_infrastructure" {
     load_balancers = optional(map(object({
       name         = string
       vnet_key     = optional(string)
-      zones        = optional(list(string))
+      zones        = optional(list(string), ["1", "2", "3"])
       backend_name = optional(string)
       health_probes = optional(map(object({
         name                = string

@@ -7,6 +7,7 @@ resource "azurerm_storage_account" "this" {
   resource_group_name             = var.resource_group_name
   min_tls_version                 = var.storage_network_security.min_tls_version
   allow_nested_items_to_be_public = false
+  shared_access_key_enabled       = true
   local_user_enabled              = false
   account_replication_type        = var.storage_account.replication_type
   account_tier                    = var.storage_account.tier
@@ -17,6 +18,11 @@ resource "azurerm_storage_account" "this" {
     delete_retention_policy {
       days = var.storage_account.blob_retention
     }
+  }
+
+  sas_policy {
+    expiration_period = "90.00:00:00"
+    expiration_action = "Log"
   }
 
   lifecycle {
@@ -55,18 +61,18 @@ locals {
 resource "azurerm_storage_share" "this" {
   for_each = var.file_shares_configuration.create_file_shares ? var.file_shares : {}
 
-  name                 = each.value.name
-  storage_account_name = local.storage_account.name
-  quota                = coalesce(each.value.quota, var.file_shares_configuration.quota)
-  access_tier          = coalesce(each.value.access_tier, var.file_shares_configuration.access_tier)
+  name               = each.value.name
+  storage_account_id = local.storage_account.id
+  quota              = coalesce(each.value.quota, var.file_shares_configuration.quota)
+  access_tier        = coalesce(each.value.access_tier, var.file_shares_configuration.access_tier)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/storage_share
 data "azurerm_storage_share" "this" {
   for_each = var.file_shares_configuration.create_file_shares ? {} : var.file_shares
 
-  name                 = each.value.name
-  storage_account_name = local.storage_account.name
+  name               = each.value.name
+  storage_account_id = local.storage_account.id
 
   lifecycle {
     precondition {

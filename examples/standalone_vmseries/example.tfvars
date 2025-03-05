@@ -120,7 +120,7 @@ vmseries = {
       {
         name             = "vm-mgmt"
         subnet_key       = "management"
-        create_public_ip = false
+        create_public_ip = true
       }
     ]
   }
