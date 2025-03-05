@@ -121,14 +121,15 @@ resource "azurerm_linux_virtual_machine" "this" {
 resource "azurerm_managed_disk" "this" {
   for_each = var.logging_disks
 
-  name                 = each.value.name
-  location             = var.region
-  resource_group_name  = var.resource_group_name
-  storage_account_type = each.value.disk_type
-  create_option        = "Empty"
-  disk_size_gb         = each.value.size
-  zone                 = var.virtual_machine.zone != null && var.virtual_machine.zone != "" ? var.virtual_machine.zone : null
-  tags                 = var.tags
+  name                          = each.value.name
+  location                      = var.region
+  resource_group_name           = var.resource_group_name
+  storage_account_type          = each.value.disk_type
+  create_option                 = "Empty"
+  disk_size_gb                  = each.value.size
+  zone                          = var.virtual_machine.zone != null && var.virtual_machine.zone != "" ? var.virtual_machine.zone : null
+  public_network_access_enabled = false
+  tags                          = var.tags
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine_data_disk_attachment
