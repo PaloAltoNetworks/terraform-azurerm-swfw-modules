@@ -203,6 +203,9 @@ List of available properties:
                                       identifier and the value is the resource ID of the public IP. 
 - `egress_nat_ip_ids`               - (`map`, optional) a map of IDs for egress NAT public IP addresses. Each key represents
                                       a logical identifier and the value is the resource ID of the public IP.
+- `trusted_address_ranges`          - (`list`, optional) a list of public IP address ranges that will be treated as internal
+                                      traffic by Cloud NGFW in addition to RFC 1918 private subnets. Each list entry has to be
+                                      in a CIDR format.
 - `destination_nats`                - (`map`, optional) defines one or more destination NAT configurations.
                                       Each object supports the following properties:
   - `destination_nat_name`          - (`string`, required) the name of the Destination NAT. Must be unique within this map.
@@ -230,6 +233,7 @@ object({
     public_ip_resource_group_name = optional(string)
     public_ip_ids                 = optional(map(string))
     egress_nat_ip_ids             = optional(map(string))
+    trusted_address_ranges        = optional(list(string))
     destination_nats = optional(map(object({
       destination_nat_name          = string
       destination_nat_protocol      = string

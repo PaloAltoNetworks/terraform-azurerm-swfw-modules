@@ -41,6 +41,7 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_network_panorama" "
       try(values(var.cloudngfw_config.egress_nat_ip_ids), null),
       try([azurerm_public_ip.this[0].id], [data.azurerm_public_ip.this[0].id], null)
     )
+    trusted_address_ranges = var.cloudngfw_config.trusted_address_ranges
     vnet_configuration {
       virtual_network_id  = var.virtual_network_id
       untrusted_subnet_id = var.untrusted_subnet_id
@@ -89,6 +90,7 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_network_local_rules
       try(values(var.cloudngfw_config.egress_nat_ip_ids), null),
       try([azurerm_public_ip.this[0].id], [data.azurerm_public_ip.this[0].id], null)
     )
+    trusted_address_ranges = var.cloudngfw_config.trusted_address_ranges
     vnet_configuration {
       virtual_network_id  = var.virtual_network_id
       untrusted_subnet_id = var.untrusted_subnet_id
@@ -146,6 +148,7 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_hub_panorama" "this
       try(values(var.cloudngfw_config.egress_nat_ip_ids), null),
       try([azurerm_public_ip.this[0].id], [data.azurerm_public_ip.this[0].id], null)
     )
+    trusted_address_ranges       = var.cloudngfw_config.trusted_address_ranges
     virtual_hub_id               = var.virtual_hub_id
     network_virtual_appliance_id = azurerm_palo_alto_virtual_network_appliance.this[0].id
   }
@@ -191,6 +194,7 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_hub_local_rulestack
       try(values(var.cloudngfw_config.egress_nat_ip_ids), null),
       try([azurerm_public_ip.this[0].id], [data.azurerm_public_ip.this[0].id], null)
     )
+    trusted_address_ranges       = var.cloudngfw_config.trusted_address_ranges
     virtual_hub_id               = var.virtual_hub_id
     network_virtual_appliance_id = azurerm_palo_alto_virtual_network_appliance.this[0].id
   }
