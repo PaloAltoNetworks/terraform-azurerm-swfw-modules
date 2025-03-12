@@ -72,11 +72,13 @@ variable "vnets" {
   - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
                                 VNET will reside or is sourced from.
   - `address_space`           - (`list`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET.
-  - `dns_servers`             - (`list`, optional, defaults to module defaults) a list of IP addresses of custom DNS servers (by
-                                default Azure DNS is used).
+  - `dns_servers`             - (`list`, optional, defaults to module defaults) a list of IP addresses of custom DNS servers
+                                (by default Azure DNS is used).
   - `vnet_encryption`         - (`string`, optional, defaults to module default) enables Azure Virtual Network Encryption when
-                                set, only possible value at the moment is `AllowUnencrypted`. When set to `null`, the feature is 
+                                set, only possible value at the moment is `AllowUnencrypted`. When set to `null`, the feature is
                                 disabled.
+  - `ddos_protection_plan_id` - (`string`, optional, defaults to `null`) ID of an existing Azure Network DDOS Protection Plan to
+                                be associated with the VNET.
   - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
                                 [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
   - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
@@ -85,12 +87,13 @@ variable "vnets" {
                                 [VNET module documentation](../../modules/vnet/README.md#subnets).
   EOF
   type = map(object({
-    create_virtual_network = optional(bool, true)
-    name                   = string
-    resource_group_name    = optional(string)
-    address_space          = optional(list(string))
-    dns_servers            = optional(list(string))
-    vnet_encryption        = optional(string)
+    create_virtual_network  = optional(bool, true)
+    name                    = string
+    resource_group_name     = optional(string)
+    address_space           = optional(list(string))
+    dns_servers             = optional(list(string))
+    vnet_encryption         = optional(string)
+    ddos_protection_plan_id = optional(string)
     network_security_groups = optional(map(object({
       name = string
       rules = optional(map(object({
@@ -292,14 +295,12 @@ variable "test_infrastructure" {
                                   a full resource name, including prefixes.
     - `address_space`           - (`list(string)`, required when `create_virtual_network = `false`) a list of CIDRs for a newly
                                   created VNET.
-    - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
-                                  otherwise use source existing subnets.
-    - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
-                                  [VNET module documentation](../../modules/vnet/README.md#subnets).
     - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
                                   [VNET module documentation](../../modules/vnet/README.md#network_security_groups).
     - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
                                   [VNET module documentation](../../modules/vnet/README.md#route_tables).
+    - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
+                                  [VNET module documentation](../../modules/vnet/README.md#subnets).
     - `local_peer_config`       - (`map`, optional) a map that contains local peer configuration parameters. This value allows to 
                                   set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
                                   `use_remote_gateways` parameters on the local VNet peering. 
@@ -315,7 +316,7 @@ variable "test_infrastructure" {
     - `name`                    - (`string`, required) a name of the Load Balancer.
     - `vnet_key`                - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets`
                                   map that stores the Subnet described by `subnet_key`.
-    - `zones`                   - (`list`, optional, defaults to module default) a list of zones for Load Balancer's frontend IP
+    - `zones`                   - (`list`, optional, defaults to ["1", "2", "3"]) a list of zones for Load Balancer's frontend IP
                                   configurations.
     - `backend_name`            - (`string`, optional) a name of the backend pool to create.
     - `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by load
@@ -375,9 +376,12 @@ variable "test_infrastructure" {
     create_resource_group = optional(bool, true)
     resource_group_name   = optional(string)
     vnets = map(object({
-      name                    = string
       create_virtual_network  = optional(bool, true)
+      name                    = string
       address_space           = optional(list(string))
+      dns_servers             = optional(list(string))
+      vnet_encryption         = optional(string)
+      ddos_protection_plan_id = optional(string)
       hub_resource_group_name = optional(string)
       hub_vnet_name           = string
       network_security_groups = optional(map(object({
@@ -400,7 +404,7 @@ variable "test_infrastructure" {
       })), {})
       route_tables = optional(map(object({
         name                          = string
-        disable_bgp_route_propagation = optional(bool)
+        bgp_route_propagation_enabled = optional(bool)
         routes = map(object({
           name                = string
           address_prefix      = string
@@ -408,13 +412,14 @@ variable "test_infrastructure" {
           next_hop_ip_address = optional(string)
         }))
       })), {})
-      create_subnets = optional(bool, true)
       subnets = optional(map(object({
+        create                          = optional(bool, true)
         name                            = string
         address_prefixes                = optional(list(string), [])
         network_security_group_key      = optional(string)
         route_table_key                 = optional(string)
-        enable_storage_service_endpoint = optional(bool, false)
+        enable_storage_service_endpoint = optional(bool)
+        enable_cloudngfw_delegation     = optional(bool)
       })), {})
       local_peer_config = optional(object({
         allow_virtual_network_access = optional(bool, true)
@@ -432,7 +437,7 @@ variable "test_infrastructure" {
     load_balancers = optional(map(object({
       name         = string
       vnet_key     = optional(string)
-      zones        = optional(list(string))
+      zones        = optional(list(string), ["1", "2", "3"])
       backend_name = optional(string)
       health_probes = optional(map(object({
         name                = string

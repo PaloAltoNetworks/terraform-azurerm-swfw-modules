@@ -46,9 +46,10 @@ module "vnet" {
   resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
   region                 = var.region
 
-  address_space   = each.value.address_space
-  dns_servers     = each.value.dns_servers
-  vnet_encryption = each.value.vnet_encryption
+  address_space           = each.value.address_space
+  dns_servers             = each.value.dns_servers
+  vnet_encryption         = each.value.vnet_encryption
+  ddos_protection_plan_id = each.value.ddos_protection_plan_id
 
   subnets = each.value.subnets
 
@@ -176,6 +177,17 @@ module "test_infrastructure" {
     local_peer_config  = try(v.local_peer_config, {})
     remote_peer_config = try(v.remote_peer_config, {})
   }) }
+  load_balancers = { for k, v in each.value.load_balancers : k => merge(v, {
+    name         = "${var.name_prefix}${v.name}"
+    backend_name = coalesce(v.backend_name, "${v.name}-backend")
+    public_ip_name = v.frontend_ips.create_public_ip ? (
+      "${var.name_prefix}${v.frontend_ips.public_ip_name}"
+    ) : v.frontend_ips.public_ip_name
+    public_ip_id             = try(module.public_ip.pip_ids[v.frontend_ips.public_ip_key], null)
+    public_ip_address        = try(module.public_ip.pip_ip_addresses[v.frontend_ips.public_ip_key], null)
+    public_ip_prefix_id      = try(module.public_ip.ippre_ids[v.frontend_ips.public_ip_prefix_key], null)
+    public_ip_prefix_address = try(module.public_ip.ippre_ip_prefixes[v.frontend_ips.public_ip_prefix_key], null)
+  }) }
   authentication = local.test_vm_authentication[each.key]
   spoke_vms = { for k, v in each.value.spoke_vms : k => merge(v, {
     name           = "${var.name_prefix}${v.name}"
@@ -185,6 +197,7 @@ module "test_infrastructure" {
   bastions = { for k, v in each.value.bastions : k => merge(v, {
     name           = "${var.name_prefix}${v.name}"
     public_ip_name = v.public_ip_key != null ? null : "${var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")}"
+    public_ip_id   = try(module.public_ip.pip_ids[v.public_ip_key], null)
   }) }
 
   tags       = var.tags
