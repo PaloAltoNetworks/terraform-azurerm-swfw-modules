@@ -200,26 +200,34 @@ variable "cloudngfws" {
                                         Required if the `attachment_type` is `vnet`.
   - `untrusted_subnet_key`            - (`string`, optional) key of the subnet designated as untrusted within the Virtual Network.
   - `trusted_subnet_key`              - (`string`, optional) key of the subnet designated as trusted within the Virtual Network.
+  - `virtual_hub_key`                 - (`string`, optional) key of the Virtual Hub within a vWAN where to place the Cloud NGFW.
   - `management_mode`                 - (`string`, required) defines the management mode for the firewall. When set to `panorama`,
                                         the firewall's policies are managed via Panorama.
   - `cloudngfw_config`                - (`object`, required) configuration details for the Cloud NGFW instance, with the
                                         following properties:
 
+    - `panorama_base64_config`        - (`string`, optional) the Base64-encoded configuration for connecting to Panorama server. 
+                                        This field is required when `management_mode` is set to `panorama`.
+    - `rulestack_id`                  - (`string`, optional) the ID of the Local Rulestack used to configure this Firewall 
+                                        Resource. This field is required when `management_mode` is set to `rulestack`.
     - `create_public_ip`              - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or 
-                                        sourced. This field is ignored when the variable `public_ip_ids` is used.
+                                        sourced. This field is ignored when the variable `public_ip_keys` is used.
     - `public_ip_name`                - (`string`, optional) the name of the Public IP resource. This field is required unless 
-                                        the variable `public_ip_ids` is used.
+                                        the variable `public_ip_keys` is used.
     - `public_ip_resource_group_name` - (`string`, optional) the name of the Resource Group hosting the Public IP resource. 
                                         This is used only for sourced resources.
-    - `panorama_base64_config`        - (`string`, optional) the Base64-encoded configuration for connecting to Panorama server. 
-                                        This field is required when `management_mode` is set to "panorama".
+    - `public_ip_keys`                - (`list`, optional) the keys referencing Public IP addresses from `public_ip` module. 
+                                        Property is used when Public IP is not created or sourced within `cloudngfw` module.
+    - `egress_nat_ip_keys`            - (`list`, optional) the keys referencing egress NAT Public IP addresses from `public_ip`
+                                        module. Property is used when Public IP is not created or sourced within `cloudngfw`
+                                        module.
     - `destination_nats`              - (`map`, optional) defines one or more destination NAT configurations. Each object
                                         supports the following properties:
 
       - `destination_nat_name`     - (`string`, required) the name of the Destination NAT. Must be unique within this map.
       - `destination_nat_protocol` - (`string`, required) the protocol for this Destination NAT. Possible values are `TCP` or
                                      `UDP`.
-      - `frontend_public_ip_key`   - (`string`, optional) the key referencing the public IP that receives the traffic. 
+      - `frontend_public_ip_key`   - (`string`, optional) the key referencing the Public IP that receives the traffic. 
                                      This is used only when the variable `public_ip_ids` is utilized.
       - `frontend_port`            - (`number`, required) the port on which traffic will be received. Must be in the range from
                                      1 to 65535.
@@ -229,18 +237,22 @@ variable "cloudngfws" {
   EOF
   type = map(object({
     name                 = string
-    plan_id              = optional(string)
-    marketplace_offer_id = optional(string)
     attachment_type      = string
     virtual_network_key  = optional(string)
     untrusted_subnet_key = optional(string)
     trusted_subnet_key   = optional(string)
+    virtual_hub_key      = optional(string)
     management_mode      = string
     cloudngfw_config = object({
-      create_public_ip              = optional(bool)
+      plan_id                       = optional(string)
+      marketplace_offer_id          = optional(string)
+      panorama_base64_config        = optional(string)
+      rulestack_id                  = optional(string)
+      create_public_ip              = optional(bool, true)
       public_ip_name                = optional(string)
       public_ip_resource_group_name = optional(string)
-      panorama_base64_config        = optional(string)
+      public_ip_keys                = optional(list(string))
+      egress_nat_ip_keys            = optional(list(string))
       destination_nats = optional(map(object({
         destination_nat_name     = string
         destination_nat_protocol = string

@@ -1,6 +1,6 @@
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
-  count = var.cloudngfw_config.create_public_ip && var.cloudngfw_config.public_ip_ids == null ? 1 : 0
+  count = var.cloudngfw_config.create_public_ip && var.cloudngfw_config.public_ip_name != null ? 1 : 0
 
   name                = var.cloudngfw_config.public_ip_name
   resource_group_name = var.resource_group_name
@@ -13,7 +13,7 @@ resource "azurerm_public_ip" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
 data "azurerm_public_ip" "this" {
-  count = !var.cloudngfw_config.create_public_ip && var.cloudngfw_config.public_ip_ids == null ? 1 : 0
+  count = !var.cloudngfw_config.create_public_ip && var.cloudngfw_config.public_ip_name != null ? 1 : 0
 
   name                = var.cloudngfw_config.public_ip_name
   resource_group_name = coalesce(var.cloudngfw_config.public_ip_resource_group_name, var.resource_group_name)
@@ -28,8 +28,8 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_network_panorama" "
   location            = var.region
   tags                = var.tags
 
-  plan_id                = var.plan_id
-  marketplace_offer_id   = var.marketplace_offer_id
+  plan_id                = var.cloudngfw_config.plan_id
+  marketplace_offer_id   = var.cloudngfw_config.marketplace_offer_id
   panorama_base64_config = var.cloudngfw_config.panorama_base64_config
 
   network_profile {
@@ -57,7 +57,7 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_network_panorama" "
         port = destination_nat.value.frontend_port
         public_ip_address_id = coalesce(
           try(destination_nat.value.frontend_public_ip_address_id, null),
-          try([azurerm_public_ip.this[0].id], [data.azurerm_public_ip.this[0].id], null)
+          try(azurerm_public_ip.this[0].id, data.azurerm_public_ip.this[0].id, null)
         )
       }
       backend_config {
@@ -76,8 +76,8 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_network_local_rules
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
-  plan_id              = var.plan_id
-  marketplace_offer_id = var.marketplace_offer_id
+  plan_id              = var.cloudngfw_config.plan_id
+  marketplace_offer_id = var.cloudngfw_config.marketplace_offer_id
   rulestack_id         = var.cloudngfw_config.rulestack_id
 
   network_profile {
@@ -105,7 +105,7 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_network_local_rules
         port = destination_nat.value.frontend_port
         public_ip_address_id = coalesce(
           try(destination_nat.value.frontend_public_ip_address_id, null),
-          try([azurerm_public_ip.this[0].id], [data.azurerm_public_ip.this[0].id], null)
+          try(azurerm_public_ip.this[0].id, data.azurerm_public_ip.this[0].id, null)
         )
       }
       backend_config {
@@ -133,8 +133,8 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_hub_panorama" "this
   location            = var.region
   tags                = var.tags
 
-  plan_id                = var.plan_id
-  marketplace_offer_id   = var.marketplace_offer_id
+  plan_id                = var.cloudngfw_config.plan_id
+  marketplace_offer_id   = var.cloudngfw_config.marketplace_offer_id
   panorama_base64_config = var.cloudngfw_config.panorama_base64_config
 
   network_profile {
@@ -159,7 +159,7 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_hub_panorama" "this
         port = destination_nat.value.frontend_port
         public_ip_address_id = coalesce(
           try(destination_nat.value.frontend_public_ip_address_id, null),
-          try([azurerm_public_ip.this[0].id], [data.azurerm_public_ip.this[0].id], null)
+          try(azurerm_public_ip.this[0].id, data.azurerm_public_ip.this[0].id, null)
         )
       }
       backend_config {
@@ -178,8 +178,8 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_hub_local_rulestack
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
-  plan_id              = var.plan_id
-  marketplace_offer_id = var.marketplace_offer_id
+  plan_id              = var.cloudngfw_config.plan_id
+  marketplace_offer_id = var.cloudngfw_config.marketplace_offer_id
   rulestack_id         = var.cloudngfw_config.rulestack_id
 
   network_profile {
@@ -204,7 +204,7 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_hub_local_rulestack
         port = destination_nat.value.frontend_port
         public_ip_address_id = coalesce(
           try(destination_nat.value.frontend_public_ip_address_id, null),
-          try([azurerm_public_ip.this[0].id], [data.azurerm_public_ip.this[0].id], null)
+          try(azurerm_public_ip.this[0].id, data.azurerm_public_ip.this[0].id, null)
         )
       }
       backend_config {

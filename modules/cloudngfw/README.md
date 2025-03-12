@@ -118,9 +118,6 @@ Name | Type | Description
 Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
-[`plan_id`](#plan_id) | `string` | The former plan_id `panw-cloud-ngfw-payg` is defined as stop sell, but has been set as the default to not break any existing 
-resources that were originally provisioned with it.
-[`marketplace_offer_id`](#marketplace_offer_id) | `string` | The marketplace offer ID.
 [`virtual_network_id`](#virtual_network_id) | `string` | The ID of the Azure Virtual Network (VNET) to be used for connecting to cloudngfw.
 [`untrusted_subnet_id`](#untrusted_subnet_id) | `string` | The ID of the subnet designated for untrusted resources within the virtual network.
 [`trusted_subnet_id`](#trusted_subnet_id) | `string` | The ID of the subnet designated for trusted resources within the virtual network.
@@ -186,6 +183,16 @@ Map of objects describing Palo Alto Next Generation Firewalls (cloudngfw).
 
 List of available properties:
 
+- `plan_id`                         - (`string`, optional, defaults to `panw-cngfw-payg`) the former plan_id
+                                      `panw-cloud-ngfw-payg` is defined as stop sell, but has been set as the provider default
+                                      to not break any existing resources that were originally provisioned with it. Users need
+                                      to explicitly set the `plan_id` to `panw-cngfw-payg` when creating new resources.
+- `marketplace_offer_id`            - (`string`, optional, defaults to `pan_swfw_cloud_ngfw`) the marketplace offer ID,
+                                      changing this forces a new resource to be created.
+- `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to Panorama server. 
+                                      This field is required when `management_mode` is set to `panorama`.
+- `rulestack_id`                    - (`string`, optional) the ID of the Local Rulestack used to configure this Firewall 
+                                      Resource. This field is required when `management_mode` is set to `rulestack`.
 - `create_public_ip`                - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or 
                                       sourced. This field is ignored when the variable `public_ip_ids` is used.
 - `public_ip_name`                  - (`string`, optional) the name of the Public IP resource. This field is required unless 
@@ -196,10 +203,6 @@ List of available properties:
                                       identifier and the value is the resource ID of the public IP. 
 - `egress_nat_ip_ids`               - (`map`, optional) a map of IDs for egress NAT public IP addresses. Each key represents
                                       a logical identifier and the value is the resource ID of the public IP.
-- `rulestack_id`                    - (`string`, optional) the ID of the Local Rulestack used to configure this Firewall 
-                                      Resource. This field is required when `management_mode` is set to `rulestack`.
-- `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to Panorama server. 
-                                      This field is required when `management_mode` is set to "panorama".
 - `destination_nats`                - (`map`, optional) defines one or more destination NAT configurations.
                                       Each object supports the following properties:
   - `destination_nat_name`          - (`string`, required) the name of the Destination NAT. Must be unique within this map.
@@ -218,13 +221,15 @@ Type:
 
 ```hcl
 object({
+    plan_id                       = optional(string, "panw-cngfw-payg")
+    marketplace_offer_id          = optional(string, "pan_swfw_cloud_ngfw")
+    panorama_base64_config        = optional(string)
+    rulestack_id                  = optional(string)
     create_public_ip              = optional(bool, true)
     public_ip_name                = optional(string)
     public_ip_resource_group_name = optional(string)
     public_ip_ids                 = optional(map(string))
     egress_nat_ip_ids             = optional(map(string))
-    rulestack_id                  = optional(string)
-    panorama_base64_config        = optional(string)
     destination_nats = optional(map(object({
       destination_nat_name          = string
       destination_nat_protocol      = string
@@ -248,30 +253,6 @@ The map of tags to assign to all created resources.
 Type: map(string)
 
 Default value: `map[]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### plan_id
-
-The former plan_id `panw-cloud-ngfw-payg` is defined as stop sell, but has been set as the default to not break any existing 
-resources that were originally provisioned with it. Users need to explicitly set the `plan_id` to `panw-cngfw-payg` when
-creating new resources.
-
-
-Type: string
-
-Default value: `panw-cngfw-payg`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### marketplace_offer_id
-
-The marketplace offer ID. Defaults to `pan_swfw_cloud_ngfw`. Changing this forces a new resource to be created.
-
-
-Type: string
-
-Default value: `pan_swfw_cloud_ngfw`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

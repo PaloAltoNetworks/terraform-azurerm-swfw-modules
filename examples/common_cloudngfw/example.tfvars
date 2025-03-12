@@ -45,9 +45,7 @@ vnets = {
       "private" = {
         name                        = "private"
         address_prefixes            = ["10.0.0.0/26"]
-        network_security_group_key  = "cloudngfw-dnat"
         enable_cloudngfw_delegation = true
-
       }
     }
   }
@@ -63,19 +61,6 @@ vnet_peerings = {
   */
 }
 
-public_ips = {
-  public_ip_addresses = {
-    cloudngfw_public_ip_app1 = {
-      create = true
-      name   = "cloudngfw_public_ip_app1"
-    }
-    cloudngfw_public_ip_app2 = {
-      create = true
-      name   = "cloudngfw_public_ip_app2"
-    }
-  }
-}
-
 # CLOUDNGFW
 
 cloudngfws = {
@@ -87,20 +72,11 @@ cloudngfws = {
     trusted_subnet_key   = "private"
     management_mode      = "panorama"
     cloudngfw_config = {
-      panorama_base64_config = "UExBQ0VIT0xERVI=" # TODO: Put panorama base64 connection string
+      panorama_base64_config = "eyJkZ25hbWUiOiAiY25nZnctYXotZXhhbXBsZSIsICJ0cGxuYW1lIjogImNuZ2Z3LWF6LWV4YW1wbGUiLCAicGFub3JhbWEtc2VydmVyIjogIjEuMS4xLjEiLCAidm0tYXV0aC1rZXkiOiAiMTExMTExMTExMTExMTExIiwgImV4cGlyeSI6ICIyOTk5LzAxLzAxIn0=" # TODO: Put panorama base64 connection string
       destination_nats = {
-        "app1-tcp443-dnat" = {
-          destination_nat_name     = "app1-tcp443-dnat"
-          destination_nat_protocol = "TCP"
-          frontend_public_ip_key   = "cloudngfw_public_ip_app1"
-          frontend_port            = 443
-          backend_port             = 443
-          backend_ip_address       = "10.100.0.4"
-        }
         "app1-tcp80-dnat" = {
           destination_nat_name     = "app1-tcp80-dnat"
           destination_nat_protocol = "TCP"
-          frontend_public_ip_key   = "cloudngfw_public_ip_app1"
           frontend_port            = 80
           backend_port             = 80
           backend_ip_address       = "10.100.0.4"
@@ -108,17 +84,8 @@ cloudngfws = {
         "app2-tcp443-dnat" = {
           destination_nat_name     = "app2-tcp443-dnat"
           destination_nat_protocol = "TCP"
-          frontend_public_ip_key   = "cloudngfw_public_ip_app2"
           frontend_port            = 443
           backend_port             = 443
-          backend_ip_address       = "10.100.1.4"
-        }
-        "app2-tcp80-dnat" = {
-          destination_nat_name     = "app2-tcp80-dnat"
-          destination_nat_protocol = "TCP"
-          frontend_public_ip_key   = "cloudngfw_public_ip_app2"
-          frontend_port            = 80
-          backend_port             = 80
           backend_ip_address       = "10.100.1.4"
         }
       }

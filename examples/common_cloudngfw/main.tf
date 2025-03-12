@@ -107,12 +107,9 @@ module "cloudngfw" {
 
   for_each = var.cloudngfws
 
-  name                = each.value.name
+  name                = "${var.name_prefix}${each.value.name}"
   resource_group_name = local.resource_group.name
   region              = var.region
-
-  plan_id              = each.value.plan_id
-  marketplace_offer_id = each.value.marketplace_offer_id
 
   attachment_type = each.value.attachment_type
   virtual_network_id = each.value.attachment_type == "vnet" ? (
@@ -126,8 +123,13 @@ module "cloudngfw" {
   ) : null
   management_mode = each.value.management_mode
   cloudngfw_config = merge(each.value.cloudngfw_config, {
-    public_ip_ids     = module.public_ip.pip_ids,
-    egress_nat_ip_ids = module.public_ip.pip_ids,
+    public_ip_name = each.value.cloudngfw_config.public_ip_keys == null ? (each.value.cloudngfw_config.create_public_ip ? "${
+      var.name_prefix}${coalesce(each.value.cloudngfw_config.public_ip_name, "${each.value.name}-pip")
+    }" : each.value.cloudngfw_config.public_ip_name) : null
+    public_ip_ids = try({ for k, v in module.public_ip.pip_ids : k => v
+    if contains(each.value.cloudngfw_config.public_ip_keys, k) }, null)
+    egress_nat_ip_ids = try({ for k, v in module.public_ip.pip_ids : k => v
+    if contains(each.value.cloudngfw_config.egress_nat_ip_keys, k) }, null)
     destination_nats = {
       for k, v in each.value.cloudngfw_config.destination_nats : k => merge(v, {
         frontend_public_ip_address_id = v.frontend_public_ip_key != null ? lookup(module.public_ip.pip_ids, v.frontend_public_ip_key, null) : null
