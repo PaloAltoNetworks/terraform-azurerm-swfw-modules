@@ -124,9 +124,9 @@ This module is designed to work in several *modes* depending on which variables 
       }
     }
   }
-  create_subnets = false
   subnets = {
     "subnet" = {
+      create                     = false
       name                       = "snet"
       network_security_group_key = "inbound"
       route_table_key            = "default"
