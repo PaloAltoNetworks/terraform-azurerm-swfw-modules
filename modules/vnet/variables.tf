@@ -275,7 +275,7 @@ variable "network_security_groups" {
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
-        can(regex("^\\*$|^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", rule.source_port_range))
+        can(regex("^\\*$|^\\d{1,5}(\\-\\d{1,5})?$", rule.source_port_range))
         if rule.source_port_range != null
       ]
     ]))
@@ -289,7 +289,7 @@ variable "network_security_groups" {
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules : [
           for _, range in coalesce(rule.source_port_ranges, []) :
-          can(regex("^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", range))
+          can(regex("^\\d{1,5}(\\-\\d{1,5})?$", range))
         ]
       ]
     ]))
@@ -313,7 +313,7 @@ variable "network_security_groups" {
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
-        can(regex("^\\*$|^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", rule.destination_port_range))
+        can(regex("^\\*$|^\\d{1,5}(\\-\\d{1,5})?$", rule.destination_port_range))
         if rule.destination_port_range != null
       ]
     ]))
@@ -327,7 +327,7 @@ variable "network_security_groups" {
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules : [
           for _, range in coalesce(rule.destination_port_ranges, []) :
-          can(regex("^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", range))
+          can(regex("^\\d{1,5}(\\-\\d{1,5})?$", range))
         ]
       ]
     ]))
