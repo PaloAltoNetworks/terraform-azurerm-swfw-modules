@@ -32,7 +32,7 @@ resource "azurerm_network_interface" "this" {
   tags                           = var.tags
 
   ip_configuration {
-    name                          = "primary"
+    name                          = each.value.ip_configuration_name
     subnet_id                     = each.value.subnet_id
     private_ip_address_allocation = each.value.private_ip_address != null ? "Static" : "Dynamic"
     private_ip_address            = each.value.private_ip_address

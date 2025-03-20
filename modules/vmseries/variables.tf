@@ -200,6 +200,7 @@ variable "interfaces" {
 
   - `name`                          - (`string`, required) the interface name.
   - `subnet_id`                     - (`string`, required) ID of an existing subnet to create the interface in.
+  - `ip_configuration_name`         - (`string`, optional, defaults to `primary`) the name of the interface IP configuration.
   - `private_ip_address`            - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
                                       skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
                                       to change as long as the VM is running. Any stop/deallocate/restart operation might cause
@@ -249,6 +250,7 @@ variable "interfaces" {
   type = list(object({
     name                          = string
     subnet_id                     = string
+    ip_configuration_name         = optional(string, "primary")
     create_public_ip              = optional(bool, false)
     public_ip_name                = optional(string)
     public_ip_resource_group_name = optional(string)
