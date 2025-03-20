@@ -101,7 +101,7 @@ resource "azurerm_storage_share_directory" "this" {
   }
 
   name             = each.value.folder_name
-  storage_share_id = local.file_shares[each.value.share_key].id
+  storage_share_id = local.file_shares[each.value.share_key].url
 }
 
 
@@ -192,7 +192,7 @@ resource "azurerm_storage_share_file" "this" {
   # The file is being created but state is not updated.
   name             = each.value.remote_filename
   path             = each.value.remote_path
-  storage_share_id = local.file_shares[each.value.file_share].id
+  storage_share_id = local.file_shares[each.value.file_share].url
   source           = each.value.source_path
   content_md5 = try(
     var.file_shares[each.value.file_share].bootstrap_files_md5[each.value.source_path],

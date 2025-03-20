@@ -60,6 +60,9 @@ resource "azurerm_subnet" "this" {
       name = "cloudngfw_delegation"
       service_delegation {
         name = "PaloAltoNetworks.Cloudngfw/firewalls"
+        actions = [
+          "Microsoft.Network/virtualNetworks/subnets/join/action"
+        ]
       }
     }
   }
