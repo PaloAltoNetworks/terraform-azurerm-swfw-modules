@@ -1,4 +1,4 @@
-package virtual_wan
+package vwan
 
 import (
 	"testing"

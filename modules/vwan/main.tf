@@ -29,7 +29,7 @@ resource "azurerm_virtual_hub" "this" {
   address_prefix         = each.value.address_prefix
   hub_routing_preference = each.value.hub_routing_preference
   sku                    = "Standard"
-  tags                   = coalesce(each.value.tags, var.tags)
+  tags                   = var.tags
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/virtual_hub
@@ -204,6 +204,3 @@ resource "azurerm_vpn_gateway_connection" "this" {
     }
   }
 }
-
-
-
