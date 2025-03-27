@@ -22,18 +22,18 @@ runs:
   steps:
 
     - name: setup Terraform
-      uses: hashicorp/setup-terraform@v2
+      uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 # v2
       with:
         terraform_version: ${{ inputs.tf_version }}
         terraform_wrapper: false
 
     - name: setup Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4
       with:
         go-version: '1.21'
 
     - name: login to Azure
-      uses: azure/login@v1
+      uses: azure/login@cb79c773a3cfa27f31f25eb3f677781210c9ce3d # v1
       with:
         client-id: ${{ env.ARM_CLIENT_ID }}
         tenant-id: ${{ env.ARM_TENANT_ID }}
