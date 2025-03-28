@@ -2,6 +2,7 @@
 short_title: GWLB Firewall Option
 type: example
 show_in_hub: false
+swfw: vmseries
 ---
 # VM-Series Azure Gateway Load Balancer example
 

@@ -2,6 +2,7 @@
 short_title: Standalone VM-Series Deployment
 type: example
 show_in_hub: false
+swfw: vmseries
 ---
 # Palo Alto Networks Next Generation deployment example
 
