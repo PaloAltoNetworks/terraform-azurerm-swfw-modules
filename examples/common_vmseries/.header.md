@@ -2,6 +2,7 @@
 short_title: Common Firewall Option
 type: refarch
 show_in_hub: true
+swfw: vmseries
 ---
 # Reference Architecture with Terraform: VM-Series in Azure, Centralized Architecture. Common NGFW Option
 
