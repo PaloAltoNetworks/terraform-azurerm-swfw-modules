@@ -25,11 +25,11 @@ resource "azurerm_virtual_hub" "this" {
   name                   = each.value.name
   resource_group_name    = coalesce(each.value.resource_group_name, var.resource_group_name)
   location               = coalesce(each.value.region, var.region)
-  virtual_wan_id         = (var.create_virtual_wan ? azurerm_virtual_wan.this[0].id : data.azurerm_virtual_wan.this[0].id)
+  virtual_wan_id         = coalesce((var.create_virtual_wan ? azurerm_virtual_wan.this[0].id : data.azurerm_virtual_wan.this[0].id), each.value.virtual_wan_id)
   address_prefix         = each.value.address_prefix
   hub_routing_preference = each.value.hub_routing_preference
   sku                    = "Standard"
-  tags                   = coalesce(each.value.tags, var.tags)
+  tags                   = var.tags
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/virtual_hub
@@ -44,7 +44,7 @@ data "azurerm_virtual_hub" "this" {
 resource "azurerm_virtual_hub_route_table" "this" {
   for_each       = { for k, v in var.route_tables : k => v if v.create_route_table }
   name           = each.value.name
-  virtual_hub_id = each.value.virtual_hub_id
+  virtual_hub_id = merge(azurerm_virtual_hub.this, data.azurerm_virtual_hub.this)[each.value.virtual_hub_key].id
   labels         = each.value.labels
 }
 
@@ -105,7 +105,7 @@ resource "azurerm_vpn_gateway" "this" {
   name                = var.vpn_gateway.name
   location            = coalesce(var.vpn_gateway.region, var.region)
   resource_group_name = coalesce(var.vpn_gateway.resource_group_name, var.resource_group_name)
-  virtual_hub_id      = each.value.virtual_hub_id
+  virtual_hub_id      = merge(azurerm_virtual_hub.this, data.azurerm_virtual_hub.this)[var.vpn_gateway.virtual_hub_key].id
   scale_unit          = var.vpn_gateway.scale_unit
   routing_preference  = var.vpn_gateway.routing_preference
   tags                = var.tags
@@ -204,6 +204,3 @@ resource "azurerm_vpn_gateway_connection" "this" {
     }
   }
 }
-
-
-
