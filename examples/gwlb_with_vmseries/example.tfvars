@@ -102,6 +102,7 @@ gateway_load_balancers = {
     health_probe = {
       name         = "https-probe"
       protocol     = "Https"
+      port         = "443"
       request_path = "/unauth/php/health.php"
     }
 
