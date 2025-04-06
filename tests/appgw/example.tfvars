@@ -371,7 +371,7 @@ appgws = {
   #       protocol                  = "Http"
   #       timeout                   = 60
   #       use_cookie_based_affinity = true
-  #       probe                     = "http"
+  #       probe_key                 = "http"
   #     }
   #     https1 = {
   #       name                      = "https1-settings"
@@ -387,7 +387,7 @@ appgws = {
   #           path = "./files/ca-cert1.pem"
   #         }
   #       }
-  #       probe = "https1"
+  #       probe_key = "https1"
   #     }
   #     https2 = {
   #       name                      = "https2-settings"
@@ -403,7 +403,7 @@ appgws = {
   #           path = "./files/ca-cert2.pem"
   #         }
   #       }
-  #       probe = "https2"
+  #       probe_key = "https2"
   #     }
   #   }
   #   probes = {

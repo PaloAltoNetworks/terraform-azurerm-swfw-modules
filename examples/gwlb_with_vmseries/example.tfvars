@@ -100,9 +100,9 @@ gateway_load_balancers = {
     }
 
     health_probe = {
-      name     = "custom-health-probe"
-      port     = 80
-      protocol = "Tcp"
+      name         = "https-probe"
+      protocol     = "Https"
+      request_path = "/unauth/php/health.php"
     }
 
     backends = {

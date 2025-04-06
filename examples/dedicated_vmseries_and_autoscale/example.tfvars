@@ -148,6 +148,13 @@ load_balancers = {
       nsg_key      = "public"
       source_ips   = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access LB
     }
+    health_probes = {
+      https = {
+        name         = "https-probe"
+        protocol     = "Https"
+        request_path = "/unauth/php/health.php"
+      }
+    }
     frontend_ips = {
       "app1" = {
         name             = "app1"
@@ -155,9 +162,10 @@ load_balancers = {
         create_public_ip = true
         in_rules = {
           "balanceHttp" = {
-            name     = "HTTP"
-            protocol = "Tcp"
-            port     = 80
+            name             = "HTTP"
+            protocol         = "Tcp"
+            port             = 80
+            health_probe_key = "https"
           }
         }
       }
@@ -167,6 +175,13 @@ load_balancers = {
     name     = "private-lb"
     zones    = null
     vnet_key = "transit"
+    health_probes = {
+      https = {
+        name         = "https-probe"
+        protocol     = "Https"
+        request_path = "/unauth/php/health.php"
+      }
+    }
     frontend_ips = {
       "ha-ports" = {
         name               = "private-vmseries"
@@ -174,9 +189,10 @@ load_balancers = {
         private_ip_address = "10.0.0.46"
         in_rules = {
           HA_PORTS = {
-            name     = "HA-ports"
-            port     = 0
-            protocol = "All"
+            name             = "HA-ports"
+            port             = 0
+            protocol         = "All"
+            health_probe_key = "https"
           }
         }
       }
