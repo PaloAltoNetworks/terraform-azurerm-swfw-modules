@@ -274,7 +274,7 @@ variable "appgws" {
       timeout                   = optional(number)
       use_cookie_based_affinity = optional(bool)
       affinity_cookie_name      = optional(string)
-      probe                     = optional(string)
+      probe_key                 = optional(string)
       root_certs = optional(map(object({
         name = string
         path = string
