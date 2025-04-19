@@ -64,8 +64,6 @@ variable "virtual_hubs" {
                                no smaller than /24 (Microsoft recommends /23).
   - `hub_routing_preference` - (`string`, optional, defaults to `ExpressRoute`) Virtual Hub routing preference. Acceptable values
                                are `ExpressRoute`, `ASPath` and `VpnGateway`.
-  - `virtual_wan_id`         - (`string`, optional) ID of a Virtual WAN within which the Virtual Hub should be created. If
-                               omitted, it will connect to a local default Virtual WAN.
  EOF
   default     = {}
   type = map(object({
@@ -112,7 +110,6 @@ variable "connections" {
   - `name`                       - (`string`, required) name of the Connection, unique within the Virtual Hub. 
   - `connection_type`            - (`string`, required) type of connection; set to "Vnet" for Virtual Network connections.
   - `virtual_hub_key`            - (`string`, required) ID of the Virtual Hub for this connection. 
-  - `remote_virtual_network_key` - (`string`, required) ID of the Virtual Network to connect to. 
   - `vpn_site_key`               - (`string`, optional) ID of the VPN Site associated with this connection.
   - `vpn_link`                   - (`list`, optional) a list of VPN link configurations for Site-to-Site VPN connections, 
                                    each with several attributes (see below).
@@ -212,7 +209,7 @@ variable "connections" {
   validation { # connection_type
     condition = alltrue(flatten([
       for _, connection in var.connections : [
-        can(regex("^(Site-to-Site|Vnet)$", connection.connection_type))
+        contains(["Site-to-Site", "Vnet"], connection.connection_type)
       ]
     ]))
     error_message = <<-EOF
@@ -350,30 +347,20 @@ variable "route_tables" {
   description = <<-EOF
   Map of objects describing route tables to manage within a Virtual Hub.
 
-  Each entry defines a Virtual Hub Route Table configuration with attributes to control its creation and association.
-  If `create` is set to `true`, the module will create a new route table. If set to `false`, the module will source an existing
-  route table from the specified Virtual Hub.
+  Each entry defines a Virtual Hub Route Table configuration with attributes to control its association.
 
   List of available attributes for each route table entry:
 
-  - `create`              - (`bool`, optional, defaults to `true`) indicates whether to create a new Route Table. If `false`, the
-                            module will reference an existing Route Table.
   - `name`                - (`string`, required) name of the Virtual Hub Route Table.
-  - `resource_group_name` - (`string`, optional, required if `create = false`) name of the Resource Group where the existing
-                            Virtual Hub Route Table is located.
-  - `virtual_hub_key`     - (`string`, optional, required if `create = true`) ID of the Virtual Hub in which to create the Route
+  - `virtual_hub_key`     - (`string`, required) ID of the Virtual Hub in which to create the Route
                             Table.
-  - `labels`              - (`set`, optional, required if `create = true`) Set of labels associated with the Route Table.
-  - `virtual_hub_name`    - (`string`, optional, required if `create = false`) name of the existing Virtual Hub Route Table.
+  - `labels`              - (`set`, optional) Set of labels associated with the Route Table.
   EOF
   default     = {}
   type = map(object({
-    create              = optional(bool, true)
-    name                = string
-    resource_group_name = optional(string)
-    virtual_hub_key     = optional(string)
-    labels              = optional(set(string))
-    virtual_hub_name    = optional(string)
+    name            = string
+    virtual_hub_key = string
+    labels          = optional(set(string))
   }))
 }
 
@@ -473,7 +460,7 @@ variable "vpn_sites" {
     condition = alltrue(flatten([
       for _, vpnsite in var.vpn_sites : [
         for _, sitelink in vpnsite.link : [
-          sitelink.ip_address == null || can(regex("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", sitelink.ip_address))
+          sitelink.ip_address == null || can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", sitelink.ip_address))
         ]
       ]
     ]))

@@ -20,12 +20,12 @@ data "azurerm_virtual_wan" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_hub
 resource "azurerm_virtual_hub" "this" {
-  for_each = { for k, v in var.virtual_hubs : k => v if v.create_virtual_hub }
+  for_each = { for k, v in var.virtual_hubs : k => v if v.create }
 
   name                   = each.value.name
   resource_group_name    = coalesce(each.value.resource_group_name, var.resource_group_name)
   location               = coalesce(each.value.region, var.region)
-  virtual_wan_id         = coalesce((var.create_virtual_wan ? azurerm_virtual_wan.this[0].id : data.azurerm_virtual_wan.this[0].id), each.value.virtual_wan_id)
+  virtual_wan_id         = var.create_virtual_wan ? azurerm_virtual_wan.this[0].id : data.azurerm_virtual_wan.this[0].id
   address_prefix         = each.value.address_prefix
   hub_routing_preference = each.value.hub_routing_preference
   sku                    = "Standard"
@@ -34,7 +34,7 @@ resource "azurerm_virtual_hub" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/virtual_hub
 data "azurerm_virtual_hub" "this" {
-  for_each = { for k, v in var.virtual_hubs : k => v if !v.create_virtual_hub }
+  for_each = { for k, v in var.virtual_hubs : k => v if !v.create }
 
   name                = each.value.name
   resource_group_name = each.value.resource_group_name
@@ -42,18 +42,10 @@ data "azurerm_virtual_hub" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_hub_route_table
 resource "azurerm_virtual_hub_route_table" "this" {
-  for_each       = { for k, v in var.route_tables : k => v if v.create_route_table }
+  for_each       = { for k, v in var.route_tables : k => v }
   name           = each.value.name
   virtual_hub_id = merge(azurerm_virtual_hub.this, data.azurerm_virtual_hub.this)[each.value.virtual_hub_key].id
   labels         = each.value.labels
-}
-
-# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/virtual_hub_route_table
-data "azurerm_virtual_hub_route_table" "this" {
-  for_each            = { for k, v in var.route_tables : k => v if !v.create_route_table }
-  name                = each.value.name
-  resource_group_name = coalesce(each.value.resource_group_name, var.resource_group_name)
-  virtual_hub_name    = each.value.virtual_hub_name
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_hub_connection
@@ -62,7 +54,7 @@ resource "azurerm_virtual_hub_connection" "this" {
 
   name                      = each.value.name
   virtual_hub_id            = merge(azurerm_virtual_hub.this, data.azurerm_virtual_hub.this)[each.value.virtual_hub_key].id
-  remote_virtual_network_id = var.remote_virtual_network_ids[each.value.remote_virtual_network_key]
+  remote_virtual_network_id = var.remote_virtual_network_ids[each.key]
   dynamic "routing" {
     for_each = each.value.routing != null ? [1] : []
     content {
