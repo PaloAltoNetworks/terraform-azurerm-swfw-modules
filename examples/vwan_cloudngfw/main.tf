@@ -64,20 +64,45 @@ locals {
 module "virtual_wan" {
   source = "../../modules/vwan"
 
-  for_each = var.virtual_wans
+  virtual_wan_name    = var.virtual_wan.create_virtual_wan ? "${var.name_prefix}${var.virtual_wan.name}" : var.virtual_wan.name
+  resource_group_name = coalesce(var.virtual_wan.resource_group_name, local.resource_group.name)
+  region              = coalesce(var.virtual_wan.region, var.region)
+  tags                = var.tags
+}
 
-  name                = each.value.create_virtual_wan ? "${var.name_prefix}${each.value.name}" : each.value.name
-  create_virtual_wan  = each.value.create_virtual_wan
-  resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
-  region              = var.region
-  virtual_hubs        = each.value.virtual_hubs
-  connections         = each.value.connections
-  route_tables        = each.value.route_tables
-  remote_virtual_network_ids = {
-    for k, v in each.value.connections :
-    k => local.remote_virtual_network_ids[v.remote_virtual_network_key]
+#VHUB
+module "virtual_hub" {
+  source = "../../modules/vhub"
+
+  for_each = var.virtual_wan.virtual_hubs
+
+  virtual_hub_name           = each.value.create_virtual_hub ? "${var.name_prefix}${each.value.name}" : each.value.name
+  resource_group_name        = coalesce(each.value.resource_group_name, local.resource_group.name)
+  region                     = coalesce(each.value.region, var.region)
+  virtual_hub_address_prefix = each.value.address_prefix
+  virtual_wan_id             = module.virtual_wan.virtual_wan_id
+  connections = {
+    for k, v in each.value.connections : k => merge(v, {
+      remote_virtual_network_id = v.connection_type == "Vnet" ? local.remote_virtual_network_ids[v.remote_virtual_network_key] : null
+    })
   }
   tags = var.tags
+}
+
+#VIRTUAL HUB ROUTING
+module "vhub_routing" {
+  source = "../../modules/vhub_routing"
+
+  for_each = var.virtual_wan.virtual_hubs
+
+  routing_intent = merge(each.value.routing_intent, {
+    routing_policy = [
+      for policy in each.value.routing_intent.routing_policy : merge(policy, {
+        next_hop_id = module.cloudngfw[policy.next_hop_key].palo_alto_virtual_network_appliance_id
+      })
+    ]
+  })
+  virtual_hub_id = module.virtual_hub[each.key].virtual_hub_id
 }
 
 # Create or source a Public IPs
@@ -128,22 +153,8 @@ module "cloudngfw" {
       })
     }
   })
-  virtual_hub_id = each.value.attachment_type == "vwan" ? module.virtual_wan[each.value.virtual_wan_key].virtual_hub_ids[each.value.virtual_hub_key] : null
+  virtual_hub_id = each.value.attachment_type == "vwan" ? module.virtual_hub[each.value.virtual_hub_key].virtual_hub_id : null
   tags           = var.tags
-}
-
-
-#VIRTUAL HUB ROUTING
-module "vhub_routing" {
-  source = "../../modules/vhub_routing"
-  routing_intent = merge(var.virtual_hub_routing.routing_intent, {
-    routing_policy = [
-      for policy in var.virtual_hub_routing.routing_intent.routing_policy : merge(policy, {
-        next_hop_id = module.cloudngfw[policy.next_hop_key].palo_alto_virtual_network_appliance_id
-      })
-    ]
-  })
-  virtual_hub_id = module.virtual_wan[var.virtual_hub_routing.virtual_wan_key].virtual_hub_ids[var.virtual_hub_routing.virtual_hub_key]
 }
 
 # Create test infrastructure

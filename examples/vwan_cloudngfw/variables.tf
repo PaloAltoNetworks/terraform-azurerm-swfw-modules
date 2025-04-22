@@ -132,30 +132,32 @@ variable "vnets" {
 
 #VIRTUAL WAN
 
-variable "virtual_wans" {
+variable "virtual_wan" {
   description = <<-EOF
   A map defining VIRTUAL_WANs.
 
   For detailed documentation on each property refer to [module documentation](../../modules/virtual_wan/README.md)
 
-  - `create_virtual_wan`                - (`bool`, optional, defaults to `true`) when set to `true` will create a VIRTUAL WAN, `false` will source
-                                        an existing VIRTUAL WAN.
-  - `name`                              - (`string`, required) a name of a VIRTUAL WAN. In case `create_virtual_wan = false` this should be a
-                                        full resource name, including prefixes.
+  - `create_virtual_wan`                - (`bool`, optional, defaults to `true`) when set to `true` will create a VIRTUAL WAN, `false`
+                                        will source an existing VIRTUAL WAN.
+  - `name`                              - (`string`, required) a name of a VIRTUAL WAN. In case `create_virtual_wan = false` this 
+                                        should be a full resource name, including prefixes.
   - `resource_group_name`               - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
                                         VIRTUAL WAN will reside or is sourced from.
   - `disable_vpn_encryption`            - (`bool`, optional, defaults to `false`) if `true`, VPN encryption is disabled.
   - `allow_branch_to_branch_traffic`    - (`bool`, optional, defaults to `true`) if `false`, branch-to-branch traffic is not allowed.
-  - `office365_local_breakout_category` - (`string`, optional, defaults to `None`) Specifies the Office365 local breakout category. Possible values are: Optimize, OptimizeAndAllow, All, None.
-  - `virtual_wan_type`                  - (`string`, optional, defaults to `Standard`) Specifies the Virtual WAN type. Possible values are: Basic, Standard.
+  - `office365_local_breakout_category` - (`string`, optional, defaults to `None`) Specifies the Office365 local breakout category.
+                                          Possible values are: `Optimize`, `OptimizeAndAllow`, `All`, `None`.
+  - `virtual_hubs`                      - (`map`, optional) map of Virtual Hubs to create or source, for details see
+                                        [Virtual HUB module documentation](../../modules/virtual_hub/README.md).
   EOF
-  type = map(object({
+  type = object({
     name                           = string
     resource_group_name            = optional(string)
     create_virtual_wan             = optional(bool, true)
+    region                         = optional(string)
     disable_vpn_encryption         = optional(bool, false)
     allow_branch_to_branch_traffic = optional(bool, true)
-    virtual_wan_type               = optional(string)
     virtual_hubs = optional(map(object({
       name                   = string
       address_prefix         = optional(string)
@@ -163,73 +165,75 @@ variable "virtual_wans" {
       resource_group_name    = optional(string)
       region                 = optional(string)
       hub_routing_preference = optional(string)
-      tags                   = optional(map(string))
-    })), {})
-    connections = optional(map(object({
-      name                       = string
-      connection_type            = string
-      virtual_hub_key            = optional(string)
-      remote_virtual_network_key = optional(string)
-      vpn_site_key               = optional(string)
-      vpn_link = optional(list(object({
-        vpn_link_name                  = string
-        vpn_site_link_key              = string
-        bandwidth_mbps                 = optional(number)
-        bgp_enabled                    = optional(bool)
-        connection_mode                = optional(string)
-        protocol                       = optional(string)
-        ratelimit_enabled              = optional(bool)
-        shared_key                     = optional(string)
-        local_azure_ip_address_enabled = optional(bool)
-        ipsec_policy = optional(object({
-          dh_group                 = optional(string)
-          ike_encryption_algorithm = optional(string)
-          ike_integrity_algorithm  = optional(string)
-          encryption_algorithm     = optional(string)
-          integrity_algorithm      = optional(string)
-          pfs_group                = optional(string)
-          sa_data_size_kb          = optional(number)
-          sa_lifetime_sec          = optional(number)
+      connections = optional(map(object({
+        name                       = string
+        connection_type            = string
+        remote_virtual_network_key = optional(string)
+        vpn_site_key               = optional(string)
+        vpn_link = optional(list(object({
+          vpn_link_name                  = string
+          vpn_site_link_key              = string
+          bandwidth_mbps                 = optional(number)
+          bgp_enabled                    = optional(bool)
+          connection_mode                = optional(string)
+          protocol                       = optional(string)
+          ratelimit_enabled              = optional(bool)
+          shared_key                     = optional(string)
+          local_azure_ip_address_enabled = optional(bool)
+          ipsec_policy = optional(object({
+            dh_group                 = optional(string)
+            ike_encryption_algorithm = optional(string)
+            ike_integrity_algorithm  = optional(string)
+            encryption_algorithm     = optional(string)
+            integrity_algorithm      = optional(string)
+            pfs_group                = optional(string)
+            sa_data_size_kb          = optional(number)
+            sa_lifetime_sec          = optional(number)
+          }))
+        })))
+        routing = optional(object({
+          associated_route_table_key                = optional(string)
+          propagated_route_table_keys               = optional(list(string))
+          propagated_route_table_labels             = optional(set(string))
+          static_vnet_route_name                    = optional(string)
+          static_vnet_route_address_prefixes        = optional(set(string))
+          static_vnet_route_next_hop_ip_address     = optional(string)
+          static_vnet_local_route_override_criteria = optional(string)
         }))
-      })))
-      routing = optional(object({
-        associated_route_table_key                = optional(string)
-        propagated_route_table_keys               = optional(list(string))
-        propagated_route_table_labels             = optional(set(string))
-        static_vnet_route_name                    = optional(string)
-        static_vnet_route_address_prefixes        = optional(set(string))
-        static_vnet_route_next_hop_ip_address     = optional(string)
-        static_vnet_local_route_override_criteria = optional(string)
+      })), {})
+      route_tables = optional(map(object({
+        name   = string
+        labels = optional(set(string))
+      })), {})
+      routing_intent = optional(object({
+        routing_intent_name = string
+        routing_policy = list(object({
+          routing_policy_name = string
+          destinations        = list(string)
+          next_hop_key        = string
+        }))
       }))
+      vpn_gateway = optional(object({
+        name                = string
+        resource_group_name = optional(string)
+        scale_unit          = optional(number)
+        routing_preference  = optional(string)
+      }), null)
+      vpn_sites = optional(map(object({
+        name                = string
+        region              = optional(string)
+        resource_group_name = optional(string)
+        address_cidrs       = optional(set(string))
+        link = optional(map(object({
+          name          = string
+          ip_address    = optional(string)
+          fqdn          = optional(string)
+          provider_name = optional(string)
+          speed_in_mbps = optional(number, 0)
+        })))
+      })), {})
     })), {})
-    vpn_sites = optional(map(object({
-      name                = string
-      location            = optional(string)
-      resource_group_name = optional(string)
-      address_cidrs       = optional(set(string))
-      link = optional(map(object({
-        name          = string
-        ip_address    = optional(string)
-        fqdn          = optional(string)
-        provider_name = optional(string)
-        speed_in_mbps = optional(number, 0)
-      })))
-    })), {})
-    vpn_gateways = optional(object({
-      name                = string
-      location            = optional(string)
-      resource_group_name = optional(string)
-      virtual_hub_key     = string
-      scale_unit          = optional(number)
-      routing_preference  = optional(string)
-      tags                = optional(map(string))
-    }), null)
-    route_tables = optional(map(object({
-      name            = string
-      virtual_hub_key = string
-      labels          = optional(set(string))
-    })), {})
-  }))
+  })
 }
 
 # PUBLIC_IP
@@ -329,7 +333,6 @@ variable "cloudngfws" {
     untrusted_subnet_key = optional(string)
     trusted_subnet_key   = optional(string)
     virtual_hub_key      = optional(string)
-    virtual_wan_key      = optional(string)
     management_mode      = string
     cloudngfw_config = object({
       plan_id                       = optional(string)
@@ -353,46 +356,6 @@ variable "cloudngfws" {
     })
   }))
 }
-
-# VIRTUAL HUB ROUTING
-
-variable "virtual_hub_routing" {
-  description = <<-EOF
-  An object defining routing configuration for an Azure Virtual Hub.
-
-  This variable is used to configure routing via routing intent and routing policies in a vWAN Virtual Hub.
-  The module requires both `virtual_wan_key` and `virtual_hub_key` to locate the target hub.
-
-  The object supports the following attributes:
-
-  - `virtual_wan_key`     - (`string`, required) key referencing the Virtual WAN to which the Virtual Hub is associated.
-  - `virtual_hub_key`     - (`string`, required) key referencing the Virtual Hub where the routing intent will be configured.
-  - `routing_intent`      - (`object`, optional) defines a routing intent and associated policies in the Virtual Hub.
-
-    - `routing_intent_name` - (`string`, required) the name of the routing intent resource to be created.
-    - `routing_policy`      - (`list`, required) a list of routing policies. Each policy object supports the following:
-
-      - `routing_policy_name` - (`string`, required) the name of the individual routing policy.
-      - `destinations`        - (`list(string)`, required) a list of destination values (e.g., `Internet`, `PrivateTraffic`, or 
-                                custom traffic selectors).
-      - `next_hop_key`        - (`string`, required) the key referencing the next hop resource (e.g., a firewall) used for routing 
-                                traffic matching this policy.
-  EOF
-
-  type = object({
-    virtual_wan_key = string
-    virtual_hub_key = string
-    routing_intent = optional(object({
-      routing_intent_name = string
-      routing_policy = list(object({
-        routing_policy_name = string
-        destinations        = list(string)
-        next_hop_key        = string
-      }))
-    }))
-  })
-}
-
 
 # TEST INFRASTRUCTURE
 
