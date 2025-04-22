@@ -1,4 +1,4 @@
-package vwan
+package vhub
 
 import (
 	"testing"

@@ -21,5 +21,3 @@ data "azurerm_virtual_wan" "this" {
 locals {
   virtual_wan = var.create_virtual_wan ? azurerm_virtual_wan.this[0] : data.azurerm_virtual_wan.this[0]
 }
-
-

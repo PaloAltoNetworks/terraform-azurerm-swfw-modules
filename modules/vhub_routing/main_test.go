@@ -1,4 +1,4 @@
-package vwan_routing
+package vhub_routing
 
 import (
 	"testing"

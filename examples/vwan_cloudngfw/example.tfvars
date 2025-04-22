@@ -61,37 +61,6 @@ virtual_wan = {
         ]
       }
     }
-    virtual_hubs = {
-      "virtual_hub" = {
-        create              = false
-        name                = "virtual_hub"
-        resource_group_name = "virtual_wan_rg"
-        connections = {
-          "panorama-to-hub" = { # TODO: Specify your existing panorama vnet!
-            name                       = "panorama-to-hub"
-            connection_type            = "Vnet"
-            remote_virtual_network_key = "panorama"
-          }
-          "app1-to-hub" = {
-            name                       = "app1-to-hub"
-            connection_type            = "Vnet"
-            remote_virtual_network_key = "app1"
-          }
-          "app2-to-hub" = {
-            name                       = "app2-to-hub"
-            connection_type            = "Vnet"
-            remote_virtual_network_key = "app2"
-          }
-        }
-        route_tables = {
-          "default" = {
-            name   = "default-rt"
-            labels = ["default-rt"]
-          }
-        }
-
-      }
-    }
   }
 }
 
