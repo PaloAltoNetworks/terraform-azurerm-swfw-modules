@@ -34,6 +34,8 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
+# Manage the network required for the topology
+
 module "vnet" {
   source = "../../modules/vnet"
 
@@ -43,69 +45,42 @@ module "vnet" {
   create_virtual_network = each.value.create_virtual_network
   resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
   region                 = var.region
-  address_space          = each.value.address_space
 
-  tags = var.tags
-}
+  address_space           = each.value.address_space
+  dns_servers             = each.value.dns_servers
+  vnet_encryption         = each.value.vnet_encryption
+  ddos_protection_plan_id = each.value.ddos_protection_plan_id
 
-locals {
-  remote_virtual_network_ids = merge({ for entry in flatten([
-    for val in { for k, v in module.test_infrastructure : k => v.vnet_ids } : [
-      for k, v in val : {
-        key = k
-        val = v
-      }
-    ]
-    ]) : entry.key => entry.val
-  }, { for k, v in module.vnet : k => v.virtual_network_id })
-}
+  subnets = each.value.subnets
 
-#VWAN
-module "virtual_wan" {
-  source = "../../modules/vwan"
-
-  virtual_wan_name    = var.virtual_wan.create_virtual_wan ? "${var.name_prefix}${var.virtual_wan.name}" : var.virtual_wan.name
-  resource_group_name = coalesce(var.virtual_wan.resource_group_name, local.resource_group.name)
-  region              = coalesce(var.virtual_wan.region, var.region)
-  tags                = var.tags
-}
-
-#VHUB
-module "virtual_hub" {
-  source = "../../modules/vhub"
-
-  for_each = var.virtual_wan.virtual_hubs
-
-  virtual_hub_name           = each.value.create_virtual_hub ? "${var.name_prefix}${each.value.name}" : each.value.name
-  resource_group_name        = coalesce(each.value.resource_group_name, local.resource_group.name)
-  region                     = coalesce(each.value.region, var.region)
-  virtual_hub_address_prefix = each.value.address_prefix
-  virtual_wan_id             = module.virtual_wan.virtual_wan_id
-  connections = {
-    for k, v in each.value.connections : k => merge(v, {
-      remote_virtual_network_id = v.connection_type == "Vnet" ? local.remote_virtual_network_ids[v.remote_virtual_network_key] : null
-    })
+  network_security_groups = {
+    for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
+  route_tables = {
+    for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  }
+
   tags = var.tags
 }
 
-#VIRTUAL HUB ROUTING
-module "vhub_routing" {
-  source = "../../modules/vhub_routing"
+module "vnet_peering" {
+  source = "../../modules/vnet_peering"
 
-  for_each = var.virtual_wan.virtual_hubs
+  for_each = var.vnet_peerings
 
-  routing_intent = merge(each.value.routing_intent, {
-    routing_policy = [
-      for policy in each.value.routing_intent.routing_policy : merge(policy, {
-        next_hop_id = module.cloudngfw[policy.next_hop_key].palo_alto_virtual_network_appliance_id
-      })
-    ]
-  })
-  virtual_hub_id = module.virtual_hub[each.key].virtual_hub_id
+  local_peer_config = {
+    name                = "peer-${each.value.local_vnet_name}-to-${each.value.remote_vnet_name}"
+    resource_group_name = coalesce(each.value.local_resource_group_name, local.resource_group.name)
+    vnet_name           = each.value.local_vnet_name
+  }
+  remote_peer_config = {
+    name                = "peer-${each.value.remote_vnet_name}-to-${each.value.local_vnet_name}"
+    resource_group_name = coalesce(each.value.remote_resource_group_name, local.resource_group.name)
+    vnet_name           = each.value.remote_vnet_name
+  }
+  depends_on = [module.vnet]
 }
 
-# Create or source a Public IPs
 module "public_ip" {
   source = "../../modules/public_ip"
 
@@ -126,6 +101,60 @@ module "public_ip" {
   tags = var.tags
 }
 
+module "virtual_wan" {
+  source = "../../modules/vwan"
+
+  virtual_wan_name    = var.virtual_wan.create_virtual_wan ? "${var.name_prefix}${var.virtual_wan.name}" : var.virtual_wan.name
+  resource_group_name = coalesce(var.virtual_wan.resource_group_name, local.resource_group.name)
+  region              = coalesce(var.virtual_wan.region, var.region)
+  tags                = var.tags
+}
+
+locals {
+  remote_virtual_network_ids = merge({ for entry in flatten([
+    for val in { for k, v in module.test_infrastructure : k => v.vnet_ids } : [
+      for k, v in val : {
+        key = k
+        val = v
+      }
+    ]
+    ]) : entry.key => entry.val
+  }, { for k, v in module.vnet : k => v.virtual_network_id })
+}
+
+module "virtual_hub" {
+  source = "../../modules/vhub"
+
+  for_each = var.virtual_wan.virtual_hubs
+
+  virtual_hub_name           = each.value.create_virtual_hub ? "${var.name_prefix}${each.value.name}" : each.value.name
+  resource_group_name        = coalesce(each.value.resource_group_name, local.resource_group.name)
+  region                     = coalesce(each.value.region, var.region)
+  virtual_wan_id             = module.virtual_wan.virtual_wan_id
+  virtual_hub_address_prefix = each.value.address_prefix
+  connections = {
+    for k, v in each.value.connections : k => merge(v, {
+      remote_virtual_network_id = v.connection_type == "Vnet" ? local.remote_virtual_network_ids[v.remote_virtual_network_key] : null
+    })
+  }
+  tags = var.tags
+}
+
+module "vhub_routing" {
+  source = "../../modules/vhub_routing"
+
+  for_each = var.virtual_wan.virtual_hubs
+
+  virtual_hub_id = module.virtual_hub[each.key].virtual_hub_id
+  routing_intent = merge(each.value.routing_intent, {
+    routing_policy = [
+      for policy in each.value.routing_intent.routing_policy : merge(policy, {
+        next_hop_id = module.cloudngfw[policy.next_hop_key].palo_alto_virtual_network_appliance_id
+      })
+    ]
+  })
+}
+
 # Create Cloud Next-Generation Firewalls
 
 module "cloudngfw" {
@@ -138,6 +167,16 @@ module "cloudngfw" {
   region              = var.region
 
   attachment_type = each.value.attachment_type
+  virtual_network_id = each.value.attachment_type == "vnet" ? (
+    module.vnet[each.value.virtual_network_key].virtual_network_id
+  ) : null
+  untrusted_subnet_id = each.value.attachment_type == "vnet" ? (
+    module.vnet[each.value.virtual_network_key].subnet_ids[each.value.untrusted_subnet_key]
+  ) : null
+  trusted_subnet_id = each.value.attachment_type == "vnet" ? (
+    module.vnet[each.value.virtual_network_key].subnet_ids[each.value.trusted_subnet_key]
+  ) : null
+  virtual_hub_id  = each.value.attachment_type == "vwan" ? module.virtual_hub[each.value.virtual_hub_key].virtual_hub_id : null
   management_mode = each.value.management_mode
   cloudngfw_config = merge(each.value.cloudngfw_config, {
     public_ip_name = each.value.cloudngfw_config.public_ip_keys == null ? (each.value.cloudngfw_config.create_public_ip ? "${
@@ -153,11 +192,11 @@ module "cloudngfw" {
       })
     }
   })
-  virtual_hub_id = each.value.attachment_type == "vwan" ? module.virtual_hub[each.value.virtual_hub_key].virtual_hub_id : null
-  tags           = var.tags
+  tags = var.tags
 }
 
 # Create test infrastructure
+
 locals {
   test_vm_authentication = {
     for k, v in var.test_infrastructure : k =>
@@ -180,13 +219,28 @@ module "test_infrastructure" {
   )
   region = var.region
   vnets = { for k, v in each.value.vnets : k => merge(v, {
-    name = "${var.name_prefix}${v.name}"
+    name                    = "${var.name_prefix}${v.name}"
+    hub_vnet_name           = try("${var.name_prefix}${v.hub_vnet_name}", null)
+    hub_resource_group_name = try(coalesce(v.hub_resource_group_name, local.resource_group.name), null)
     network_security_groups = { for kv, vv in v.network_security_groups : kv => merge(vv, {
       name = "${var.name_prefix}${vv.name}" })
     }
     route_tables = { for kv, vv in v.route_tables : kv => merge(vv, {
       name = "${var.name_prefix}${vv.name}" })
     }
+    local_peer_config  = try(v.local_peer_config, {})
+    remote_peer_config = try(v.remote_peer_config, {})
+  }) }
+  load_balancers = { for k, v in each.value.load_balancers : k => merge(v, {
+    name         = "${var.name_prefix}${v.name}"
+    backend_name = coalesce(v.backend_name, "${v.name}-backend")
+    public_ip_name = v.frontend_ips.create_public_ip ? (
+      "${var.name_prefix}${v.frontend_ips.public_ip_name}"
+    ) : v.frontend_ips.public_ip_name
+    public_ip_id             = try(module.public_ip.pip_ids[v.frontend_ips.public_ip_key], null)
+    public_ip_address        = try(module.public_ip.pip_ip_addresses[v.frontend_ips.public_ip_key], null)
+    public_ip_prefix_id      = try(module.public_ip.ippre_ids[v.frontend_ips.public_ip_prefix_key], null)
+    public_ip_prefix_address = try(module.public_ip.ippre_ip_prefixes[v.frontend_ips.public_ip_prefix_key], null)
   }) }
   authentication = local.test_vm_authentication[each.key]
   spoke_vms = { for k, v in each.value.spoke_vms : k => merge(v, {
@@ -197,8 +251,9 @@ module "test_infrastructure" {
   bastions = { for k, v in each.value.bastions : k => merge(v, {
     name           = "${var.name_prefix}${v.name}"
     public_ip_name = v.public_ip_key != null ? null : "${var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")}"
+    public_ip_id   = try(module.public_ip.pip_ids[v.public_ip_key], null)
   }) }
 
-  tags = var.tags
-
+  tags       = var.tags
+  depends_on = [module.vnet]
 }
