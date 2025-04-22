@@ -2,26 +2,27 @@
 
 subscription_id = null # TODO: Put the Azure Subscription ID here only in case you cannot use an environment variable!
 
-
 region              = "North Europe"
-resource_group_name = "vwan-cloudngfw"
+resource_group_name = "cloudngfw-vwan"
 name_prefix         = "example-"
 tags = {
-  "CreatedBy"     = "palo-alto-networks"
+  "CreatedBy"     = "Palo Alto Networks"
   "CreatedWith"   = "Terraform"
   "xdr-exclusion" = "yes"
 }
 
-# PANORAMA SOURCING
+# NETWORK
+
 vnets = {
-  "panorama" = { # TODO: Specify your existing panorama vnet!
-    name                   = "test-panorama-vnet"
-    resource_group_name    = "test-panorama-rg"
+  /* Uncomment the section below to source the Panorama VNET in order to connect it to a vHub
+  "panorama" = {
+    name                   = "example-panorama-vnet"
+    resource_group_name    = "example-panorama"
     create_virtual_network = false
   }
+  */
 }
 
-# VIRTUAL WAN
 virtual_wan = {
   name = "virtual_wan"
   virtual_hubs = {
@@ -64,7 +65,8 @@ virtual_wan = {
   }
 }
 
-# CLOUDNGFW 
+# CLOUDNGFW
+
 cloudngfws = {
   "cloudngfw" = {
     name            = "cloudngfw"
@@ -94,6 +96,7 @@ cloudngfws = {
 }
 
 # TEST INFRASTRUCTURE
+
 test_infrastructure = {
   "app1_testenv" = {
     vnets = {
