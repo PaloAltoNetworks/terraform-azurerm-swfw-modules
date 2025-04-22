@@ -1,6 +1,6 @@
-# Palo Alto Networks vHUB Module for Azure
+# Palo Alto Networks vHub Module for Azure
 
-A Terraform module for deploying a Virtual HUB (vHUB) and its components required for the firewalls in Azure.
+A Terraform module for deploying a Virtual Hub (vHub) and its components required for the firewalls in Azure.
 
 ## Usage
 
