@@ -30,11 +30,13 @@ virtual_wan = {
       name           = "virtual_hub"
       address_prefix = "11.0.0.0/24"
       connections = {
-        "panorama-to-hub" = { # TODO: Specify your existing panorama vnet!
+        /* Uncomment the section below to connect the Panorama VNET to a vHub
+        "panorama-to-hub" = {
           name                       = "panorama-to-hub"
           connection_type            = "Vnet"
           remote_virtual_network_key = "panorama"
         }
+        */
         "app1-to-hub" = {
           name                       = "app1-to-hub"
           connection_type            = "Vnet"
