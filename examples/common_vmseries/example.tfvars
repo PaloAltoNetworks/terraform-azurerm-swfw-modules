@@ -149,9 +149,9 @@ load_balancers = {
       source_ips   = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access LB
     }
     health_probes = {
-      https = {
-        name         = "https-probe"
-        protocol     = "Https"
+      http = {
+        name         = "http-probe"
+        protocol     = "Http"
         request_path = "/unauth/php/health.php"
       }
     }
@@ -165,7 +165,7 @@ load_balancers = {
             name             = "HTTP"
             protocol         = "Tcp"
             port             = 80
-            health_probe_key = "https"
+            health_probe_key = "http"
           }
         }
       }
@@ -175,9 +175,9 @@ load_balancers = {
     name     = "private-lb"
     vnet_key = "transit"
     health_probes = {
-      https = {
-        name         = "https-probe"
-        protocol     = "Https"
+      http = {
+        name         = "http-probe"
+        protocol     = "Http"
         request_path = "/unauth/php/health.php"
       }
     }
@@ -191,7 +191,7 @@ load_balancers = {
             name             = "HA-ports"
             port             = 0
             protocol         = "All"
-            health_probe_key = "https"
+            health_probe_key = "http"
           }
         }
       }
