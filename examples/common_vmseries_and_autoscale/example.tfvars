@@ -148,6 +148,13 @@ load_balancers = {
       nsg_key      = "public"
       source_ips   = ["1.1.1.1/32"] # TODO: Whitelist public IP addresses that will be used to access LB
     }
+    health_probes = {
+      http = {
+        name         = "http-probe"
+        protocol     = "Http"
+        request_path = "/unauth/php/health.php"
+      }
+    }
     frontend_ips = {
       "app1" = {
         name             = "app1"
@@ -155,9 +162,10 @@ load_balancers = {
         create_public_ip = true
         in_rules = {
           "balanceHttp" = {
-            name     = "HTTP"
-            protocol = "Tcp"
-            port     = 80
+            name             = "HTTP"
+            protocol         = "Tcp"
+            port             = 80
+            health_probe_key = "http"
           }
         }
       }
@@ -166,6 +174,13 @@ load_balancers = {
   "private" = {
     name     = "private-lb"
     vnet_key = "transit"
+    health_probes = {
+      http = {
+        name         = "http-probe"
+        protocol     = "Http"
+        request_path = "/unauth/php/health.php"
+      }
+    }
     frontend_ips = {
       "ha-ports" = {
         name               = "private-vmseries"
@@ -173,9 +188,10 @@ load_balancers = {
         private_ip_address = "10.0.0.46"
         in_rules = {
           HA_PORTS = {
-            name     = "HA-ports"
-            port     = 0
-            protocol = "All"
+            name             = "HA-ports"
+            port             = 0
+            protocol         = "All"
+            health_probe_key = "http"
           }
         }
       }
@@ -199,9 +215,18 @@ appgws = {
     }
     backend_settings = {
       http = {
-        name     = "http"
-        port     = 80
+        name      = "http"
+        port      = 80
+        protocol  = "Http"
+        probe_key = "http"
+      }
+    }
+    probes = {
+      http = {
+        name     = "http-probe"
         protocol = "Http"
+        host     = "127.0.0.1"
+        path     = "/unauth/php/health.php"
       }
     }
     rewrites = {

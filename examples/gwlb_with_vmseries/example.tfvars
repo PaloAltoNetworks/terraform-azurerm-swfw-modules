@@ -93,18 +93,16 @@ vnet_peerings = {
 gateway_load_balancers = {
   gwlb = {
     name = "vmseries-gwlb"
-
     frontend_ip = {
       vnet_key   = "transit"
       subnet_key = "data"
     }
-
     health_probe = {
-      name     = "custom-health-probe"
-      port     = 80
-      protocol = "Tcp"
+      name         = "http-probe"
+      protocol     = "Http"
+      port         = "80"
+      request_path = "/unauth/php/health.php"
     }
-
     backends = {
       backend = {
         name = "custom-backend"
@@ -124,7 +122,6 @@ gateway_load_balancers = {
         }
       }
     }
-
     lb_rule = {
       name = "custom-lb-rule"
     }
