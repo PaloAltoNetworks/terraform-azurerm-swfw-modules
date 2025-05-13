@@ -188,13 +188,13 @@ variable "public_ips" {
   })
 }
 
-variable "virtual_wan" {
+variable "virtual_wans" {
   description = <<-EOF
   A map defining VIRTUAL_WANs.
 
   For detailed documentation on each property refer to [module documentation](../../modules/virtual_wan/README.md)
 
-  - `create_virtual_wan`                - (`bool`, optional, defaults to `true`) when set to `true` will create a VIRTUAL WAN, `false`
+  - `create`                            - (`bool`, optional, defaults to `true`) when set to `true` will create a VIRTUAL WAN, `false`
                                         will source an existing VIRTUAL WAN.
   - `name`                              - (`string`, required) a name of a VIRTUAL WAN. In case `create_virtual_wan = false` this 
                                         should be a full resource name, including prefixes.
@@ -202,25 +202,24 @@ variable "virtual_wan" {
                                         VIRTUAL WAN will reside or is sourced from.
   - `disable_vpn_encryption`            - (`bool`, optional, defaults to `false`) if `true`, VPN encryption is disabled.
   - `allow_branch_to_branch_traffic`    - (`bool`, optional, defaults to `true`) if `false`, branch-to-branch traffic is not allowed.
-  - `office365_local_breakout_category` - (`string`, optional, defaults to `None`) Specifies the Office365 local breakout category.
-                                          Possible values are: `Optimize`, `OptimizeAndAllow`, `All`, `None`.
   - `virtual_hubs`                      - (`map`, optional) map of Virtual Hubs to create or source, for details see
-                                        [Virtual HUB module documentation](../../modules/virtual_hub/README.md).
+                                        [Virtual WAN module documentation](../../modules/vwan/README.md).
   EOF
-  type = object({
+  type = map(object({
     name                           = string
     resource_group_name            = optional(string)
-    create_virtual_wan             = optional(bool, true)
+    create                         = optional(bool, true)
     region                         = optional(string)
     disable_vpn_encryption         = optional(bool, false)
     allow_branch_to_branch_traffic = optional(bool, true)
     virtual_hubs = optional(map(object({
-      name                   = string
-      address_prefix         = optional(string)
-      create_virtual_hub     = optional(bool, true)
-      resource_group_name    = optional(string)
-      region                 = optional(string)
-      hub_routing_preference = optional(string)
+      name                                   = string
+      address_prefix                         = string
+      create                                 = optional(bool, true)
+      resource_group_name                    = optional(string)
+      region                                 = optional(string)
+      hub_routing_preference                 = optional(string)
+      virtual_router_auto_scale_min_capacity = optional(number)
       connections = optional(map(object({
         name                       = string
         connection_type            = string
@@ -260,6 +259,13 @@ variable "virtual_wan" {
       route_tables = optional(map(object({
         name   = string
         labels = optional(set(string))
+        routes = optional(map(object({
+          name              = string
+          destinations_type = string
+          destinations      = list(string)
+          next_hop_type     = optional(string)
+          next_hop_key      = string
+        })), {})
       })), {})
       routing_intent = optional(object({
         routing_intent_name = string
@@ -289,7 +295,7 @@ variable "virtual_wan" {
         })))
       })), {})
     })), {})
-  })
+  }))
 }
 
 # CLOUDNGFW
@@ -307,6 +313,7 @@ variable "cloudngfws" {
                                         Required if the `attachment_type` is `vnet`.
   - `untrusted_subnet_key`            - (`string`, optional) key of the subnet designated as untrusted within the Virtual Network.
   - `trusted_subnet_key`              - (`string`, optional) key of the subnet designated as trusted within the Virtual Network.
+  - `virtual_wan_key`                 - (`string`, optional) key of the Virtual Wan where to place the Cloud NGFW.
   - `virtual_hub_key`                 - (`string`, optional) key of the Virtual Hub within a vWAN where to place the Cloud NGFW.
   - `management_mode`                 - (`string`, required) defines the management mode for the firewall. When set to `panorama`,
                                         the firewall's policies are managed via Panorama.
@@ -351,6 +358,7 @@ variable "cloudngfws" {
     virtual_network_key  = optional(string)
     untrusted_subnet_key = optional(string)
     trusted_subnet_key   = optional(string)
+    virtual_wan_key      = optional(string)
     virtual_hub_key      = optional(string)
     management_mode      = string
     cloudngfw_config = object({

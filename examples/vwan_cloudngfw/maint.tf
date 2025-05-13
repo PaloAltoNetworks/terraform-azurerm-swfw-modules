@@ -101,15 +101,6 @@ module "public_ip" {
   tags = var.tags
 }
 
-module "virtual_wan" {
-  source = "../../modules/vwan"
-
-  virtual_wan_name    = var.virtual_wan.create_virtual_wan ? "${var.name_prefix}${var.virtual_wan.name}" : var.virtual_wan.name
-  resource_group_name = coalesce(var.virtual_wan.resource_group_name, local.resource_group.name)
-  region              = coalesce(var.virtual_wan.region, var.region)
-  tags                = var.tags
-}
-
 locals {
   remote_virtual_network_ids = merge({ for entry in flatten([
     for val in { for k, v in module.test_infrastructure : k => v.vnet_ids } : [
@@ -122,37 +113,162 @@ locals {
   }, { for k, v in module.vnet : k => v.virtual_network_id })
 }
 
-module "virtual_hub" {
-  source = "../../modules/vhub"
-
-  for_each = var.virtual_wan.virtual_hubs
-
-  virtual_hub_name           = each.value.create_virtual_hub ? "${var.name_prefix}${each.value.name}" : each.value.name
-  resource_group_name        = coalesce(each.value.resource_group_name, local.resource_group.name)
-  region                     = coalesce(each.value.region, var.region)
-  virtual_wan_id             = module.virtual_wan.virtual_wan_id
-  virtual_hub_address_prefix = each.value.address_prefix
-  connections = {
-    for k, v in each.value.connections : k => merge(v, {
-      remote_virtual_network_id = v.connection_type == "Vnet" ? local.remote_virtual_network_ids[v.remote_virtual_network_key] : null
-    })
+locals {
+  route_tables = {
+    for wan_key, wan in var.virtual_wans : wan_key => {
+      for rt_item in flatten([
+        for hub_key, hub in try(wan.virtual_hubs, {}) : [
+          for rt_key, rt in try(hub.route_tables, {}) : {
+            key     = rt_key
+            hub_key = hub_key
+            name    = rt.name
+            labels  = try(rt.labels, [])
+          }
+        ]
+        ]) : rt_item.key => {
+        name    = rt_item.name
+        labels  = rt_item.labels
+        hub_key = rt_item.hub_key
+      }
+    }
   }
-  tags = var.tags
+
+  connections = {
+    for wan_key, wan in var.virtual_wans : wan_key => {
+      for conn_item in flatten([
+        for hub_key, hub in try(wan.virtual_hubs, {}) : [
+          for conn_key, conn in try(hub.connections, {}) : {
+            key             = conn_key
+            hub_key         = hub_key
+            name            = conn.name
+            connection_type = conn.connection_type
+            vpn_site_key    = conn.vpn_site_key
+            routing         = conn.routing
+            vpn_link        = conn.vpn_link
+            remote_virtual_network_id = (conn.connection_type == "Vnet"
+              ? lookup(local.remote_virtual_network_ids, conn.remote_virtual_network_key, null)
+            : null)
+          }
+        ]
+        ]) : conn_item.key => {
+        hub_key                   = conn_item.hub_key
+        name                      = conn_item.name
+        connection_type           = conn_item.connection_type
+        remote_virtual_network_id = conn_item.remote_virtual_network_id
+        vpn_site_key              = conn_item.vpn_site_key
+        routing                   = conn_item.routing
+        vpn_link                  = conn_item.vpn_link
+      }
+    }
+  }
+  vpn_sites = {
+    for wan_key, wan in var.virtual_wans : wan_key => {
+      for site_item in flatten([
+        for hub_key, hub in try(wan.virtual_hubs, {}) : [
+          for site_key, site in try(hub.vpn_sites, {}) : {
+            key                 = site_key
+            name                = site.name
+            region              = site.region
+            resource_group_name = site.resource_group_name
+            address_cidrs       = site.address_cidrs
+            link                = site.link
+          }
+        ]
+        ]) : site_item.key => {
+        name                = site_item.name
+        region              = site_item.region
+        resource_group_name = site_item.resource_group_name
+        address_cidrs       = site_item.address_cidrs
+        link                = site_item.link
+      }
+    }
+  }
 }
 
-module "vhub_routing" {
-  source = "../../modules/vhub_routing"
+module "virtual_wan" {
+  source              = "../../modules/vwan"
+  for_each            = var.virtual_wans
+  virtual_wan_name    = each.value.create ? "${var.name_prefix}${each.value.name}" : each.value.name
+  resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
+  region              = coalesce(each.value.region, var.region)
+  tags                = var.tags
 
-  for_each = var.virtual_wan.virtual_hubs
+  virtual_hubs = each.value.virtual_hubs
+  route_tables = lookup(local.route_tables, each.key, {})
+  connections  = lookup(local.connections, each.key, {})
+  vpn_sites    = lookup(local.vpn_sites, each.key, {})
 
-  virtual_hub_id = module.virtual_hub[each.key].virtual_hub_id
-  routing_intent = merge(each.value.routing_intent, {
-    routing_policy = [
-      for policy in each.value.routing_intent.routing_policy : merge(policy, {
-        next_hop_id = module.cloudngfw[policy.next_hop_key].palo_alto_virtual_network_appliance_id
-      })
-    ]
-  })
+}
+
+locals {
+  routing_intent = {
+    for vwan_key, vwan in var.virtual_wans : vwan_key => {
+      for hub_key, hub in try(vwan.virtual_hubs, {}) : hub_key => {
+        virtual_hub_id = try(
+          module.virtual_wan[vwan_key].virtual_hub_ids[hub_key],
+          null
+        )
+        routing_intent = {
+          routing_intent_name = hub.routing_intent.routing_intent_name
+          routing_policy = [
+            for policy in hub.routing_intent.routing_policy : merge(
+              policy,
+              {
+                next_hop_id = try(
+                  module.cloudngfw[policy.next_hop_key]
+                  .palo_alto_virtual_network_appliance_id,
+                  null
+                )
+              }
+            )
+          ]
+        }
+      }
+      if hub.routing_intent != null
+    }
+  }
+
+  routes = {
+    for vwan_key, vwan in var.virtual_wans : vwan_key => {
+      for route_item in flatten([
+        for hub_key, hub in try(vwan.virtual_hubs, {}) : [
+          for rt_key, rt in try(hub.route_tables, {}) : [
+            for route_key, route in try(rt.routes, {}) : {
+              route_key         = route_key
+              name              = route.name
+              destinations_type = route.destinations_type
+              destinations      = route.destinations
+              next_hop_type     = route.next_hop_type
+              next_hop_key      = try(route.next_hop_key, null)
+              route_table_key   = rt_key
+              hub_key           = hub_key
+            }
+          ]
+        ]
+        ]) : route_item.route_key => {
+        name              = route_item.name
+        destinations_type = route_item.destinations_type
+        destinations      = route_item.destinations
+        next_hop_type     = route_item.next_hop_type
+        next_hop_id = try(
+          module.cloudngfw[route_item.next_hop_key].palo_alto_virtual_network_appliance_id,
+          null
+        )
+        route_table_id = try(
+          module.virtual_wan[vwan_key].route_table_ids[route_item.route_table_key],
+          null
+        )
+      }
+    }
+  }
+}
+
+module "vwan_routes" {
+  source   = "../../modules/vwan_routes"
+  for_each = var.virtual_wans
+
+  routes         = lookup(local.routes, each.key, {})
+  routing_intent = lookup(local.routing_intent, each.key, {})
 }
 
 # Create Cloud Next-Generation Firewalls
@@ -176,7 +292,8 @@ module "cloudngfw" {
   trusted_subnet_id = each.value.attachment_type == "vnet" ? (
     module.vnet[each.value.virtual_network_key].subnet_ids[each.value.trusted_subnet_key]
   ) : null
-  virtual_hub_id  = each.value.attachment_type == "vwan" ? module.virtual_hub[each.value.virtual_hub_key].virtual_hub_id : null
+  virtual_hub_id = each.value.attachment_type == "vwan" ? module.virtual_wan[each.value.virtual_wan_key].virtual_hub_ids[each.value.virtual_hub_key] : null
+
   management_mode = each.value.management_mode
   cloudngfw_config = merge(each.value.cloudngfw_config, {
     public_ip_name = each.value.cloudngfw_config.public_ip_keys == null ? (each.value.cloudngfw_config.create_public_ip ? "${

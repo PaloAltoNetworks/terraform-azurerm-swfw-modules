@@ -1,4 +1,4 @@
-package common_cloudngfw
+package vwan_cloudngfw
 
 import (
 	"testing"
