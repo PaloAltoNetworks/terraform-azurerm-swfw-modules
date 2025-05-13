@@ -223,10 +223,11 @@ appgws = {
     }
     probes = {
       http = {
-        name     = "http-probe"
-        protocol = "Http"
-        host     = "127.0.0.1"
-        path     = "/unauth/php/health.php"
+        name       = "http-probe"
+        protocol   = "Http"
+        host       = "127.0.0.1"
+        path       = "/unauth/php/health.php"
+        match_code = [200]
       }
     }
     rewrites = {
