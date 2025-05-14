@@ -161,6 +161,7 @@ locals {
       }
     }
   }
+
   vpn_sites = {
     for wan_key, wan in var.virtual_wans : wan_key => {
       for site_item in flatten([

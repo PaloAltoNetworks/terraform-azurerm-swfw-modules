@@ -137,7 +137,7 @@ Name | Type | Description
 [`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group.
 [`region`](#region) | `string` | The Azure region to use.
 [`vnets`](#vnets) | `map` | A map defining VNETs.
-[`virtual_wans`](#virtual_wans) | `map` | A map defining VIRTUAL_WANs.
+[`virtual_wans`](#virtual_wans) | `map` | A map defining Virtual WANs.
 [`cloudngfws`](#cloudngfws) | `map` | A map of objects defining the configuration for Cloud Next-Gen Firewalls (cloudngfws) in the environment.
 
 ### Optional Inputs
@@ -275,20 +275,20 @@ map(object({
 
 #### virtual_wans
 
-A map defining VIRTUAL_WANs.
+A map defining Virtual WANs.
 
-For detailed documentation on each property refer to [module documentation](../../modules/virtual_wan/README.md)
+For detailed documentation on each property refer to [module documentation](../../modules/vwan/README.md)
 
-- `create`                            - (`bool`, optional, defaults to `true`) when set to `true` will create a VIRTUAL WAN, `false`
-                                      will source an existing VIRTUAL WAN.
-- `name`                              - (`string`, required) a name of a VIRTUAL WAN. In case `create_virtual_wan = false` this 
-                                      should be a full resource name, including prefixes.
-- `resource_group_name`               - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the
-                                      VIRTUAL WAN will reside or is sourced from.
-- `disable_vpn_encryption`            - (`bool`, optional, defaults to `false`) if `true`, VPN encryption is disabled.
-- `allow_branch_to_branch_traffic`    - (`bool`, optional, defaults to `true`) if `false`, branch-to-branch traffic is not allowed.
-- `virtual_hubs`                      - (`map`, optional) map of Virtual Hubs to create or source, for details see
-                                      [Virtual WAN module documentation](../../modules/vwan/README.md).
+- `create`                         - (`bool`, optional, defaults to `true`) when set to `true` will create a new Virtual WAN,
+                                     `false` will source an existing Virtual WAN.
+- `name`                           - (`string`, required) a name of a Virtual WAN. In case `create = false` this should be a
+                                     full resource name, including prefixes.
+- `resource_group_name`            - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which
+                                     the Virtual WAN will reside or is sourced from.
+- `disable_vpn_encryption`         - (`bool`, optional, defaults to `false`) if `true`, VPN encryption is disabled.
+- `allow_branch_to_branch_traffic` - (`bool`, optional, defaults to `true`) if `false`, branch-to-branch traffic is not allowed.
+- `virtual_hubs`                   - (`map`, optional) map of Virtual Hubs to create or source, for details see
+                                     [Virtual WAN module documentation](../../modules/vwan/README.md#virtual_hubs).
 
 
 Type: 
