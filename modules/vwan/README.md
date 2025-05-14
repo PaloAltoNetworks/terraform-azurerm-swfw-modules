@@ -6,7 +6,7 @@ It allows both creating new and referencing existing Virtual WANs and Virtual Hu
 
 ## Usage
 
- -  creates a vWAN, vHUB, Connections and Routing Intent resource
+-  creates a vWAN, vHub, Connections and Routing Intent resource.
 
 ```hcl
 virtual_wans = {
@@ -15,7 +15,7 @@ virtual_wans = {
     virtual_hubs = {
       "virtual_hub" = {
         name           = "virtual_hub"
-        address_prefix = "11.0.0.0/24"
+        address_prefix = "10.0.0.0/24"
         connections = {
           "app1-to-hub" = {
             name                       = "app1-to-hub"
@@ -49,7 +49,7 @@ virtual_wans = {
 }
 ```
 
- -  creates a vWAN, vHUB, Route Table, Routes and Connections. Associates each Connection with the appropriate Route Table based on the provided configuration
+-  creates a vWAN, vHub, Route Table, Routes and Connections. Associates each Connection with the appropriate Route Table based on the provided configuration.
 
 ```hcl
 virtual_wans = {
@@ -58,7 +58,7 @@ virtual_wans = {
     virtual_hubs = {
       "virtual_hub" = {
         name           = "virtual_hub"
-        address_prefix = "11.0.0.0/24"
+        address_prefix = "10.0.0.0/24"
         route_tables = {
           "route_table" = {
             name   = "route_table"
@@ -67,13 +67,13 @@ virtual_wans = {
               "route01" = {
                 name              = "route01"
                 destinations_type = "CIDR"
-                destinations      = ["10.0.0.0/16"]
+                destinations      = ["10.100.0.0/24"]
                 next_hop_key      = "ha-ports"
               }
               "route02" = {
                 name              = "route02"
                 destinations_type = "CIDR"
-                destinations      = ["11.0.0.0/16"]
+                destinations      = ["10.100.1.0/24"]
                 next_hop_key      = "ha-ports"
               }
             }
@@ -105,7 +105,7 @@ virtual_wans = {
 }
 ```
 
--  creates a vWAN, vHUB, VPN gateway in vHUB, VPN sites and Connections. Associates Connection with the appropriate VPN Site based on the provided configuration
+-  creates a vWAN, vHub, VPN Gateway in vHub, VPN Sites and Connections. Associates Connection with the appropriate VPN Site based on the provided configuration.
 
 ```hcl
 virtual_wans = {
@@ -114,7 +114,7 @@ virtual_wans = {
     virtual_hubs = {
       "virtual_hub" = {
         name           = "virtual_hub"
-        address_prefix = "11.0.0.0/24"
+        address_prefix = "10.0.0.0/24"
         connections = {
           "site-to-hub" = {
             name            = "site-to-hub"
@@ -145,7 +145,7 @@ virtual_wans = {
         vpn_sites = {
           "site" = {
             name          = "site"
-            address_cidrs = ["10.0.0.0/24"]
+            address_cidrs = ["10.100.0.0/24"]
             link = {
               "ISPW1" = {
                 name          = "ISPW1"
@@ -210,9 +210,9 @@ Name | Type | Description
 [`allow_branch_to_branch_traffic`](#allow_branch_to_branch_traffic) | `bool` | Optional boolean flag to specify whether branch-to-branch traffic is allowed.
 [`disable_vpn_encryption`](#disable_vpn_encryption) | `bool` | Optional boolean flag to specify whether VPN encryption is disabled.
 [`virtual_hubs`](#virtual_hubs) | `map` | Map of objects defining Virtual Hubs to manage within a Virtual WAN.
-[`connections`](#connections) | `map` | Map of objects describing connections within a Virtual Hub.
-[`route_tables`](#route_tables) | `map` | Map of objects describing route tables to manage within a Virtual Hub.
-[`vpn_sites`](#vpn_sites) | `map` | Map of objects describing VPN sites to be configured within the Azure environment.
+[`connections`](#connections) | `map` | Map of objects describing Connections within a Virtual Hub.
+[`route_tables`](#route_tables) | `map` | Map of objects describing Route Tables to manage within a Virtual Hub.
+[`vpn_sites`](#vpn_sites) | `map` | Map of objects describing VPN Sites to be configured within the Azure environment.
 
 ### Outputs
 
@@ -273,7 +273,7 @@ Default value: `map[]`
 
 #### allow_branch_to_branch_traffic
 
-Optional boolean flag to specify whether branch-to-branch traffic is allowed. Defaults to true.
+Optional boolean flag to specify whether branch-to-branch traffic is allowed. Defaults to `true`.
 
 Type: bool
 
@@ -283,7 +283,7 @@ Default value: `true`
 
 #### disable_vpn_encryption
 
-Optional boolean flag to specify whether VPN encryption is disabled. Defaults to false.
+Optional boolean flag to specify whether VPN encryption is disabled. Defaults to `false`.
 
 Type: bool
 
@@ -295,27 +295,29 @@ Default value: `false`
 
 Map of objects defining Virtual Hubs to manage within a Virtual WAN.
 
-Each entry's key is an arbitrary identifier you choose (used for indexing
-inside the module), and each object supports:
+Each object's key is an arbitrary identifier you choose (used for indexing inside the module) and each object supports the
+following attributes:
 
-- `name`                         - (string, required) the name of the Virtual Hub. Must be unique within the Virtual WAN.
-- `create`                       - (bool, optional, defaults to `true`) when true, the module will create a new Virtual Hub. 
-                                    When false,it will reference an existing one by name.
-- `resource_group_name`          - (string, optional) the Resource Group in which to create or locate the hub. Defaults
-                                    to the module’s `resource_group_name` if omitted.
-- `region`                       - (string, optional) azure region (e.g. `"West Europe"`) for the hub. Defaults to the
-                                    module’s `region` if omitted.
-- `address_prefix`               - (string, required)the address prefix (CIDR) for the hub’s internal subnet. Must be
-                                    at least `/24` (Microsoft recommends `/23`).
-- `hub_routing_preference`       - (string, optional)routing preference for the hub. Valid values:`ExpressRoute`, `ASPath`, or `VpnGateway`.
-- `virtual_router_auto_scale_min_capacity` - (number, optional) minimum capacity for the hub’s auto-scale router. Defaults to `0`.
-- `vpn_gateway`                  - (object, optional, defaults to `null`)  
-    Configuration for an attached VPN Gateway. If provided, this object supports:
-    - `name`                - (string, required) gateway name.  
-    - `resource_group_name` - (string, optional) overrides hub RG.  
-    - `region`              - (string, optional) overrides hub region.  
-    - `scale_unit`          - (number, optional, defaults to `1`)  
-    - `routing_preference`  - (string, optional, defaults to `"Microsoft Network"`)  
+- `name`                                   - (string, required) name of the Virtual Hub, must be unique within the Virtual WAN.
+- `create`                                 - (bool, optional, defaults to `true`) when set to `true` module will create a new
+                                             Virtual Hub, when set to `false` it will reference an existing one by name.
+- `resource_group_name`                    - (string, optional) Resource Group in which to create the hub or source it from,
+                                             defaults to the module's `resource_group_name` if omitted.
+- `region`                                 - (string, optional) Azure region (e.g. `"West Europe"`) for the hub, defaults to
+                                             the module's `region` if omitted.
+- `address_prefix`                         - (string, required) the address prefix (CIDR) for the hub's internal subnet, must
+                                             be at least `/24` (Microsoft recommends `/23`).
+- `hub_routing_preference`                 - (string, optional) routing preference for the hub, valid values are:
+                                             `ExpressRoute`, `ASPath`, or `VpnGateway`.
+- `virtual_router_auto_scale_min_capacity` - (number, optional) minimum capacity for the hub's auto-scale router, Azure default
+                                             is `0`.
+- `vpn_gateway`                            - (object, optional, defaults to `null`) configuration for an attached VPN Gateway,
+                                             if provided this object supports the following attributes:
+    - `name`                - (string, required) VPN Gateway name.  
+    - `resource_group_name` - (string, optional) overrides hub's Resource Group.  
+    - `region`              - (string, optional) overrides hub's Azure region.
+    - `scale_unit`          - (number, optional, defaults to `1`) scale unit for the VPN Gateway.
+    - `routing_preference`  - (string, optional, defaults to `"Microsoft Network"`) VPN Gateway's routing preference.
 
 
 Type: 
@@ -346,43 +348,53 @@ Default value: `map[]`
 
 #### connections
 
-Map of objects describing connections within a Virtual Hub.
+Map of objects describing Connections within a Virtual Hub.
 
-Each object represents one connection, and supports the following properties:
+Each object represents one Connection and supports the following properties:
 
-- `name`                       - (`string`, required) the name of the connection. Must be unique within the Virtual Hub.
-- `connection_type`            - (`string`, required) the type of connection. Use `Vnet` for Virtual Network connections.
-- `remote_virtual_network_id`  - (`string`, optional) the resource ID of a remote Virtual Network.
-- `hub_key`                    - (`string`, required) the key referencing the Virtual Hub.
-- `vpn_site_key`               - (`string`, optional) the key referencing the VPN site used in this connection.
-- `vpn_link`                   - (`list`, optional, defaults to `[]`) list of VPN link configurations. Each object supports:
+- `name`                      - (`string`, required) the name of the Connection, must be unique within the Virtual Hub.
+- `connection_type`           - (`string`, required) the type of Connection, use `Vnet` for Virtual Network connections.
+- `remote_virtual_network_id` - (`string`, optional) the resource ID of a remote Virtual Network.
+- `hub_key`                   - (`string`, required) the key referencing the Virtual Hub.
+- `vpn_site_key`              - (`string`, optional) the key referencing the VPN Site used in this Connection.
+- `vpn_link`                  - (`list`, optional, defaults to `[]`) list of VPN link configurations, each object supports the
+                                following attributes:
   - `vpn_link_name`                  - (`string`, required) the name of the VPN link.
-  - `vpn_site_link_key`              - (`string`, required) the key referencing the VPN site link.
+  - `vpn_site_link_key`              - (`string`, required) the key referencing the VPN Site link.
   - `bandwidth_mbps`                 - (`number`, optional, defaults to `10`) bandwidth limit in Mbps.
-  - `bgp_enabled`                    - (`bool`, optional, defaults to `false`) enables BGP on this link.
-  - `connection_mode`                - (`string`, optional, defaults to `Default`) valid values: `Default`, `InitiatorOnly`, `ResponderOnly`.
-  - `protocol`                       - (`string`, optional, defaults to `IKEv2`) valid values: `IKEv2`, `IKEv1`.
-  - `ratelimit_enabled`              - (`bool`, optional, defaults to `false`) enables rate limiting.
+  - `bgp_enabled`                    - (`bool`, optional, defaults to `false`) flag that enables BGP on this link.
+  - `connection_mode`                - (`string`, optional, defaults to `Default`) VPN connection mode, valid values are:
+                                       `Default`, `InitiatorOnly`, `ResponderOnly`.
+  - `protocol`                       - (`string`, optional, defaults to `IKEv2`) VPN protocol, valid values are: `IKEv2`,
+                                       `IKEv1`.
+  - `ratelimit_enabled`              - (`bool`, optional, defaults to `false`) flag that enables rate limiting.
   - `route_weight`                   - (`number`, optional, defaults to `0`) routing weight for this link.
   - `shared_key`                     - (`string`, optional) pre-shared key for the VPN.
-  - `local_azure_ip_address_enabled` - (`bool`, optional, defaults to `false`) enables use of local Azure IP address.
-  - `ipsec_policy`                   - (`object`, optional) IPSec policy configuration. Supports:
-    - `dh_group`                 - (`string`, optional) valid values: `DHGroup14`, `DHGroup24`, `ECP256`, `ECP384`.
-    - `ike_encryption_algorithm` - (`string`, optional) valid values: `AES128`, `AES256`, `GCMAES128`, `GCMAES256`.
-    - `ike_integrity_algorithm`  - (`string`, optional) valid values: `SHA256`, `SHA384`.
-    - `encryption_algorithm`     - (`string`, optional) valid values: `AES192`, `AES128`, `AES256`, `DES`, `DES3`, `GCMAES192`, `GCMAES128`, `GCMAES256`, `None`.
-    - `integrity_algorithm`      - (`string`, optional) valid values: `SHA256`, `GCMAES128`, `GCMAES256`.
-    - `pfs_group`                - (`string`, optional) valid values: `ECP384`, `ECP256`, `PFSMM`, `PFS1`, `PFS14`, `PFS2`, `PFS24`, `PFS2048`, `None`.
-    - `sa_data_size_kb`          - (`number`, optional) value must be `0` or between `1024` and `2147483647`.
-    - `sa_lifetime_sec`          - (`number`, optional) lifetime in seconds.
-- `routing`                    - (`object`, optional) routing configuration. Supports:
-  - `associated_route_table_key`                - (`string`, optional) key of the associated route table.
-  - `propagated_route_table_keys`               - (`list(string)`, optional) list of route table keys to propagate routes to.
-  - `propagated_route_table_labels`             - (`set(string)`, optional) set of labels for propagated route tables.
+  - `local_azure_ip_address_enabled` - (`bool`, optional, defaults to `false`) flag that enables use of local Azure IP address.
+  - `ipsec_policy`                   - (`object`, optional) IPSec policy configuration, following attributes are supported:
+    - `dh_group`                 - (`string`, optional) Diffie-Hellman group, valid values are: `DHGroup14`, `DHGroup24`,
+                                   `ECP256`, `ECP384`.
+    - `ike_encryption_algorithm` - (`string`, optional) IKE encryption algorithm, valid values are: `AES128`, `AES256`,
+                                   `GCMAES128`, `GCMAES256`.
+    - `ike_integrity_algorithm`  - (`string`, optional) IKE integrity algorithm, valid values are: `SHA256`, `SHA384`.
+    - `encryption_algorithm`     - (`string`, optional) IPSec encryption algorithm, valid values are: `AES192`, `AES128`,
+                                   `AES256`, `DES`, `DES3`, `GCMAES192`, `GCMAES128`, `GCMAES256`, `None`.
+    - `integrity_algorithm`      - (`string`, optional) IPSec integrity algorithm, valid values are: `SHA256`, `GCMAES128`,
+                                   `GCMAES256`.
+    - `pfs_group`                - (`string`, optional) Perfect Forward Secrecy algorithm, valid values are: `ECP384`,
+                                   `ECP256`, `PFSMM`, `PFS1`, `PFS14`, `PFS2`, `PFS24`, `PFS2048`, `None`.
+    - `sa_data_size_kb`          - (`number`, optional) Security Association size in kilobits, value must be `0` or between
+                                   `1024` and `2147483647`.
+    - `sa_lifetime_sec`          - (`number`, optional) Security Association lifetime in seconds.
+- `routing`                   - (`object`, optional) routing configuration, the following attributes are supported:
+  - `associated_route_table_key`                - (`string`, optional) key of the associated Route Table.
+  - `propagated_route_table_keys`               - (`list(string)`, optional) list of Route Table keys to propagate routes to.
+  - `propagated_route_table_labels`             - (`set(string)`, optional) set of labels for propagated Route Tables.
   - `static_vnet_route_name`                    - (`string`, optional) name of the static route.
   - `static_vnet_route_address_prefixes`        - (`set(string)`, optional) set of CIDR address prefixes for static route.
   - `static_vnet_route_next_hop_ip_address`     - (`string`, optional) IP address of the next hop.
-  - `static_vnet_local_route_override_criteria` - (`string`, optional, defaults to `Contains`) valid values: `Contains`, `Equal`.
+  - `static_vnet_local_route_override_criteria` - (`string`, optional, defaults to `Contains`) override criteria for the local
+                                                  route, valid values are: `Contains`, `Equal`.
 
 
 Type: 
@@ -435,16 +447,15 @@ Default value: `map[]`
 
 #### route_tables
 
-Map of objects describing route tables to manage within a Virtual Hub.
+Map of objects describing Route Tables to manage within a Virtual Hub.
 
-Each entry defines a Virtual Hub Route Table configuration with attributes to control its association.
+Each object defines a Virtual Hub Route Table configuration with attributes to control its association.
 
-List of available attributes for each route table entry:
+List of available attributes for each Route Table object:
 
-- `name`                - (`string`, required) name of the Virtual Hub Route Table.
-- `labels`              - (`set`, optional) Set of labels associated with the Route Table.
-- `hub_key`             - (`string`, required) the key referencing the Virtual Hub.
-
+- `name`    - (`string`, required) name of the Virtual Hub Route Table.
+- `labels`  - (`set`, optional) set of labels associated with the Route Table.
+- `hub_key` - (`string`, required) the key referencing the Virtual Hub.
 
 
 Type: 
@@ -464,21 +475,21 @@ Default value: `map[]`
 
 #### vpn_sites
 
-Map of objects describing VPN sites to be configured within the Azure environment.
+Map of objects describing VPN Sites to be configured within the Azure environment.
 
-Each object defines a single VPN site and supports the following properties:
+Each object defines a single VPN Site and supports the following properties:
 
-- `name`                 - (`string`, required) the unique name of the VPN site.
-- `resource_group_name`  - (`string`, optional) the name of the resource group for the VPN site.
-- `region`               - (`string`, optional) the Azure region where the site is located.
-- `address_cidrs`        - (`set(string)`, required) set of IPv4 CIDR blocks associated with the site.
-
-- `link`                 - (`list(object)`, optional, defaults to `[]`) list of individual link configurations. Each object supports:
-  - `name`                  - (`string`, required) the name of the link.
-  - `ip_address`            - (`string`, optional) the public IP address of the link.
-  - `fqdn`                  - (`string`, optional) the fully qualified domain name for the link.
-  - `provider_name`         - (`string`, optional) the name of the service provider.
-  - `speed_in_mbps`         - (`number`, optional, defaults to `0`) the link speed in Mbps.
+- `name`                - (`string`, required) the unique name of the VPN Site.
+- `resource_group_name` - (`string`, optional) the name of the Resource Group for the VPN Site.
+- `region`              - (`string`, optional) the Azure region where the VPN Site is located.
+- `address_cidrs`       - (`set(string)`, required) set of IPv4 CIDR blocks associated with the VPN Site.
+- `link`                - (`list(object)`, optional, defaults to `[]`) list of individual link configurations, each object
+                          supports the following properties:
+  - `name`          - (`string`, required) the name of the link.
+  - `ip_address`    - (`string`, optional) the public IP address of the link.
+  - `fqdn`          - (`string`, optional) the fully qualified domain name for the link.
+  - `provider_name` - (`string`, optional) the name of the service provider.
+  - `speed_in_mbps` - (`number`, optional, defaults to `0`) the link speed in Mbps.
 
 
 Type: 

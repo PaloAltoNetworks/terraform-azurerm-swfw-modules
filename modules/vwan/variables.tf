@@ -28,43 +28,45 @@ variable "tags" {
 }
 
 variable "allow_branch_to_branch_traffic" {
-  description = "Optional boolean flag to specify whether branch-to-branch traffic is allowed. Defaults to true."
+  description = "Optional boolean flag to specify whether branch-to-branch traffic is allowed. Defaults to `true`."
   default     = true
   type        = bool
 }
 
 variable "disable_vpn_encryption" {
-  description = "Optional boolean flag to specify whether VPN encryption is disabled. Defaults to false."
+  description = "Optional boolean flag to specify whether VPN encryption is disabled. Defaults to `false`."
   default     = false
   type        = bool
 }
 
 variable "virtual_hubs" {
   description = <<-EOF
-Map of objects defining Virtual Hubs to manage within a Virtual WAN.
+  Map of objects defining Virtual Hubs to manage within a Virtual WAN.
 
-Each entry's key is an arbitrary identifier you choose (used for indexing
-inside the module), and each object supports:
+  Each object's key is an arbitrary identifier you choose (used for indexing inside the module) and each object supports the
+  following attributes:
 
-- `name`                         - (string, required) the name of the Virtual Hub. Must be unique within the Virtual WAN.
-- `create`                       - (bool, optional, defaults to `true`) when true, the module will create a new Virtual Hub. 
-                                    When false,it will reference an existing one by name.
-- `resource_group_name`          - (string, optional) the Resource Group in which to create or locate the hub. Defaults
-                                    to the module’s `resource_group_name` if omitted.
-- `region`                       - (string, optional) azure region (e.g. `"West Europe"`) for the hub. Defaults to the
-                                    module’s `region` if omitted.
-- `address_prefix`               - (string, required)the address prefix (CIDR) for the hub’s internal subnet. Must be
-                                    at least `/24` (Microsoft recommends `/23`).
-- `hub_routing_preference`       - (string, optional)routing preference for the hub. Valid values:`ExpressRoute`, `ASPath`, or `VpnGateway`.
-- `virtual_router_auto_scale_min_capacity` - (number, optional) minimum capacity for the hub’s auto-scale router. Defaults to `0`.
-- `vpn_gateway`                  - (object, optional, defaults to `null`)  
-    Configuration for an attached VPN Gateway. If provided, this object supports:
-    - `name`                - (string, required) gateway name.  
-    - `resource_group_name` - (string, optional) overrides hub RG.  
-    - `region`              - (string, optional) overrides hub region.  
-    - `scale_unit`          - (number, optional, defaults to `1`)  
-    - `routing_preference`  - (string, optional, defaults to `"Microsoft Network"`)  
-EOF
+  - `name`                                   - (string, required) name of the Virtual Hub, must be unique within the Virtual WAN.
+  - `create`                                 - (bool, optional, defaults to `true`) when set to `true` module will create a new
+                                               Virtual Hub, when set to `false` it will reference an existing one by name.
+  - `resource_group_name`                    - (string, optional) Resource Group in which to create the hub or source it from,
+                                               defaults to the module's `resource_group_name` if omitted.
+  - `region`                                 - (string, optional) Azure region (e.g. `"West Europe"`) for the hub, defaults to
+                                               the module's `region` if omitted.
+  - `address_prefix`                         - (string, required) the address prefix (CIDR) for the hub's internal subnet, must
+                                               be at least `/24` (Microsoft recommends `/23`).
+  - `hub_routing_preference`                 - (string, optional) routing preference for the hub, valid values are:
+                                               `ExpressRoute`, `ASPath`, or `VpnGateway`.
+  - `virtual_router_auto_scale_min_capacity` - (number, optional) minimum capacity for the hub's auto-scale router, Azure default
+                                               is `0`.
+  - `vpn_gateway`                            - (object, optional, defaults to `null`) configuration for an attached VPN Gateway,
+                                               if provided this object supports the following attributes:
+      - `name`                - (string, required) VPN Gateway name.  
+      - `resource_group_name` - (string, optional) overrides hub's Resource Group.  
+      - `region`              - (string, optional) overrides hub's Azure region.
+      - `scale_unit`          - (number, optional, defaults to `1`) scale unit for the VPN Gateway.
+      - `routing_preference`  - (string, optional, defaults to `"Microsoft Network"`) VPN Gateway's routing preference.
+  EOF
   default     = {}
   type = map(object({
     name                                   = string
@@ -86,46 +88,55 @@ EOF
 
 variable "connections" {
   description = <<-EOF
-Map of objects describing connections within a Virtual Hub.
+  Map of objects describing Connections within a Virtual Hub.
 
-Each object represents one connection, and supports the following properties:
+  Each object represents one Connection and supports the following properties:
 
-- `name`                       - (`string`, required) the name of the connection. Must be unique within the Virtual Hub.
-- `connection_type`            - (`string`, required) the type of connection. Use `Vnet` for Virtual Network connections.
-- `remote_virtual_network_id`  - (`string`, optional) the resource ID of a remote Virtual Network.
-- `hub_key`                    - (`string`, required) the key referencing the Virtual Hub.
-- `vpn_site_key`               - (`string`, optional) the key referencing the VPN site used in this connection.
-- `vpn_link`                   - (`list`, optional, defaults to `[]`) list of VPN link configurations. Each object supports:
-  - `vpn_link_name`                  - (`string`, required) the name of the VPN link.
-  - `vpn_site_link_key`              - (`string`, required) the key referencing the VPN site link.
-  - `bandwidth_mbps`                 - (`number`, optional, defaults to `10`) bandwidth limit in Mbps.
-  - `bgp_enabled`                    - (`bool`, optional, defaults to `false`) enables BGP on this link.
-  - `connection_mode`                - (`string`, optional, defaults to `Default`) valid values: `Default`, `InitiatorOnly`, `ResponderOnly`.
-  - `protocol`                       - (`string`, optional, defaults to `IKEv2`) valid values: `IKEv2`, `IKEv1`.
-  - `ratelimit_enabled`              - (`bool`, optional, defaults to `false`) enables rate limiting.
-  - `route_weight`                   - (`number`, optional, defaults to `0`) routing weight for this link.
-  - `shared_key`                     - (`string`, optional) pre-shared key for the VPN.
-  - `local_azure_ip_address_enabled` - (`bool`, optional, defaults to `false`) enables use of local Azure IP address.
-  - `ipsec_policy`                   - (`object`, optional) IPSec policy configuration. Supports:
-    - `dh_group`                 - (`string`, optional) valid values: `DHGroup14`, `DHGroup24`, `ECP256`, `ECP384`.
-    - `ike_encryption_algorithm` - (`string`, optional) valid values: `AES128`, `AES256`, `GCMAES128`, `GCMAES256`.
-    - `ike_integrity_algorithm`  - (`string`, optional) valid values: `SHA256`, `SHA384`.
-    - `encryption_algorithm`     - (`string`, optional) valid values: `AES192`, `AES128`, `AES256`, `DES`, `DES3`, `GCMAES192`, `GCMAES128`, `GCMAES256`, `None`.
-    - `integrity_algorithm`      - (`string`, optional) valid values: `SHA256`, `GCMAES128`, `GCMAES256`.
-    - `pfs_group`                - (`string`, optional) valid values: `ECP384`, `ECP256`, `PFSMM`, `PFS1`, `PFS14`, `PFS2`, `PFS24`, `PFS2048`, `None`.
-    - `sa_data_size_kb`          - (`number`, optional) value must be `0` or between `1024` and `2147483647`.
-    - `sa_lifetime_sec`          - (`number`, optional) lifetime in seconds.
-- `routing`                    - (`object`, optional) routing configuration. Supports:
-  - `associated_route_table_key`                - (`string`, optional) key of the associated route table.
-  - `propagated_route_table_keys`               - (`list(string)`, optional) list of route table keys to propagate routes to.
-  - `propagated_route_table_labels`             - (`set(string)`, optional) set of labels for propagated route tables.
-  - `static_vnet_route_name`                    - (`string`, optional) name of the static route.
-  - `static_vnet_route_address_prefixes`        - (`set(string)`, optional) set of CIDR address prefixes for static route.
-  - `static_vnet_route_next_hop_ip_address`     - (`string`, optional) IP address of the next hop.
-  - `static_vnet_local_route_override_criteria` - (`string`, optional, defaults to `Contains`) valid values: `Contains`, `Equal`.
-EOF
-
-  default = {}
+  - `name`                      - (`string`, required) the name of the Connection, must be unique within the Virtual Hub.
+  - `connection_type`           - (`string`, required) the type of Connection, use `Vnet` for Virtual Network connections.
+  - `remote_virtual_network_id` - (`string`, optional) the resource ID of a remote Virtual Network.
+  - `hub_key`                   - (`string`, required) the key referencing the Virtual Hub.
+  - `vpn_site_key`              - (`string`, optional) the key referencing the VPN Site used in this Connection.
+  - `vpn_link`                  - (`list`, optional, defaults to `[]`) list of VPN link configurations, each object supports the
+                                  following attributes:
+    - `vpn_link_name`                  - (`string`, required) the name of the VPN link.
+    - `vpn_site_link_key`              - (`string`, required) the key referencing the VPN Site link.
+    - `bandwidth_mbps`                 - (`number`, optional, defaults to `10`) bandwidth limit in Mbps.
+    - `bgp_enabled`                    - (`bool`, optional, defaults to `false`) flag that enables BGP on this link.
+    - `connection_mode`                - (`string`, optional, defaults to `Default`) VPN connection mode, valid values are:
+                                         `Default`, `InitiatorOnly`, `ResponderOnly`.
+    - `protocol`                       - (`string`, optional, defaults to `IKEv2`) VPN protocol, valid values are: `IKEv2`,
+                                         `IKEv1`.
+    - `ratelimit_enabled`              - (`bool`, optional, defaults to `false`) flag that enables rate limiting.
+    - `route_weight`                   - (`number`, optional, defaults to `0`) routing weight for this link.
+    - `shared_key`                     - (`string`, optional) pre-shared key for the VPN.
+    - `local_azure_ip_address_enabled` - (`bool`, optional, defaults to `false`) flag that enables use of local Azure IP address.
+    - `ipsec_policy`                   - (`object`, optional) IPSec policy configuration, following attributes are supported:
+      - `dh_group`                 - (`string`, optional) Diffie-Hellman group, valid values are: `DHGroup14`, `DHGroup24`,
+                                     `ECP256`, `ECP384`.
+      - `ike_encryption_algorithm` - (`string`, optional) IKE encryption algorithm, valid values are: `AES128`, `AES256`,
+                                     `GCMAES128`, `GCMAES256`.
+      - `ike_integrity_algorithm`  - (`string`, optional) IKE integrity algorithm, valid values are: `SHA256`, `SHA384`.
+      - `encryption_algorithm`     - (`string`, optional) IPSec encryption algorithm, valid values are: `AES192`, `AES128`,
+                                     `AES256`, `DES`, `DES3`, `GCMAES192`, `GCMAES128`, `GCMAES256`, `None`.
+      - `integrity_algorithm`      - (`string`, optional) IPSec integrity algorithm, valid values are: `SHA256`, `GCMAES128`,
+                                     `GCMAES256`.
+      - `pfs_group`                - (`string`, optional) Perfect Forward Secrecy algorithm, valid values are: `ECP384`,
+                                     `ECP256`, `PFSMM`, `PFS1`, `PFS14`, `PFS2`, `PFS24`, `PFS2048`, `None`.
+      - `sa_data_size_kb`          - (`number`, optional) Security Association size in kilobits, value must be `0` or between
+                                     `1024` and `2147483647`.
+      - `sa_lifetime_sec`          - (`number`, optional) Security Association lifetime in seconds.
+  - `routing`                   - (`object`, optional) routing configuration, the following attributes are supported:
+    - `associated_route_table_key`                - (`string`, optional) key of the associated Route Table.
+    - `propagated_route_table_keys`               - (`list(string)`, optional) list of Route Table keys to propagate routes to.
+    - `propagated_route_table_labels`             - (`set(string)`, optional) set of labels for propagated Route Tables.
+    - `static_vnet_route_name`                    - (`string`, optional) name of the static route.
+    - `static_vnet_route_address_prefixes`        - (`set(string)`, optional) set of CIDR address prefixes for static route.
+    - `static_vnet_route_next_hop_ip_address`     - (`string`, optional) IP address of the next hop.
+    - `static_vnet_local_route_override_criteria` - (`string`, optional, defaults to `Contains`) override criteria for the local
+                                                    route, valid values are: `Contains`, `Equal`.
+  EOF
+  default     = {}
   type = map(object({
     name                      = string
     connection_type           = string
@@ -164,7 +175,6 @@ EOF
       static_vnet_local_route_override_criteria = optional(string)
     }))
   }))
-
   validation { # connection_name
     condition = alltrue([
       length([for _, connection in var.connections : connection.name]) ==
@@ -174,7 +184,6 @@ EOF
     The `name` property of the connection must be unique.
     EOF
   }
-
   validation { # connection_type
     condition = alltrue(flatten([
       for _, connection in var.connections : [
@@ -182,10 +191,9 @@ EOF
       ]
     ]))
     error_message = <<-EOF
-    The `connection_type` must be one of \"Vnet\" or \"Site-to-Site\".
+    The `connection_type` property value must be of \"Vnet\" or \"Site-to-Site\".
     EOF
   }
-
   validation { # vpn_link_name
     condition = alltrue([
       for _, connection in var.connections : (
@@ -196,10 +204,9 @@ EOF
       ) if connection.connection_type == "Site-to-Site"
     ])
     error_message = <<-EOF
-    The `vpn_link_name` property must be unique within each \"Site-to-Site\" connection's vpn_link list.
+    The `vpn_link_name` property value must be unique within each \"Site-to-Site\" connection's vpn_link list.
     EOF
   }
-
   validation { # vpn_link_connection_mode
     condition = alltrue(flatten([
       for _, connection in var.connections : [
@@ -208,10 +215,9 @@ EOF
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `connection_mode` must be one of \"Default\", \"InitiatorOnly\" or \"ResponderOnly\".
+    The `connection_mode` property value must be of \"Default\", \"InitiatorOnly\" or \"ResponderOnly\".
     EOF
   }
-
   validation { # vpn_link_protocol
     condition = alltrue(flatten([
       for _, connection in var.connections : [
@@ -220,10 +226,9 @@ EOF
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `protocol` must be one of \"IKEv2\" or \"IKEv1\".
+    The `protocol` property value must be one of \"IKEv2\" or \"IKEv1\".
     EOF
   }
-
   validation { # ipsec_policy_dh_group
     condition = alltrue(flatten([
       for _, connection in var.connections : [
@@ -232,10 +237,9 @@ EOF
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `dh_group` must be one of \"DHGroup14\", \"DHGroup24\", \"ECP256\" or \"ECP384\".
+    The `dh_group` property value must be of \"DHGroup14\", \"DHGroup24\", \"ECP256\" or \"ECP384\".
     EOF
   }
-
   validation { # ipsec_policy_ike_encryption_algorithm
     condition = alltrue(flatten([
       for _, connection in var.connections : [
@@ -244,10 +248,9 @@ EOF
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `ike_encryption_algorithm` must be one of \"AES128\", \"AES256\", \"GCMAES128\" or \"GCMAES256\".
+    The `ike_encryption_algorithm` property value must be of \"AES128\", \"AES256\", \"GCMAES128\" or \"GCMAES256\".
     EOF
   }
-
   validation { # ipsec_policy_ike_integrity_algorithm
     condition = alltrue(flatten([
       for _, connection in var.connections : [
@@ -256,10 +259,9 @@ EOF
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `ike_integrity_algorithm` must be one of \"SHA256\" or \"SHA384\".
+    The `ike_integrity_algorithm` property value must be of \"SHA256\" or \"SHA384\".
     EOF
   }
-
   validation { # ipsec_policy_encryption_algorithm
     condition = alltrue(flatten([
       for _, connection in var.connections : [
@@ -268,11 +270,10 @@ EOF
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `encryption_algorithm` must be one of \"AES192\", \"AES128\", \"AES256\", \"DES\", \"DES3\", \"GCMAES192\", \"GCMAES128\",
-    \"GCMAES256\", \"None\" .
+    The `encryption_algorithm` property value must be of \"AES192\", \"AES128\", \"AES256\", \"DES\", \"DES3\", \"GCMAES192\",
+    \"GCMAES128\", \"GCMAES256\", \"None\".
     EOF
   }
-
   validation { # ipsec_policy_integrity_algorithm
     condition = alltrue(flatten([
       for _, connection in var.connections : [
@@ -281,10 +282,9 @@ EOF
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `integrity_algorithm` must be one of \"SHA256\", \"GCMAES128\" or \"GCMAES256\".
+    The `integrity_algorithm` property value must be of \"SHA256\", \"GCMAES128\" or \"GCMAES256\".
     EOF
   }
-
   validation { # ipsec_policy_pfs_group
     condition = alltrue(flatten([
       for _, connection in var.connections : [
@@ -293,11 +293,10 @@ EOF
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `pfs_group` must be one of \"ECP384\", \"ECP256\", \"PFSMM\", \"PFS1\", \"PFS14\", \"PFS2\", \"PFS24\", \"PFS2048\",
-    \"None\" .
+    The `pfs_group` property value must be one of \"ECP384\", \"ECP256\", \"PFSMM\", \"PFS1\", \"PFS14\", \"PFS2\", \"PFS24\",
+    \"PFS2048\", \"None\".
     EOF
   }
-
   validation { # ipsec_policy_sa_data_size_kb
     condition = alltrue(flatten([
       for _, connection in var.connections : [
@@ -307,23 +306,22 @@ EOF
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `sa_data_size_kb` must be 0 or within the range of 1024 to 2147483647.
+    The `sa_data_size_kb` property value must be \"0\" or within the range of \"1024\" to \"2147483647\".
     EOF
   }
 }
 
 variable "route_tables" {
   description = <<-EOF
-  Map of objects describing route tables to manage within a Virtual Hub.
+  Map of objects describing Route Tables to manage within a Virtual Hub.
 
-  Each entry defines a Virtual Hub Route Table configuration with attributes to control its association.
+  Each object defines a Virtual Hub Route Table configuration with attributes to control its association.
 
-  List of available attributes for each route table entry:
+  List of available attributes for each Route Table object:
 
-  - `name`                - (`string`, required) name of the Virtual Hub Route Table.
-  - `labels`              - (`set`, optional) Set of labels associated with the Route Table.
-  - `hub_key`             - (`string`, required) the key referencing the Virtual Hub.
-
+  - `name`    - (`string`, required) name of the Virtual Hub Route Table.
+  - `labels`  - (`set`, optional) set of labels associated with the Route Table.
+  - `hub_key` - (`string`, required) the key referencing the Virtual Hub.
   EOF
   default     = {}
   type = map(object({
@@ -335,24 +333,23 @@ variable "route_tables" {
 
 variable "vpn_sites" {
   description = <<-EOF
-Map of objects describing VPN sites to be configured within the Azure environment.
+  Map of objects describing VPN Sites to be configured within the Azure environment.
 
-Each object defines a single VPN site and supports the following properties:
+  Each object defines a single VPN Site and supports the following properties:
 
-- `name`                 - (`string`, required) the unique name of the VPN site.
-- `resource_group_name`  - (`string`, optional) the name of the resource group for the VPN site.
-- `region`               - (`string`, optional) the Azure region where the site is located.
-- `address_cidrs`        - (`set(string)`, required) set of IPv4 CIDR blocks associated with the site.
-
-- `link`                 - (`list(object)`, optional, defaults to `[]`) list of individual link configurations. Each object supports:
-  - `name`                  - (`string`, required) the name of the link.
-  - `ip_address`            - (`string`, optional) the public IP address of the link.
-  - `fqdn`                  - (`string`, optional) the fully qualified domain name for the link.
-  - `provider_name`         - (`string`, optional) the name of the service provider.
-  - `speed_in_mbps`         - (`number`, optional, defaults to `0`) the link speed in Mbps.
-EOF
-
-  default = {}
+  - `name`                - (`string`, required) the unique name of the VPN Site.
+  - `resource_group_name` - (`string`, optional) the name of the Resource Group for the VPN Site.
+  - `region`              - (`string`, optional) the Azure region where the VPN Site is located.
+  - `address_cidrs`       - (`set(string)`, required) set of IPv4 CIDR blocks associated with the VPN Site.
+  - `link`                - (`list(object)`, optional, defaults to `[]`) list of individual link configurations, each object
+                            supports the following properties:
+    - `name`          - (`string`, required) the name of the link.
+    - `ip_address`    - (`string`, optional) the public IP address of the link.
+    - `fqdn`          - (`string`, optional) the fully qualified domain name for the link.
+    - `provider_name` - (`string`, optional) the name of the service provider.
+    - `speed_in_mbps` - (`number`, optional, defaults to `0`) the link speed in Mbps.
+  EOF
+  default     = {}
   type = map(object({
     name                = string
     resource_group_name = optional(string)
@@ -366,16 +363,16 @@ EOF
       speed_in_mbps = optional(number, 0)
     })), {})
   }))
-
-  validation { # vpn_site_name uniqueness
+  validation { # vpn_site_name
     condition = alltrue([
       length([for _, vpnsite in var.vpn_sites : vpnsite.name]) ==
       length(distinct([for _, vpnsite in var.vpn_sites : vpnsite.name]))
     ])
-    error_message = "The `name` property of the VPN site must be unique."
+    error_message = <<-EOF
+    The `name` property of the VPN site must be unique.
+    EOF
   }
-
-  validation {
+  validation { # address_cidrs
     condition = alltrue(flatten([
       for _, vpnsite in var.vpn_sites : (
         vpnsite != null && try(vpnsite.address_cidrs, null) != null ?
@@ -384,21 +381,22 @@ EOF
         )] : []
       )
     ]))
-    error_message = "Each `address_cidrs` must be a valid IPv4 CIDR in x.x.x.x/n format."
+    error_message = <<-EOF
+    Each `address_cidrs` property value must be a valid IPv4 CIDR in x.x.x.x/n format.
+    EOF
   }
-
-
-  validation { # link_name uniqueness within each VPN site
+  validation { # link key
     condition = alltrue([
       for _, vpnsite in var.vpn_sites : (
         length(keys(vpnsite.link)) ==
         length(distinct(keys(vpnsite.link)))
       )
     ])
-    error_message = "Each link name within a VPN site must be unique."
+    error_message = <<-EOF
+    Each link name within a VPN Site must be unique.
+    EOF
   }
-
-  validation { # ip_address validation
+  validation { # ip_address
     condition = alltrue(flatten([
       for _, vpnsite in var.vpn_sites : [
         for _, sitelink in vpnsite.link : [
@@ -406,6 +404,8 @@ EOF
         ]
       ]
     ]))
-    error_message = "The `ip_address` must be a valid IPv4 address in the format x.x.x.x, with each octet ranging from 0 to 255, if provided."
+    error_message = <<-EOF
+    The `ip_address` property value must be a valid IPv4 address in the x.x.x.x format, with each octet ranging from 0 to 255.
+    EOF
   }
 }

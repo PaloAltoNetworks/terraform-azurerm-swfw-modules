@@ -83,49 +83,49 @@ module "vwan_routes" {
 Below there are provided sample values:
 
 ```hcl
-      "virtual_hub_routes" = {
-        name           = "virtual_hub_routes"
-        address_prefix = "11.0.0.0/24"
-        route_tables = {
-          "route_table" = {
-            name   = "route_table"
-            labels = ["rt_label01", "rt_label02"]
-            routes = {
-              "route01" = {
-                name              = "route01"
-                destinations_type = "CIDR"
-                destinations      = ["10.0.0.0/16"]
-                next_hop_key      = "ha-ports"
-              }
-              "route02" = {
-                name              = "route02"
-                destinations_type = "CIDR"
-                destinations      = ["11.0.0.0/16"]
-                next_hop_key      = "ha-ports"
-              }
-            }
-          }
+"virtual_hub_routes" = {
+  name           = "virtual_hub_routes"
+  address_prefix = "11.0.0.0/24"
+  route_tables = {
+    "route_table" = {
+      name   = "route_table"
+      labels = ["rt_label01", "rt_label02"]
+      routes = {
+        "route01" = {
+          name              = "route01"
+          destinations_type = "CIDR"
+          destinations      = ["10.0.0.0/16"]
+          next_hop_key      = "ha-ports"
+        }
+        "route02" = {
+          name              = "route02"
+          destinations_type = "CIDR"
+          destinations      = ["11.0.0.0/16"]
+          next_hop_key      = "ha-ports"
         }
       }
-      "virtual_hub_routing_intent" = {
-        name           = "virtual_hub_routing_intent"
-        address_prefix = "12.0.0.0/24"
-        routing_intent = {
-          routing_intent_name = "routing_intent"
-          routing_policy = [
-            {
-              routing_policy_name = "PrivateTraffic"
-              destinations        = ["PrivateTraffic"]
-              next_hop_key        = "cloudngfw"
-            },
-            {
-              routing_policy_name = "Internet"
-              destinations        = ["Internet"]
-              next_hop_key        = "cloudngfw"
-            }
-          ]
-        }
+    }
+  }
+}
+"virtual_hub_routing_intent" = {
+  name           = "virtual_hub_routing_intent"
+  address_prefix = "12.0.0.0/24"
+  routing_intent = {
+    routing_intent_name = "routing_intent"
+    routing_policy = [
+      {
+        routing_policy_name = "PrivateTraffic"
+        destinations        = ["PrivateTraffic"]
+        next_hop_key        = "cloudngfw"
+      },
+      {
+        routing_policy_name = "Internet"
+        destinations        = ["Internet"]
+        next_hop_key        = "cloudngfw"
       }
+    ]
+  }
+}
 ```
 
 ## Reference
@@ -155,12 +155,17 @@ Name | Type | Description
 
 Name | Type | Description
 --- | --- | ---
-[`routing_intent`](#routing_intent) | `map` | Map of objects defining Routing Intent configurations for Virtual Hubs.
+[`routing_intent`](#routing_intent) | `map` | Map of objects defining Routing Intent configuration for Virtual Hubs.
 [`routes`](#routes) | `map` | A map of routing configurations, where each entry defines a route with the following attributes:
 
 - `name`              - (`string`, required) the name of the route.
 
+### Outputs
 
+Name |  Description
+--- | ---
+`routing_intent_ids` | The identifiers of the created Virtual Hub Routing Intents.
+`route_ids` | The identifiers of the created Routes within Virtual Hub Route Table.
 
 ### Required Inputs details
 
@@ -168,18 +173,17 @@ Name | Type | Description
 
 #### routing_intent
 
-Map of objects defining Routing Intent configurations for Virtual Hubs.
+Map of objects defining Routing Intent configuration for Virtual Hubs.
 
 Each object key represents a unique identifier, and the value supports the following attributes:
 
 - `virtual_hub_id` - (`string`, required) the resource ID of the Virtual Hub where the Routing Intent should be applied.
-
-- `routing_intent` - (`object`, required) configuration of the Routing Intent. Supports:
-  - `routing_intent_name` - (`string`, required) the name of the Routing Intent. Must be unique across all defined intents.
-  - `routing_policy`      - (`list`, required) a list of Routing Policies to apply. Each object supports:
-    - `routing_policy_name` - (`string`, required) the name of the Routing Policy. Must be unique within the Routing Intent.
-    - `destinations`        - (`list(string)`, required) list of traffic types the policy applies to. Valid values are: `Internet`, 
-                              `PrivateTraffic`
+- `routing_intent` - (`object`, required) configuration of the Routing Intent, following properties are available:
+  - `routing_intent_name` - (`string`, required) the name of the Routing Intent, must be unique across all defined intents.
+  - `routing_policy`      - (`list`, required) a list of Routing Policies to apply, following properties are available:
+    - `routing_policy_name` - (`string`, required) the name of the Routing Policy, must be unique within the Routing Intent.
+    - `destinations`        - (`list(string)`, required) list of traffic types the policy applies to, valid values are: 
+                              `Internet`, `PrivateTraffic`.
     - `next_hop_id`         - (`string`, required) the resource ID of the next hop used by this routing policy.
 
 
@@ -210,11 +214,12 @@ Default value: `map[]`
 A map of routing configurations, where each entry defines a route with the following attributes:
 
 - `name`              - (`string`, required) the name of the route. Must be unique within the routing configurations.
-- `destinations_type` - (`string`, required) specifies the type of destinations. Valid options include 'CIDR', 'ResourceId', or 'Service'.
+- `destinations_type` - (`string`, required) specifies the type of destinations. Valid options include 'CIDR', 'ResourceId',
+                        or 'Service'.
 - `destinations`      - (`list`, required) a list of destinations for the route.
-- `next_hop_type`     - (`string`, required) specifies the type of next hop, which defaults to 'ResourceId'.
+- `next_hop_type`     - (`string`, required, defaults to "ResourceId") specifies the type of next hop.
 - `next_hop_id`       - (`string`, required) the id for the next hop resource to which the route points.
-- `route_table_id`   - (`string`, required) the id of the route table to which this route belongs.
+- `route_table_id`    - (`string`, required) the id of the route table to which this route belongs.
 
 
 

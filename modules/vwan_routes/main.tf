@@ -1,6 +1,7 @@
-#https://registry.terraform.io/providers/hashicorp/Azurerm/latest/docs/resources/virtual_hub_routing_intent
+# https://registry.terraform.io/providers/hashicorp/Azurerm/latest/docs/resources/virtual_hub_routing_intent
 resource "azurerm_virtual_hub_routing_intent" "this" {
-  for_each       = var.routing_intent
+  for_each = var.routing_intent
+
   name           = each.value.routing_intent.routing_intent_name
   virtual_hub_id = each.value.virtual_hub_id
 
@@ -14,9 +15,10 @@ resource "azurerm_virtual_hub_routing_intent" "this" {
   }
 }
 
-#https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_hub_route_table_route
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_hub_route_table_route
 resource "azurerm_virtual_hub_route_table_route" "this" {
-  for_each          = var.routes
+  for_each = var.routes
+
   route_table_id    = each.value.route_table_id
   name              = each.value.name
   destinations_type = each.value.destinations_type

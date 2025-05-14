@@ -13,5 +13,3 @@ output "route_table_ids" {
   description = "A map of identifiers for the created Route Tables."
   value       = { for k, v in azurerm_virtual_hub_route_table.this : k => v.id }
 }
-
-

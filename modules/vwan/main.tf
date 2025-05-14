@@ -13,7 +13,8 @@ resource "azurerm_virtual_wan" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/virtual_wan
 data "azurerm_virtual_wan" "this" {
-  count               = var.create == false ? 1 : 0
+  count = var.create == false ? 1 : 0
+
   name                = var.virtual_wan_name
   resource_group_name = var.resource_group_name
 }
@@ -47,10 +48,7 @@ data "azurerm_virtual_hub" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_hub_route_table
 resource "azurerm_virtual_hub_route_table" "this" {
-  for_each = {
-    for k, v in var.route_tables :
-    k => v if v.name != "Default" && v.name != "None"
-  }
+  for_each = { for k, v in var.route_tables : k => v if v.name != "Default" && v.name != "None" }
 
   name   = each.value.name
   labels = each.value.labels
@@ -72,6 +70,7 @@ resource "azurerm_virtual_hub_connection" "this" {
     : data.azurerm_virtual_hub.this[each.value.hub_key].id
   )
   remote_virtual_network_id = each.value.remote_virtual_network_id
+
   dynamic "routing" {
     for_each = each.value.routing != null ? [1] : []
     content {
@@ -112,7 +111,8 @@ resource "azurerm_virtual_hub_connection" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/Azurerm/latest/docs/resources/vpn_gateway
 resource "azurerm_vpn_gateway" "this" {
-  for_each            = { for hub_key, hub in var.virtual_hubs : hub_key => hub.vpn_gateway if hub.vpn_gateway != null }
+  for_each = { for hub_key, hub in var.virtual_hubs : hub_key => hub.vpn_gateway if hub.vpn_gateway != null }
+
   name                = each.value.name
   location            = coalesce(each.value.region, var.region)
   resource_group_name = coalesce(each.value.resource_group_name, var.resource_group_name)
@@ -128,7 +128,8 @@ resource "azurerm_vpn_gateway" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/vpn_site
 resource "azurerm_vpn_site" "this" {
-  for_each            = { for k, v in var.vpn_sites : k => v }
+  for_each = { for k, v in var.vpn_sites : k => v }
+
   name                = each.value.name
   resource_group_name = coalesce(each.value.resource_group_name, var.resource_group_name)
   location            = coalesce(each.value.region, var.region)
@@ -164,6 +165,7 @@ resource "azurerm_vpn_gateway_connection" "this" {
   name               = each.value.name
   vpn_gateway_id     = azurerm_vpn_gateway.this[each.value.hub_key].id
   remote_vpn_site_id = azurerm_vpn_site.this[each.value.vpn_site_key].id
+
   dynamic "vpn_link" {
     for_each = each.value.vpn_link
     content {
