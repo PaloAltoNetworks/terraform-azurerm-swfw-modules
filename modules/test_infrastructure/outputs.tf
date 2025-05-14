@@ -10,3 +10,8 @@ output "frontend_ip_configs" {
   EOF
   value       = { for k, v in module.load_balancer : k => v.frontend_ip_configs }
 }
+
+output "vnet_ids" {
+  description = "The identifiers of the vnets."
+  value       = { for k, v in module.vnet : k => v.virtual_network_id }
+}
