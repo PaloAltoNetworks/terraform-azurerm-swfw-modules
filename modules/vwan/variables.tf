@@ -84,6 +84,39 @@ variable "virtual_hubs" {
       routing_preference  = optional(string, "Microsoft Network")
     }), null)
   }))
+
+  validation { # address_prefix
+    condition = alltrue(flatten([
+      for _, hub in var.virtual_hubs : [
+        can(regex("^(\\d{1,3}\\.){3}\\d{1,3}\\/(?:[0-9]|1[0-9]|2[0-4])$", hub.address_prefix))
+      ]
+    ]))
+    error_message = <<-EOF
+    The `address prefix` (CIDR) for the hub's internal subnet, must be at least `/24`
+    EOF
+  }
+  validation {
+    condition = alltrue([
+      for hub in var.virtual_hubs : (
+        hub.hub_routing_preference == null
+        || try(contains(["ExpressRoute", "ASPath", "VpnGateway"], hub.hub_routing_preference), false)
+      )
+    ])
+    error_message = <<-EOF
+    The `hub_routing_preference` must be one of: "ExpressRoute", "ASPath", or "VpnGateway".
+  EOF
+  }
+  validation {
+    condition = alltrue([
+      for hub in var.virtual_hubs : (
+        hub.vpn_gateway == null
+        || try(contains(["Microsoft Network", "Internet"], hub.vpn_gateway.routing_preference), false)
+      )
+    ])
+    error_message = <<-EOF
+    The `routing_preference` must be one of: "Microsoft Network" or "Internet".
+  EOF
+  }
 }
 
 variable "connections" {
@@ -211,91 +244,98 @@ variable "connections" {
     condition = alltrue(flatten([
       for _, connection in var.connections : [
         for vpnlink in connection.vpn_link : [
-          can(regex("^(Default|InitiatorOnly|ResponderOnly)$", vpnlink.connection_mode))
+          contains(["Default", "InitiatorOnly", "ResponderOnly"], vpnlink.connection_mode)
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `connection_mode` property value must be of \"Default\", \"InitiatorOnly\" or \"ResponderOnly\".
-    EOF
+    The `connection_mode` property value must be of "Default", "InitiatorOnly" or "ResponderOnly".
+  EOF
   }
   validation { # vpn_link_protocol
     condition = alltrue(flatten([
       for _, connection in var.connections : [
         for vpnlink in connection.vpn_link : [
-          can(regex("^(IKEv2|IKEv1)$", vpnlink.protocol))
+          contains(["IKEv2", "IKEv1"], vpnlink.protocol)
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `protocol` property value must be one of \"IKEv2\" or \"IKEv1\".
-    EOF
+    The `protocol` property value must be one of "IKEv2" or "IKEv1".
+  EOF
   }
   validation { # ipsec_policy_dh_group
     condition = alltrue(flatten([
       for _, connection in var.connections : [
         for vpnlink in connection.vpn_link : [
-          can(regex("^(DHGroup14|DHGroup24|ECP256|ECP384)$", vpnlink.ipsec_policy.dh_group))
+          contains(["DHGroup14", "DHGroup24", "ECP256", "ECP384"], vpnlink.ipsec_policy.dh_group)
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `dh_group` property value must be of \"DHGroup14\", \"DHGroup24\", \"ECP256\" or \"ECP384\".
-    EOF
+    The `dh_group` property value must be one of "DHGroup14", "DHGroup24", "ECP256" or "ECP384".
+  EOF
   }
   validation { # ipsec_policy_ike_encryption_algorithm
     condition = alltrue(flatten([
       for _, connection in var.connections : [
         for vpnlink in connection.vpn_link : [
-          can(regex("^(AES128|AES256|GCMAES128|GCMAES256)$", vpnlink.ipsec_policy.ike_encryption_algorithm))
+          contains(
+            ["AES128", "AES256", "GCMAES128", "GCMAES256"],
+            vpnlink.ipsec_policy.ike_encryption_algorithm
+          )
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `ike_encryption_algorithm` property value must be of \"AES128\", \"AES256\", \"GCMAES128\" or \"GCMAES256\".
-    EOF
+    The `ike_encryption_algorithm` property value must be one of "AES128", "AES256", "GCMAES128" or "GCMAES256".
+  EOF
   }
   validation { # ipsec_policy_ike_integrity_algorithm
     condition = alltrue(flatten([
       for _, connection in var.connections : [
         for vpnlink in connection.vpn_link : [
-          can(regex("^(SHA256|SHA384)$", vpnlink.ipsec_policy.ike_integrity_algorithm))
+          contains(["SHA256", "SHA384"], vpnlink.ipsec_policy.ike_integrity_algorithm)
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `ike_integrity_algorithm` property value must be of \"SHA256\" or \"SHA384\".
-    EOF
+    The `ike_integrity_algorithm` property value must be one of "SHA256" or "SHA384".
+  EOF
   }
   validation { # ipsec_policy_encryption_algorithm
     condition = alltrue(flatten([
       for _, connection in var.connections : [
         for vpnlink in connection.vpn_link : [
-          can(regex("^(AES128|AES256|GCMAES128|GCMAES256|None)$", vpnlink.ipsec_policy.encryption_algorithm))
+          contains(
+            ["AES128", "AES256", "GCMAES128", "GCMAES256", "None"],
+            vpnlink.ipsec_policy.encryption_algorithm
+          )
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `encryption_algorithm` property value must be of \"AES192\", \"AES128\", \"AES256\", \"DES\", \"DES3\", \"GCMAES192\",
-    \"GCMAES128\", \"GCMAES256\", \"None\".
-    EOF
+    The `encryption_algorithm` property value must be one of "AES128", "AES256", "GCMAES128", "GCMAES256", or "None".
+  EOF
   }
   validation { # ipsec_policy_integrity_algorithm
     condition = alltrue(flatten([
       for _, connection in var.connections : [
         for vpnlink in connection.vpn_link : [
-          can(regex("^(SHA256|GCMAES128|GCMAES256)$", vpnlink.ipsec_policy.integrity_algorithm))
+          contains(["SHA256", "GCMAES128", "GCMAES256"], vpnlink.ipsec_policy.integrity_algorithm)
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `integrity_algorithm` property value must be of \"SHA256\", \"GCMAES128\" or \"GCMAES256\".
-    EOF
+    The `integrity_algorithm` property value must be one of "SHA256", "GCMAES128" or "GCMAES256".
+  EOF
   }
   validation { # ipsec_policy_pfs_group
     condition = alltrue(flatten([
       for _, connection in var.connections : [
         for vpnlink in connection.vpn_link : [
-          can(regex("^(ECP384|ECP256|PFSMM|PFS1|PFS14|PFS2|PFS24|PFS2048|None)$", vpnlink.ipsec_policy.pfs_group))
+          contains(
+            ["ECP384", "ECP256", "PFSMM", "PFS1", "PFS14", "PFS2", "PFS24", "PFS2048", "None"],
+            vpnlink.ipsec_policy.pfs_group
+          )
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `pfs_group` property value must be one of \"ECP384\", \"ECP256\", \"PFSMM\", \"PFS1\", \"PFS14\", \"PFS2\", \"PFS24\",
-    \"PFS2048\", \"None\".
-    EOF
+    The `pfs_group` property value must be one of "ECP384", "ECP256", "PFSMM", "PFS1", "PFS14", "PFS2", "PFS24", "PFS2048", or "None".
+  EOF
   }
   validation { # ipsec_policy_sa_data_size_kb
     condition = alltrue(flatten([
@@ -377,13 +417,13 @@ variable "vpn_sites" {
       for _, vpnsite in var.vpn_sites : (
         vpnsite != null && try(vpnsite.address_cidrs, null) != null ?
         [for cidr in vpnsite.address_cidrs : can(
-          regex("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/(3[0-2]|[12]?[0-9])$", cidr)
+          regex("^(\\d{1,3}\\.){3}\\d{1,3}\\/[12]?[0-9]$", cidr)
         )] : []
       )
     ]))
     error_message = <<-EOF
-    Each `address_cidrs` property value must be a valid IPv4 CIDR in x.x.x.x/n format.
-    EOF
+  Each `address_cidrs` property value must be a valid IPv4 CIDR in x.x.x.x/n format.
+  EOF
   }
   validation { # link key
     condition = alltrue([
