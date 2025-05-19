@@ -158,7 +158,8 @@ variable "connections" {
                                      `ECP256`, `PFSMM`, `PFS1`, `PFS14`, `PFS2`, `PFS24`, `PFS2048`, `None`.
       - `sa_data_size_kb`          - (`number`, optional) Security Association size in kilobits, value must be `0` or between
                                      `1024` and `2147483647`.
-      - `sa_lifetime_sec`          - (`number`, optional) Security Association lifetime in seconds.
+      - `sa_lifetime_sec`          - (`number`, optional) Security Association lifetime in seconds, value must be between `300`
+                                     and `172799`.
   - `routing`                   - (`object`, optional) routing configuration, the following attributes are supported:
     - `associated_route_table_key`                - (`string`, optional) key of the associated Route Table.
     - `propagated_route_table_keys`               - (`list(string)`, optional) list of Route Table keys to propagate routes to.
@@ -346,7 +347,18 @@ variable "connections" {
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `sa_data_size_kb` property value must be \"0\" or within the range of \"1024\" to \"2147483647\".
+    The `sa_data_size_kb` property value must be \"0\" or within 
+    EOF
+  }
+  validation { # ipsec_policy_sa_lifetime_sec
+    condition = alltrue(flatten([
+      for _, connection in var.connections : [
+        for vpnlink in connection.vpn_link : [
+          vpnlink.ipsec_policy.sa_lifetime_sec >= 300 && vpnlink.ipsec_policy.sa_lifetime_sec <= 172799
+      ]] if connection.connection_type == "Site-to-Site"
+    ]))
+    error_message = <<-EOF
+    The `sa_lifetime_sec` property value must be the range of \"300\" to \"172799\".
     EOF
   }
 }

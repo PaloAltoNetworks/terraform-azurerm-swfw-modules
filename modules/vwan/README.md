@@ -385,7 +385,8 @@ Each object represents one Connection and supports the following properties:
                                    `ECP256`, `PFSMM`, `PFS1`, `PFS14`, `PFS2`, `PFS24`, `PFS2048`, `None`.
     - `sa_data_size_kb`          - (`number`, optional) Security Association size in kilobits, value must be `0` or between
                                    `1024` and `2147483647`.
-    - `sa_lifetime_sec`          - (`number`, optional) Security Association lifetime in seconds.
+    - `sa_lifetime_sec`          - (`number`, optional) Security Association lifetime in seconds, value must be between `300`
+                                   and `172799`.
 - `routing`                   - (`object`, optional) routing configuration, the following attributes are supported:
   - `associated_route_table_key`                - (`string`, optional) key of the associated Route Table.
   - `propagated_route_table_keys`               - (`list(string)`, optional) list of Route Table keys to propagate routes to.
