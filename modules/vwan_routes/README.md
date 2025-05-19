@@ -214,8 +214,8 @@ Default value: `map[]`
 A map of routing configurations, where each entry defines a route with the following attributes:
 
 - `name`              - (`string`, required) the name of the route. Must be unique within the routing configurations.
-- `destinations_type` - (`string`, required) specifies the type of destinations. Valid options include 'CIDR', 'ResourceId',
-                        or 'Service'.
+- `destinations_type` - (`string`, required) specifies the type of destinations, valid values are: `CIDR`, `ResourceId`,
+                        or `Service`.
 - `destinations`      - (`list`, required) a list of destinations for the route.
 - `next_hop_type`     - (`string`, required, defaults to "ResourceId") specifies the type of next hop.
 - `next_hop_id`       - (`string`, required) the id for the next hop resource to which the route points.

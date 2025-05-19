@@ -95,7 +95,7 @@ variable "virtual_hubs" {
     The `address prefix` (CIDR) for the hub's internal subnet, must be at least `/24`
     EOF
   }
-  validation {
+  validation { # hub_routing_preference
     condition = alltrue([
       for hub in var.virtual_hubs : (
         hub.hub_routing_preference == null
@@ -106,7 +106,7 @@ variable "virtual_hubs" {
     The `hub_routing_preference` must be one of: "ExpressRoute", "ASPath", or "VpnGateway".
   EOF
   }
-  validation {
+  validation { # routing_preference
     condition = alltrue([
       for hub in var.virtual_hubs : (
         hub.vpn_gateway == null
@@ -335,7 +335,8 @@ variable "connections" {
       ]] if connection.connection_type == "Site-to-Site"
     ]))
     error_message = <<-EOF
-    The `pfs_group` property value must be one of "ECP384", "ECP256", "PFSMM", "PFS1", "PFS14", "PFS2", "PFS24", "PFS2048", or "None".
+    The `pfs_group` property value must be one of "ECP384", "ECP256", "PFSMM", "PFS1", "PFS14", "PFS2", "PFS24", "PFS2048"
+    or "None".
   EOF
   }
   validation { # ipsec_policy_sa_data_size_kb

@@ -26,6 +26,15 @@ variable "routing_intent" {
       }))
     })
   }))
+  validation { # routing_intent_name
+    condition = alltrue([
+      length([for _, intent in var.routing_intent : intent.routing_intent.routing_intent_name]) ==
+      length(distinct([for _, intent in var.routing_intent : intent.routing_intent.routing_intent_name]))
+    ])
+    error_message = <<-EOF
+    The `routing_intent_name` property of the routing intent must be unique.
+    EOF
+  }
 }
 
 variable "routes" {
@@ -33,8 +42,8 @@ variable "routes" {
   A map of routing configurations, where each entry defines a route with the following attributes:
 
   - `name`              - (`string`, required) the name of the route. Must be unique within the routing configurations.
-  - `destinations_type` - (`string`, required) specifies the type of destinations. Valid options include 'CIDR', 'ResourceId',
-                          or 'Service'.
+  - `destinations_type` - (`string`, required) specifies the type of destinations, valid values are: `CIDR`, `ResourceId`,
+                          or `Service`.
   - `destinations`      - (`list`, required) a list of destinations for the route.
   - `next_hop_type`     - (`string`, required, defaults to "ResourceId") specifies the type of next hop.
   - `next_hop_id`       - (`string`, required) the id for the next hop resource to which the route points.
@@ -50,4 +59,33 @@ variable "routes" {
     next_hop_id       = string
     route_table_id    = string
   }))
+  validation { # name
+    condition = alltrue([
+      length([for _, route in var.routes : route.name]) ==
+      length(distinct([for _, route in var.routes : route.name]))
+    ])
+    error_message = <<-EOF
+    The `name` property of the route must be unique.
+    EOF
+  }
+  validation { # destinations_type
+    condition = alltrue([
+      for _, route in var.routes : [
+        contains(["CIDR", "ResourceId", "Service"], route.destinations_type)
+      ]
+    ])
+    error_message = <<-EOF
+    The `destinations_type` property value must be of \"CIDR\", \"ResourceId\" or \"Service\".
+    EOF
+  }
+  validation { # next_hop_type
+    condition = alltrue([
+      for _, route in var.routes : [
+        contains(["ResourceId"], route.next_hop_type)
+      ]
+    ])
+    error_message = <<-EOF
+    The `next_hop_type` property value must be of \"ResourceId\".
+    EOF
+  }
 }
