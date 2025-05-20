@@ -187,18 +187,20 @@ locals {
 }
 
 module "virtual_wan" {
-  source              = "../../modules/vwan"
-  for_each            = var.virtual_wans
+  source = "../../modules/vwan"
+
+  for_each = var.virtual_wans
+
   virtual_wan_name    = each.value.create ? "${var.name_prefix}${each.value.name}" : each.value.name
   resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
   region              = coalesce(each.value.region, var.region)
-  tags                = var.tags
 
   virtual_hubs = each.value.virtual_hubs
   route_tables = lookup(local.route_tables, each.key, {})
   connections  = lookup(local.connections, each.key, {})
   vpn_sites    = lookup(local.vpn_sites, each.key, {})
 
+  tags = var.tags
 }
 
 locals {
@@ -265,7 +267,8 @@ locals {
 }
 
 module "vwan_routes" {
-  source   = "../../modules/vwan_routes"
+  source = "../../modules/vwan_routes"
+
   for_each = var.virtual_wans
 
   routes         = lookup(local.routes, each.key, {})

@@ -205,6 +205,7 @@ variable "virtual_wans" {
   - `virtual_hubs`                   - (`map`, optional) map of Virtual Hubs to create or source, for details see
                                        [Virtual WAN module documentation](../../modules/vwan/README.md#virtual_hubs).
   EOF
+  default     = {}
   type = map(object({
     name                           = string
     resource_group_name            = optional(string)
