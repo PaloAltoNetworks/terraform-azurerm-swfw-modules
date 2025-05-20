@@ -293,8 +293,7 @@ module "cloudngfw" {
   trusted_subnet_id = each.value.attachment_type == "vnet" ? (
     module.vnet[each.value.virtual_network_key].subnet_ids[each.value.trusted_subnet_key]
   ) : null
-  virtual_hub_id = each.value.attachment_type == "vwan" ? module.virtual_wan[each.value.virtual_wan_key].virtual_hub_ids[each.value.virtual_hub_key] : null
-
+  virtual_hub_id  = each.value.attachment_type == "vwan" ? module.virtual_wan[each.value.virtual_wan_key].virtual_hub_ids[each.value.virtual_hub_key] : null
   management_mode = each.value.management_mode
   cloudngfw_config = merge(each.value.cloudngfw_config, {
     public_ip_name = each.value.cloudngfw_config.public_ip_keys == null ? (each.value.cloudngfw_config.create_public_ip ? "${
@@ -310,6 +309,7 @@ module "cloudngfw" {
       })
     }
   })
+
   tags = var.tags
 }
 

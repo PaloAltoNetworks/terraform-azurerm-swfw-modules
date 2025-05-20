@@ -188,6 +188,116 @@ variable "public_ips" {
   })
 }
 
+variable "virtual_wans" {
+  description = <<-EOF
+  A map defining Virtual WANs.
+
+  For detailed documentation on each property refer to [module documentation](../../modules/vwan/README.md)
+
+  - `create`                         - (`bool`, optional, defaults to `true`) when set to `true` will create a new Virtual WAN,
+                                       `false` will source an existing Virtual WAN.
+  - `name`                           - (`string`, required) a name of a Virtual WAN. In case `create = false` this should be a
+                                       full resource name, including prefixes.
+  - `resource_group_name`            - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which
+                                       the Virtual WAN will reside or is sourced from.
+  - `disable_vpn_encryption`         - (`bool`, optional, defaults to `false`) if `true`, VPN encryption is disabled.
+  - `allow_branch_to_branch_traffic` - (`bool`, optional, defaults to `true`) if `false`, branch-to-branch traffic is not allowed.
+  - `virtual_hubs`                   - (`map`, optional) map of Virtual Hubs to create or source, for details see
+                                       [Virtual WAN module documentation](../../modules/vwan/README.md#virtual_hubs).
+  EOF
+  type = map(object({
+    name                           = string
+    resource_group_name            = optional(string)
+    create                         = optional(bool, true)
+    region                         = optional(string)
+    disable_vpn_encryption         = optional(bool, false)
+    allow_branch_to_branch_traffic = optional(bool, true)
+    virtual_hubs = optional(map(object({
+      name                                   = string
+      address_prefix                         = string
+      create                                 = optional(bool, true)
+      resource_group_name                    = optional(string)
+      region                                 = optional(string)
+      hub_routing_preference                 = optional(string)
+      virtual_router_auto_scale_min_capacity = optional(number)
+      connections = optional(map(object({
+        name                       = string
+        connection_type            = string
+        remote_virtual_network_key = optional(string)
+        vpn_site_key               = optional(string)
+        vpn_link = optional(list(object({
+          vpn_link_name                  = string
+          vpn_site_link_key              = string
+          bandwidth_mbps                 = optional(number)
+          bgp_enabled                    = optional(bool)
+          connection_mode                = optional(string)
+          protocol                       = optional(string)
+          ratelimit_enabled              = optional(bool)
+          shared_key                     = optional(string)
+          local_azure_ip_address_enabled = optional(bool)
+          ipsec_policy = optional(object({
+            dh_group                 = optional(string)
+            ike_encryption_algorithm = optional(string)
+            ike_integrity_algorithm  = optional(string)
+            encryption_algorithm     = optional(string)
+            integrity_algorithm      = optional(string)
+            pfs_group                = optional(string)
+            sa_data_size_kb          = optional(number)
+            sa_lifetime_sec          = optional(number)
+          }))
+        })))
+        routing = optional(object({
+          associated_route_table_key                = optional(string)
+          propagated_route_table_keys               = optional(list(string))
+          propagated_route_table_labels             = optional(set(string))
+          static_vnet_route_name                    = optional(string)
+          static_vnet_route_address_prefixes        = optional(set(string))
+          static_vnet_route_next_hop_ip_address     = optional(string)
+          static_vnet_local_route_override_criteria = optional(string)
+        }))
+      })), {})
+      route_tables = optional(map(object({
+        name   = string
+        labels = optional(set(string))
+        routes = optional(map(object({
+          name              = string
+          destinations_type = string
+          destinations      = list(string)
+          next_hop_type     = optional(string)
+          next_hop_key      = string
+        })), {})
+      })), {})
+      routing_intent = optional(object({
+        routing_intent_name = string
+        routing_policy = list(object({
+          routing_policy_name = string
+          destinations        = list(string)
+          next_hop_key        = string
+        }))
+      }))
+      vpn_gateway = optional(object({
+        name                = string
+        resource_group_name = optional(string)
+        scale_unit          = optional(number)
+        routing_preference  = optional(string)
+      }), null)
+      vpn_sites = optional(map(object({
+        name                = string
+        region              = optional(string)
+        resource_group_name = optional(string)
+        address_cidrs       = optional(set(string))
+        link = optional(map(object({
+          name          = string
+          ip_address    = optional(string)
+          fqdn          = optional(string)
+          provider_name = optional(string)
+          speed_in_mbps = optional(number, 0)
+        })))
+      })), {})
+    })), {})
+  }))
+}
+
 # CLOUDNGFW
 
 variable "cloudngfws" {
@@ -203,6 +313,7 @@ variable "cloudngfws" {
                                         Required if the `attachment_type` is `vnet`.
   - `untrusted_subnet_key`            - (`string`, optional) key of the subnet designated as untrusted within the Virtual Network.
   - `trusted_subnet_key`              - (`string`, optional) key of the subnet designated as trusted within the Virtual Network.
+  - `virtual_wan_key`                 - (`string`, optional) key of the Virtual Wan where to place the Cloud NGFW.
   - `virtual_hub_key`                 - (`string`, optional) key of the Virtual Hub within a vWAN where to place the Cloud NGFW.
   - `management_mode`                 - (`string`, required) defines the management mode for the firewall. When set to `panorama`,
                                         the firewall's policies are managed via Panorama.
@@ -247,6 +358,7 @@ variable "cloudngfws" {
     virtual_network_key  = optional(string)
     untrusted_subnet_key = optional(string)
     trusted_subnet_key   = optional(string)
+    virtual_wan_key      = optional(string)
     virtual_hub_key      = optional(string)
     management_mode      = string
     cloudngfw_config = object({
@@ -383,7 +495,7 @@ variable "test_infrastructure" {
       vnet_encryption         = optional(string)
       ddos_protection_plan_id = optional(string)
       hub_resource_group_name = optional(string)
-      hub_vnet_name           = string
+      hub_vnet_name           = optional(string)
       network_security_groups = optional(map(object({
         name = string
         rules = optional(map(object({
