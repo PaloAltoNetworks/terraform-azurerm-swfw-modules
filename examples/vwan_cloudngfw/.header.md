@@ -25,7 +25,7 @@ This design uses a Virtual Hub. Application functions and resources are deployed
 a hub-and-spoke topology. The hub of the topology, or Virtual Hub, is the central point of connectivity for all inbound,
 outbound, east-west, and enterprise traffic. You integrate Cloud NGFW with the Virtual Hub. Please see the [Cloud NGFW design guide](https://www.paloaltonetworks.com/apps/pan/public/downloadResource?pagePath=/content/pan/en_US/resources/guides/securing-apps-with-cloud-ngfw-for-azure-design-guide).
 
-![Azure NGFW hub README diagrams - Cloud NGFW_vnet (1)](https://github.com/user-attachments/assets/12b99d93-f5fb-4960-bc8d-069616e2c599)
+![Azure NGFW hub README diagrams - Cloud NGFW_vWAN](https://github.com/user-attachments/assets/1c6e3d51-cb3e-4d30-92c3-a96c9d60c652)
 
 This reference architecture consists of:
 
