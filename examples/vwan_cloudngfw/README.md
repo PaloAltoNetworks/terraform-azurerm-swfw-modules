@@ -1,43 +1,43 @@
 ---
-short_title: Common CloudNGFW
+short_title:  Virtual WAN CloudNGFW
 type: refarch
 show_in_hub: false
 swfw: cloudngfw
 ---
-# Reference Architecture with Terraform: Cloud NGFW in Azure, Virtual Network Design Model.
+# Reference Architecture with Terraform: Cloud NGFW in Azure, Virtual WAN Design Model.
 
 Palo Alto Networks produces several [validated reference architecture design and deployment documentation guides](https://www.paloaltonetworks.com/resources/reference-architectures), which describe well-architected and tested deployments.
 When deploying Cloud NGFWs in a public cloud, the reference architecturesguide users toward the best security outcomes,
 whilst reducing rollout time and avoiding common integration efforts.
 
-The Terraform code presented here will deploy Palo Alto Networks Cloud NGFW firewall in Azure based on a centralized virtual network design model with common Cloud NGFW for all traffic; for a discussion of other options, please see the design guide from
+The Terraform code presented here will deploy Palo Alto Networks Cloud NGFW firewall in Azure based on a centralized virtual WAN design model with common Cloud NGFW for all traffic; for a discussion of other options, please see the design guide from
 [the reference architecture guides](https://www.paloaltonetworks.com/resources/reference-architectures).
 
 ## Detailed Architecture and Design
 
-### Centralized Virtual Network Design
+### Centralized Virtual WAN Design
 
 This code implements:
 
-- a *centralized virtual network design*, a hub-and-spoke topology with a Transit VNet containing Cloud NGFW to inspect all inbound, outbound, east-west, and enterprise traffic.
+- a *centralized virtual WAN design*, a hub-and-spoke topology with a Virtual WAN containing Cloud NGFW to inspect all inbound, outbound, east-west, and enterprise traffic.
 
-This design uses a Transit VNet. Application functions and resources are deployed across multiple VNets that are connected in
-a hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound,
-outbound, east-west, and enterprise traffic. You integrate Cloud NGFW with the transit VNet. Please see the [Cloud NGFW design guide](https://www.paloaltonetworks.com/apps/pan/public/downloadResource?pagePath=/content/pan/en_US/resources/guides/securing-apps-with-cloud-ngfw-for-azure-design-guide).
+This design uses a Virtual Hub. Application functions and resources are deployed across multiple VNets that are connected in
+a hub-and-spoke topology. The hub of the topology, or Virtual Hub, is the central point of connectivity for all inbound,
+outbound, east-west, and enterprise traffic. You integrate Cloud NGFW with the Virtual Hub. Please see the [Cloud NGFW design guide](https://www.paloaltonetworks.com/apps/pan/public/downloadResource?pagePath=/content/pan/en_US/resources/guides/securing-apps-with-cloud-ngfw-for-azure-design-guide).
 
-![Azure NGFW hub README diagrams - Cloud NGFW_vnet (1)](https://github.com/user-attachments/assets/12b99d93-f5fb-4960-bc8d-069616e2c599)
+![Azure NGFW hub README diagrams - Cloud NGFW_vWAN](https://github.com/user-attachments/assets/1c6e3d51-cb3e-4d30-92c3-a96c9d60c652)
 
 This reference architecture consists of:
 
-- a VNET containing:
-  - 2 subnets dedicated to the Cloud NGFW: private and public
-  - Route Tables and Network Security Groups
+- a Virtual WAN containing:
+  - one Virtual Hub dedicated to the Cloud NGFW
+  - 3 connections to the Virtual Hub (two dedicated for spokes and one dedicated for the connection to Panorama)
 - 1 Cloud NGFW:
   - with 2 network interfaces: public, private
   - with 2 public IP addresses assigned to public interface
   - Destination Network Address Translation rules
 - _(optional)_ test workloads with accompanying infrastructure:
-  - 2 Spoke VNETs with Route Tables and Network Security Groups
+  - 2 Spoke VNets with Route Tables and Network Security Groups
   - 2 Spoke VMs serving as WordPress-based web servers
   - 2 Azure Bastion managed jump hosts
 
