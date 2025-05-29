@@ -6,8 +6,8 @@ region              = "North Europe"
 resource_group_name = "gwlb"
 name_prefix         = "example-"
 tags = {
-  "CreatedBy"     = "Palo Alto Networks"
-  "CreatedWith"   = "Terraform"
+  "createdBy"     = "Palo Alto Networks"
+  "createdWith"   = "Terraform"
   "xdr-exclusion" = "yes"
 }
 

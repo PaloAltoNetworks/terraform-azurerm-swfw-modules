@@ -6,8 +6,8 @@ region              = "North Europe"
 resource_group_name = "vng"
 name_prefix         = "ac-example-"
 tags = {
-  "CreatedBy"   = "Palo Alto Networks"
-  "CreatedWith" = "Terraform"
+  "createdBy"   = "Palo Alto Networks"
+  "createdWith" = "Terraform"
 }
 
 # NETWORK
