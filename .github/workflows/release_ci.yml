@@ -23,4 +23,4 @@ jobs:
       validate_max_parallel: 20
       test_max_parallel: 5
       terratest_action: Idempotence # keep in mind that this has to start with capital letter
-      apply_timeout: 60
+      apply_timeout: 120

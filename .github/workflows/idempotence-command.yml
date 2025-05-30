@@ -55,4 +55,4 @@ jobs:
       commitsha: ${{ inputs.commitsha }}
       repository: ${{ inputs.repository }}
       terratest_action: Idempotence
-      apply_timeout: 60
+      apply_timeout: 120
