@@ -6,8 +6,8 @@ region              = "North Europe"
 resource_group_name = "appgw-example"
 name_prefix         = "fosix-"
 tags = {
-  "CreatedBy"   = "Palo Alto Networks"
-  "CreatedWith" = "Terraform"
+  "createdBy"   = "Palo Alto Networks"
+  "createdWith" = "Terraform"
 }
 
 # NETWORK
