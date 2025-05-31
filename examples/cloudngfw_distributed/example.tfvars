@@ -41,14 +41,14 @@ cloudngfws = {
           destination_nat_protocol = "TCP"
           frontend_port            = 80
           backend_port             = 80
-          backend_ip_address       = "10.100.0.132"
+          backend_ip_address       = "10.100.0.4"
         }
         "app1-tcp443-dnat" = {
           destination_nat_name     = "app1-tcp443-dnat"
           destination_nat_protocol = "TCP"
           frontend_port            = 443
           backend_port             = 443
-          backend_ip_address       = "10.100.0.132"
+          backend_ip_address       = "10.100.0.4"
         }
       }
     }
@@ -68,14 +68,14 @@ cloudngfws = {
           destination_nat_protocol = "TCP"
           frontend_port            = 80
           backend_port             = 80
-          backend_ip_address       = "10.100.1.132"
+          backend_ip_address       = "10.100.1.4"
         }
         "app2-tcp443-dnat" = {
           destination_nat_name     = "app2-tcp443-dnat"
           destination_nat_protocol = "TCP"
           frontend_port            = 443
           backend_port             = 443
-          backend_ip_address       = "10.100.1.132"
+          backend_ip_address       = "10.100.1.4"
         }
       }
     }
@@ -120,7 +120,7 @@ test_infrastructure = {
                 direction                  = "Inbound"
                 access                     = "Allow"
                 protocol                   = "Tcp"
-                source_address_prefix      = "10.100.0.192/26"
+                source_address_prefix      = "10.100.0.64/26"
                 source_port_range          = "*"
                 destination_address_prefix = "*"
                 destination_port_range     = "*"
@@ -147,32 +147,32 @@ test_infrastructure = {
                 name                = "toNVA-udr"
                 address_prefix      = "0.0.0.0/0"
                 next_hop_type       = "VirtualAppliance"
-                next_hop_ip_address = "10.100.0.68"
+                next_hop_ip_address = "10.100.0.196"
               }
             }
           }
         }
         subnets = {
-          "public" = {
-            name                        = "cloudngfw-public"
-            address_prefixes            = ["10.100.0.0/26"]
-            network_security_group_key  = "cloudngfw-dnat"
-            enable_cloudngfw_delegation = true
-          }
-          "private" = {
-            name                        = "cloudngfw-private"
-            address_prefixes            = ["10.100.0.64/26"]
-            enable_cloudngfw_delegation = true
-          }
           "vms" = {
             name                       = "vms"
-            address_prefixes           = ["10.100.0.128/26"]
+            address_prefixes           = ["10.100.0.0/26"]
             network_security_group_key = "app1"
             route_table_key            = "nva"
           }
           "bastion" = {
             name             = "AzureBastionSubnet"
-            address_prefixes = ["10.100.0.192/26"]
+            address_prefixes = ["10.100.0.64/26"]
+          }
+          "public" = {
+            name                        = "cloudngfw-public"
+            address_prefixes            = ["10.100.0.128/26"]
+            network_security_group_key  = "cloudngfw-dnat"
+            enable_cloudngfw_delegation = true
+          }
+          "private" = {
+            name                        = "cloudngfw-private"
+            address_prefixes            = ["10.100.0.192/26"]
+            enable_cloudngfw_delegation = true
           }
         }
       }
@@ -227,7 +227,7 @@ test_infrastructure = {
                 direction                  = "Inbound"
                 access                     = "Allow"
                 protocol                   = "Tcp"
-                source_address_prefix      = "10.100.1.192/26"
+                source_address_prefix      = "10.100.1.64/26"
                 source_port_range          = "*"
                 destination_address_prefix = "*"
                 destination_port_range     = "*"
@@ -254,32 +254,32 @@ test_infrastructure = {
                 name                = "toNVA-udr"
                 address_prefix      = "0.0.0.0/0"
                 next_hop_type       = "VirtualAppliance"
-                next_hop_ip_address = "10.100.1.68"
+                next_hop_ip_address = "10.100.1.196"
               }
             }
           }
         }
         subnets = {
-          "public" = {
-            name                        = "cloudngfw-public"
-            address_prefixes            = ["10.100.1.0/26"]
-            network_security_group_key  = "cloudngfw-dnat"
-            enable_cloudngfw_delegation = true
-          }
-          "private" = {
-            name                        = "cloudngfw-private"
-            address_prefixes            = ["10.100.1.64/26"]
-            enable_cloudngfw_delegation = true
-          }
           "vms" = {
             name                       = "vms-snet"
-            address_prefixes           = ["10.100.1.128/26"]
+            address_prefixes           = ["10.100.1.0/26"]
             network_security_group_key = "app2"
             route_table_key            = "nva"
           }
           "bastion" = {
             name             = "AzureBastionSubnet"
-            address_prefixes = ["10.100.1.192/26"]
+            address_prefixes = ["10.100.1.64/26"]
+          }
+          "public" = {
+            name                        = "cloudngfw-public"
+            address_prefixes            = ["10.100.1.128/26"]
+            network_security_group_key  = "cloudngfw-dnat"
+            enable_cloudngfw_delegation = true
+          }
+          "private" = {
+            name                        = "cloudngfw-private"
+            address_prefixes            = ["10.100.1.192/26"]
+            enable_cloudngfw_delegation = true
           }
         }
       }
