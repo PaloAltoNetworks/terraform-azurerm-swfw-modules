@@ -23,7 +23,7 @@ This code implements:
 
 Application functions and resources are deployed across multiple VNets that are not connected with each other by any means. You integrate a separate Cloud NGFW with each VNet, handling all types of traffic for this specific VNet. Please see the [Cloud NGFW design guide](https://www.paloaltonetworks.com/apps/pan/public/downloadResource?pagePath=/content/pan/en_US/resources/guides/securing-apps-with-cloud-ngfw-for-azure-design-guide).
 
-![Azure NGFW hub README diagrams - Cloud NGFW_distributed](https://github.com/user-attachments/assets/79d792fa-7e99-474e-a556-6b4b90c23875)
+![Azure NGFW hub README diagrams - Cloud NGFW_distributed](https://github.com/user-attachments/assets/efa7e5de-38be-464d-811e-29e5c8cb3995)
 
 This reference architecture consists of:
 
