@@ -139,7 +139,7 @@ test_infrastructure = {
         }
         subnets = {
           "vms" = {
-            name                       = "vms-snet"
+            name                       = "vms"
             address_prefixes           = ["10.100.0.0/26"]
             network_security_group_key = "app1"
           }
@@ -201,7 +201,7 @@ test_infrastructure = {
         }
         subnets = {
           "vms" = {
-            name                       = "vms-snet"
+            name                       = "vms"
             address_prefixes           = ["10.100.1.0/26"]
             network_security_group_key = "app2"
           }
