@@ -43,7 +43,7 @@ runs:
       env:
         TPATH: ${{ inputs.path }}
         ARM_USE_OIDC: true
-        ARM_SKIP_PROVIDER_REGISTRATION: true
+        ARM_RESOURCE_PROVIDER_REGISTRATIONS: none
         ACTION: ${{ inputs.terratest_action }}
         PRID: ${{ inputs.pr-id }}
       shell: bash
