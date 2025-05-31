@@ -38,13 +38,13 @@ vnets = {
     subnets = {
       "public" = {
         name                        = "public"
-        address_prefixes            = ["10.0.0.64/26"]
+        address_prefixes            = ["10.0.0.0/26"]
         network_security_group_key  = "cloudngfw-dnat"
         enable_cloudngfw_delegation = true
       }
       "private" = {
         name                        = "private"
-        address_prefixes            = ["10.0.0.0/26"]
+        address_prefixes            = ["10.0.0.64/26"]
         enable_cloudngfw_delegation = true
       }
     }
@@ -139,14 +139,14 @@ test_infrastructure = {
                 name                = "toNVA-udr"
                 address_prefix      = "0.0.0.0/0"
                 next_hop_type       = "VirtualAppliance"
-                next_hop_ip_address = "10.0.0.4"
+                next_hop_ip_address = "10.0.0.68"
               }
             }
           }
         }
         subnets = {
           "vms" = {
-            name                       = "vms-snet"
+            name                       = "vms"
             address_prefixes           = ["10.100.0.0/26"]
             network_security_group_key = "app1"
             route_table_key            = "nva"
@@ -216,14 +216,14 @@ test_infrastructure = {
                 name                = "toNVA-udr"
                 address_prefix      = "0.0.0.0/0"
                 next_hop_type       = "VirtualAppliance"
-                next_hop_ip_address = "10.0.0.4"
+                next_hop_ip_address = "10.0.0.68"
               }
             }
           }
         }
         subnets = {
           "vms" = {
-            name                       = "vms-snet"
+            name                       = "vms"
             address_prefixes           = ["10.100.1.0/26"]
             network_security_group_key = "app2"
             route_table_key            = "nva"
