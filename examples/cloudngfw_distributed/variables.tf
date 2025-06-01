@@ -495,8 +495,7 @@ variable "test_infrastructure" {
       dns_servers             = optional(list(string))
       vnet_encryption         = optional(string)
       ddos_protection_plan_id = optional(string)
-      hub_resource_group_name = optional(string)
-      hub_vnet_name           = optional(string)
+      hub_vnet_key            = optional(string)
       network_security_groups = optional(map(object({
         name = string
         rules = optional(map(object({

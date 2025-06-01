@@ -91,8 +91,7 @@ test_infrastructure = {
         name          = "app1-vnet"
         address_space = ["10.100.0.0/24"]
         /* Uncomment the section below to peer this VNET with the Panorama VNET
-        hub_vnet_name           = "example-panorama-vnet"
-        hub_resource_group_name = "example-panorama"
+        hub_vnet_key  = "panorama"
         */
         network_security_groups = {
           "cloudngfw-dnat" = {
@@ -198,8 +197,7 @@ test_infrastructure = {
         name          = "app2-vnet"
         address_space = ["10.100.1.0/24"]
         /* Uncomment the section below to peer this VNET with the Panorama VNET
-        hub_vnet_name           = "example-panorama-vnet"
-        hub_resource_group_name = "example-panorama"
+        hub_vnet_key  = "panorama"
         */
         network_security_groups = {
           "cloudngfw-dnat" = {
