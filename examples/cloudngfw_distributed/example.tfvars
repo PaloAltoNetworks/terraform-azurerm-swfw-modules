@@ -165,7 +165,7 @@ test_infrastructure = {
           "public" = {
             name                        = "cloudngfw-public"
             address_prefixes            = ["10.100.0.128/26"]
-            network_security_group_key  = "cloudngfw-dnat"
+            network_security_group_key  = "cloudngfw1-dnat"
             enable_cloudngfw_delegation = true
           }
           "private" = {
@@ -271,7 +271,7 @@ test_infrastructure = {
           "public" = {
             name                        = "cloudngfw-public"
             address_prefixes            = ["10.100.1.128/26"]
-            network_security_group_key  = "cloudngfw-dnat"
+            network_security_group_key  = "cloudngfw2-dnat"
             enable_cloudngfw_delegation = true
           }
           "private" = {
