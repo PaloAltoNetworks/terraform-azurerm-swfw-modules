@@ -94,8 +94,8 @@ test_infrastructure = {
         hub_vnet_key  = "panorama"
         */
         network_security_groups = {
-          "cloudngfw-dnat" = {
-            name = "cloudngfw-dnat-nsg"
+          "cloudngfw1-dnat" = {
+            name = "cloudngfw1-dnat-nsg"
             rules = {
               cloudngfw-dnat-ports-allow = {
                 name                         = "cloudngfw-dnat-ports-allow"
@@ -200,8 +200,8 @@ test_infrastructure = {
         hub_vnet_key  = "panorama"
         */
         network_security_groups = {
-          "cloudngfw-dnat" = {
-            name = "cloudngfw-dnat-nsg"
+          "cloudngfw2-dnat" = {
+            name = "cloudngfw2-dnat-nsg"
             rules = {
               cloudngfw-dnat-ports-allow = {
                 name                         = "cloudngfw-dnat-ports-allow"
