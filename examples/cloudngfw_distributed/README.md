@@ -1,49 +1,40 @@
 ---
-short_title: Cloud NGFW Single Virtual WAN
+short_title: CloudNGFW Distributed
 type: refarch
 show_in_hub: false
 swfw: cloudngfw
 ---
-# Reference Architecture with Terraform: Cloud NGFW in Azure, Virtual WAN Design Model.
+# Reference Architecture with Terraform: Cloud NGFW in Azure, Distributed Design Model.
 
 Palo Alto Networks produces several [validated reference architecture design and deployment documentation guides](https://www.paloaltonetworks.com/resources/reference-architectures), which describe well-architected and tested deployments.
 When deploying Cloud NGFWs in a public cloud, the reference architecturesguide users toward the best security outcomes,
 whilst reducing rollout time and avoiding common integration efforts.
 
-The Terraform code presented here will deploy Palo Alto Networks Cloud NGFW firewall in Azure based on a centralized virtual WAN design model with common Cloud NGFW for all traffic; for a discussion of other options, please see the design guide from
+The Terraform code presented here will deploy Palo Alto Networks Cloud NGFW firewall in Azure based on a distributed virtual network design model with common Cloud NGFW for all traffic; for a discussion of other options, please see the design guide from
 [the reference architecture guides](https://www.paloaltonetworks.com/resources/reference-architectures).
 
 ## Detailed Architecture and Design
 
-### Centralized Virtual WAN Design
+### Distributed Virtual Network Design
 
 This code implements:
 
-- a *centralized virtual WAN design*, a hub-and-spoke topology with a Virtual WAN containing Cloud NGFW to inspect all inbound, outbound, east-west, and enterprise traffic.
+- a *distributed virtual network design*, a distributed topology where each VNet contains a separate Cloud NGFW to inspect all inbound, outbound, east-west, and enterprise traffic.
 
-This design uses a Virtual Hub. Application functions and resources are deployed across multiple VNets that are connected in
-a hub-and-spoke topology. The hub of the topology, or Virtual Hub, is the central point of connectivity for all inbound,
-outbound, east-west, and enterprise traffic. You integrate Cloud NGFW with the Virtual Hub. Please see the [Cloud NGFW design guide](https://www.paloaltonetworks.com/apps/pan/public/downloadResource?pagePath=/content/pan/en_US/resources/guides/securing-apps-with-cloud-ngfw-for-azure-design-guide).
+Application functions and resources are deployed across multiple VNets that are not connected with each other by any means. You integrate a separate Cloud NGFW with each VNet, handling all types of traffic for this specific VNet. Please see the [Cloud NGFW design guide](https://www.paloaltonetworks.com/apps/pan/public/downloadResource?pagePath=/content/pan/en_US/resources/guides/securing-apps-with-cloud-ngfw-for-azure-design-guide).
 
-![Azure NGFW hub README diagrams - Cloud NGFW_vWAN](https://github.com/user-attachments/assets/1c6e3d51-cb3e-4d30-92c3-a96c9d60c652)
+![Azure NGFW hub README diagrams - cngfw_distributed](https://github.com/user-attachments/assets/33c58732-1c55-410a-9b5d-030cbded27a8)
 
 This reference architecture consists of:
 
-- a Virtual WAN containing:
-  - one Virtual Hub dedicated to the Cloud NGFW
-  - 3 connections to the Virtual Hub (two dedicated for spokes and one dedicated for the connection to Panorama)
-- 1 Cloud NGFW:
+- 2 Cloud NGFW, each:
   - with 2 network interfaces: public, private
   - with 2 public IP addresses assigned to public interface
   - Destination Network Address Translation rules
-- _(optional)_ test workloads with accompanying infrastructure:
-  - 2 Spoke VNets with Route Tables and Network Security Groups
+- test workloads with accompanying infrastructure:
+  - 2 Spoke VNETs with Cloud NGFW dedicated Subnets (private and public), Route Tables and Network Security Groups
   - 2 Spoke VMs serving as WordPress-based web servers
   - 2 Azure Bastion managed jump hosts
-
-**NOTE!**
-- In order to deploy the architecture without test workloads described above, empty the `test_infrastructure` map in
-  `example.tfvars` file.
 
 ## Prerequisites
 

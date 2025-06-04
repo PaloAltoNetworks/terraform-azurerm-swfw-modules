@@ -25,7 +25,7 @@ This design uses a Transit VNet. Application functions and resources are deploye
 a hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound,
 outbound, east-west, and enterprise traffic. You integrate Cloud NGFW with the transit VNet. Please see the [Cloud NGFW design guide](https://www.paloaltonetworks.com/apps/pan/public/downloadResource?pagePath=/content/pan/en_US/resources/guides/securing-apps-with-cloud-ngfw-for-azure-design-guide).
 
-![Azure NGFW hub README diagrams - Cloud NGFW_vnet (1)](https://github.com/user-attachments/assets/12b99d93-f5fb-4960-bc8d-069616e2c599)
+![Azure NGFW hub README diagrams - Cloud NGFW_VNet](https://github.com/user-attachments/assets/719d9281-c872-4945-9426-c7404cd620df)
 
 This reference architecture consists of:
 
@@ -711,8 +711,7 @@ map(object({
       dns_servers             = optional(list(string))
       vnet_encryption         = optional(string)
       ddos_protection_plan_id = optional(string)
-      hub_resource_group_name = optional(string)
-      hub_vnet_name           = optional(string)
+      hub_vnet_key            = optional(string)
       network_security_groups = optional(map(object({
         name = string
         rules = optional(map(object({

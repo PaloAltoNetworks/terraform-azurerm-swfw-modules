@@ -3,6 +3,16 @@ output "virtual_network_id" {
   value       = local.virtual_network.id
 }
 
+output "virtual_network_name" {
+  description = "The name of the created or sourced Virtual Network."
+  value       = local.virtual_network.name
+}
+
+output "virtual_network_resource_group" {
+  description = "The Resource Group name of the created or sourced Virtual Network."
+  value       = local.virtual_network.resource_group_name
+}
+
 output "vnet_cidr" {
   description = "VNET address space."
   value       = tolist(local.virtual_network.address_space)

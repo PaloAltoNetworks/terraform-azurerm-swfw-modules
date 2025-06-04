@@ -11,7 +11,12 @@ output "frontend_ip_configs" {
   value       = { for k, v in module.load_balancer : k => v.frontend_ip_configs }
 }
 
+output "vnets" {
+  description = "The VNETs objects."
+  value       = module.vnet
+}
+
 output "vnet_ids" {
-  description = "The identifiers of the vnets."
+  description = "The identifiers of the VNETs."
   value       = { for k, v in module.vnet : k => v.virtual_network_id }
 }

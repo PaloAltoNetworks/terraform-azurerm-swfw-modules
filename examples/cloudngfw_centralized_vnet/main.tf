@@ -277,6 +277,10 @@ module "vwan_routes" {
 
 # Create Cloud Next-Generation Firewalls
 
+locals {
+  vnets = merge(module.vnet, [for env in module.test_infrastructure : env.vnets]...)
+}
+
 module "cloudngfw" {
   source = "../../modules/cloudngfw"
 
@@ -288,13 +292,13 @@ module "cloudngfw" {
 
   attachment_type = each.value.attachment_type
   virtual_network_id = each.value.attachment_type == "vnet" ? (
-    module.vnet[each.value.virtual_network_key].virtual_network_id
+    local.vnets[each.value.virtual_network_key].virtual_network_id
   ) : null
   untrusted_subnet_id = each.value.attachment_type == "vnet" ? (
-    module.vnet[each.value.virtual_network_key].subnet_ids[each.value.untrusted_subnet_key]
+    local.vnets[each.value.virtual_network_key].subnet_ids[each.value.untrusted_subnet_key]
   ) : null
   trusted_subnet_id = each.value.attachment_type == "vnet" ? (
-    module.vnet[each.value.virtual_network_key].subnet_ids[each.value.trusted_subnet_key]
+    local.vnets[each.value.virtual_network_key].subnet_ids[each.value.trusted_subnet_key]
   ) : null
   virtual_hub_id  = each.value.attachment_type == "vwan" ? module.virtual_wan[each.value.virtual_wan_key].virtual_hub_ids[each.value.virtual_hub_key] : null
   management_mode = each.value.management_mode
@@ -340,9 +344,12 @@ module "test_infrastructure" {
   )
   region = var.region
   vnets = { for k, v in each.value.vnets : k => merge(v, {
-    name                    = "${var.name_prefix}${v.name}"
-    hub_vnet_name           = try("${var.name_prefix}${v.hub_vnet_name}", null)
-    hub_resource_group_name = try(coalesce(v.hub_resource_group_name, local.resource_group.name), null)
+    name = "${var.name_prefix}${v.name}"
+    hub_vnet_name = try(var.vnets[v.hub_vnet_key].create_virtual_network ?
+    "${var.name_prefix}${var.vnets[v.hub_vnet_key].name}" : var.vnets[v.hub_vnet_key].name, null)
+    hub_resource_group_name = try(
+      coalesce(module.vnet[v.hub_vnet_key].virtual_network_resource_group, local.resource_group.name), null
+    )
     network_security_groups = { for kv, vv in v.network_security_groups : kv => merge(vv, {
       name = "${var.name_prefix}${vv.name}" })
     }
