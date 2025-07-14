@@ -102,6 +102,7 @@ variable "vnets" {
       address_prefixes                = optional(list(string), [])
       network_security_group_key      = optional(string)
       route_table_key                 = optional(string)
+      default_outbound_access_enabled = optional(bool)
       enable_storage_service_endpoint = optional(bool, false)
       enable_cloudngfw_delegation     = optional(bool)
     })), {})
