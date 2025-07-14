@@ -674,7 +674,7 @@ variable "vmseries_universal" {
   universal properties can be overriden on a per-VM basis.
 
   Following properties are supported:
-  
+
   - `use_airs`          - (`bool`, optional, defaults to `false`) when set to `true`, the AI Runtime Security VM image is used 
                           instead of the one passed to the module and version for `airs-flex` offer must be provided.  
   - `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
