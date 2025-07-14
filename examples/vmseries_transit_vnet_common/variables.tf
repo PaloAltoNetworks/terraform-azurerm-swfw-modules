@@ -674,7 +674,9 @@ variable "vmseries_universal" {
   universal properties can be overriden on a per-VM basis.
 
   Following properties are supported:
-  
+
+  - `use_airs`          - (`bool`, optional, defaults to `false`) when set to `true`, the AI Runtime Security VM image is used 
+                          instead of the one passed to the module and version for `airs-flex` offer must be provided.  
   - `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
   - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
                           Deployment Guide* as only a few selected sizes are supported.
@@ -685,8 +687,9 @@ variable "vmseries_universal" {
   EOF
   default     = {}
   type = object({
-    version = optional(string)
-    size    = optional(string)
+    use_airs = optional(bool)
+    version  = optional(string)
+    size     = optional(string)
     bootstrap_options = optional(object({
       type                                  = optional(string)
       ip-address                            = optional(string)
@@ -876,6 +879,7 @@ variable "vmseries" {
       ssh_keys                        = optional(list(string), [])
     }), {})
     image = optional(object({
+      use_airs                = optional(bool)
       version                 = optional(string)
       publisher               = optional(string)
       offer                   = optional(string)
