@@ -1,1 +1,2 @@
 type=dhcp-client
+plugin-op-commands=advance-routing:enable
