@@ -55,6 +55,19 @@ resource "azurerm_subnet" "this" {
   service_endpoints    = each.value.enable_storage_service_endpoint ? ["Microsoft.Storage"] : null
 
   dynamic "delegation" {
+    for_each = each.value.enable_appgw_delegation ? [1] : []
+    content {
+      name = "appgw_delegation"
+      service_delegation {
+        name = "Microsoft.Network/applicationGateways"
+        actions = [
+          "Microsoft.Network/virtualNetworks/subnets/join/action"
+        ]
+      }
+    }
+  }
+
+  dynamic "delegation" {
     for_each = each.value.enable_cloudngfw_delegation ? [1] : []
     content {
       name = "cloudngfw_delegation"
