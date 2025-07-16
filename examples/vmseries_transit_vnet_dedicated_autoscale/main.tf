@@ -384,7 +384,8 @@ module "vmss" {
   image = merge(
     each.value.image,
     {
-      version = try(each.value.image.version, var.scale_sets_universal.version, null)
+      use_airs = try(each.value.image.use_airs, var.scale_sets_universal.use_airs, false)
+      version  = try(each.value.image.version, var.scale_sets_universal.version, null)
     }
   )
   virtual_machine_scale_set = merge(

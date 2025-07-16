@@ -130,6 +130,7 @@ variable "vnets" {
       route_table_key                 = optional(string)
       default_outbound_access_enabled = optional(bool)
       enable_storage_service_endpoint = optional(bool)
+      enable_appgw_delegation         = optional(bool)
       enable_cloudngfw_delegation     = optional(bool)
     })), {})
   }))
@@ -369,8 +370,8 @@ variable "appgws" {
                          described by `subnet_key`.
   - `subnet_key`       - (`string`, required) a key pointing to a Subnet definition in the `var.vnets` map, this has to be an
                          Application Gateway V2 dedicated subnet.
-  - `zones`            - (`list`, optional, defaults to module default) parameter controlling if this is a zonal, or a non-zonal
-                         deployment.
+  - `zones`            - (`list`, optional, defaults to `["1", "2", "3"]`) parameter controlling if this is a zonal, or a
+                         non-zonal deployment.
   - `public_ip`        - (`map`, required) defines a Public IP resource used by the Application Gateway instance, a newly created
                          Public IP will have it's name prefixes with `var.name_prefix`.
   - `listeners`        - (`map`, required) defines Application Gateway's Listeners, see
@@ -397,7 +398,7 @@ variable "appgws" {
     name       = string
     vnet_key   = string
     subnet_key = string
-    zones      = optional(list(string))
+    zones      = optional(list(string), ["1", "2", "3"])
     public_ip = object({
       create              = optional(bool, true)
       name                = optional(string)
@@ -652,7 +653,9 @@ variable "scale_sets_universal" {
   set within this variable. As a result, all universal properties can be overriden on a per-VMSS basis.
 
   Following properties are supported:
-  
+
+  - `use_airs`          - (`bool`, optional, defaults to `false`) when set to `true`, the AI Runtime Security VM image is used 
+                          instead of the one passed to the module and version for `airs-flex` offer must be provided.  
   - `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
   - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
                           Deployment Guide* as only a few selected sizes are supported.
@@ -663,8 +666,9 @@ variable "scale_sets_universal" {
   EOF
   default     = {}
   type = object({
-    version = optional(string)
-    size    = optional(string)
+    use_airs = optional(bool)
+    version  = optional(string)
+    size     = optional(string)
     bootstrap_options = optional(object({
       type                                  = optional(string)
       ip-address                            = optional(string)
@@ -846,6 +850,7 @@ variable "scale_sets" {
       ssh_keys                        = optional(list(string), [])
     })
     image = optional(object({
+      use_airs                = optional(bool)
       version                 = optional(string)
       publisher               = optional(string)
       offer                   = optional(string)
@@ -1135,6 +1140,7 @@ variable "test_infrastructure" {
         route_table_key                 = optional(string)
         default_outbound_access_enabled = optional(bool)
         enable_storage_service_endpoint = optional(bool)
+        enable_appgw_delegation         = optional(bool)
         enable_cloudngfw_delegation     = optional(bool)
       })), {})
       local_peer_config = optional(object({

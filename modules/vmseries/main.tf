@@ -87,9 +87,9 @@ resource "azurerm_linux_virtual_machine" "this" {
   dynamic "source_image_reference" {
     for_each = var.image.custom_id == null ? [1] : []
     content {
-      publisher = var.image.publisher
-      offer     = var.image.offer
-      sku       = var.image.sku
+      publisher = var.image.use_airs ? "paloaltonetworks" : var.image.publisher
+      offer     = var.image.use_airs ? "airs-flex" : var.image.offer
+      sku       = var.image.use_airs ? "airs-byol" : var.image.sku
       version   = var.image.version
     }
   }
@@ -98,9 +98,9 @@ resource "azurerm_linux_virtual_machine" "this" {
     for_each = var.image.enable_marketplace_plan ? [1] : []
 
     content {
-      name      = var.image.sku
-      publisher = var.image.publisher
-      product   = var.image.offer
+      name      = var.image.use_airs ? "airs-byol" : var.image.sku
+      publisher = var.image.use_airs ? "paloaltonetworks" : var.image.publisher
+      product   = var.image.use_airs ? "airs-flex" : var.image.offer
     }
   }
 
