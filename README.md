@@ -15,7 +15,7 @@ to your applications running on Azure Cloud. It deploys Software Firewalls and i
 aspects such as virtual networks, subnets, network security groups, storage accounts, service principals,
 Panorama virtual machine instances, and more.
 
-The design is heavily based on the [Reference Architecture Guide for Azure](https://pandocs.tech/fw/115p-prime).
+The design is heavily based on the [Reference Architecture Guide for Azure VM-Series](https://www.paloaltonetworks.com/resources/guides/azure-architecture-guide) and [Reference Architecture Guide for Azure CloudNGFW](https://www.paloaltonetworks.com/resources/guides/securing-apps-with-cloud-ngfw-for-azure-design-guide).
 
 For copyright and license see the LICENSE file.
 
