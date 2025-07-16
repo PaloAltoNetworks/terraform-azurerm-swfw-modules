@@ -274,7 +274,7 @@ bootstrap_storages = {
 
 # All options under `vmseries_universal` map can be overwritten on a per-firewall basis under `vmseries` map
 vmseries_universal = {
-  version = "10.2.1009"
+  version = "11.1.607"
   size    = "Standard_DS3_v2"
 
   # This example uses basic user-data bootstrap method by default, comment out the map below if you want to use another one
