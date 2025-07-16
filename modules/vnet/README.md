@@ -497,8 +497,8 @@ List of available attributes of each subnet entry:
                                       `network_security_groups` that should be assigned to this subnet.
 - `route_table_key`                 - (`string`, optional, defaults to `null`) a key identifying a Route Table defined in
                                       `route_tables` that should be assigned to this subnet.
-- `default_outbound_access_enabled` - (`bool, optional, defaults to `false`) a flag that enables default outbound access to the
-                                      Internet from the subnet. Using explicit Internet access methods is recommended.
+- `default_outbound_access_enabled` - (`bool`, optional, defaults to `false`) a flag that enables default outbound access to
+                                      the Internet from the subnet. Using explicit Internet access methods is recommended.
 - `enable_storage_service_endpoint` - (`bool`, optional, defaults to `false`) a flag that enables `Microsoft.Storage` service
                                       endpoint on a subnet. This is a suggested setting for the management interface when full
                                       bootstrapping using an Azure Storage Account is used.
