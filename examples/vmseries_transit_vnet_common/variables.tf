@@ -129,6 +129,7 @@ variable "vnets" {
       network_security_group_key      = optional(string)
       route_table_key                 = optional(string)
       enable_storage_service_endpoint = optional(bool)
+      enable_appgw_delegation         = optional(bool)
       enable_cloudngfw_delegation     = optional(bool)
     })), {})
   }))
@@ -368,8 +369,8 @@ variable "appgws" {
                          described by `subnet_key`.
   - `subnet_key`       - (`string`, required) a key pointing to a Subnet definition in the `var.vnets` map, this has to be an
                          Application Gateway V2 dedicated subnet.
-  - `zones`            - (`list`, optional, defaults to module default) parameter controlling if this is a zonal, or a non-zonal
-                         deployment.
+  - `zones`            - (`list`, optional, defaults to `["1", "2", "3"]`) parameter controlling if this is a zonal, or a
+                         non-zonal deployment.
   - `public_ip`        - (`map`, required) defines a Public IP resource used by the Application Gateway instance, a newly created
                          Public IP will have it's name prefixes with `var.name_prefix`.
   - `listeners`        - (`map`, required) defines Application Gateway's Listeners, see
@@ -396,7 +397,7 @@ variable "appgws" {
     name       = string
     vnet_key   = string
     subnet_key = string
-    zones      = optional(list(string))
+    zones      = optional(list(string), ["1", "2", "3"])
     public_ip = object({
       create              = optional(bool, true)
       name                = optional(string)
@@ -1138,6 +1139,7 @@ variable "test_infrastructure" {
         network_security_group_key      = optional(string)
         route_table_key                 = optional(string)
         enable_storage_service_endpoint = optional(bool)
+        enable_appgw_delegation         = optional(bool)
         enable_cloudngfw_delegation     = optional(bool)
       })), {})
       local_peer_config = optional(object({

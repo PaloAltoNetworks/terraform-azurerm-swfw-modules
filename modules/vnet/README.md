@@ -500,6 +500,9 @@ List of available attributes of each subnet entry:
 - `enable_storage_service_endpoint` - (`bool`, optional, defaults to `false`) a flag that enables `Microsoft.Storage` service
                                       endpoint on a subnet. This is a suggested setting for the management interface when full
                                       bootstrapping using an Azure Storage Account is used.
+- `enable_appgw_delegation`         - (`bool`, optional, defaults to `false`) a flag that enables subnet delegation to 
+                                      `Microsoft.Network/applicationGateways` service. This is required for Application Gateway
+                                      Enhanced Network Isolation.
 - `enable_cloudngfw_delegation`     - (`bool`, optional, defaults to `false`) a flag that enables subnet delegation to
                                       `PaloAltoNetworks.Cloudngfw/firewalls` service. This is required for Cloud NGFW to work
                                       in a VNET-based deployment.
@@ -536,6 +539,7 @@ map(object({
     network_security_group_key      = optional(string)
     route_table_key                 = optional(string)
     enable_storage_service_endpoint = optional(bool, false)
+    enable_appgw_delegation         = optional(bool, false)
     enable_cloudngfw_delegation     = optional(bool, false)
   }))
 ```

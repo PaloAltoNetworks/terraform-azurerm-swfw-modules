@@ -121,8 +121,9 @@ vnets = {
         route_table_key  = "private"
       }
       "appgw" = {
-        name             = "appgw-snet"
-        address_prefixes = ["10.0.0.48/28"]
+        name                    = "appgw-snet"
+        address_prefixes        = ["10.0.0.48/28"]
+        enable_appgw_delegation = true
       }
     }
   }
