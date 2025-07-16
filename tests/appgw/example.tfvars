@@ -31,9 +31,10 @@ vnets = {
     }
     subnets = {
       "appgw" = {
-        name             = "appgw"
-        address_prefixes = ["10.0.0.0/25"]
-        route_table_key  = "rt"
+        name                    = "appgw"
+        address_prefixes        = ["10.0.0.0/25"]
+        route_table_key         = "rt"
+        enable_appgw_delegation = true
       }
     }
   }

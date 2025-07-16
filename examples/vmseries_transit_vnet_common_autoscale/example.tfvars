@@ -121,8 +121,9 @@ vnets = {
         route_table_key  = "private"
       }
       "appgw" = {
-        name             = "appgw-snet"
-        address_prefixes = ["10.0.0.48/28"]
+        name                    = "appgw-snet"
+        address_prefixes        = ["10.0.0.48/28"]
+        enable_appgw_delegation = true
       }
     }
   }
@@ -280,7 +281,7 @@ scale_sets = {
     name     = "common-vmss"
     vnet_key = "transit"
     image = {
-      version = "10.2.1009"
+      version = "11.1.607"
     }
     authentication = {
       disable_password_authentication = false
