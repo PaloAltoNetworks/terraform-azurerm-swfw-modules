@@ -102,7 +102,9 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
             name                    = nic.value.name
             domain_name_label       = nic.value.pip_domain_name_label
             idle_timeout_in_minutes = nic.value.pip_idle_timeout_in_minutes
-            public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.allocate[nic.value.name].id, null)
+            public_ip_prefix_id = try(
+              nic.value.pip_prefix_id, data.azurerm_public_ip_prefix.allocate[nic.value.name].id, null
+            )
           }
         }
       }
