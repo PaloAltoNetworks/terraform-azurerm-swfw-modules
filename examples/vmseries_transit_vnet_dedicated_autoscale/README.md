@@ -494,6 +494,7 @@ object({
       idle_timeout_in_minutes    = optional(number)
       prefix_name                = optional(string)
       prefix_resource_group_name = optional(string)
+      prefix_id                  = optional(string)
     })), {})
     public_ip_prefixes = optional(map(object({
       create              = bool
@@ -1291,6 +1292,7 @@ map(object({
       pip_idle_timeout_in_minutes    = optional(number)
       pip_prefix_name                = optional(string)
       pip_prefix_resource_group_name = optional(string)
+      pip_prefix_id                  = optional(string)
       load_balancer_key              = optional(string)
       application_gateway_key        = optional(string)
     }))

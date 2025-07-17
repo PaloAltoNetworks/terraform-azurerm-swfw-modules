@@ -18,7 +18,7 @@ resource "azurerm_public_ip" "this" {
   zones                   = each.value.zones
   domain_name_label       = each.value.domain_name_label
   idle_timeout_in_minutes = each.value.idle_timeout_in_minutes
-  public_ip_prefix_id     = try(data.azurerm_public_ip_prefix.allocate[each.key].id, null)
+  public_ip_prefix_id     = try(each.value.prefix_id, data.azurerm_public_ip_prefix.allocate[each.key].id, null)
   tags                    = var.tags
 }
 
