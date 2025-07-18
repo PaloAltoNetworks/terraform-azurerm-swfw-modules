@@ -70,7 +70,7 @@ resource "azurerm_virtual_hub_connection" "this" {
     : data.azurerm_virtual_hub.this[each.value.hub_key].id
   )
   remote_virtual_network_id = each.value.remote_virtual_network_id
-
+  internet_security_enabled = each.value.internet_security_enabled
   dynamic "routing" {
     for_each = each.value.routing != null ? [1] : []
     content {
