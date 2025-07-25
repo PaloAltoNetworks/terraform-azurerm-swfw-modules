@@ -260,19 +260,38 @@ vmseries = {
     }
     interfaces = [
       {
-        name             = "vm-in-01-mgmt"
-        subnet_key       = "management"
-        create_public_ip = true
+        name       = "vm-in-01-mgmt"
+        subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = true
+            primary          = true
+          }
+        }
       },
       {
-        name              = "vm-in-01-public"
-        subnet_key        = "public"
-        create_public_ip  = true
+        name       = "vm-in-01-public"
+        subnet_key = "public"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = true
+            primary          = true
+          }
+        }
         load_balancer_key = "public"
       },
       {
         name       = "vm-in-01-private"
         subnet_key = "private"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = false
+          }
+        }
       }
     ]
   }
@@ -325,18 +344,38 @@ vmseries = {
     }
     interfaces = [
       {
-        name             = "vm-in-02-mgmt"
-        subnet_key       = "management"
-        create_public_ip = true
+        name       = "vm-in-02-mgmt"
+        subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = true
+            primary          = true
+          }
+        }
       },
       {
-        name              = "vm-in-02-public"
-        subnet_key        = "public"
+        name       = "vm-in-02-public"
+        subnet_key = "public"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = false
+            primary          = true
+          }
+        }
         load_balancer_key = "public"
       },
       {
         name       = "vm-in-02-private"
         subnet_key = "private"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = false
+            primary          = true
+          }
+        }
       }
     ]
   }
@@ -389,18 +428,37 @@ vmseries = {
     }
     interfaces = [
       {
-        name             = "vm-obew-01-mgmt"
-        subnet_key       = "management"
-        create_public_ip = true
+        name       = "vm-obew-01-mgmt"
+        subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = true
+            primary          = true
+          }
+        }
       },
       {
-        name             = "vm-obew-01-public"
-        subnet_key       = "public"
-        create_public_ip = true
+        name       = "vm-obew-01-public"
+        subnet_key = "public"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = true
+            primary          = true
+          }
+        }
       },
       {
-        name              = "vm-obew-01-private"
-        subnet_key        = "private"
+        name       = "vm-obew-01-private"
+        subnet_key = "private"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = false
+            primary          = true
+          }
+        }
         load_balancer_key = "private"
       }
     ]
@@ -454,18 +512,37 @@ vmseries = {
     }
     interfaces = [
       {
-        name             = "vm-obew-02-mgmt"
-        subnet_key       = "management"
-        create_public_ip = true
+        name       = "vm-obew-02-mgmt"
+        subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = true
+            primary          = true
+          }
+        }
       },
       {
-        name             = "vm-obew-02-public"
-        subnet_key       = "public"
-        create_public_ip = true
+        name       = "vm-obew-02-public"
+        subnet_key = "public"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = true
+            primary          = true
+          }
+        }
       },
       {
-        name              = "vm-obew-02-private"
-        subnet_key        = "private"
+        name       = "vm-obew-02-private"
+        subnet_key = "private"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = false
+            primary          = true
+          }
+        }
         load_balancer_key = "private"
       }
     ]

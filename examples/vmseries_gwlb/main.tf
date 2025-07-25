@@ -322,20 +322,24 @@ module "vmseries" {
   )
 
   interfaces = [for v in each.value.interfaces : {
-    name                  = "${var.name_prefix}${v.name}"
-    subnet_id             = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
-    ip_configuration_name = v.ip_configuration_name
-    create_public_ip      = v.create_public_ip
-    public_ip_name = v.create_public_ip ? "${
-      var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")
-    }" : v.public_ip_name
-    public_ip_resource_group_name = v.public_ip_resource_group_name
-    public_ip_id                  = try(module.public_ip.pip_ids[v.public_ip_key], null)
-    private_ip_address            = v.private_ip_address
-    attach_to_lb_backend_pool     = v.load_balancer_key != null || v.gwlb_key != null
-    lb_backend_pool_id            = try(module.gwlb[v.gwlb_key].backend_pool_ids[v.gwlb_backend_key], null)
-    attach_to_appgw_backend_pool  = v.appgw_backend_pool_id != null
-    appgw_backend_pool_id         = try(v.appgw_backend_pool_id, null)
+    name      = "${var.name_prefix}${v.name}"
+    subnet_id = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
+    ip_configurations = { for ip_config_key, ip_config_value in v.ip_configurations : ip_config_key => {
+      name             = ip_config_value.name
+      create_public_ip = ip_config_value.create_public_ip
+      public_ip_name = ip_config_value.create_public_ip ? "${
+        var.name_prefix}${coalesce(ip_config_value.public_ip_name, "${v.name}-${ip_config_value.name}-pip")
+      }" : ip_config_value.public_ip_name
+      primary                       = ip_config_value.primary
+      public_ip_resource_group_name = ip_config_value.public_ip_resource_group_name
+      public_ip_id                  = try(module.public_ip.pip_ids[ip_config_value.public_ip_key], null)
+      private_ip_address            = ip_config_value.private_ip_address
+      }
+    }
+    attach_to_lb_backend_pool    = v.load_balancer_key != null || v.gwlb_key != null
+    lb_backend_pool_id           = try(module.gwlb[v.gwlb_key].backend_pool_ids[v.gwlb_backend_key], null)
+    attach_to_appgw_backend_pool = v.appgw_backend_pool_id != null
+    appgw_backend_pool_id        = try(v.appgw_backend_pool_id, null)
   }]
 
   tags = var.tags
