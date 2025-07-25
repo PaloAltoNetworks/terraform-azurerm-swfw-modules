@@ -197,13 +197,26 @@ vmseries = {
     }
     interfaces = [
       {
-        name             = "vm01-mgmt"
-        subnet_key       = "management"
-        create_public_ip = true
+        name       = "vm01-mgmt"
+        subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = true
+            primary          = true
+          }
+        }
       },
       {
-        name             = "vm01-data"
-        subnet_key       = "data"
+        name       = "vm01-data"
+        subnet_key = "data"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = false
+            primary          = true
+          }
+        }
         gwlb_key         = "gwlb"
         gwlb_backend_key = "backend"
       }
@@ -217,13 +230,26 @@ vmseries = {
     }
     interfaces = [
       {
-        name             = "vm02-mgmt"
-        subnet_key       = "management"
-        create_public_ip = true
+        name       = "vm02-mgmt"
+        subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = true
+            primary          = true
+          }
+        }
       },
       {
-        name             = "vm02-data"
-        subnet_key       = "data"
+        name       = "vm02-data"
+        subnet_key = "data"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = false
+            primary          = true
+          }
+        }
         gwlb_key         = "gwlb"
         gwlb_backend_key = "backend"
       }

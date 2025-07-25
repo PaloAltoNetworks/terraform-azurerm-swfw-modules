@@ -3,7 +3,11 @@ output "mgmt_ip_address" {
   VM-Series management IP address. If `create_public_ip` was `true`, it is a public IP address, otherwise a private IP address.
   EOF
   value = try(
-    azurerm_public_ip.this[var.interfaces[0].name].ip_address,
+    {
+      for config_key, config_value in var.interfaces[0].ip_configurations : config_key => {
+        public_ip = azurerm_public_ip.this["${var.interfaces[0].name}-${config_key}"].ip_address
+      }
+    },
     azurerm_network_interface.this[var.interfaces[0].name].ip_configuration[0].private_ip_address
   )
 }

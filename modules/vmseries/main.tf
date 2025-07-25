@@ -1,6 +1,15 @@
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
-  for_each = { for v in var.interfaces : v.name => v if v.create_public_ip }
+  for_each = {
+    for item in flatten([
+      for v in var.interfaces : [
+        for ip_key, ip_value in v.ip_configurations : {
+          key   = "${v.name}-${ip_key}"
+          value = ip_value
+        } if ip_value.create_public_ip
+      ]
+    ]) : item.key => item.value
+  }
 
   location            = var.region
   resource_group_name = var.resource_group_name
@@ -13,7 +22,15 @@ resource "azurerm_public_ip" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
 data "azurerm_public_ip" "this" {
-  for_each = { for v in var.interfaces : v.name => v if !v.create_public_ip && v.public_ip_name != null
+  for_each = {
+    for item in flatten([
+      for v in var.interfaces : [
+        for ip_key, ip_value in v.ip_configurations : {
+          key   = "${v.name}-${ip_key}"
+          value = ip_value
+        } if !ip_value.create_public_ip && ip_value.public_ip_name != null
+      ]
+    ]) : item.key => item.value
   }
 
   name                = each.value.public_ip_name
@@ -31,15 +48,19 @@ resource "azurerm_network_interface" "this" {
   ip_forwarding_enabled          = each.value.index == 0 ? false : true
   tags                           = var.tags
 
-  ip_configuration {
-    name                          = each.value.ip_configuration_name
-    subnet_id                     = each.value.subnet_id
-    private_ip_address_allocation = each.value.private_ip_address != null ? "Static" : "Dynamic"
-    private_ip_address            = each.value.private_ip_address
-    public_ip_address_id = try(coalesce(
-      each.value.public_ip_id,
-      try(azurerm_public_ip.this[each.value.name].id, data.azurerm_public_ip.this[each.value.name].id, null)
-    ), null)
+  dynamic "ip_configuration" {
+    for_each = each.value.ip_configurations
+    content {
+      name                          = ip_configuration.value.name
+      subnet_id                     = each.value.subnet_id
+      private_ip_address_allocation = ip_configuration.value.private_ip_address != null ? "Static" : "Dynamic"
+      private_ip_address            = ip_configuration.value.private_ip_address
+      primary                       = ip_configuration.value.primary
+      public_ip_address_id = try(coalesce(
+        ip_configuration.value.public_ip_id,
+        try(azurerm_public_ip.this["${each.value.name}-${ip_configuration.key}"].id, data.azurerm_public_ip.this["${each.value.name}-${ip_configuration.key}"].id, null)
+      ), null)
+    }
   }
 }
 
