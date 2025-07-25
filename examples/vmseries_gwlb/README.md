@@ -831,7 +831,15 @@ The most basic properties are as follows:
   - `name`                    - (`string`, required) name of the network interface (will be prefixed with `var.name_prefix`).
   - `subnet_key`              - (`string`, required) a key of a subnet to which the interface will be assigned as defined in
                                 `var.vnets`. Key identifying the VNET is defined in `virtual_machine.vnet_key` property.
-  - `create_public_ip`        - (`bool`, optional, defaults to `false`) create a Public IP for an interface.
+  - `ip_configurations`       - (`map`, required) A map that contains the IP configurations for the interface.
+    - `name`                    - (`string`, optional, defaults to `primary`) the name of the interface IP configuration.
+    - `private_ip_address`      - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
+                                        skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
+                                        to change as long as the VM is running. Any stop/deallocate/restart operation might cause
+                                        the IP to change.
+    - `create_public_ip`        - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface.
+    - `primary`                 - (`bool`, optional, defaults to `true`) sets the current IP configuration as the primary one.
+                                        **Note!** When you define multiple IP configurations, exactly one must be the primary.
   - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in `var.loadbalancers`
                                 variable, network interface that has this property defined will be added to the Load Balancer's
                                 backend pool.
@@ -919,19 +927,22 @@ map(object({
       identity_ids                  = optional(list(string))
     })
     interfaces = list(object({
-      name                          = string
-      subnet_key                    = string
-      ip_configuration_name         = optional(string)
-      create_public_ip              = optional(bool, false)
-      public_ip_name                = optional(string)
-      public_ip_resource_group_name = optional(string)
-      public_ip_key                 = optional(string)
-      private_ip_address            = optional(string)
-      load_balancer_key             = optional(string)
-      gwlb_key                      = optional(string)
-      gwlb_backend_key              = optional(string)
-      application_gateway_key       = optional(string)
-      appgw_backend_pool_id         = optional(string)
+      name       = string
+      subnet_key = string
+      ip_configurations = map(object({
+        name                          = optional(string)
+        create_public_ip              = optional(bool, false)
+        public_ip_name                = optional(string)
+        primary                       = optional(bool, true)
+        public_ip_resource_group_name = optional(string)
+        public_ip_key                 = optional(string)
+        private_ip_address            = optional(string)
+      }))
+      load_balancer_key       = optional(string)
+      gwlb_key                = optional(string)
+      gwlb_backend_key        = optional(string)
+      application_gateway_key = optional(string)
+      appgw_backend_pool_id   = optional(string)
     }))
   }))
 ```

@@ -273,21 +273,24 @@ Following configuration options are available:
 
 - `name`                          - (`string`, required) the interface name.
 - `subnet_id`                     - (`string`, required) ID of an existing subnet to create the interface in.
-- `ip_configuration_name`         - (`string`, optional, defaults to `primary`) the name of the interface IP configuration.
-- `private_ip_address`            - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
-                                    skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
-                                    to change as long as the VM is running. Any stop/deallocate/restart operation might cause
-                                    the IP to change.
-- `create_public_ip`              - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface.
-- `public_ip_name`                - (`string`, optional, defaults to `null`) name of the public IP to associate with the
-                                    interface. When `create_public_ip` is set to `true` this will become a name of a newly
-                                    created Public IP interface. Otherwise this is a name of an existing interfaces that will
-                                    be sourced and attached to the interface. Not used when using `public_ip` module.
-- `public_ip_resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
-                                    contains public IP that that will be associated with the interface. Used only when 
-                                    `create_public_ip` is `false`.
-- `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
-                                    interface. Property is used when public IP is not created or sourced within this module.
+- ip_configurations               - (`map`, required) A map that contains the IP configurations for the interface.
+  - `name`                          - (`string`, optional, defaults to `primary`) the name of the interface IP configuration.
+  - `private_ip_address`            - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
+                                      skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
+                                      to change as long as the VM is running. Any stop/deallocate/restart operation might cause
+                                      the IP to change.
+  - `create_public_ip`              - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface.
+  - `primary`                       - (`bool`, optional, defaults to `true`) sets the current IP configuration as the primary one.
+                                      **Note!** When you define multiple IP configurations, exactly one must be the primary.
+  - `public_ip_name`                - (`string`, optional, defaults to `null`) name of the public IP to associate with the
+                                      interface. When `create_public_ip` is set to `true` this will become a name of a newly
+                                      created Public IP interface. Otherwise this is a name of an existing interfaces that will
+                                      be sourced and attached to the interface. Not used when using `public_ip` module.
+  - `public_ip_resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
+                                      contains public IP that that will be associated with the interface. Used only when 
+                                      `create_public_ip` is `false`.
+  - `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
+                                      interface. Property is used when public IP is not created or sourced within this module.
 - `attach_to_lb_backend_pool`     - (`bool`, optional, defaults to `false`) set to `true` if you would like to associate this
                                     interface with a Load Balancer backend pool.
 - `lb_backend_pool_id`            - (`string`, optional, defaults to `null`) ID of an existing backend pool to associate the
@@ -305,8 +308,13 @@ Example:
   {
     name                 = "fw-mgmt"
     subnet_id            = azurerm_subnet.my_mgmt_subnet.id
-    public_ip_name       = "fw-mgmt-pip"
-    create_public_ip     = true
+    ip_configurations = {
+      primary-ip = {
+        name = "primary-ip"
+        create_public_ip      = true
+        primary               = true
+        public_ip_name       = "fw-mgmt-pip"
+      }
   },
   # public interface reusing an existing public IP resource
   {
@@ -314,8 +322,35 @@ Example:
     subnet_id                 = azurerm_subnet.my_pub_subnet.id
     attach_to_lb_backend_pool = true
     lb_backend_pool_id        = module.inbound_lb.backend_pool_id
-    create_public_ip          = false
-    public_ip_name            = "fw-public-pip"
+    ip_configurations = {
+      primary-ip = {
+        name = "primary-ip"
+        create_public_ip      = false
+        primary               = true
+        public_ip_name        = "fw-public-pip"
+      }
+  },
+  # interface with 2 IP addresses
+  {
+    name                      = "fw-two-ips"
+    subnet_id                 = azurerm_subnet.my_pub_subnet.id
+    attach_to_lb_backend_pool = true
+    lb_backend_pool_id        = module.inbound_lb.backend_pool_id
+    ip_configurations = {
+      primary-ip = {
+        name = "primary-ip"
+        create_public_ip      = false
+        primary               = true
+        private_ip_address    = "10.0.0.5"
+        public_ip_name        = "fw-public-pip"
+      },
+      secondary-ip = {
+        name = "secondary-ip"
+        create_public_ip      = false
+        primary               = true
+        private_ip_address    = "10.0.0.6"
+        public_ip_name        = "fw-public-pip"
+      }
   },
 ]
 ```
@@ -325,18 +360,21 @@ Type:
 
 ```hcl
 list(object({
-    name                          = string
-    subnet_id                     = string
-    ip_configuration_name         = optional(string, "primary")
-    create_public_ip              = optional(bool, false)
-    public_ip_name                = optional(string)
-    public_ip_resource_group_name = optional(string)
-    public_ip_id                  = optional(string)
-    private_ip_address            = optional(string)
-    lb_backend_pool_id            = optional(string)
-    attach_to_lb_backend_pool     = optional(bool, false)
-    appgw_backend_pool_id         = optional(string)
-    attach_to_appgw_backend_pool  = optional(bool, false)
+    name      = string
+    subnet_id = string
+    ip_configurations = map(object({
+      name                          = optional(string, "primary")
+      create_public_ip              = optional(bool, false)
+      public_ip_name                = optional(string)
+      public_ip_resource_group_name = optional(string)
+      primary                       = optional(bool, true)
+      public_ip_id                  = optional(string)
+      private_ip_address            = optional(string)
+    }))
+    lb_backend_pool_id           = optional(string)
+    attach_to_lb_backend_pool    = optional(bool, false)
+    appgw_backend_pool_id        = optional(string)
+    attach_to_appgw_backend_pool = optional(bool, false)
   }))
 ```
 
