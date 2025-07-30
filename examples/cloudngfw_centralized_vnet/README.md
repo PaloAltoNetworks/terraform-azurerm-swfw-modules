@@ -1,7 +1,7 @@
 ---
 short_title: Cloud NGFW Centralized VNet
 type: refarch
-show_in_hub: false
+show_in_hub: true
 swfw: cloudngfw
 ---
 # Reference Architecture with Terraform: Cloud NGFW in Azure, Virtual Network Design Model.
