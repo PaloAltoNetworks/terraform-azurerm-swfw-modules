@@ -1013,16 +1013,16 @@ Default value: `map[]`
 
 #### vmseries_universal
 
-A map defining common settings for all created VM-Series instances. 
-  
+A map defining common settings for all created VM-Series instances.
+
 It duplicates popular properties from `vmseries` variable, specifically `vmseries.image` and `vmseries.virtual_machine` maps.
 However, if values are set in those maps, they still take precedence over the ones set within this variable. As a result, all
 universal properties can be overriden on a per-VM basis.
 
 Following properties are supported:
 
-- `use_airs`          - (`bool`, optional, defaults to `false`) when set to `true`, the AI Runtime Security VM image is used 
-                        instead of the one passed to the module and version for `airs-flex` offer must be provided.  
+- `use_airs`          - (`bool`, optional, defaults to `false`) when set to `true`, the AI Runtime Security VM image is used
+                        instead of the one passed to the module and version for `airs-flex` offer must be provided.
 - `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
 - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
                         Deployment Guide* as only a few selected sizes are supported.
@@ -1109,7 +1109,7 @@ The most basic properties are as follows:
   For all properties and their default values see [module's documentation](../../modules/vmseries/README.md#authentication).
 
 - `image`           - (`map`, optional) properties defining a base image used by the deployed VM. The `image` property is
-                      required (if no common properties were set within `vmseries_universal` variable) but there are only 2 
+                      required (if no common properties were set within `vmseries_universal` variable) but there are only 2
                       properties (mutually exclusive) that have to be set, either:
 
   - `version`   - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
@@ -1189,12 +1189,12 @@ The most basic properties are as follows:
   - `ip_configurations`       - (`map`, required) A map that contains the IP configurations for the interface.
     - `name`                    - (`string`, optional, defaults to `primary`) the name of the interface IP configuration.
     - `private_ip_address`      - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
-                                        skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
-                                        to change as long as the VM is running. Any stop/deallocate/restart operation might cause
-                                        the IP to change.
+                                  skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
+                                  to change as long as the VM is running. Any stop/deallocate/restart operation might cause
+                                  the IP to change.
     - `create_public_ip`        - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface.
     - `primary`                 - (`bool`, optional, defaults to `true`) sets the current IP configuration as the primary one.
-                                        **Note!** When you define multiple IP configurations, exactly one must be the primary.
+                                  **Note!** When you define multiple IP configurations, exactly one must be the primary.
   - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in `var.loadbalancers`
                                 variable, network interface that has this property defined will be added to the Load Balancer's
                                 backend pool.
@@ -1333,12 +1333,12 @@ Following properties are supported:
                                 [VNET module documentation](../../modules/vnet/README.md#route_tables).
   - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
                                 [VNET module documentation](../../modules/vnet/README.md#subnets).
-  - `local_peer_config`       - (`map`, optional) a map that contains local peer configuration parameters. This value allows to 
-                                set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
-                                `use_remote_gateways` parameters on the local VNet peering. 
+  - `local_peer_config`       - (`map`, optional) a map that contains local peer configuration parameters. This value allows to
+                                set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and
+                                `use_remote_gateways` parameters on the local VNet peering.
   - `remote_peer_config`      - (`map`, optional) a map that contains remote peer configuration parameters. This value allows to
-                                set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
-                                `use_remote_gateways` parameters on the remote VNet peering.  
+                                set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and
+                                `use_remote_gateways` parameters on the remote VNet peering.
 
   For all properties and their default values see [module's documentation](../../modules/test_infrastructure/README.md#vnets).
 

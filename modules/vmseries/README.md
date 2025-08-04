@@ -190,7 +190,7 @@ Firewall parameters configuration.
 This map contains basic, as well as some optional Firewall parameters. Both types contain sane defaults.
 Nevertheless they should be at least reviewed to meet deployment requirements.
 
-List of either required or important properties: 
+List of either required or important properties:
 
 - `size`              - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
                         Deployment Guide* as only a few selected sizes are supported.
@@ -209,7 +209,7 @@ List of either required or important properties:
 
   For more details on bootstrapping [see documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components).
 
-List of other, optional properties: 
+List of other, optional properties:
 
 - `avset_id`                      - (`string`, optional, default to `null`) identifier of the Availability Set to use.
 - `capacity_reservation_group_id` - (`string`, optional, defaults to `null`) specifies the ID of the Capacity Reservation Group
@@ -228,7 +228,7 @@ List of other, optional properties:
 - `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
                                     should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
                                     "SystemAssigned, UserAssigned".
-- `identity_ids`                  - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
+- `identity_ids`                  - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be
                                     assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
 
 
@@ -268,7 +268,7 @@ Interfaces will be attached to VM in the order you define here, therefore:
 
 - The first should be the management interface, which does not participate in data filtering.
 - The remaining ones are the dataplane interfaces.
-  
+
 Following configuration options are available:
 
 - `name`                          - (`string`, required) the interface name.
@@ -287,7 +287,7 @@ Following configuration options are available:
                                       created Public IP interface. Otherwise this is a name of an existing interfaces that will
                                       be sourced and attached to the interface. Not used when using `public_ip` module.
   - `public_ip_resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
-                                      contains public IP that that will be associated with the interface. Used only when 
+                                      contains public IP that that will be associated with the interface. Used only when
                                       `create_public_ip` is `false`.
   - `public_ip_id`                  - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
                                       interface. Property is used when public IP is not created or sourced within this module.
@@ -347,7 +347,7 @@ Example:
       secondary-ip = {
         name = "secondary-ip"
         create_public_ip      = false
-        primary               = true
+        primary               = false
         private_ip_address    = "10.0.0.6"
         public_ip_name        = "fw-public-pip"
       }
@@ -364,10 +364,10 @@ list(object({
     subnet_id = string
     ip_configurations = map(object({
       name                          = optional(string, "primary")
+      primary                       = optional(bool, true)
       create_public_ip              = optional(bool, false)
       public_ip_name                = optional(string)
       public_ip_resource_group_name = optional(string)
-      primary                       = optional(bool, true)
       public_ip_id                  = optional(string)
       private_ip_address            = optional(string)
     }))
