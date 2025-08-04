@@ -448,16 +448,16 @@ module "vmseries" {
   interfaces = [for v in each.value.interfaces : {
     name      = "${var.name_prefix}${v.name}"
     subnet_id = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
-    ip_configurations = { for ip_config_key, ip_config_value in v.ip_configurations : ip_config_key => {
-      name             = ip_config_value.name
-      create_public_ip = ip_config_value.create_public_ip
-      public_ip_name = ip_config_value.create_public_ip ? "${
-        var.name_prefix}${coalesce(ip_config_value.public_ip_name, "${v.name}-${ip_config_value.name}-pip")
-      }" : ip_config_value.public_ip_name
-      primary                       = ip_config_value.primary
-      public_ip_resource_group_name = ip_config_value.public_ip_resource_group_name
-      public_ip_id                  = try(module.public_ip.pip_ids[ip_config_value.public_ip_key], null)
-      private_ip_address            = ip_config_value.private_ip_address
+    ip_configurations = { for vk, vv in v.ip_configurations : vk => {
+      name             = vv.name
+      create_public_ip = vv.create_public_ip
+      public_ip_name = vv.create_public_ip ? "${
+        var.name_prefix}${coalesce(vv.public_ip_name, "${v.name}-${vv.name}-pip")
+      }" : vv.public_ip_name
+      primary                       = vv.primary
+      public_ip_resource_group_name = vv.public_ip_resource_group_name
+      public_ip_id                  = try(module.public_ip.pip_ids[vv.public_ip_key], null)
+      private_ip_address            = vv.private_ip_address
       }
     }
     attach_to_lb_backend_pool    = v.load_balancer_key != null
