@@ -328,14 +328,26 @@ vmseries = {
     }
     interfaces = [
       {
-        name             = "vm01-mgmt"
-        subnet_key       = "management"
-        create_public_ip = true
+        name       = "vm01-mgmt"
+        subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = true
+            primary          = true
+          }
+        }
       },
       {
-        name                    = "vm01-public"
-        subnet_key              = "public"
-        create_public_ip        = true
+        name       = "vm01-public"
+        subnet_key = "public"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = true
+            primary          = true
+          }
+        }
         load_balancer_key       = "public"
         application_gateway_key = "public"
       },
@@ -343,6 +355,13 @@ vmseries = {
         name              = "vm01-private"
         subnet_key        = "private"
         load_balancer_key = "private"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            create_public_ip = false
+            primary          = true
+          }
+        }
       }
     ]
   }
