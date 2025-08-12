@@ -58,7 +58,11 @@ resource "azurerm_network_interface" "this" {
       primary                       = ip_configuration.value.primary
       public_ip_address_id = try(coalesce(
         ip_configuration.value.public_ip_id,
-        try(azurerm_public_ip.this["${each.value.name}-${ip_configuration.key}"].id, data.azurerm_public_ip.this["${each.value.name}-${ip_configuration.key}"].id, null)
+        try(
+          azurerm_public_ip.this["${each.value.name}-${ip_configuration.key}"].id,
+          data.azurerm_public_ip.this["${each.value.name}-${ip_configuration.key}"].id,
+          null
+        )
       ), null)
     }
   }

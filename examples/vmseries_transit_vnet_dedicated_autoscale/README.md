@@ -1009,7 +1009,7 @@ set within this variable. As a result, all universal properties can be overriden
 Following properties are supported:
 
 - `use_airs`          - (`bool`, optional, defaults to `false`) when set to `true`, the AI Runtime Security VM image is used 
-                        instead of the one passed to the module and version for `airs-flex` offer must be provided.
+                        instead of the one passed to the module and version for `airs-flex` offer must be provided.  
 - `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
 - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
                         Deployment Guide* as only a few selected sizes are supported.
@@ -1187,9 +1187,9 @@ The basic Scale Set configuration properties are as follows:
   - `subnet_key`              - (`string`, required) a key of a subnet to which the interface will be assigned as defined in
                                 `var.vnets`.
   - `ip_configurations`       - (`map`, required) A map that contains the IP configurations for the interface.
-    - `name`                    - (`string`, optional, defaults to `primary`) the name of the interface IP configuration.
-    - `create_public_ip`        - (`bool`, optional, defaults to `false`) if `true`, create a public IP for the interface.
-    - `primary`                 - (`bool`, optional, defaults to `true`) sets the current IP configuration as the primary one.
+      - `name`                  - (`string`, optional, defaults to `primary`) the name of the interface IP configuration.
+      - `primary`               - (`bool`, optional, defaults to `true`) sets the current IP configuration as the primary one.
+      - `create_public_ip`      - (`bool`, optional, defaults to `false`) if `true`, create a public IP for the interface.
   - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in the
                                 `var.loadbalancers` variable, network interface that has this property defined will be added to
                                 the Load Balancer's backend pool.

@@ -1194,8 +1194,8 @@ The basic Scale Set configuration properties are as follows:
                                 `var.vnets`.
   - `ip_configurations`       - (`map`, required) A map that contains the IP configurations for the interface.
       - `name`                  - (`string`, optional, defaults to `primary`) the name of the interface IP configuration.
-      - `create_public_ip`      - (`bool`, optional, defaults to `false`) if `true`, create a public IP for the interface.
       - `primary`               - (`bool`, optional, defaults to `true`) sets the current IP configuration as the primary one.
+      - `create_public_ip`      - (`bool`, optional, defaults to `false`) if `true`, create a public IP for the interface.
   - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in the
                                 `var.loadbalancers` variable, network interface that has this property defined will be added to
                                 the Load Balancer's backend pool.

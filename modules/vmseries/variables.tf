@@ -205,12 +205,13 @@ variable "interfaces" {
   - `subnet_id`                     - (`string`, required) ID of an existing subnet to create the interface in.
   - ip_configurations               - (`map`, required) A map that contains the IP configurations for the interface.
     - `name`                          - (`string`, optional, defaults to `primary`) the name of the interface IP configuration.
-    - `private_ip_address`            - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
-                                        skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
-                                        to change as long as the VM is running. Any stop/deallocate/restart operation might cause
-                                        the IP to change.
+    - `primary`                       - (`bool`, optional, defaults to `true`) sets the current IP configuration as the primary
+                                        one.
+    - `private_ip_address`            - (`string`, optional, defaults to `null`) static private IP to assign to the interface. 
+                                        When skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is
+                                        guaranteed not to change as long as the VM is running. Any stop/deallocate/restart
+                                        operation might cause the IP to change.
     - `create_public_ip`              - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface.
-    - `primary`                       - (`bool`, optional, defaults to `true`) sets the current IP configuration as the primary one.
                                         **Note!** When you define multiple IP configurations, exactly one must be the primary.
     - `public_ip_name`                - (`string`, optional, defaults to `null`) name of the public IP to associate with the
                                         interface. When `create_public_ip` is set to `true` this will become a name of a newly
@@ -241,8 +242,8 @@ variable "interfaces" {
       ip_configurations = {
         primary-ip = {
           name = "primary-ip"
-          create_public_ip      = true
           primary               = true
+          create_public_ip      = true
           public_ip_name       = "fw-mgmt-pip"
         }
     },
@@ -255,8 +256,8 @@ variable "interfaces" {
       ip_configurations = {
         primary-ip = {
           name = "primary-ip"
-          create_public_ip      = false
           primary               = true
+          create_public_ip      = false
           public_ip_name        = "fw-public-pip"
         }
     },
@@ -269,15 +270,15 @@ variable "interfaces" {
       ip_configurations = {
         primary-ip = {
           name = "primary-ip"
-          create_public_ip      = false
           primary               = true
+          create_public_ip      = false
           private_ip_address    = "10.0.0.5"
           public_ip_name        = "fw-public-pip"
         },
         secondary-ip = {
           name = "secondary-ip"
-          create_public_ip      = false
           primary               = false
+          create_public_ip      = false
           private_ip_address    = "10.0.0.6"
           public_ip_name        = "fw-public-pip"
         }

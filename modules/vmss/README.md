@@ -272,19 +272,20 @@ Following configuration options are available:
 - `subnet_id`                      - (`string`, required) ID of an existing subnet to create the interface in.
 - `ip_configurations`              - (`map`, required) A map that contains the IP configurations for the interface.
   - `name`                           - (`string`, optional, defaults to `primary`) the name of the interface IP configuration.
+  - `primary`                        - (`bool`, optional, defaults to `true`) sets the current IP configuration as the primary
+                                       one.
   - `create_public_ip`               - (`bool`, optional, defaults to `false`) if `true`, create a public IP for the interface.
-  - `primary`                        - (`bool`, optional, defaults to `true`) sets the current IP configuration as the primary one.
   - `pip_domain_name_label`          - (`string`, optional, defaults to `null`) the Prefix which should be used for the Domain
                                        Name Label for each Virtual Machine Instance.
-  - `pip_idle_timeout_in_minutes`    - (`number`, optional, defaults to Azure default) the Idle Timeout in minutes for the Public
-                                      IP Address, possible values are in the range from 4 to 32.
-  - `pip_prefix_name`                - (`string`, optional) the name of an existing Public IP Address Prefix from where Public IP
-                                       Addresses should be allocated.
+  - `pip_idle_timeout_in_minutes`    - (`number`, optional, defaults to Azure default) the Idle Timeout in minutes for the 
+                                       Public IP Address, possible values are in the range from 4 to 32.
+  - `pip_prefix_name`                - (`string`, optional) the name of an existing Public IP Address Prefix from where Public
+                                       IP Addresses should be allocated.
   - `pip_prefix_resource_group_name` - (`string`, optional, defaults to the VMSS's RG) name of a Resource Group hosting an 
                                        existing Public IP Prefix resource.
   - `pip_prefix_id`                  - (`string`, optional) you can specify Public IP Prefix ID as an alternative to the
-                                       properties above (name and resource group), in case you want to avoid using a data source
-                                       block.
+                                       properties above (name and resource group), in case you want to avoid using a data
+                                       source block.
 - `lb_backend_pool_ids`            - (`list`, optional, defaults to `[]`) a list of identifiers of existing Load Balancer
                                      backend pools to associate the interface with. Only applied to primary IP configuration.
 - `appgw_backend_pool_ids`         - (`list`, optional, defaults to `[]`) a list of identifier of Application Gateway's backend

@@ -4,7 +4,6 @@ locals {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip_prefix
 data "azurerm_public_ip_prefix" "allocate" {
-  # for_each = { for v in var.interfaces : v.name => v if v.pip_prefix_name != null }
   for_each = {
     for item in flatten([
       for v in var.interfaces : [
@@ -101,18 +100,24 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
         for_each = nic.value.ip_configurations
 
         content {
-          name                                         = ip_configuration.value.name
-          primary                                      = ip_configuration.value.primary
-          subnet_id                                    = nic.value.subnet_id
-          load_balancer_backend_address_pool_ids       = ip_configuration.value.primary == true ? nic.value.lb_backend_pool_ids : null
-          application_gateway_backend_address_pool_ids = ip_configuration.value.primary == true ? nic.value.appgw_backend_pool_ids : null
+          name      = ip_configuration.value.name
+          primary   = ip_configuration.value.primary
+          subnet_id = nic.value.subnet_id
+          load_balancer_backend_address_pool_ids = ip_configuration.value.primary == true ? (
+            nic.value.lb_backend_pool_ids
+          ) : null
+          application_gateway_backend_address_pool_ids = ip_configuration.value.primary == true ? (
+            nic.value.appgw_backend_pool_ids
+          ) : null
 
           public_ip_address {
             name                    = ip_configuration.value.name
             domain_name_label       = ip_configuration.value.pip_domain_name_label
             idle_timeout_in_minutes = ip_configuration.value.pip_idle_timeout_in_minutes
             public_ip_prefix_id = try(
-              ip_configuration.value.pip_prefix_id, data.azurerm_public_ip_prefix.allocate["${nic.value.name}-${ip_configuration.key}"].id, null
+              ip_configuration.value.pip_prefix_id,
+              data.azurerm_public_ip_prefix.allocate["${nic.value.name}-${ip_configuration.key}"].id,
+              null
             )
           }
         }
