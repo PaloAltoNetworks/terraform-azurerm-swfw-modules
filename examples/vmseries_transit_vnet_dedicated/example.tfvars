@@ -265,8 +265,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = true
             primary          = true
+            create_public_ip = true
           }
         }
       },
@@ -276,8 +276,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = true
             primary          = true
+            create_public_ip = true
           }
         }
         load_balancer_key = "public"
@@ -349,8 +349,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = true
             primary          = true
+            create_public_ip = true
           }
         }
       },
@@ -360,8 +360,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = false
             primary          = true
+            create_public_ip = false
           }
         }
         load_balancer_key = "public"
@@ -372,8 +372,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = false
             primary          = true
+            create_public_ip = false
           }
         }
       }
@@ -433,8 +433,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = true
             primary          = true
+            create_public_ip = true
           }
         }
       },
@@ -444,8 +444,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = true
             primary          = true
+            create_public_ip = true
           }
         }
       },
@@ -455,8 +455,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = false
             primary          = true
+            create_public_ip = false
           }
         }
         load_balancer_key = "private"
@@ -517,8 +517,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = true
             primary          = true
+            create_public_ip = true
           }
         }
       },
@@ -528,8 +528,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = true
             primary          = true
+            create_public_ip = true
           }
         }
       },
@@ -539,8 +539,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = false
             primary          = true
+            create_public_ip = false
           }
         }
         load_balancer_key = "private"

@@ -124,9 +124,9 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name               = "primary-ip"
+            primary            = true
             private_ip_address = "10.0.0.5"
             create_public_ip   = true
-            primary            = true
           }
         }
       }

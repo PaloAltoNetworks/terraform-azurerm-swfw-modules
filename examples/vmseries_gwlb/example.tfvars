@@ -202,8 +202,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = true
             primary          = true
+            create_public_ip = true
           }
         }
       },
@@ -213,8 +213,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = false
             primary          = true
+            create_public_ip = false
           }
         }
         gwlb_key         = "gwlb"
@@ -235,8 +235,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = true
             primary          = true
+            create_public_ip = true
           }
         }
       },
@@ -246,8 +246,8 @@ vmseries = {
         ip_configurations = {
           primary-ip = {
             name             = "primary-ip"
-            create_public_ip = false
             primary          = true
+            create_public_ip = false
           }
         }
         gwlb_key         = "gwlb"
