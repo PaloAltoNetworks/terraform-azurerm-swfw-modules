@@ -4,7 +4,16 @@ locals {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip_prefix
 data "azurerm_public_ip_prefix" "allocate" {
-  for_each = { for v in var.interfaces : v.name => v if v.pip_prefix_name != null }
+  for_each = {
+    for item in flatten([
+      for v in var.interfaces : [
+        for ip_key, ip_value in v.ip_configurations : {
+          key   = "${v.name}-${ip_key}"
+          value = ip_value
+        } if ip_value.pip_prefix_name != null
+      ]
+    ]) : item.key => item.value
+  }
 
   name                = each.value.pip_prefix_name
   resource_group_name = coalesce(each.value.pip_prefix_resource_group_name, var.resource_group_name)
@@ -87,23 +96,28 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
       enable_ip_forwarding          = nic.key == 0 ? false : true
       enable_accelerated_networking = nic.key == 0 ? false : var.virtual_machine_scale_set.accelerated_networking
 
-      ip_configuration {
-        name                                         = "primary"
-        primary                                      = true
-        subnet_id                                    = nic.value.subnet_id
-        load_balancer_backend_address_pool_ids       = nic.value.lb_backend_pool_ids
-        application_gateway_backend_address_pool_ids = nic.value.appgw_backend_pool_ids
+      dynamic "ip_configuration" {
+        for_each = nic.value.ip_configurations
 
-        dynamic "public_ip_address" {
-          for_each = nic.value.create_public_ip ? [1] : []
-          iterator = pip
+        content {
+          name      = ip_configuration.value.name
+          primary   = ip_configuration.value.primary
+          subnet_id = nic.value.subnet_id
+          load_balancer_backend_address_pool_ids = ip_configuration.value.primary == true ? (
+            nic.value.lb_backend_pool_ids
+          ) : null
+          application_gateway_backend_address_pool_ids = ip_configuration.value.primary == true ? (
+            nic.value.appgw_backend_pool_ids
+          ) : null
 
-          content {
-            name                    = nic.value.name
-            domain_name_label       = nic.value.pip_domain_name_label
-            idle_timeout_in_minutes = nic.value.pip_idle_timeout_in_minutes
+          public_ip_address {
+            name                    = ip_configuration.value.name
+            domain_name_label       = ip_configuration.value.pip_domain_name_label
+            idle_timeout_in_minutes = ip_configuration.value.pip_idle_timeout_in_minutes
             public_ip_prefix_id = try(
-              nic.value.pip_prefix_id, data.azurerm_public_ip_prefix.allocate[nic.value.name].id, null
+              ip_configuration.value.pip_prefix_id,
+              data.azurerm_public_ip_prefix.allocate["${nic.value.name}-${ip_configuration.key}"].id,
+              null
             )
           }
         }

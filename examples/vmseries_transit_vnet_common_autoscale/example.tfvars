@@ -337,21 +337,40 @@ scale_sets = {
     }
     interfaces = [
       {
-        name             = "management"
-        subnet_key       = "management"
-        create_public_ip = true
+        name       = "management"
+        subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = true
+          }
+        }
       },
       {
         name                    = "public"
         subnet_key              = "public"
         load_balancer_key       = "public"
         application_gateway_key = "public"
-        create_public_ip        = true
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = true
+          }
+        }
       },
       {
         name              = "private"
         subnet_key        = "private"
         load_balancer_key = "private"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = false
+          }
+        }
       }
     ]
     autoscaling_profiles = [

@@ -283,15 +283,36 @@ scale_sets = {
       {
         name       = "management"
         subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = false
+          }
+        }
       },
       {
         name              = "public"
         subnet_key        = "public"
         load_balancer_key = "public"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = false
+          }
+        }
       },
       {
         name       = "private"
         subnet_key = "private"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = false
+          }
+        }
       }
     ]
   }
@@ -352,15 +373,36 @@ scale_sets = {
       {
         name       = "management"
         subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = false
+          }
+        }
       },
       {
         name       = "public"
         subnet_key = "public"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = false
+          }
+        }
       },
       {
         name              = "private"
         subnet_key        = "private"
         load_balancer_key = "private"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = false
+          }
+        }
       }
     ]
   }

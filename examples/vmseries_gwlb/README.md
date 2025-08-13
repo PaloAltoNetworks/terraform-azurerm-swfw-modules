@@ -324,7 +324,7 @@ Example:
 ```
 name_prefix = "test-"
 ```
-  
+
 **Note!** \
 This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name,
 even if it is also prefixed with the same value as the one in this property.
@@ -340,7 +340,7 @@ Default value: ``
 
 When set to `true` it will cause a Resource Group creation.
 Name of the newly specified RG is controlled by `resource_group_name`.
-  
+
 When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
 
 
@@ -440,14 +440,14 @@ Following settings are available:
 - `vnet_key`      - (`string`, required) a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this GWLB will
                     be assigned to.
 - `subnet_key`    - (`string`, required) a name (key value) of Subnet the GWLB will be assigned to, defined in `var.vnets` for
-                    a VNET described by `vnet_name`.        
+                    a VNET described by `vnet_name`.
 - `frontend_ip`   - (`object`, required) frontend IP configuration, refer to
                     [module's documentation](../../modules/gwlb/README.md) for details.
 - `health_probe`  - (`object`, optional) health probe settings, refer to
                     [module's documentation](../../modules/gwlb/README.md) for details.
 - `backends`      - (`map`, optional) map of backends, refer to
                     [module's documentation](../../modules/gwlb/README.md) for details.
-- `lb_rule`       - (`object`, optional) load balancer rule, refer to 
+- `lb_rule`       - (`object`, optional) load balancer rule, refer to
                     [module's documentation](../../modules/gwlb/README.md) for details.
 
 
@@ -502,7 +502,7 @@ Following properties are supported:
 - `name`                - (`string`, required) name of the Application Insights.
 - `update_domain_count` - (`number`, optional, defaults to Azure default) specifies the number of update domains that are used.
 - `fault_domain_count`  - (`number`, optional, defaults to Azure default) specifies the number of fault domains that are used.
-  
+
 **Note!** \
 Please keep in mind that Azure defaults are not working for every region (especially the small ones, without any Availability
 Zones). Please verify how many update and fault domain are supported in a region before deploying this resource.
@@ -583,7 +583,7 @@ You can create or re-use an existing Storage Account and/or File Share. For deta
                                 will host (created) a Storage Account. When skipped the code will fall back to
                                 `var.resource_group_name`.
 - `storage_account`           - (`map`, optional, defaults to `{}`) a map controlling basic Storage Account configuration.
-                                  
+
   The property you should pay attention to is:
 
   - `create` - (`bool`, optional, defaults to module default) controls if the Storage Account specified in the `name` property
@@ -592,8 +592,8 @@ You can create or re-use an existing Storage Account and/or File Share. For deta
   For detailed documentation see [module's documentation](../../modules/bootstrap/README.md#storage_account).
 
 - `storage_network_security`  - (`map`, optional, defaults to `{}`) a map defining network security settings for a **new**
-                                storage account. 
-                                  
+                                storage account.
+
   The properties you should pay attention to are:
 
   - `allowed_subnet_keys` - (`list`, optional, defaults to `[]`) a list of keys pointing to Subnet definitions in the
@@ -603,9 +603,9 @@ You can create or re-use an existing Storage Account and/or File Share. For deta
                             Subnets described in `allowed_subnet_keys`.
 
   For detailed documentation see [module's documentation](../../modules/bootstrap/README.md#storage_network_security).
-                            
+
 - `file_shares_configuration` - (`map`, optional, defaults to `{}`) a map defining common File Share setting.
-                                  
+
   The properties you should pay attention to are:
 
   - `create_file_shares`            - (`bool`, optional, defaults to module default) controls if the File Shares defined in the
@@ -663,15 +663,15 @@ Default value: `map[]`
 
 #### vmseries_universal
 
-A map defining common settings for all created VM-Series instances. 
-  
+A map defining common settings for all created VM-Series instances.
+
 It duplicates popular properties from `vmseries` variable, specifically `vmseries.image` and `vmseries.virtual_machine` maps.
 However, if values are set in those maps, they still take precedence over the ones set within this variable. As a result, all
 universal properties can be overriden on a per-VM basis.
 
 Following properties are supported:
 
-- `use_airs`          - (`bool`, optional, defaults to `false`) when set to `true`, the AI Runtime Security VM image is used 
+- `use_airs`          - (`bool`, optional, defaults to `false`) when set to `true`, the AI Runtime Security VM image is used
                         instead of the one passed to the module and version for `airs-flex` offer must be provided.
 - `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
 - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
@@ -752,13 +752,13 @@ The most basic properties are as follows:
 
   **Note!** \
   The `disable_password_authentication` property is by default `false` in this example. When using this value, you don't have
-  to specify anything but you can still additionally pass SSH keys for authentication. You can however set this property to 
+  to specify anything but you can still additionally pass SSH keys for authentication. You can however set this property to
   `true`, then you have to specify `ssh_keys` property.
 
   For all properties and their default values see [module's documentation](../../modules/vmseries/README.md#authentication).
 
 - `image`           - (`map`, optional) properties defining a base image used by the deployed VM. The `image` property is
-                      required (if no common properties were set within `vmseries_universal` variable) but there are only 2 
+                      required (if no common properties were set within `vmseries_universal` variable) but there are only 2
                       properties (mutually exclusive) that have to be set, either:
 
   - `version`   - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
@@ -766,7 +766,7 @@ The most basic properties are as follows:
 
   For details on all properties refer to [module's documentation](../../modules/vmseries/README.md#image).
 
-- `virtual_machine` - (`map`, optional, defaults to module default) a map that groups most common VM configuration options. 
+- `virtual_machine` - (`map`, optional, defaults to module default) a map that groups most common VM configuration options.
                       Most common properties are:
 
   - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
@@ -811,7 +811,7 @@ The most basic properties are as follows:
       **Note!** \
       Day0 configuration is **not meant** to be **secure**. It's here merely to help with the basic firewall setup. When
       `bootstrap_xml_template` is set, one of the following properties might be required.
-        
+
     - `data_snet_key`          - (`string`, required only when `bootstrap_xml_template` is set, defaults to `null`) a key
                                  pointing to a data Subnet definition in `var.vnets` (the `vnet_key` property is used to
                                  identify a VNET). The Subnet definition is used to calculate static routes for a data
@@ -822,7 +822,7 @@ The most basic properties are as follows:
     - `intranet_cidr`          - (`string`, optional, defaults to `null`) a CIDR of the Intranet - combined CIDR of all
                                  private networks. When set it will override the private Subnet CIDR for inbound traffic
                                  static routes.
-      
+
     For details on all properties refer to [module's documentation](../../modules/vmseries/README.md#virtual_machine).
 
 - `interfaces`      - (`list`, required) configuration of all network interfaces. Order of the interfaces does matter - the
@@ -831,7 +831,15 @@ The most basic properties are as follows:
   - `name`                    - (`string`, required) name of the network interface (will be prefixed with `var.name_prefix`).
   - `subnet_key`              - (`string`, required) a key of a subnet to which the interface will be assigned as defined in
                                 `var.vnets`. Key identifying the VNET is defined in `virtual_machine.vnet_key` property.
-  - `create_public_ip`        - (`bool`, optional, defaults to `false`) create a Public IP for an interface.
+  - `ip_configurations`       - (`map`, required) A map that contains the IP configurations for the interface.
+    - `name`                    - (`string`, optional, defaults to `primary`) the name of the interface IP configuration.
+    - `primary`                 - (`bool`, optional, defaults to `true`) sets the current IP configuration as the primary one.
+                                  **Note!** When you define multiple IP configurations, exactly one must be the primary.
+    - `private_ip_address`      - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
+                                  skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
+                                  to change as long as the VM is running. Any stop/deallocate/restart operation might cause
+                                  the IP to change.
+    - `create_public_ip`        - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface.
   - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in `var.loadbalancers`
                                 variable, network interface that has this property defined will be added to the Load Balancer's
                                 backend pool.
@@ -919,19 +927,22 @@ map(object({
       identity_ids                  = optional(list(string))
     })
     interfaces = list(object({
-      name                          = string
-      subnet_key                    = string
-      ip_configuration_name         = optional(string)
-      create_public_ip              = optional(bool, false)
-      public_ip_name                = optional(string)
-      public_ip_resource_group_name = optional(string)
-      public_ip_key                 = optional(string)
-      private_ip_address            = optional(string)
-      load_balancer_key             = optional(string)
-      gwlb_key                      = optional(string)
-      gwlb_backend_key              = optional(string)
-      application_gateway_key       = optional(string)
-      appgw_backend_pool_id         = optional(string)
+      name       = string
+      subnet_key = string
+      ip_configurations = map(object({
+        name                          = optional(string)
+        primary                       = optional(bool, true)
+        create_public_ip              = optional(bool, false)
+        public_ip_name                = optional(string)
+        public_ip_resource_group_name = optional(string)
+        public_ip_key                 = optional(string)
+        private_ip_address            = optional(string)
+      }))
+      load_balancer_key       = optional(string)
+      gwlb_key                = optional(string)
+      gwlb_backend_key        = optional(string)
+      application_gateway_key = optional(string)
+      appgw_backend_pool_id   = optional(string)
     }))
   }))
 ```
@@ -968,12 +979,12 @@ Following properties are supported:
                                 [VNET module documentation](../../modules/vnet/README.md#route_tables).
   - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
                                 [VNET module documentation](../../modules/vnet/README.md#subnets).
-  - `local_peer_config`       - (`map`, optional) a map that contains local peer configuration parameters. This value allows to 
-                                set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
-                                `use_remote_gateways` parameters on the local VNet peering. 
+  - `local_peer_config`       - (`map`, optional) a map that contains local peer configuration parameters. This value allows to
+                                set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and
+                                `use_remote_gateways` parameters on the local VNet peering.
   - `remote_peer_config`      - (`map`, optional) a map that contains remote peer configuration parameters. This value allows to
-                                set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
-                                `use_remote_gateways` parameters on the remote VNet peering.  
+                                set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and
+                                `use_remote_gateways` parameters on the remote VNet peering.
 
   For all properties and their default values see [module's documentation](../../modules/test_infrastructure/README.md#vnets).
 

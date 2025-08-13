@@ -119,9 +119,16 @@ vmseries = {
     }
     interfaces = [
       {
-        name             = "vm-mgmt"
-        subnet_key       = "management"
-        create_public_ip = true
+        name       = "vm-mgmt"
+        subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name               = "primary-ip"
+            primary            = true
+            private_ip_address = "10.0.0.5"
+            create_public_ip   = true
+          }
+        }
       }
     ]
   }
