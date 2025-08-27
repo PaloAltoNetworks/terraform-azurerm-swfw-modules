@@ -219,13 +219,14 @@ vmseries = {
 
       # This example uses basic user-data bootstrap method by default, comment out the map below if you want to use another one
       bootstrap_options = {
-        type = "dhcp-client"
+        type               = "dhcp-client"
+        plugin-op-commands = "advance-routing:enable"
       }
 
       /* Uncomment the section below to use Panorama Software Firewall License (sw_fw_license) plugin bootstrap and fill out missing data
       bootstrap_options = {
         type               = "dhcp-client"
-        plugin-op-commands = "panorama-licensing-mode-on"
+        plugin-op-commands = "advance-routing:enable,panorama-licensing-mode-on"
         panorama-server    = "" # TODO: Insert Panorama IP address from sw_fw_license plugin
         tplname            = "" # TODO: Insert Panorama Template Stack name from sw_fw_license plugin
         dgname             = "" # TODO: Insert Panorama Device Group name from sw_fw_license plugin
@@ -259,19 +260,38 @@ vmseries = {
     }
     interfaces = [
       {
-        name             = "vm-in-01-mgmt"
-        subnet_key       = "management"
-        create_public_ip = true
+        name       = "vm-in-01-mgmt"
+        subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = true
+          }
+        }
       },
       {
-        name              = "vm-in-01-public"
-        subnet_key        = "public"
-        create_public_ip  = true
+        name       = "vm-in-01-public"
+        subnet_key = "public"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = true
+          }
+        }
         load_balancer_key = "public"
       },
       {
         name       = "vm-in-01-private"
         subnet_key = "private"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = false
+          }
+        }
       }
     ]
   }
@@ -283,13 +303,14 @@ vmseries = {
 
       # This example uses basic user-data bootstrap method by default, comment out the map below if you want to use another one
       bootstrap_options = {
-        type = "dhcp-client"
+        type               = "dhcp-client"
+        plugin-op-commands = "advance-routing:enable"
       }
 
       /* Uncomment the section below to use Panorama Software Firewall License (sw_fw_license) plugin bootstrap and fill out missing data
       bootstrap_options = {
         type               = "dhcp-client"
-        plugin-op-commands = "panorama-licensing-mode-on"
+        plugin-op-commands = "advance-routing:enable,panorama-licensing-mode-on"
         panorama-server    = "" # TODO: Insert Panorama IP address from sw_fw_license plugin
         tplname            = "" # TODO: Insert Panorama Template Stack name from sw_fw_license plugin
         dgname             = "" # TODO: Insert Panorama Device Group name from sw_fw_license plugin
@@ -323,18 +344,38 @@ vmseries = {
     }
     interfaces = [
       {
-        name             = "vm-in-02-mgmt"
-        subnet_key       = "management"
-        create_public_ip = true
+        name       = "vm-in-02-mgmt"
+        subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = true
+          }
+        }
       },
       {
-        name              = "vm-in-02-public"
-        subnet_key        = "public"
+        name       = "vm-in-02-public"
+        subnet_key = "public"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = false
+          }
+        }
         load_balancer_key = "public"
       },
       {
         name       = "vm-in-02-private"
         subnet_key = "private"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = false
+          }
+        }
       }
     ]
   }
@@ -346,13 +387,14 @@ vmseries = {
 
       # This example uses basic user-data bootstrap method by default, comment out the map below if you want to use another one
       bootstrap_options = {
-        type = "dhcp-client"
+        type               = "dhcp-client"
+        plugin-op-commands = "advance-routing:enable"
       }
 
       /* Uncomment the section below to use Panorama Software Firewall License (sw_fw_license) plugin bootstrap and fill out missing data
       bootstrap_options = {
         type               = "dhcp-client"
-        plugin-op-commands = "panorama-licensing-mode-on"
+        plugin-op-commands = "advance-routing:enable,panorama-licensing-mode-on"
         panorama-server    = "" # TODO: Insert Panorama IP address from sw_fw_license plugin
         tplname            = "" # TODO: Insert Panorama Template Stack name from sw_fw_license plugin
         dgname             = "" # TODO: Insert Panorama Device Group name from sw_fw_license plugin
@@ -386,18 +428,37 @@ vmseries = {
     }
     interfaces = [
       {
-        name             = "vm-obew-01-mgmt"
-        subnet_key       = "management"
-        create_public_ip = true
+        name       = "vm-obew-01-mgmt"
+        subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = true
+          }
+        }
       },
       {
-        name             = "vm-obew-01-public"
-        subnet_key       = "public"
-        create_public_ip = true
+        name       = "vm-obew-01-public"
+        subnet_key = "public"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = true
+          }
+        }
       },
       {
-        name              = "vm-obew-01-private"
-        subnet_key        = "private"
+        name       = "vm-obew-01-private"
+        subnet_key = "private"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = false
+          }
+        }
         load_balancer_key = "private"
       }
     ]
@@ -410,13 +471,14 @@ vmseries = {
 
       # This example uses basic user-data bootstrap method by default, comment out the map below if you want to use another one
       bootstrap_options = {
-        type = "dhcp-client"
+        type               = "dhcp-client"
+        plugin-op-commands = "advance-routing:enable"
       }
 
       /* Uncomment the section below to use Panorama Software Firewall License (sw_fw_license) plugin bootstrap and fill out missing data
       bootstrap_options = {
         type               = "dhcp-client"
-        plugin-op-commands = "panorama-licensing-mode-on"
+        plugin-op-commands = "advance-routing:enable,panorama-licensing-mode-on"
         panorama-server    = "" # TODO: Insert Panorama IP address from sw_fw_license plugin
         tplname            = "" # TODO: Insert Panorama Template Stack name from sw_fw_license plugin
         dgname             = "" # TODO: Insert Panorama Device Group name from sw_fw_license plugin
@@ -450,18 +512,37 @@ vmseries = {
     }
     interfaces = [
       {
-        name             = "vm-obew-02-mgmt"
-        subnet_key       = "management"
-        create_public_ip = true
+        name       = "vm-obew-02-mgmt"
+        subnet_key = "management"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = true
+          }
+        }
       },
       {
-        name             = "vm-obew-02-public"
-        subnet_key       = "public"
-        create_public_ip = true
+        name       = "vm-obew-02-public"
+        subnet_key = "public"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = true
+          }
+        }
       },
       {
-        name              = "vm-obew-02-private"
-        subnet_key        = "private"
+        name       = "vm-obew-02-private"
+        subnet_key = "private"
+        ip_configurations = {
+          primary-ip = {
+            name             = "primary-ip"
+            primary          = true
+            create_public_ip = false
+          }
+        }
         load_balancer_key = "private"
       }
     ]

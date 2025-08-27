@@ -407,7 +407,8 @@ module "vmseries" {
   image = merge(
     each.value.image,
     {
-      version = try(each.value.image.version, var.vmseries_universal.version, null)
+      use_airs = try(each.value.image.use_airs, var.vmseries_universal.use_airs, false)
+      version  = try(each.value.image.version, var.vmseries_universal.version, null)
     }
   )
   virtual_machine = merge(
@@ -445,20 +446,24 @@ module "vmseries" {
   )
 
   interfaces = [for v in each.value.interfaces : {
-    name                  = "${var.name_prefix}${v.name}"
-    subnet_id             = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
-    ip_configuration_name = v.ip_configuration_name
-    create_public_ip      = v.create_public_ip
-    public_ip_name = v.create_public_ip ? "${
-      var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")
-    }" : v.public_ip_name
-    public_ip_resource_group_name = v.public_ip_resource_group_name
-    public_ip_id                  = try(module.public_ip.pip_ids[v.public_ip_key], null)
-    private_ip_address            = v.private_ip_address
-    attach_to_lb_backend_pool     = v.load_balancer_key != null
-    lb_backend_pool_id            = try(module.load_balancer[v.load_balancer_key].backend_pool_id, null)
-    attach_to_appgw_backend_pool  = v.appgw_backend_pool_id != null
-    appgw_backend_pool_id         = try(v.appgw_backend_pool_id, null)
+    name      = "${var.name_prefix}${v.name}"
+    subnet_id = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
+    ip_configurations = { for vk, vv in v.ip_configurations : vk => {
+      name             = vv.name
+      create_public_ip = vv.create_public_ip
+      public_ip_name = vv.create_public_ip ? "${
+        var.name_prefix}${coalesce(vv.public_ip_name, "${v.name}-${vv.name}-pip")
+      }" : vv.public_ip_name
+      primary                       = vv.primary
+      public_ip_resource_group_name = vv.public_ip_resource_group_name
+      public_ip_id                  = try(module.public_ip.pip_ids[vv.public_ip_key], null)
+      private_ip_address            = vv.private_ip_address
+      }
+    }
+    attach_to_lb_backend_pool    = v.load_balancer_key != null
+    lb_backend_pool_id           = try(module.load_balancer[v.load_balancer_key].backend_pool_id, null)
+    attach_to_appgw_backend_pool = v.appgw_backend_pool_id != null
+    appgw_backend_pool_id        = try(v.appgw_backend_pool_id, null)
   }]
 
   tags = var.tags
