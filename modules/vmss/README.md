@@ -20,6 +20,7 @@ provider "azurerm" {
   }
 }
 ```
+
 ## Orchestration modes
 This module allows you to deploy a Virtual Machine Scale Set (VMSS) with a configurable orchestration mode.
 
