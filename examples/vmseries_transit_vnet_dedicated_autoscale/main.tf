@@ -419,7 +419,7 @@ module "vmss" {
       )
     }
   )
-
+  orchestration_type = var.orchestration_type
   interfaces = [
     for v in each.value.interfaces : {
       name      = v.name

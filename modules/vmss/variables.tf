@@ -18,7 +18,11 @@ variable "tags" {
   default     = {}
   type        = map(string)
 }
-
+variable "orchestration_type" {
+  description = "Set to true to use Flexible orchestration mode, or false for Uniform."
+  type        = bool
+  default     = false
+}
 variable "authentication" {
   description = <<-EOF
   A map defining authentication settings (including username and password).
@@ -163,7 +167,7 @@ variable "virtual_machine_scale_set" {
   default     = {}
   nullable    = false
   type = object({
-    size                          = optional(string, "Standard_D3_v2")
+    size                          = optional(string, "Standard_B1s")
     bootstrap_options             = optional(string)
     zones                         = optional(list(string))
     disk_type                     = optional(string, "StandardSSD_LRS")
@@ -171,7 +175,7 @@ variable "virtual_machine_scale_set" {
     allow_extension_operations    = optional(bool, false)
     encryption_at_host_enabled    = optional(bool)
     overprovision                 = optional(bool, true)
-    platform_fault_domain_count   = optional(number)
+    platform_fault_domain_count   = optional(number, 1)
     single_placement_group        = optional(bool)
     capacity_reservation_group_id = optional(string)
     disk_encryption_set_id        = optional(string)

@@ -20,7 +20,16 @@ provider "azurerm" {
   }
 }
 ```
+## Orchestration modes
+This module allows you to deploy a Virtual Machine Scale Set (VMSS) with a configurable orchestration mode.
 
+The choice of mode is determined by the orchestration_type variable, which provides a single point of control over the VMSS deployment.
+
+Flexible Orchestration: If orchestration_type is set to False, the module provisions an azurerm_orchestrated_virtual_machine_scale_set. For this mode to function correctly, the scale set's identity type must be set to UserAssigned. This is a requirement for managing individual VMs within the set.
+
+Uniform Orchestration: If orchestration_type is set to True, the module provisions an azurerm_linux_virtual_machine_scale_set. This resource is used for traditional, uniform orchestration, where all VMs are managed as a single entity.
+
+By default Traditinal, uniform orchestration is used. To change the orchestration mode you will need to change your orchestration_type variable from false to true
 ## About rolling upgrades and auto healing
 
 Both, the rolling upgrade mode and auto healing target the 1<sup>st</sup> NIC on a Scale Set VM with a health probe to verify if
@@ -403,7 +412,7 @@ List of other, optional properties:
 - `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted by enabling
                                     Encryption at Host.
 - `overprovision`                 - (`bool`, optional, defaults to `true`) See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set).
-- `platform_fault_domain_count`   - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that
+- `platform_fault_domain_count`   - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that, By default it will be set to 1 because the flexible orchestration configuration requires this parameter to be required
                                     are used by this Virtual Machine Scale Set.
 - `single_placement_group`        - (`bool`, optional, defaults to Azure defaults) when `true` this Virtual Machine Scale Set
                                     will be limited to a Single Placement Group, which means the number of instances will be
@@ -413,7 +422,7 @@ List of other, optional properties:
 - `enable_boot_diagnostics`       - (`bool`, optional, defaults to `false`) enables boot diagnostics for a VM.
 - `boot_diagnostics_storage_uri`  - (`string`, optional, defaults to `null`) Storage Account's Blob endpoint to hold diagnostic
                                     files, when skipped a managed Storage Account will be used (preferred).
-- `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
+- `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that. For the Flexible orchestration mode this parameter must be configured to UserAssigned
                                     should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
                                     "SystemAssigned, UserAssigned".
 - `identity_ids`                  - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
@@ -432,7 +441,7 @@ object({
     allow_extension_operations    = optional(bool, false)
     encryption_at_host_enabled    = optional(bool)
     overprovision                 = optional(bool, true)
-    platform_fault_domain_count   = optional(number)
+    platform_fault_domain_count   = optional(number,1)
     single_placement_group        = optional(bool)
     capacity_reservation_group_id = optional(string)
     disk_encryption_set_id        = optional(string)

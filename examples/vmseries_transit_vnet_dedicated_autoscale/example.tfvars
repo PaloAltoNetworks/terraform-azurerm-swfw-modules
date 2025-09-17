@@ -12,7 +12,7 @@ tags = {
 }
 
 # NETWORK
-
+orchestration_type = false
 vnets = {
   "transit" = {
     name          = "transit"

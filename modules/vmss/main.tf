@@ -19,8 +19,121 @@ data "azurerm_public_ip_prefix" "allocate" {
   resource_group_name = coalesce(each.value.pip_prefix_resource_group_name, var.resource_group_name)
 }
 
+resource "azurerm_user_assigned_identity" "this" {
+  count               = var.orchestration_type ? 1 : 0
+  location            = var.region
+  name                = "vmss-user-identity"
+  resource_group_name = var.resource_group_name
+}
+
+resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
+  count                         = var.orchestration_type ? 1 : 0
+  name                          = var.name
+  location                      = var.region
+  resource_group_name           = var.resource_group_name
+  platform_fault_domain_count   = var.virtual_machine_scale_set.platform_fault_domain_count
+  encryption_at_host_enabled    = var.virtual_machine_scale_set.encryption_at_host_enabled
+  instances                     = var.autoscaling_configuration.default_count
+  capacity_reservation_group_id = var.virtual_machine_scale_set.capacity_reservation_group_id
+  extension_operations_enabled  = var.virtual_machine_scale_set.allow_extension_operations
+  single_placement_group        = var.virtual_machine_scale_set.single_placement_group
+  source_image_id               = var.image.custom_id
+  upgrade_mode                  = "Manual" # see README for more details no this setting
+  zones                         = var.virtual_machine_scale_set.zones
+  zone_balance                  = length(coalesce(var.virtual_machine_scale_set.zones, [])) >= 2 # zone balance is available from at least 2 zones
+  sku_name                      = var.virtual_machine_scale_set.size
+  os_profile {
+    custom_data = var.virtual_machine_scale_set.bootstrap_options == null ? (null) : base64encode(var.virtual_machine_scale_set.bootstrap_options)
+    linux_configuration {
+      provision_vm_agent              = false
+      admin_username                  = var.authentication.username
+      admin_password                  = var.authentication.disable_password_authentication ? null : local.password
+      disable_password_authentication = var.authentication.disable_password_authentication
+      dynamic "admin_ssh_key" {
+        for_each = { for k, v in var.authentication.ssh_keys : k => v }
+        content {
+          username   = var.authentication.username
+          public_key = admin_ssh_key.value
+        }
+      }
+    }
+
+  }
+  source_image_reference {
+    publisher = var.image.use_airs ? "paloaltonetworks" : var.image.publisher
+    offer     = var.image.use_airs ? "airs-flex" : var.image.offer
+    sku       = var.image.use_airs ? "airs-byol" : var.image.sku
+    version   = var.image.version
+  }
+  dynamic "network_interface" {
+    for_each = var.interfaces
+    iterator = nic
+
+    content {
+      name                          = "${nic.value.name}-${nic.key}"
+      primary                       = nic.key == 0 ? true : false
+      enable_ip_forwarding          = nic.key == 0 ? false : true
+      enable_accelerated_networking = nic.key == 0 ? false : var.virtual_machine_scale_set.accelerated_networking
+
+      dynamic "ip_configuration" {
+        for_each = nic.value.ip_configurations
+
+        content {
+          name      = "${ip_configuration.value.name}-${ip_configuration.key}"
+          primary   = ip_configuration.value.primary
+          subnet_id = nic.value.subnet_id
+          load_balancer_backend_address_pool_ids = ip_configuration.value.primary == true ? (
+            nic.value.lb_backend_pool_ids
+          ) : null
+          application_gateway_backend_address_pool_ids = ip_configuration.value.primary == true ? (
+            nic.value.appgw_backend_pool_ids
+          ) : null
+
+          public_ip_address {
+            name                    = "${ip_configuration.value.name}-${ip_configuration.key}"
+            domain_name_label       = ip_configuration.value.pip_domain_name_label
+            idle_timeout_in_minutes = ip_configuration.value.pip_idle_timeout_in_minutes
+            public_ip_prefix_id = try(
+              ip_configuration.value.pip_prefix_id,
+              data.azurerm_public_ip_prefix.allocate["${nic.value.name}-${ip_configuration.key}"].id,
+              null
+            )
+          }
+        }
+      }
+    }
+  }
+
+  dynamic "boot_diagnostics" {
+    for_each = var.virtual_machine_scale_set.enable_boot_diagnostics ? [1] : []
+    content {
+      storage_account_uri = var.virtual_machine_scale_set.boot_diagnostics_storage_uri
+    }
+  }
+  os_disk {
+    caching                = "ReadWrite"
+    disk_encryption_set_id = var.virtual_machine_scale_set.disk_encryption_set_id # the Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault, in addition to an Access Policy to the Key Vault
+    storage_account_type   = var.virtual_machine_scale_set.disk_type
+  }
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.this[0].id]
+  }
+  dynamic "plan" {
+    for_each = var.image.enable_marketplace_plan ? [1] : []
+    content {
+      name      = var.image.use_airs ? "airs-byol" : var.image.sku
+      publisher = var.image.use_airs ? "paloaltonetworks" : var.image.publisher
+      product   = var.image.use_airs ? "airs-flex" : var.image.offer
+    }
+  }
+
+  tags = var.tags
+}
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set
 resource "azurerm_linux_virtual_machine_scale_set" "this" {
+  count                = var.orchestration_type ? 0 : 1
   name                 = var.name
   computer_name_prefix = null
   location             = var.region
@@ -141,6 +254,8 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
 }
 
 locals {
+  vmss_id   = var.orchestration_type ? azurerm_orchestrated_virtual_machine_scale_set.this[0].id : azurerm_linux_virtual_machine_scale_set.this[0].id
+  vmss_name = var.orchestration_type ? azurerm_orchestrated_virtual_machine_scale_set.this[0].name : azurerm_linux_virtual_machine_scale_set.this[0].name
   # this loop will pull out all `window_minutes`-like properties from the scaling rules
   # into one map that can be fed into the `pdt_time` module
   profile_time_windows_flat = flatten([
@@ -204,7 +319,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
   name                = var.name
   location            = var.region
   resource_group_name = var.resource_group_name
-  target_resource_id  = azurerm_linux_virtual_machine_scale_set.this.id
+  target_resource_id  = local.vmss_id
 
   # the default profile or (when more then one) the profiles representing start times
 
@@ -262,7 +377,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             metric_name = rule.value.name
             metric_resource_id = contains(local.panos_metrics, rule.value.name) ? (
               var.autoscaling_configuration.application_insights_id
-            ) : azurerm_linux_virtual_machine_scale_set.this.id
+            ) : local.vmss_id
             metric_namespace = contains(local.panos_metrics, rule.value.name) ? (
               "Azure.ApplicationInsights"
             ) : "microsoft.compute/virtualmachinescalesets"
@@ -298,7 +413,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             metric_name = rule.value.name
             metric_resource_id = contains(local.panos_metrics, rule.value.name) ? (
               var.autoscaling_configuration.application_insights_id
-            ) : azurerm_linux_virtual_machine_scale_set.this.id
+            ) : local.vmss_id
             metric_namespace = contains(local.panos_metrics, rule.value.name) ? (
               "Azure.ApplicationInsights"
             ) : "microsoft.compute/virtualmachinescalesets"
@@ -369,7 +484,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             metric_name = rule.value.name
             metric_resource_id = contains(local.panos_metrics, rule.value.name) ? (
               var.autoscaling_configuration.application_insights_id
-            ) : azurerm_linux_virtual_machine_scale_set.this.id
+            ) : local.vmss_id
             metric_namespace = contains(local.panos_metrics, rule.value.name) ? (
               "Azure.ApplicationInsights"
             ) : "microsoft.compute/virtualmachinescalesets"
@@ -408,7 +523,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             metric_name = rule.value.name
             metric_resource_id = contains(local.panos_metrics, rule.value.name) ? (
               var.autoscaling_configuration.application_insights_id
-            ) : azurerm_linux_virtual_machine_scale_set.this.id
+            ) : local.vmss_id
             metric_namespace = contains(local.panos_metrics, rule.value.name) ? (
               "Azure.ApplicationInsights"
             ) : "microsoft.compute/virtualmachinescalesets"

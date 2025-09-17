@@ -56,7 +56,11 @@ variable "tags" {
   default     = {}
   type        = map(string)
 }
-
+variable "orchestration_type" {
+  type        = bool
+  description = "Set to true to use Flexible orchestration mode, or false for Uniform."
+  default     = false
+}
 # NETWORK
 
 variable "vnets" {
