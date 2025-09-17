@@ -167,7 +167,7 @@ variable "virtual_machine_scale_set" {
   default     = {}
   nullable    = false
   type = object({
-    size                          = optional(string, "Standard_B1s")
+    size                          = optional(string, "Standard_D3_v2")
     bootstrap_options             = optional(string)
     zones                         = optional(list(string))
     disk_type                     = optional(string, "StandardSSD_LRS")
