@@ -20,14 +20,16 @@ data "azurerm_public_ip_prefix" "allocate" {
 }
 
 resource "azurerm_user_assigned_identity" "this" {
-  count               = var.orchestration_type ? 1 : 0
+  count = var.virtual_machine_scale_set.orchestration_type == "Flexible" ? 1 : 0
+
   location            = var.region
   name                = "vmss-user-identity"
   resource_group_name = var.resource_group_name
 }
 
 resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
-  count                         = var.orchestration_type ? 1 : 0
+  count = var.virtual_machine_scale_set.orchestration_type == "Flexible" ? 1 : 0
+
   name                          = var.name
   location                      = var.region
   resource_group_name           = var.resource_group_name
@@ -38,9 +40,9 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
   extension_operations_enabled  = var.virtual_machine_scale_set.allow_extension_operations
   single_placement_group        = var.virtual_machine_scale_set.single_placement_group
   source_image_id               = var.image.custom_id
-  upgrade_mode                  = "Manual" # see README for more details no this setting
+  upgrade_mode                  = "Manual"
   zones                         = var.virtual_machine_scale_set.zones
-  zone_balance                  = length(coalesce(var.virtual_machine_scale_set.zones, [])) >= 2 # zone balance is available from at least 2 zones
+  zone_balance                  = length(coalesce(var.virtual_machine_scale_set.zones, [])) >= 2
   sku_name                      = var.virtual_machine_scale_set.size
   os_profile {
     custom_data = var.virtual_machine_scale_set.bootstrap_options == null ? (null) : base64encode(var.virtual_machine_scale_set.bootstrap_options)
@@ -133,7 +135,8 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
 }
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set
 resource "azurerm_linux_virtual_machine_scale_set" "this" {
-  count                = var.orchestration_type ? 0 : 1
+  count = var.virtual_machine_scale_set.orchestration_type == "Uniform" ? 1 : 0
+
   name                 = var.name
   computer_name_prefix = null
   location             = var.region
@@ -254,8 +257,10 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
 }
 
 locals {
-  vmss_id   = var.orchestration_type ? azurerm_orchestrated_virtual_machine_scale_set.this[0].id : azurerm_linux_virtual_machine_scale_set.this[0].id
-  vmss_name = var.orchestration_type ? azurerm_orchestrated_virtual_machine_scale_set.this[0].name : azurerm_linux_virtual_machine_scale_set.this[0].name
+  vmss = {
+    id   = var.virtual_machine_scale_set.orchestration_type == "Flexible" ? azurerm_orchestrated_virtual_machine_scale_set.this[0].id : azurerm_linux_virtual_machine_scale_set.this[0].id
+    name = var.virtual_machine_scale_set.orchestration_type == "Flexible" ? azurerm_orchestrated_virtual_machine_scale_set.this[0].name : azurerm_linux_virtual_machine_scale_set.this[0].name
+  }
   # this loop will pull out all `window_minutes`-like properties from the scaling rules
   # into one map that can be fed into the `pdt_time` module
   profile_time_windows_flat = flatten([
@@ -319,7 +324,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
   name                = var.name
   location            = var.region
   resource_group_name = var.resource_group_name
-  target_resource_id  = local.vmss_id
+  target_resource_id  = local.vmss.id
 
   # the default profile or (when more then one) the profiles representing start times
 
@@ -377,7 +382,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             metric_name = rule.value.name
             metric_resource_id = contains(local.panos_metrics, rule.value.name) ? (
               var.autoscaling_configuration.application_insights_id
-            ) : local.vmss_id
+            ) : local.vmss.id
             metric_namespace = contains(local.panos_metrics, rule.value.name) ? (
               "Azure.ApplicationInsights"
             ) : "microsoft.compute/virtualmachinescalesets"
@@ -413,7 +418,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             metric_name = rule.value.name
             metric_resource_id = contains(local.panos_metrics, rule.value.name) ? (
               var.autoscaling_configuration.application_insights_id
-            ) : local.vmss_id
+            ) : local.vmss.id
             metric_namespace = contains(local.panos_metrics, rule.value.name) ? (
               "Azure.ApplicationInsights"
             ) : "microsoft.compute/virtualmachinescalesets"
@@ -484,7 +489,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             metric_name = rule.value.name
             metric_resource_id = contains(local.panos_metrics, rule.value.name) ? (
               var.autoscaling_configuration.application_insights_id
-            ) : local.vmss_id
+            ) : local.vmss.id
             metric_namespace = contains(local.panos_metrics, rule.value.name) ? (
               "Azure.ApplicationInsights"
             ) : "microsoft.compute/virtualmachinescalesets"
@@ -523,7 +528,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             metric_name = rule.value.name
             metric_resource_id = contains(local.panos_metrics, rule.value.name) ? (
               var.autoscaling_configuration.application_insights_id
-            ) : local.vmss_id
+            ) : local.vmss.id
             metric_namespace = contains(local.panos_metrics, rule.value.name) ? (
               "Azure.ApplicationInsights"
             ) : "microsoft.compute/virtualmachinescalesets"

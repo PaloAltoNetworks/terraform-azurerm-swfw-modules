@@ -1,6 +1,6 @@
 output "scale_set_name" {
   description = "Name of the created scale set."
-  value       = local.vmss_name
+  value       = local.vmss.name
 }
 
 output "username" {

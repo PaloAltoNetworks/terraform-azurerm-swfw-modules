@@ -391,7 +391,8 @@ module "vmss" {
   virtual_machine_scale_set = merge(
     each.value.virtual_machine_scale_set,
     {
-      size = try(coalesce(each.value.virtual_machine_scale_set.size, var.scale_sets_universal.size), null)
+      orchestration_type = each.value.virtual_machine_scale_set.orchestration_type
+      size               = try(coalesce(each.value.virtual_machine_scale_set.size, var.scale_sets_universal.size), null)
       bootstrap_options = try(
         join(";", [for k, v in each.value.virtual_machine_scale_set.bootstrap_options : "${k}=${v}" if v != null]),
         join(";", [for k, v in var.scale_sets_universal.bootstrap_options : "${k}=${v}" if v != null]),
