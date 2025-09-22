@@ -21,7 +21,6 @@ provider "azurerm" {
 }
 ```
 
-
 ## About rolling upgrades and auto healing
 
 Both, the rolling upgrade mode and auto healing target the 1<sup>st</sup> NIC on a Scale Set VM with a health probe to verify if
@@ -404,7 +403,7 @@ List of other, optional properties:
 - `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted by enabling
                                     Encryption at Host.
 - `overprovision`                 - (`bool`, optional, defaults to `true`) See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set).
-- `platform_fault_domain_count`   - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that.
+- `platform_fault_domain_count`   - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that
                                     are used by this Virtual Machine Scale Set.
 - `single_placement_group`        - (`bool`, optional, defaults to Azure defaults) when `true` this Virtual Machine Scale Set
                                     will be limited to a Single Placement Group, which means the number of instances will be
@@ -414,7 +413,7 @@ List of other, optional properties:
 - `enable_boot_diagnostics`       - (`bool`, optional, defaults to `false`) enables boot diagnostics for a VM.
 - `boot_diagnostics_storage_uri`  - (`string`, optional, defaults to `null`) Storage Account's Blob endpoint to hold diagnostic
                                     files, when skipped a managed Storage Account will be used (preferred).
-- `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that. For the Flexible orchestration mode this parameter must be configured to UserAssigned
+- `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
                                     should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
                                     "SystemAssigned, UserAssigned".
 - `identity_ids`                  - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
