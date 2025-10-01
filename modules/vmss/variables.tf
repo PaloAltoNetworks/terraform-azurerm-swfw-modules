@@ -181,7 +181,7 @@ variable "virtual_machine_scale_set" {
     boot_diagnostics_storage_uri  = optional(string)
     identity_type                 = optional(string, "SystemAssigned")
     identity_ids                  = optional(list(string), [])
-    orchestration_type            = optional(string,"Uniform")
+    orchestration_type            = optional(string, "Uniform")
   })
   validation {
     condition     = contains(["Flexible", "Uniform"], var.virtual_machine_scale_set.orchestration_type)
