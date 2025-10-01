@@ -1285,6 +1285,7 @@ map(object({
       boot_diagnostics_storage_uri  = optional(string)
       identity_type                 = optional(string)
       identity_ids                  = optional(list(string), [])
+      orchestration_type            = optional(string)
     }))
     autoscaling_configuration = optional(object({
       default_count           = optional(number)

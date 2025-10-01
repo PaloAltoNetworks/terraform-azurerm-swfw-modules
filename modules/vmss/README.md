@@ -32,6 +32,17 @@ probe would target the management interface which could lead to false-positives.
 probes, while the data plane remains unconfigured. An easy solution would to bo configure an interface swap, unfortunately this
 is not available in the Azure VM-Series image yet.
 
+## Orchestration modes
+This module allows you to deploy a Virtual Machine Scale Set (VMSS) with a configurable orchestration mode.
+
+The choice of mode is determined by the orchestration_type variable, which provides a single point of control over the VMSS deployment.
+
+Flexible Orchestration: If orchestration_type is set to False, the module provisions an azurerm_orchestrated_virtual_machine_scale_set. For this mode to function correctly, the scale set's identity type must be set to UserAssigned. This is a requirement for managing individual VMs within the set.
+
+Uniform Orchestration: If orchestration_type is set to True, the module provisions an azurerm_linux_virtual_machine_scale_set. This resource is used for traditional, uniform orchestration, where all VMs are managed as a single entity.
+
+By default Traditinal, uniform orchestration is used. To change the orchestration mode you will need to change your orchestration_type variable from false to true
+
 ## Custom Metrics and Autoscaling
 
 Firewalls can publish custom metrics (for example `panSessionUtilization`) to Azure Application Insights to improve the
@@ -122,6 +133,8 @@ Name | Version | Source | Description
 
 - `linux_virtual_machine_scale_set` (managed)
 - `monitor_autoscale_setting` (managed)
+- `orchestrated_virtual_machine_scale_set` (managed)
+- `user_assigned_identity` (managed)
 - `public_ip_prefix` (data)
 
 ### Required Inputs
@@ -378,7 +391,7 @@ List of either required or important properties:
 - `size`              - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
                         Deployment Guide* as only few selected sizes are supported. The default one is a VM-300 equivalent.
 - `zones`             - (`list`, optional, defaults to `null`) a list of Availability Zones in which VMs from this Scale Set
-                        will be created.
+                        will be created. zone balance is available from at least 2 zones
 - `disk_type`         - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
                         possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected `size`
                         values).
@@ -404,7 +417,7 @@ List of other, optional properties:
                                     Encryption at Host.
 - `overprovision`                 - (`bool`, optional, defaults to `true`) See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set).
 - `platform_fault_domain_count`   - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that
-                                    are used by this Virtual Machine Scale Set.
+                                    are used by this Virtual Machine Scale Set. By default it will be set to 3 because the flexible orchestration configuration requires this parameter to be required
 - `single_placement_group`        - (`bool`, optional, defaults to Azure defaults) when `true` this Virtual Machine Scale Set
                                     will be limited to a Single Placement Group, which means the number of instances will be
                                     capped at 100 Virtual Machines.
@@ -415,9 +428,12 @@ List of other, optional properties:
                                     files, when skipped a managed Storage Account will be used (preferred).
 - `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
                                     should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
-                                    "SystemAssigned, UserAssigned".
+                                    "SystemAssigned, UserAssigned". For the Flexible orchestration mode this parameter must be configured to UserAssigned
 - `identity_ids`                  - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
                                     assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
+- `orchestration_type`            - (`string`, optional, defaults to `Uniform`) this variable is used to select between the Uniform scaleset orchestration 
+                                    or the flexible one. Only accepts two values (Uniform | Flexible)
+  
 
 
 Type: 
@@ -432,7 +448,7 @@ object({
     allow_extension_operations    = optional(bool, false)
     encryption_at_host_enabled    = optional(bool)
     overprovision                 = optional(bool, true)
-    platform_fault_domain_count   = optional(number)
+    platform_fault_domain_count   = optional(number, 3)
     single_placement_group        = optional(bool)
     capacity_reservation_group_id = optional(string)
     disk_encryption_set_id        = optional(string)
@@ -440,6 +456,7 @@ object({
     boot_diagnostics_storage_uri  = optional(string)
     identity_type                 = optional(string, "SystemAssigned")
     identity_ids                  = optional(list(string), [])
+    orchestration_type            = optional(string, "Uniform")
   })
 ```
 
