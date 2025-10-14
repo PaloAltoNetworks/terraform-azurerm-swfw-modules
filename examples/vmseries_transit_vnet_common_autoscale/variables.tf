@@ -863,9 +863,10 @@ variable "scale_sets" {
       custom_id               = optional(string)
     }))
     virtual_machine_scale_set = optional(object({
-      size      = optional(string)
-      zones     = optional(list(string))
-      disk_type = optional(string)
+      orchestration_type = optional(string)
+      size               = optional(string)
+      zones              = optional(list(string))
+      disk_type          = optional(string)
       bootstrap_options = optional(object({
         type                                  = optional(string)
         ip-address                            = optional(string)
@@ -916,7 +917,6 @@ variable "scale_sets" {
       boot_diagnostics_storage_uri  = optional(string)
       identity_type                 = optional(string)
       identity_ids                  = optional(list(string), [])
-      orchestration_type            = optional(string)
     }))
     autoscaling_configuration = optional(object({
       default_count           = optional(number)

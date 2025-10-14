@@ -30,20 +30,21 @@ resource "azurerm_user_assigned_identity" "this" {
 resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
   count = var.virtual_machine_scale_set.orchestration_type == "Flexible" ? 1 : 0
 
-  name                          = var.name
-  location                      = var.region
-  resource_group_name           = var.resource_group_name
-  platform_fault_domain_count   = var.virtual_machine_scale_set.platform_fault_domain_count
+  name                = var.name
+  location            = var.region
+  resource_group_name = var.resource_group_name
+
   encryption_at_host_enabled    = var.virtual_machine_scale_set.encryption_at_host_enabled
-  instances                     = var.autoscaling_configuration.default_count
-  capacity_reservation_group_id = var.virtual_machine_scale_set.capacity_reservation_group_id
   extension_operations_enabled  = var.virtual_machine_scale_set.allow_extension_operations
+  platform_fault_domain_count   = var.virtual_machine_scale_set.platform_fault_domain_count
   single_placement_group        = var.virtual_machine_scale_set.single_placement_group
-  source_image_id               = var.image.custom_id
+  capacity_reservation_group_id = var.virtual_machine_scale_set.capacity_reservation_group_id
   upgrade_mode                  = "Manual"
+  instances                     = var.autoscaling_configuration.default_count
+  sku_name                      = var.virtual_machine_scale_set.size
   zones                         = var.virtual_machine_scale_set.zones
   zone_balance                  = length(coalesce(var.virtual_machine_scale_set.zones, [])) >= 2
-  sku_name                      = var.virtual_machine_scale_set.size
+
   os_profile {
     custom_data = var.virtual_machine_scale_set.bootstrap_options == null ? (null) : base64encode(var.virtual_machine_scale_set.bootstrap_options)
     linux_configuration {
@@ -59,14 +60,32 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
         }
       }
     }
-
   }
+
+  os_disk {
+    caching                = "ReadWrite"
+    disk_encryption_set_id = var.virtual_machine_scale_set.disk_encryption_set_id # the Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault, in addition to an Access Policy to the Key Vault
+    storage_account_type   = var.virtual_machine_scale_set.disk_type
+  }
+
+  source_image_id = var.image.custom_id
+
   source_image_reference {
     publisher = var.image.use_airs ? "paloaltonetworks" : var.image.publisher
     offer     = var.image.use_airs ? "airs-flex" : var.image.offer
     sku       = var.image.use_airs ? "airs-byol" : var.image.sku
     version   = var.image.version
   }
+
+  dynamic "plan" {
+    for_each = var.image.enable_marketplace_plan ? [1] : []
+    content {
+      name      = var.image.use_airs ? "airs-byol" : var.image.sku
+      publisher = var.image.use_airs ? "paloaltonetworks" : var.image.publisher
+      product   = var.image.use_airs ? "airs-flex" : var.image.offer
+    }
+  }
+
   dynamic "network_interface" {
     for_each = var.interfaces
     iterator = nic
@@ -112,27 +131,15 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
       storage_account_uri = var.virtual_machine_scale_set.boot_diagnostics_storage_uri
     }
   }
-  os_disk {
-    caching                = "ReadWrite"
-    disk_encryption_set_id = var.virtual_machine_scale_set.disk_encryption_set_id # the Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault, in addition to an Access Policy to the Key Vault
-    storage_account_type   = var.virtual_machine_scale_set.disk_type
-  }
 
   identity {
     type         = "UserAssigned"
     identity_ids = [azurerm_user_assigned_identity.this[0].id]
   }
-  dynamic "plan" {
-    for_each = var.image.enable_marketplace_plan ? [1] : []
-    content {
-      name      = var.image.use_airs ? "airs-byol" : var.image.sku
-      publisher = var.image.use_airs ? "paloaltonetworks" : var.image.publisher
-      product   = var.image.use_airs ? "airs-flex" : var.image.offer
-    }
-  }
 
   tags = var.tags
 }
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set
 resource "azurerm_linux_virtual_machine_scale_set" "this" {
   count = var.virtual_machine_scale_set.orchestration_type == "Uniform" ? 1 : 0
@@ -257,10 +264,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
 }
 
 locals {
-  vmss = {
-    id   = var.virtual_machine_scale_set.orchestration_type == "Flexible" ? azurerm_orchestrated_virtual_machine_scale_set.this[0].id : azurerm_linux_virtual_machine_scale_set.this[0].id
-    name = var.virtual_machine_scale_set.orchestration_type == "Flexible" ? azurerm_orchestrated_virtual_machine_scale_set.this[0].name : azurerm_linux_virtual_machine_scale_set.this[0].name
-  }
+  vmss = var.virtual_machine_scale_set.orchestration_type == "Flexible" ? azurerm_orchestrated_virtual_machine_scale_set.this[0] : azurerm_linux_virtual_machine_scale_set.this[0]
   # this loop will pull out all `window_minutes`-like properties from the scaling rules
   # into one map that can be fed into the `pdt_time` module
   profile_time_windows_flat = flatten([
