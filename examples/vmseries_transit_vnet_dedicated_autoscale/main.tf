@@ -419,6 +419,7 @@ module "vmss" {
       )
     }
   )
+
   interfaces = [
     for v in each.value.interfaces : {
       name      = v.name
