@@ -19,6 +19,7 @@ data "azurerm_public_ip_prefix" "allocate" {
   resource_group_name = coalesce(each.value.pip_prefix_resource_group_name, var.resource_group_name)
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity
 resource "azurerm_user_assigned_identity" "this" {
   count = var.virtual_machine_scale_set.orchestration_type == "Flexible" ? 1 : 0
 
@@ -27,6 +28,7 @@ resource "azurerm_user_assigned_identity" "this" {
   resource_group_name = var.resource_group_name
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/orchestrated_virtual_machine_scale_set
 resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
   count = var.virtual_machine_scale_set.orchestration_type == "Flexible" ? 1 : 0
 
