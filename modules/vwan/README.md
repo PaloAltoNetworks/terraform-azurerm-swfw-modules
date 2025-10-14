@@ -356,7 +356,7 @@ Each object represents one Connection and supports the following properties:
 - `connection_type`           - (`string`, required) the type of Connection, use `Vnet` for Virtual Network connections.
 - `remote_virtual_network_id` - (`string`, optional) the resource ID of a remote Virtual Network.
 - `internet_security_enabled` - (`bool`, optional) the parameter that enables internet-bound traffic from the connected VNet 
-                                to be routed through the virtual hub for inspection by a network virtual appliance (NVA).
+                                to be routed through the Virtual Hub for inspection by a Network Virtual Appliance (NVA).
 - `hub_key`                   - (`string`, required) the key referencing the Virtual Hub.
 - `vpn_site_key`              - (`string`, optional) the key referencing the VPN Site used in this Connection.
 - `vpn_link`                  - (`list`, optional, defaults to `[]`) list of VPN link configurations, each object supports the
