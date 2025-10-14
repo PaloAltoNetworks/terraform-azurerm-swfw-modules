@@ -128,7 +128,9 @@ variable "vnets" {
       address_prefixes                = optional(list(string), [])
       network_security_group_key      = optional(string)
       route_table_key                 = optional(string)
+      default_outbound_access_enabled = optional(bool)
       enable_storage_service_endpoint = optional(bool)
+      enable_appgw_delegation         = optional(bool)
       enable_cloudngfw_delegation     = optional(bool)
     })), {})
   }))
@@ -177,6 +179,7 @@ variable "public_ips" {
       idle_timeout_in_minutes    = optional(number)
       prefix_name                = optional(string)
       prefix_resource_group_name = optional(string)
+      prefix_id                  = optional(string)
     })), {})
     public_ip_prefixes = optional(map(object({
       create              = bool
@@ -250,6 +253,118 @@ variable "natgws" {
       length              = optional(number)
       key                 = optional(string)
     }))
+  }))
+}
+
+variable "virtual_wans" {
+  description = <<-EOF
+  A map defining Virtual WANs.
+
+  For detailed documentation on each property refer to [module documentation](../../modules/vwan/README.md)
+
+  - `create`                         - (`bool`, optional, defaults to `true`) when set to `true` will create a new Virtual WAN,
+                                       `false` will source an existing Virtual WAN.
+  - `name`                           - (`string`, required) a name of a Virtual WAN. In case `create = false` this should be a
+                                       full resource name, including prefixes.
+  - `resource_group_name`            - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which
+                                       the Virtual WAN will reside or is sourced from.
+  - `disable_vpn_encryption`         - (`bool`, optional, defaults to `false`) if `true`, VPN encryption is disabled.
+  - `allow_branch_to_branch_traffic` - (`bool`, optional, defaults to `true`) if `false`, branch-to-branch traffic is not allowed.
+  - `virtual_hubs`                   - (`map`, optional) map of Virtual Hubs to create or source, for details see
+                                       [Virtual WAN module documentation](../../modules/vwan/README.md#virtual_hubs).
+  EOF
+  default     = {}
+  type = map(object({
+    name                           = string
+    resource_group_name            = optional(string)
+    create                         = optional(bool, true)
+    region                         = optional(string)
+    disable_vpn_encryption         = optional(bool, false)
+    allow_branch_to_branch_traffic = optional(bool, true)
+    virtual_hubs = optional(map(object({
+      name                                   = string
+      address_prefix                         = string
+      create                                 = optional(bool, true)
+      resource_group_name                    = optional(string)
+      region                                 = optional(string)
+      hub_routing_preference                 = optional(string)
+      virtual_router_auto_scale_min_capacity = optional(number)
+      connections = optional(map(object({
+        name                       = string
+        connection_type            = string
+        remote_virtual_network_key = optional(string)
+        internet_security_enabled  = optional(bool)
+        vpn_site_key               = optional(string)
+        vpn_link = optional(list(object({
+          vpn_link_name                  = string
+          vpn_site_link_key              = string
+          bandwidth_mbps                 = optional(number)
+          bgp_enabled                    = optional(bool)
+          connection_mode                = optional(string)
+          protocol                       = optional(string)
+          ratelimit_enabled              = optional(bool)
+          shared_key                     = optional(string)
+          local_azure_ip_address_enabled = optional(bool)
+          ipsec_policy = optional(object({
+            dh_group                 = optional(string)
+            ike_encryption_algorithm = optional(string)
+            ike_integrity_algorithm  = optional(string)
+            encryption_algorithm     = optional(string)
+            integrity_algorithm      = optional(string)
+            pfs_group                = optional(string)
+            sa_data_size_kb          = optional(number)
+            sa_lifetime_sec          = optional(number)
+          }))
+        })))
+        routing = optional(object({
+          associated_route_table_key                = optional(string)
+          propagated_route_table_keys               = optional(list(string))
+          propagated_route_table_labels             = optional(set(string))
+          static_vnet_route_name                    = optional(string)
+          static_vnet_route_address_prefixes        = optional(set(string))
+          static_vnet_route_next_hop_ip_address     = optional(string)
+          static_vnet_local_route_override_criteria = optional(string)
+        }))
+      })), {})
+      route_tables = optional(map(object({
+        name   = string
+        labels = optional(set(string))
+        routes = optional(map(object({
+          name              = string
+          destinations_type = string
+          destinations      = list(string)
+          next_hop_type     = optional(string)
+          next_hop_key      = string
+        })), {})
+      })), {})
+      routing_intent = optional(object({
+        routing_intent_name = string
+        routing_policy = list(object({
+          routing_policy_name = string
+          destinations        = list(string)
+          next_hop_key        = string
+        }))
+      }))
+      vpn_gateway = optional(object({
+        name                = string
+        resource_group_name = optional(string)
+        scale_unit          = optional(number)
+        routing_preference  = optional(string)
+      }), null)
+      vpn_sites = optional(map(object({
+        name                = string
+        region              = optional(string)
+        resource_group_name = optional(string)
+        address_cidrs       = optional(set(string))
+        link = optional(map(object({
+          name          = string
+          ip_address    = optional(string)
+          fqdn          = optional(string)
+          provider_name = optional(string)
+          speed_in_mbps = optional(number, 0)
+        })))
+      })), {})
+    })), {})
   }))
 }
 
@@ -368,8 +483,8 @@ variable "appgws" {
                          described by `subnet_key`.
   - `subnet_key`       - (`string`, required) a key pointing to a Subnet definition in the `var.vnets` map, this has to be an
                          Application Gateway V2 dedicated subnet.
-  - `zones`            - (`list`, optional, defaults to module default) parameter controlling if this is a zonal, or a non-zonal
-                         deployment.
+  - `zones`            - (`list`, optional, defaults to `["1", "2", "3"]`) parameter controlling if this is a zonal, or a
+                         non-zonal deployment.
   - `public_ip`        - (`map`, required) defines a Public IP resource used by the Application Gateway instance, a newly created
                          Public IP will have it's name prefixes with `var.name_prefix`.
   - `listeners`        - (`map`, required) defines Application Gateway's Listeners, see
@@ -396,7 +511,7 @@ variable "appgws" {
     name       = string
     vnet_key   = string
     subnet_key = string
-    zones      = optional(list(string))
+    zones      = optional(list(string), ["1", "2", "3"])
     public_ip = object({
       create              = optional(bool, true)
       name                = optional(string)
@@ -667,14 +782,16 @@ variable "bootstrap_storages" {
 
 variable "vmseries_universal" {
   description = <<-EOF
-  A map defining common settings for all created VM-Series instances. 
-  
+  A map defining common settings for all created VM-Series instances.
+
   It duplicates popular properties from `vmseries` variable, specifically `vmseries.image` and `vmseries.virtual_machine` maps.
   However, if values are set in those maps, they still take precedence over the ones set within this variable. As a result, all
   universal properties can be overriden on a per-VM basis.
 
   Following properties are supported:
-  
+
+  - `use_airs`          - (`bool`, optional, defaults to `false`) when set to `true`, the AI Runtime Security VM image is used
+                          instead of the one passed to the module and version for `airs-flex` offer must be provided.
   - `version`           - (`string`, optional) describes the PAN-OS image version from Azure Marketplace.
   - `size`              - (`string`, optional, defaults to module default) Azure VM size (type). Consult the *VM-Series
                           Deployment Guide* as only a few selected sizes are supported.
@@ -685,8 +802,9 @@ variable "vmseries_universal" {
   EOF
   default     = {}
   type = object({
-    version = optional(string)
-    size    = optional(string)
+    use_airs = optional(bool)
+    version  = optional(string)
+    size     = optional(string)
     bootstrap_options = optional(object({
       type                                  = optional(string)
       ip-address                            = optional(string)
@@ -1003,118 +1121,6 @@ variable "vmseries" {
   }
 }
 
-variable "virtual_wans" {
-  description = <<-EOF
-  A map defining Virtual WANs.
-
-  For detailed documentation on each property refer to [module documentation](../../modules/vwan/README.md)
-
-  - `create`                         - (`bool`, optional, defaults to `true`) when set to `true` will create a new Virtual WAN,
-                                       `false` will source an existing Virtual WAN.
-  - `name`                           - (`string`, required) a name of a Virtual WAN. In case `create = false` this should be a
-                                       full resource name, including prefixes.
-  - `resource_group_name`            - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which
-                                       the Virtual WAN will reside or is sourced from.
-  - `disable_vpn_encryption`         - (`bool`, optional, defaults to `false`) if `true`, VPN encryption is disabled.
-  - `allow_branch_to_branch_traffic` - (`bool`, optional, defaults to `true`) if `false`, branch-to-branch traffic is not allowed.
-  - `virtual_hubs`                   - (`map`, optional) map of Virtual Hubs to create or source, for details see
-                                       [Virtual WAN module documentation](../../modules/vwan/README.md#virtual_hubs).
-  EOF
-  default     = {}
-  type = map(object({
-    name                           = string
-    resource_group_name            = optional(string)
-    create                         = optional(bool, true)
-    region                         = optional(string)
-    disable_vpn_encryption         = optional(bool, false)
-    allow_branch_to_branch_traffic = optional(bool, true)
-    virtual_hubs = optional(map(object({
-      name                                   = string
-      address_prefix                         = string
-      create                                 = optional(bool, true)
-      resource_group_name                    = optional(string)
-      region                                 = optional(string)
-      hub_routing_preference                 = optional(string)
-      virtual_router_auto_scale_min_capacity = optional(number)
-      connections = optional(map(object({
-        name                       = string
-        connection_type            = string
-        remote_virtual_network_key = optional(string)
-        internet_security_enabled  = optional(bool)
-        vpn_site_key               = optional(string)
-        vpn_link = optional(list(object({
-          vpn_link_name                  = string
-          vpn_site_link_key              = string
-          bandwidth_mbps                 = optional(number)
-          bgp_enabled                    = optional(bool)
-          connection_mode                = optional(string)
-          protocol                       = optional(string)
-          ratelimit_enabled              = optional(bool)
-          shared_key                     = optional(string)
-          local_azure_ip_address_enabled = optional(bool)
-          ipsec_policy = optional(object({
-            dh_group                 = optional(string)
-            ike_encryption_algorithm = optional(string)
-            ike_integrity_algorithm  = optional(string)
-            encryption_algorithm     = optional(string)
-            integrity_algorithm      = optional(string)
-            pfs_group                = optional(string)
-            sa_data_size_kb          = optional(number)
-            sa_lifetime_sec          = optional(number)
-          }))
-        })))
-        routing = optional(object({
-          associated_route_table_key                = optional(string)
-          propagated_route_table_keys               = optional(list(string))
-          propagated_route_table_labels             = optional(set(string))
-          static_vnet_route_name                    = optional(string)
-          static_vnet_route_address_prefixes        = optional(set(string))
-          static_vnet_route_next_hop_ip_address     = optional(string)
-          static_vnet_local_route_override_criteria = optional(string)
-        }))
-      })), {})
-      route_tables = optional(map(object({
-        name   = string
-        labels = optional(set(string))
-        routes = optional(map(object({
-          name              = string
-          destinations_type = string
-          destinations      = list(string)
-          next_hop_type     = optional(string)
-          next_hop_key      = string
-        })), {})
-      })), {})
-      routing_intent = optional(object({
-        routing_intent_name = string
-        routing_policy = list(object({
-          routing_policy_name = string
-          destinations        = list(string)
-          next_hop_key        = string
-        }))
-      }))
-      vpn_gateway = optional(object({
-        name                = string
-        resource_group_name = optional(string)
-        scale_unit          = optional(number)
-        routing_preference  = optional(string)
-      }), null)
-      vpn_sites = optional(map(object({
-        name                = string
-        region              = optional(string)
-        resource_group_name = optional(string)
-        address_cidrs       = optional(set(string))
-        link = optional(map(object({
-          name          = string
-          ip_address    = optional(string)
-          fqdn          = optional(string)
-          provider_name = optional(string)
-          speed_in_mbps = optional(number, 0)
-        })))
-      })), {})
-    })), {})
-  }))
-}
-
 # TEST INFRASTRUCTURE
 
 variable "test_infrastructure" {
@@ -1144,12 +1150,12 @@ variable "test_infrastructure" {
                                   [VNET module documentation](../../modules/vnet/README.md#route_tables).
     - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
                                   [VNET module documentation](../../modules/vnet/README.md#subnets).
-    - `local_peer_config`       - (`map`, optional) a map that contains local peer configuration parameters. This value allows to 
-                                  set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
-                                  `use_remote_gateways` parameters on the local VNet peering. 
+    - `local_peer_config`       - (`map`, optional) a map that contains local peer configuration parameters. This value allows to
+                                  set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and
+                                  `use_remote_gateways` parameters on the local VNet peering.
     - `remote_peer_config`      - (`map`, optional) a map that contains remote peer configuration parameters. This value allows to
-                                  set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and 
-                                  `use_remote_gateways` parameters on the remote VNet peering.  
+                                  set `allow_virtual_network_access`, `allow_forwarded_traffic`, `allow_gateway_transit` and
+                                  `use_remote_gateways` parameters on the remote VNet peering.
 
     For all properties and their default values see [module's documentation](../../modules/test_infrastructure/README.md#vnets).
 
@@ -1225,8 +1231,7 @@ variable "test_infrastructure" {
       dns_servers             = optional(list(string))
       vnet_encryption         = optional(string)
       ddos_protection_plan_id = optional(string)
-      hub_resource_group_name = optional(string)
-      hub_vnet_name           = optional(string)
+      hub_vnet_key            = optional(string)
       network_security_groups = optional(map(object({
         name = string
         rules = optional(map(object({
@@ -1261,7 +1266,9 @@ variable "test_infrastructure" {
         address_prefixes                = optional(list(string), [])
         network_security_group_key      = optional(string)
         route_table_key                 = optional(string)
+        default_outbound_access_enabled = optional(bool)
         enable_storage_service_endpoint = optional(bool)
+        enable_appgw_delegation         = optional(bool)
         enable_cloudngfw_delegation     = optional(bool)
       })), {})
       local_peer_config = optional(object({

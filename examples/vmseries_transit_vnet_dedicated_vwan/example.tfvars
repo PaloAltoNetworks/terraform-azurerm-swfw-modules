@@ -124,6 +124,42 @@ vnet_peerings = {
   */
 }
 
+virtual_wans = {
+  "virtual_wan" = {
+    name = "virtual_wan"
+    virtual_hubs = {
+      "virtual_hub" = {
+        name           = "virtual_hub"
+        address_prefix = "10.1.0.0/24"
+        connections = {
+          "transit-to-hub" = {
+            name                       = "transit-to-hub"
+            connection_type            = "Vnet"
+            remote_virtual_network_key = "transit"
+            routing = {
+              associated_route_table_key            = "default"
+              propagated_route_table_keys           = ["default"]
+              static_vnet_route_name                = "defaultroute"
+              static_vnet_route_address_prefixes    = ["0.0.0.0/0"]
+              static_vnet_route_next_hop_ip_address = "10.0.0.46"
+            }
+          }
+          "app3-to-hub" = {
+            name                       = "app3-to-hub"
+            connection_type            = "Vnet"
+            remote_virtual_network_key = "app3"
+            internet_security_enabled  = true
+            routing = {
+              associated_route_table_key  = "default"
+              propagated_route_table_keys = ["default"]
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 # LOAD BALANCING
 
 load_balancers = {
@@ -206,7 +242,7 @@ bootstrap_storages = {
 
 # All options under `vmseries_universal` map can be overwritten on a per-firewall basis under `vmseries` map
 vmseries_universal = {
-  version = "10.2.1009"
+  version = "11.1.607"
   size    = "Standard_DS3_v2"
 }
 
@@ -549,42 +585,6 @@ vmseries = {
   }
 }
 
-virtual_wans = {
-  "virtual_wan" = {
-    name = "virtual_wan"
-    virtual_hubs = {
-      "virtual_hub" = {
-        name           = "virtual_hub"
-        address_prefix = "10.0.1.0/24"
-        connections = {
-          "transit-to-hub" = {
-            name                       = "transit-to-hub"
-            connection_type            = "Vnet"
-            remote_virtual_network_key = "transit"
-            routing = {
-              associated_route_table_key            = "default"
-              propagated_route_table_keys           = ["default"]
-              static_vnet_route_name                = "defaultroute"
-              static_vnet_route_address_prefixes    = ["0.0.0.0/0"]
-              static_vnet_route_next_hop_ip_address = "10.0.0.46"
-            }
-          }
-          "app3-to-hub" = {
-            name                       = "app3-to-hub"
-            connection_type            = "Vnet"
-            remote_virtual_network_key = "app3"
-            internet_security_enabled  = true
-            routing = {
-              associated_route_table_key  = "default"
-              propagated_route_table_keys = ["default"]
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
 # TEST INFRASTRUCTURE
 
 test_infrastructure = {
@@ -593,7 +593,7 @@ test_infrastructure = {
       "app1" = {
         name          = "app1-vnet"
         address_space = ["10.100.0.0/25"]
-        hub_vnet_name = "transit" # Name prefix is added to the beginning of this string
+        hub_vnet_key  = "transit"
         network_security_groups = {
           "app1" = {
             name = "app1-nsg"
@@ -670,7 +670,7 @@ test_infrastructure = {
       "app2" = {
         name          = "app2-vnet"
         address_space = ["10.100.1.0/25"]
-        hub_vnet_name = "transit" # Name prefix is added to the beginning of this string
+        hub_vnet_key  = "transit"
         network_security_groups = {
           "app2" = {
             name = "app2-nsg"
