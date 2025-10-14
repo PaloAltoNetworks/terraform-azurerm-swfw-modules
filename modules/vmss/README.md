@@ -33,15 +33,17 @@ probes, while the data plane remains unconfigured. An easy solution would to bo 
 is not available in the Azure VM-Series image yet.
 
 ## Orchestration modes
-This module allows you to deploy a Virtual Machine Scale Set (VMSS) with a configurable orchestration mode.
 
-The choice of mode is determined by the orchestration_type variable, which provides a single point of control over the VMSS deployment.
+This module allows you to deploy a Virtual Machine Scale Set (VMSS) with a configurable orchestration mode. The choice of mode is
+determined by the `orchestration_type` variable, which provides a single point of control over the VMSS deployment.
 
-Flexible Orchestration: If orchestration_type is set to False, the module provisions an azurerm_orchestrated_virtual_machine_scale_set. For this mode to function correctly, the scale set's identity type must be set to UserAssigned. This is a requirement for managing individual VMs within the set.
+Uniform Orchestration: if `orchestration_type` is set to `Uniform`, traditional uniform orchestration mode is used, where all
+VMs are managed as a single entity.
 
-Uniform Orchestration: If orchestration_type is set to True, the module provisions an azurerm_linux_virtual_machine_scale_set. This resource is used for traditional, uniform orchestration, where all VMs are managed as a single entity.
+Flexible Orchestration: if `orchestration_type` is set to `Flexible`, new flexible orchestration mode is used. For this mode to
+function correctly, the VMSS's identity type must be set to `UserAssigned` in order to manage individual VMs in the set.
 
-By default Traditinal, uniform orchestration is used. To change the orchestration mode you will need to change your orchestration_type variable from false to true
+By default, the Uniform Orchestration is used by the module.
 
 ## Custom Metrics and Autoscaling
 
