@@ -421,7 +421,7 @@ List of other, optional properties:
                                     Encryption at Host.
 - `overprovision`                 - (`bool`, optional, defaults to `true`) controls whether Azure should over-provision Virtual
                                     Machines in the Scale Set for improved deployment time and provisioning success rate.
-- `platform_fault_domain_count`   - (`number`, optional, defaults to `3`) specifies the number of fault domains that are used
+- `platform_fault_domain_count`   - (`number`, optional, defaults to `5`) specifies the number of fault domains that are used
                                     by this Virtual Machine Scale Set. The Flexible orchestration mode requires this parameter
                                     to be set.
 - `single_placement_group`        - (`bool`, optional, defaults to Azure defaults) when `true` this Virtual Machine Scale Set
@@ -453,7 +453,7 @@ object({
     allow_extension_operations    = optional(bool, false)
     encryption_at_host_enabled    = optional(bool)
     overprovision                 = optional(bool, true)
-    platform_fault_domain_count   = optional(number, 3)
+    platform_fault_domain_count   = optional(number, 5)
     single_placement_group        = optional(bool)
     capacity_reservation_group_id = optional(string)
     disk_encryption_set_id        = optional(string)
