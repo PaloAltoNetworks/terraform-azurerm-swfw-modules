@@ -18,7 +18,6 @@ variable "tags" {
   default     = {}
   type        = map(string)
 }
-
 variable "authentication" {
   description = <<-EOF
   A map defining authentication settings (including username and password).
@@ -116,14 +115,16 @@ variable "virtual_machine_scale_set" {
 
   List of either required or important properties: 
 
-  - `size`              - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
-                          Deployment Guide* as only few selected sizes are supported. The default one is a VM-300 equivalent.
-  - `zones`             - (`list`, optional, defaults to `null`) a list of Availability Zones in which VMs from this Scale Set
-                          will be created.
-  - `disk_type`         - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
-                          possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected `size`
-                          values).
-  - `bootstrap_options` - (`string`, optional) bootstrap options to pass to VM-Series instance.
+  - `orchestration_type` - (`string`, optional, defaults to `Uniform`) this variable is used to select between the Uniform or
+                           Flexible Scale Set orchestration modes. Possible values are `Uniform` and `Flexible`.
+  - `size`               - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
+                           Deployment Guide* as only few selected sizes are supported. The default one is a VM-300 equivalent.
+  - `zones`              - (`list`, optional, defaults to `null`) a list of Availability Zones in which VMs from this Scale Set
+                           will be created. Zone balance is available from at least 2 zones.
+  - `disk_type`          - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
+                           possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected `size`
+                           values).
+  - `bootstrap_options`  - (`string`, optional) bootstrap options to pass to VM-Series instance.
 
       Proper syntax is a string of semicolon separated properties, for example:
 
@@ -143,9 +144,11 @@ variable "virtual_machine_scale_set" {
                                       used to encrypt this VM's disk.
   - `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted by enabling
                                       Encryption at Host.
-  - `overprovision`                 - (`bool`, optional, defaults to `true`) See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set).
-  - `platform_fault_domain_count`   - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that
-                                      are used by this Virtual Machine Scale Set.
+  - `overprovision`                 - (`bool`, optional, defaults to `true`) controls whether Azure should over-provision Virtual
+                                      Machines in the Scale Set for improved deployment time and provisioning success rate.
+  - `platform_fault_domain_count`   - (`number`, optional, defaults to `5`) specifies the number of fault domains that are used
+                                      by this Virtual Machine Scale Set. The Flexible orchestration mode requires this parameter
+                                      to be set.
   - `single_placement_group`        - (`bool`, optional, defaults to Azure defaults) when `true` this Virtual Machine Scale Set
                                       will be limited to a Single Placement Group, which means the number of instances will be
                                       capped at 100 Virtual Machines.
@@ -156,13 +159,15 @@ variable "virtual_machine_scale_set" {
                                       files, when skipped a managed Storage Account will be used (preferred).
   - `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
                                       should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
-                                      "SystemAssigned, UserAssigned".
+                                      "SystemAssigned, UserAssigned". For the Flexible orchestration mode this parameter must be
+                                      configured to "UserAssigned".
   - `identity_ids`                  - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
                                       assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
   EOF
   default     = {}
   nullable    = false
   type = object({
+    orchestration_type            = optional(string, "Uniform")
     size                          = optional(string, "Standard_D3_v2")
     bootstrap_options             = optional(string)
     zones                         = optional(list(string))
@@ -171,7 +176,7 @@ variable "virtual_machine_scale_set" {
     allow_extension_operations    = optional(bool, false)
     encryption_at_host_enabled    = optional(bool)
     overprovision                 = optional(bool, true)
-    platform_fault_domain_count   = optional(number)
+    platform_fault_domain_count   = optional(number, 5)
     single_placement_group        = optional(bool)
     capacity_reservation_group_id = optional(string)
     disk_encryption_set_id        = optional(string)
@@ -180,6 +185,12 @@ variable "virtual_machine_scale_set" {
     identity_type                 = optional(string, "SystemAssigned")
     identity_ids                  = optional(list(string), [])
   })
+  validation { # orchestration_type
+    condition     = contains(["Flexible", "Uniform"], var.virtual_machine_scale_set.orchestration_type)
+    error_message = <<-EOF
+    The orchestration type must be Flexible or Uniform, it can't have any other value assigned
+    EOF
+  }
   validation { # disk_type
     condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.virtual_machine_scale_set.disk_type)
     error_message = <<-EOF
