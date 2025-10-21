@@ -70,6 +70,7 @@ resource "azurerm_virtual_hub_connection" "this" {
     : data.azurerm_virtual_hub.this[each.value.hub_key].id
   )
   remote_virtual_network_id = each.value.remote_virtual_network_id
+  internet_security_enabled = each.value.internet_security_enabled
 
   dynamic "routing" {
     for_each = each.value.routing != null ? [1] : []
@@ -99,10 +100,13 @@ resource "azurerm_virtual_hub_connection" "this" {
           [for k in each.value.routing.propagated_route_table_keys : azurerm_virtual_hub_route_table.this[k].id]
         )
       }
-      static_vnet_route {
-        name                = each.value.routing.static_vnet_route_name
-        address_prefixes    = each.value.routing.static_vnet_route_address_prefixes
-        next_hop_ip_address = each.value.routing.static_vnet_route_next_hop_ip_address
+      dynamic "static_vnet_route" {
+        for_each = each.value.routing.static_vnet_route_name != null ? [1] : []
+        content {
+          name                = each.value.routing.static_vnet_route_name
+          address_prefixes    = each.value.routing.static_vnet_route_address_prefixes
+          next_hop_ip_address = each.value.routing.static_vnet_route_next_hop_ip_address
+        }
       }
       static_vnet_local_route_override_criteria = each.value.routing.static_vnet_local_route_override_criteria
     }
