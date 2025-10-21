@@ -17,7 +17,8 @@ dedicated-inbound VM-Series and integration with Azure Virtual WAN; for a discus
 
 ## Reference Architecture Design
 
-![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-swfw-modules/assets/2110772/aa2ae33a-fb46-4a1c-9811-98ea3b132297)
+![simple](<img width="1138" height="731" alt="diagram" src="https://github.com/user-attachments/assets/0c715ee9-228b-4c44-a210-d727032fce08" />
+)
 
 This code implements:
 
