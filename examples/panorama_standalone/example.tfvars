@@ -38,9 +38,10 @@ vnets = {
     }
     subnets = {
       "panorama" = {
-        name                       = "panorama-snet"
-        address_prefixes           = ["10.1.0.0/28"]
-        network_security_group_key = "panorama"
+        name                              = "panorama-snet"
+        address_prefixes                  = ["10.1.0.0/28"]
+        private_endpoint_network_policies = "NetworkSecurityGroupEnabled"
+        network_security_group_key        = "panorama"
       }
     }
   }

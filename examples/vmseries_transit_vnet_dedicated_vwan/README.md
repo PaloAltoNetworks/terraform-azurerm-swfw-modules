@@ -194,8 +194,8 @@ terraform destroy
 ### Providers
 
 - `random`
-- `local`
 - `azurerm`
+- `local`
 
 ### Modules
 Name | Version | Source | Description

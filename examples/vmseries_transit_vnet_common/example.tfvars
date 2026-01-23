@@ -103,22 +103,25 @@ vnets = {
     }
     subnets = {
       "management" = {
-        name                            = "mgmt-snet"
-        address_prefixes                = ["10.0.0.0/28"]
-        network_security_group_key      = "management"
-        route_table_key                 = "management"
-        enable_storage_service_endpoint = true
+        name                              = "mgmt-snet"
+        address_prefixes                  = ["10.0.0.0/28"]
+        private_endpoint_network_policies = "Enabled"
+        network_security_group_key        = "management"
+        route_table_key                   = "management"
+        enable_storage_service_endpoint   = true
       }
       "public" = {
-        name                       = "public-snet"
-        address_prefixes           = ["10.0.0.16/28"]
-        network_security_group_key = "public"
-        route_table_key            = "public"
+        name                              = "public-snet"
+        address_prefixes                  = ["10.0.0.16/28"]
+        private_endpoint_network_policies = "Enabled"
+        network_security_group_key        = "public"
+        route_table_key                   = "public"
       }
       "private" = {
-        name             = "private-snet"
-        address_prefixes = ["10.0.0.32/28"]
-        route_table_key  = "private"
+        name                              = "private-snet"
+        address_prefixes                  = ["10.0.0.32/28"]
+        private_endpoint_network_policies = "RouteTableEnabled"
+        route_table_key                   = "private"
       }
       "appgw" = {
         name                    = "appgw-snet"
@@ -465,10 +468,11 @@ test_infrastructure = {
         }
         subnets = {
           "vms" = {
-            name                       = "vms-snet"
-            address_prefixes           = ["10.100.0.0/26"]
-            network_security_group_key = "app1"
-            route_table_key            = "nva"
+            name                              = "vms-snet"
+            address_prefixes                  = ["10.100.0.0/26"]
+            private_endpoint_network_policies = "Enabled"
+            network_security_group_key        = "app1"
+            route_table_key                   = "nva"
           }
           "bastion" = {
             name             = "AzureBastionSubnet"
@@ -542,10 +546,11 @@ test_infrastructure = {
         }
         subnets = {
           "vms" = {
-            name                       = "vms-snet"
-            address_prefixes           = ["10.100.1.0/26"]
-            network_security_group_key = "app2"
-            route_table_key            = "nva"
+            name                              = "vms-snet"
+            address_prefixes                  = ["10.100.1.0/26"]
+            private_endpoint_network_policies = "Enabled"
+            network_security_group_key        = "app2"
+            route_table_key                   = "nva"
           }
           "bastion" = {
             name             = "AzureBastionSubnet"

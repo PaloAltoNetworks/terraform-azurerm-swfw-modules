@@ -37,10 +37,11 @@ vnets = {
     }
     subnets = {
       "public" = {
-        name                        = "public"
-        address_prefixes            = ["10.0.0.0/26"]
-        network_security_group_key  = "cloudngfw-dnat"
-        enable_cloudngfw_delegation = true
+        name                              = "public"
+        address_prefixes                  = ["10.0.0.0/26"]
+        private_endpoint_network_policies = "NetworkSecurityGroupEnabled"
+        network_security_group_key        = "cloudngfw-dnat"
+        enable_cloudngfw_delegation       = true
       }
       "private" = {
         name                        = "private"
@@ -146,10 +147,11 @@ test_infrastructure = {
         }
         subnets = {
           "vms" = {
-            name                       = "vms"
-            address_prefixes           = ["10.100.0.0/26"]
-            network_security_group_key = "app1"
-            route_table_key            = "nva"
+            name                              = "vms"
+            address_prefixes                  = ["10.100.0.0/26"]
+            private_endpoint_network_policies = "Enabled"
+            network_security_group_key        = "app1"
+            route_table_key                   = "nva"
           }
           "bastion" = {
             name             = "AzureBastionSubnet"

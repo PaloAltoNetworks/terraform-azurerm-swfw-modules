@@ -201,9 +201,10 @@ test_infrastructure = {
         }
         subnets = {
           "vms" = {
-            name                       = "vms"
-            address_prefixes           = ["10.100.1.0/26"]
-            network_security_group_key = "app2"
+            name                              = "vms"
+            address_prefixes                  = ["10.100.1.0/26"]
+            private_endpoint_network_policies = "NetworkSecurityGroupEnabled"
+            network_security_group_key        = "app2"
           }
           "bastion" = {
             name             = "AzureBastionSubnet"

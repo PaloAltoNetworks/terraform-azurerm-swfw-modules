@@ -37,9 +37,10 @@ vnets = {
     }
     subnets = {
       "management" = {
-        name                       = "mgmt-snet"
-        address_prefixes           = ["10.0.0.0/28"]
-        network_security_group_key = "management"
+        name                              = "mgmt-snet"
+        address_prefixes                  = ["10.0.0.0/28"]
+        private_endpoint_network_policies = "NetworkSecurityGroupEnabled"
+        network_security_group_key        = "management"
       }
     }
   }

@@ -48,12 +48,13 @@ locals {
 resource "azurerm_subnet" "this" {
   for_each = { for k, v in var.subnets : k => v if v.create }
 
-  name                            = each.value.name
-  resource_group_name             = var.resource_group_name
-  virtual_network_name            = local.virtual_network.name
-  address_prefixes                = each.value.address_prefixes
-  default_outbound_access_enabled = each.value.default_outbound_access_enabled
-  service_endpoints               = each.value.enable_storage_service_endpoint ? ["Microsoft.Storage"] : null
+  name                              = each.value.name
+  resource_group_name               = var.resource_group_name
+  virtual_network_name              = local.virtual_network.name
+  address_prefixes                  = each.value.address_prefixes
+  default_outbound_access_enabled   = each.value.default_outbound_access_enabled
+  service_endpoints                 = each.value.enable_storage_service_endpoint ? ["Microsoft.Storage"] : null
+  private_endpoint_network_policies = each.value.private_endpoint_network_policies
 
   dynamic "delegation" {
     for_each = each.value.enable_appgw_delegation ? [1] : []

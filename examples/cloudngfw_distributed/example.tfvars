@@ -153,20 +153,22 @@ test_infrastructure = {
         }
         subnets = {
           "vms" = {
-            name                       = "vms"
-            address_prefixes           = ["10.100.0.0/26"]
-            network_security_group_key = "app1"
-            route_table_key            = "nva"
+            name                              = "vms"
+            address_prefixes                  = ["10.100.0.0/26"]
+            private_endpoint_network_policies = "Enabled"
+            network_security_group_key        = "app1"
+            route_table_key                   = "nva"
           }
           "bastion" = {
             name             = "AzureBastionSubnet"
             address_prefixes = ["10.100.0.64/26"]
           }
           "public" = {
-            name                        = "cloudngfw-public"
-            address_prefixes            = ["10.100.0.128/26"]
-            network_security_group_key  = "cloudngfw1-dnat"
-            enable_cloudngfw_delegation = true
+            name                              = "cloudngfw-public"
+            address_prefixes                  = ["10.100.0.128/26"]
+            private_endpoint_network_policies = "Enabled"
+            network_security_group_key        = "cloudngfw1-dnat"
+            enable_cloudngfw_delegation       = true
           }
           "private" = {
             name                        = "cloudngfw-private"
@@ -259,20 +261,22 @@ test_infrastructure = {
         }
         subnets = {
           "vms" = {
-            name                       = "vms"
-            address_prefixes           = ["10.100.1.0/26"]
-            network_security_group_key = "app2"
-            route_table_key            = "nva"
+            name                              = "vms"
+            address_prefixes                  = ["10.100.1.0/26"]
+            private_endpoint_network_policies = "Enabled"
+            network_security_group_key        = "app2"
+            route_table_key                   = "nva"
           }
           "bastion" = {
             name             = "AzureBastionSubnet"
             address_prefixes = ["10.100.1.64/26"]
           }
           "public" = {
-            name                        = "cloudngfw-public"
-            address_prefixes            = ["10.100.1.128/26"]
-            network_security_group_key  = "cloudngfw2-dnat"
-            enable_cloudngfw_delegation = true
+            name                              = "cloudngfw-public"
+            address_prefixes                  = ["10.100.1.128/26"]
+            private_endpoint_network_policies = "NetworkSecurityGroupEnabled"
+            network_security_group_key        = "cloudngfw2-dnat"
+            enable_cloudngfw_delegation       = true
           }
           "private" = {
             name                        = "cloudngfw-private"
