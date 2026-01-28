@@ -197,14 +197,15 @@ variable "frontend_ips" {
     private_ip_address            = optional(string)
     gwlb_fip_id                   = optional(string)
     in_rules = optional(map(object({
-      name                = string
-      protocol            = string
-      port                = number
-      backend_port        = optional(number)
-      health_probe_key    = optional(string, "default")
-      floating_ip         = optional(bool, true)
-      session_persistence = optional(string, "Default")
-      nsg_priority        = optional(number)
+      name                    = string
+      protocol                = string
+      port                    = number
+      backend_port            = optional(number)
+      health_probe_key        = optional(string, "default")
+      floating_ip             = optional(bool, true)
+      session_persistence     = optional(string, "Default")
+      nsg_priority            = optional(number)
+      idle_timeout_in_minutes = optional(number)
     })), {})
     out_rules = optional(map(object({
       name                     = string
@@ -395,6 +396,18 @@ variable "frontend_ips" {
     The `in_rule.nsg_priority` property be a number between 100 and 4096.
     EOF
   }
+  validation { # in_rules.idle_timeout_in_minutes
+    condition = alltrue(flatten([
+      for _, fip in var.frontend_ips : [
+        for _, in_rule in fip.in_rules :
+        in_rule.idle_timeout_in_minutes >= 4 && in_rule.idle_timeout_in_minutes <= 100
+        if in_rule.idle_timeout_in_minutes != null
+      ]
+    ]))
+    error_message = <<-EOF
+    The `in_rule.idle_timeout_in_minutes` property can take values between 4 and 100 (minutes).
+    EOF
+  }
   validation { # out_rules.name
     condition = length(flatten([
       for _, fip in var.frontend_ips : [
@@ -439,7 +452,7 @@ variable "frontend_ips" {
       ]
     ]))
     error_message = <<-EOF
-    The `out_rule.idle_timeout_in_minutes` property should can take values between 4 and 120 (minutes).
+    The `out_rule.idle_timeout_in_minutes` property can take values between 4 and 120 (minutes).
     EOF
   }
 }
