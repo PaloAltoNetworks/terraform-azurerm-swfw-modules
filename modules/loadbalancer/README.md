@@ -89,11 +89,11 @@ module "lbe" {
 ### Requirements
 
 - `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 4.0
+- `azurerm`, version: ~> 4.42
 
 ### Providers
 
-- `azurerm`, version: ~> 4.0
+- `azurerm`, version: ~> 4.42
 
 
 
