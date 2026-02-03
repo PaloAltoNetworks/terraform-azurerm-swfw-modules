@@ -165,9 +165,10 @@ resource "azurerm_lb_rule" "this" {
   backend_port                   = coalesce(each.value.rule.backend_port, each.value.rule.port)
   frontend_ip_configuration_name = each.value.fip.name
   frontend_port                  = each.value.rule.port
-  enable_floating_ip             = each.value.rule.floating_ip
+  floating_ip_enabled            = each.value.rule.floating_ip
   disable_outbound_snat          = local.disable_outbound_snat
   load_distribution              = each.value.rule.session_persistence
+  idle_timeout_in_minutes        = each.value.rule.protocol != "Udp" ? each.value.rule.idle_timeout_in_minutes : null
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_outbound_rule
@@ -179,7 +180,7 @@ resource "azurerm_lb_outbound_rule" "this" {
   backend_address_pool_id = azurerm_lb_backend_address_pool.this.id
 
   protocol                 = each.value.rule.protocol
-  enable_tcp_reset         = each.value.rule.protocol != "Udp" ? each.value.rule.enable_tcp_reset : null
+  tcp_reset_enabled        = each.value.rule.protocol != "Udp" ? each.value.rule.enable_tcp_reset : null
   allocated_outbound_ports = each.value.rule.allocated_outbound_ports
   idle_timeout_in_minutes  = each.value.rule.protocol != "Udp" ? each.value.rule.idle_timeout_in_minutes : null
 

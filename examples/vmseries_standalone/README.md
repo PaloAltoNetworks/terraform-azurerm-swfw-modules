@@ -578,14 +578,15 @@ map(object({
       private_ip_address            = optional(string)
       gwlb_key                      = optional(string)
       in_rules = optional(map(object({
-        name                = string
-        protocol            = string
-        port                = number
-        backend_port        = optional(number)
-        health_probe_key    = optional(string)
-        floating_ip         = optional(bool)
-        session_persistence = optional(string)
-        nsg_priority        = optional(number)
+        name                    = string
+        protocol                = string
+        port                    = number
+        backend_port            = optional(number)
+        health_probe_key        = optional(string)
+        floating_ip             = optional(bool)
+        session_persistence     = optional(string)
+        nsg_priority            = optional(number)
+        idle_timeout_in_minutes = optional(number)
       })), {})
       out_rules = optional(map(object({
         name                     = string
@@ -1436,14 +1437,15 @@ map(object({
         private_ip_address            = optional(string)
         gwlb_key                      = optional(string)
         in_rules = optional(map(object({
-          name                = string
-          protocol            = string
-          port                = number
-          backend_port        = optional(number)
-          health_probe_key    = optional(string)
-          floating_ip         = optional(bool)
-          session_persistence = optional(string)
-          nsg_priority        = optional(number)
+          name                    = string
+          protocol                = string
+          port                    = number
+          backend_port            = optional(number)
+          health_probe_key        = optional(string)
+          floating_ip             = optional(bool)
+          session_persistence     = optional(string)
+          nsg_priority            = optional(number)
+          idle_timeout_in_minutes = optional(number)
         })), {})
         out_rules = optional(map(object({
           name                     = string
