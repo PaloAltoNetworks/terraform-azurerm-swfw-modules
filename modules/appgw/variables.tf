@@ -74,7 +74,7 @@ variable "public_ip" {
       var.public_ip.id != null ? var.public_ip.create == false && var.public_ip.name == null : true
     ) : true
     error_message = <<-EOF
-    When using `id` property, `create` must be set to `false` and `name` must not be set.
+    When using `id` property, `create` property must be set to `false` and `name` must not be set.
     EOF
   }
 }
@@ -159,7 +159,7 @@ variable "waf" {
       var.waf.rule_set_type
     )
     error_message = <<-EOF
-    For `waf.rule_set_type` possible values are \"OWASP\" and \"Microsoft_BotManagerRuleSet\".
+    For `waf.rule_set_type` property possible values are \"OWASP\" and \"Microsoft_BotManagerRuleSet\".
     EOF
   }
   validation { # rule_set_version
@@ -300,7 +300,7 @@ variable "ssl_profiles" {
       if ssl_profile.ssl_policy_min_protocol_version != null
     ]))
     error_message = <<-EOF
-    Possible values for `ssl_policy_min_protocol_version` are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3.
+    Possible values for `ssl_policy_min_protocol_version` property are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3.
     EOF
   }
   validation { # ssl_policy_cipher_suites
@@ -387,7 +387,7 @@ variable "listeners" {
       for _, listener in var.listeners : (listener.port >= 1 && listener.port <= 65535)
     ]))
     error_message = <<-EOF
-    The listener `port` should be a valid TCP port number from 1 to 65535.
+    The listener `port` property should be a valid TCP port number from 1 to 65535.
     EOF
   }
   validation { # protocol
@@ -396,7 +396,7 @@ variable "listeners" {
         contains(["Http", "Https"], listener.protocol)
     ]]))
     error_message = <<-EOF
-    Possible values for `protocol` are `Http` and `Https`.
+    Possible values for `protocol` property are `Http` and `Https`.
     EOF
   }
   validation { # ssl_certificate_vault_id & ssl_certificate_path
@@ -494,7 +494,7 @@ variable "backend_settings" {
       for _, backend in var.backend_settings : (backend.port >= 1 && backend.port <= 65535)
     ]))
     error_message = <<-EOF
-    The backend `port` should be a valid TCP port number from 1 to 65535.
+    The backend `port` property should be a valid TCP port number from 1 to 65535.
     EOF
   }
   validation { # protocol
@@ -503,7 +503,7 @@ variable "backend_settings" {
         contains(["Http", "Https"], backend.protocol)
     ]]))
     error_message = <<-EOF
-    Possible values for `protocol` are `Http` and `Https`.
+    Possible values for `protocol` property are `Http` and `Https`.
     EOF
   }
   validation { # timeout
@@ -513,7 +513,7 @@ variable "backend_settings" {
       )
     ]))
     error_message = <<-EOF
-    The backend `timeout` property should can take values between 1 and 86400 (seconds).
+    The backend `timeout` property should take values between 1 and 86400 (seconds).
     EOF
   }
 }
@@ -546,7 +546,7 @@ variable "probes" {
     host       = optional(string)
     port       = optional(number)
     protocol   = optional(string, "Http")
-    interval   = optional(number, 5)
+    interval   = optional(number, 30)
     timeout    = optional(number, 30)
     threshold  = optional(number, 2)
     match_code = optional(list(number))
@@ -564,7 +564,7 @@ variable "probes" {
       for _, probe in var.probes : ((coalesce(probe.port, 80)) >= 1 && (coalesce(probe.port, 80)) <= 65535)
     ]))
     error_message = <<-EOF
-    The probe `port` should be a valid TCP port number from 1 to 65535.
+    The probe `port` property value should be a valid TCP port number from 1 to 65535.
     EOF
   }
   validation { # protocol
@@ -573,7 +573,7 @@ variable "probes" {
         contains(["Http", "Https"], probe.protocol)
     ]]))
     error_message = <<-EOF
-    Possible values for `protocol` are `Http` and `Https`.
+    Possible values for `protocol` property are `Http` and `Https`.
     EOF
   }
   validation { # interval
@@ -581,7 +581,7 @@ variable "probes" {
       for _, probe in var.probes : (probe.interval != null ? probe.interval >= 1 && probe.interval <= 86400 : true)
     ]))
     error_message = <<-EOF
-    The probe `interval` property should can take values between 1 and 86400 (seconds).
+    The probe `interval` property should take values between 1 and 86400 (seconds).
     EOF
   }
   validation { # timeout
@@ -589,7 +589,15 @@ variable "probes" {
       for _, probe in var.probes : (probe.timeout != null ? probe.timeout >= 1 && probe.timeout <= 86400 : true)
     ]))
     error_message = <<-EOF
-    The probe `timeout` property should can take values between 1 and 86400 (seconds).
+    The probe `timeout` property should take values between 1 and 86400 (seconds).
+    EOF
+  }
+  validation { # interval & timeout
+    condition = alltrue(flatten([
+      for _, probe in var.probes : (probe.timeout != null && probe.interval != null ? probe.timeout <= probe.interval : true)
+    ]))
+    error_message = <<-EOF
+    The probe `timeout` property value must be lower or equal to the `interval` property value.
     EOF
   }
   validation { # threshold
@@ -597,7 +605,7 @@ variable "probes" {
       for _, probe in var.probes : (probe.threshold != null ? probe.threshold >= 1 && probe.threshold <= 20 : true)
     ]))
     error_message = <<-EOF
-    The probe `threshold` property should can take values between 1 and 20.
+    The probe `threshold` property should take values between 1 and 20.
     EOF
   }
 }
@@ -686,7 +694,7 @@ variable "redirects" {
         contains(["Permanent", "Temporary", "Found", "SeeOther"], coalesce(redirect.type, "Permanent"))
     ]])) : true
     error_message = <<-EOF
-    Possible values for `type` are \"Permanent\", \"Temporary\", \"Found\" and \"SeeOther\".
+    Possible values for `type` property are \"Permanent\", \"Temporary\", \"Found\" and \"SeeOther\".
     EOF
   }
   validation { # target_listener_key & target_url
@@ -788,7 +796,7 @@ variable "rules" {
         rule.priority >= 1, rule.priority <= 20000
     ]]))
     error_message = <<-EOF
-    The `priority` property is an integer value from 1 to 20000.
+    The `priority` property should take an integer value from 1 to 20000.
     EOF
   }
   validation { # priority
