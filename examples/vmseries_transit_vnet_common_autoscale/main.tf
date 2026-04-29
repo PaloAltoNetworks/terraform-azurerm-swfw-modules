@@ -422,7 +422,7 @@ module "vmss" {
 
   interfaces = [
     for v in each.value.interfaces : {
-      name      = v.name
+      name      = "${var.name_prefix}${v.name}"
       subnet_id = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
       ip_configurations = { for vk, vv in v.ip_configurations : vk => {
         name                           = vv.name

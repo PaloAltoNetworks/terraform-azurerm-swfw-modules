@@ -112,15 +112,18 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
             nic.value.appgw_backend_pool_ids
           ) : null
 
-          public_ip_address {
-            name                    = "${nic.value.name}-${ip_configuration.value.name}"
-            domain_name_label       = ip_configuration.value.pip_domain_name_label
-            idle_timeout_in_minutes = ip_configuration.value.pip_idle_timeout_in_minutes
-            public_ip_prefix_id = try(
-              ip_configuration.value.pip_prefix_id,
-              data.azurerm_public_ip_prefix.allocate["${nic.value.name}-${ip_configuration.key}"].id,
-              null
-            )
+          dynamic "public_ip_address" {
+            for_each = ip_configuration.value.create_public_ip ? [1] : []
+            content {
+              name                    = "${nic.value.name}-${ip_configuration.value.name}-pip"
+              domain_name_label       = ip_configuration.value.pip_domain_name_label
+              idle_timeout_in_minutes = ip_configuration.value.pip_idle_timeout_in_minutes
+              public_ip_prefix_id = try(
+                ip_configuration.value.pip_prefix_id,
+                data.azurerm_public_ip_prefix.allocate["${nic.value.name}-${ip_configuration.key}"].id,
+                null
+              )
+            }
           }
         }
       }
@@ -235,15 +238,18 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
             nic.value.appgw_backend_pool_ids
           ) : null
 
-          public_ip_address {
-            name                    = ip_configuration.value.name
-            domain_name_label       = ip_configuration.value.pip_domain_name_label
-            idle_timeout_in_minutes = ip_configuration.value.pip_idle_timeout_in_minutes
-            public_ip_prefix_id = try(
-              ip_configuration.value.pip_prefix_id,
-              data.azurerm_public_ip_prefix.allocate["${nic.value.name}-${ip_configuration.key}"].id,
-              null
-            )
+          dynamic "public_ip_address" {
+            for_each = ip_configuration.value.create_public_ip ? [1] : []
+            content {
+              name                    = "${nic.value.name}-${ip_configuration.value.name}-pip"
+              domain_name_label       = ip_configuration.value.pip_domain_name_label
+              idle_timeout_in_minutes = ip_configuration.value.pip_idle_timeout_in_minutes
+              public_ip_prefix_id = try(
+                ip_configuration.value.pip_prefix_id,
+                data.azurerm_public_ip_prefix.allocate["${nic.value.name}-${ip_configuration.key}"].id,
+                null
+              )
+            }
           }
         }
       }
