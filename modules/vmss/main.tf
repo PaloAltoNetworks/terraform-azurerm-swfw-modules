@@ -93,7 +93,7 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
     iterator = nic
 
     content {
-      name                          = "${nic.value.name}-${nic.key}"
+      name                          = nic.value.name
       primary                       = nic.key == 0 ? true : false
       enable_ip_forwarding          = nic.key == 0 ? false : true
       enable_accelerated_networking = nic.key == 0 ? false : var.virtual_machine_scale_set.accelerated_networking
@@ -102,7 +102,7 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
         for_each = nic.value.ip_configurations
 
         content {
-          name      = "${ip_configuration.value.name}-${ip_configuration.key}"
+          name      = ip_configuration.value.name
           primary   = ip_configuration.value.primary
           subnet_id = nic.value.subnet_id
           load_balancer_backend_address_pool_ids = ip_configuration.value.primary == true ? (
@@ -113,7 +113,7 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
           ) : null
 
           public_ip_address {
-            name                    = "${ip_configuration.value.name}-${ip_configuration.key}"
+            name                    = "${nic.value.name}-${ip_configuration.value.name}"
             domain_name_label       = ip_configuration.value.pip_domain_name_label
             idle_timeout_in_minutes = ip_configuration.value.pip_idle_timeout_in_minutes
             public_ip_prefix_id = try(
