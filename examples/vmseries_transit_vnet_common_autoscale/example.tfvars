@@ -337,7 +337,7 @@ scale_sets = {
     }
     interfaces = [
       {
-        name       = "management"
+        name       = "common-vmss-mgmt"
         subnet_key = "management"
         ip_configurations = {
           primary-ip = {
@@ -348,7 +348,7 @@ scale_sets = {
         }
       },
       {
-        name                    = "public"
+        name                    = "common-vmss-public"
         subnet_key              = "public"
         load_balancer_key       = "public"
         application_gateway_key = "public"
@@ -361,7 +361,7 @@ scale_sets = {
         }
       },
       {
-        name              = "private"
+        name              = "common-vmss-private"
         subnet_key        = "private"
         load_balancer_key = "private"
         ip_configurations = {

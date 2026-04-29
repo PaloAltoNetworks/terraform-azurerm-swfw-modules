@@ -281,7 +281,7 @@ scale_sets = {
     }
     interfaces = [
       {
-        name       = "management"
+        name       = "inbound-vmss-mgmt"
         subnet_key = "management"
         ip_configurations = {
           primary-ip = {
@@ -292,7 +292,7 @@ scale_sets = {
         }
       },
       {
-        name              = "public"
+        name              = "inbound-vmss-public"
         subnet_key        = "public"
         load_balancer_key = "public"
         ip_configurations = {
@@ -304,7 +304,7 @@ scale_sets = {
         }
       },
       {
-        name       = "private"
+        name       = "inbound-vmss-private"
         subnet_key = "private"
         ip_configurations = {
           primary-ip = {
@@ -371,7 +371,7 @@ scale_sets = {
     }
     interfaces = [
       {
-        name       = "management"
+        name       = "obew-vmss-mgmt"
         subnet_key = "management"
         ip_configurations = {
           primary-ip = {
@@ -382,7 +382,7 @@ scale_sets = {
         }
       },
       {
-        name       = "public"
+        name       = "obew-vmss-public"
         subnet_key = "public"
         ip_configurations = {
           primary-ip = {
@@ -393,7 +393,7 @@ scale_sets = {
         }
       },
       {
-        name              = "private"
+        name              = "obew-vmss-private"
         subnet_key        = "private"
         load_balancer_key = "private"
         ip_configurations = {
