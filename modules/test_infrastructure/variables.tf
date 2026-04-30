@@ -224,11 +224,11 @@ variable "authentication" {
   A map defining authentication details for spoke VMs.
   
   Following properties are available:
-  - `username` - (`string`, optional, defaults to `bitnami`) the initial administrative spoke VM username.
+  - `username` - (`string`, optional, defaults to `adminuser`) the initial administrative spoke VM username.
   - `password` - (`string`, required) the initial administrative spoke VM password.
   EOF
   type = object({
-    username = optional(string, "bitnami")
+    username = optional(string, "adminuser")
     password = string
   })
 }
@@ -249,21 +249,20 @@ variable "spoke_vms" {
   - `private_ip_address` - (`string`, optional) static private IP to assign to the interface. When skipped Azure will assign one
                            dynamically. Keep in mind that a dynamic IP is guarantied not to change as long as the VM is running.
                            Any stop/deallocate/restart operation might cause the IP to change.
-  - `size`               - (`string`, optional, default to `Standard_D1_v2`) a size of the spoke VM.
-  - `image`              - (`map`, optional) a map defining basic spoke VM image configuration. By default, latest Bitnami
-                           WordPress VM is deployed.
-    - `publisher`               - (`string`, optional, defaults to `bitnami`) the Azure Publisher identifier for an image which
+  - `size`               - (`string`, optional, default to `Standard_DS1_v2`) a size of the spoke VM.
+  - `image`              - (`map`, optional) a map defining basic spoke VM image configuration. By default, latest Debian 13
+                           (gen2) image is deployed.
+    - `publisher`               - (`string`, optional, defaults to `Debian`) the Azure Publisher identifier for an image which
                                   should be deployed.
-    - `offer`                   - (`string`, optional, defaults to `wordpress`) the Azure Offer identifier corresponding to a 
-                                  published image.
-    - `sku`                     - (`string`, optional, defaults to `4-4`) the Azure SKU identifier corresponding to a published
-                                  image and offer.
+    - `offer`                   - (`string`, optional, defaults to `debian-13-daily`) the Azure Offer identifier corresponding to
+                                  a published image.
+    - `sku`                     - (`string`, optional, defaults to `13-gen2`) the Azure SKU identifier corresponding to a
+                                  published image and offer.
     - `version`                 - (`string`, optional, defaults to `latest`) the version of the image available on Azure
                                   Marketplace.
-    - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
-                                  on Azure Marketplace.
-  - `custom_data`        - (`string`, optional) custom data to pass to the spoke VM. This can be used as cloud-init for Linux
-                           systems.
+    - `enable_marketplace_plan` - (`bool`, optional, defaults to `false`) when set to `true` accepts the license for an offer or 
+                                  plan on Azure Marketplace.
+  - `custom_data`        - (`string`, optional) base64-encoded cloud-init script to run on first boot on Linux systems.
   EOF
   type = map(object({
     name               = string
@@ -273,13 +272,13 @@ variable "spoke_vms" {
     subnet_key         = string
     load_balancer_key  = optional(string)
     private_ip_address = optional(string)
-    size               = optional(string, "Standard_D1_v2")
+    size               = optional(string, "Standard_DS1_v2")
     image = object({
-      publisher               = optional(string, "bitnami")
-      offer                   = optional(string, "wordpress")
-      sku                     = optional(string, "4-4")
+      publisher               = optional(string, "Debian")
+      offer                   = optional(string, "debian-13-daily")
+      sku                     = optional(string, "13-gen2")
       version                 = optional(string, "latest")
-      enable_marketplace_plan = optional(bool, true)
+      enable_marketplace_plan = optional(bool, false)
     })
     custom_data = optional(string)
   }))

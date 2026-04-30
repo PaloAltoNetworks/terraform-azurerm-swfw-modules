@@ -1519,7 +1519,7 @@ map(object({
       })), {})
     })), {})
     authentication = optional(object({
-      username = optional(string, "bitnami")
+      username = optional(string, "adminuser")
       password = optional(string)
     }), {})
     spoke_vms = map(object({

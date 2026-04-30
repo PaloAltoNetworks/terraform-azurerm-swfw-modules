@@ -487,6 +487,52 @@ locals {
       }
     )
   }
+
+  web_server_cloud_init = <<-EOT
+    #cloud-config
+    write_files:
+      - path: /var/www/html/index.html
+        content: |
+          <html><body>Initializing...</body></html>
+      - path: /usr/local/bin/https-server.py
+        content: |
+          import ssl, http.server
+          ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+          ctx.load_cert_chain('/tmp/cert.pem', '/tmp/key.pem')
+          srv = http.server.HTTPServer(
+              ('', 443), http.server.SimpleHTTPRequestHandler)
+          srv.socket = ctx.wrap_socket(srv.socket, server_side=True)
+          srv.serve_forever()
+      - path: /etc/systemd/system/http-server.service
+        content: |
+          [Unit]
+          Description=Simple HTTP server
+          After=network.target
+          [Service]
+          ExecStart=/usr/bin/python3 -m http.server 80 --directory /var/www/html
+          Restart=always
+          [Install]
+          WantedBy=multi-user.target
+      - path: /etc/systemd/system/https-server.service
+        content: |
+          [Unit]
+          Description=Simple HTTPS server
+          After=network.target
+          [Service]
+          ExecStartPre=/usr/bin/openssl req -x509 -newkey rsa:2048 \
+              -keyout /tmp/key.pem -out /tmp/cert.pem \
+              -days 365 -nodes -subj "/CN=localhost"
+          ExecStart=/usr/bin/python3 /usr/local/bin/https-server.py
+          WorkingDirectory=/var/www/html
+          Restart=always
+          [Install]
+          WantedBy=multi-user.target
+    runcmd:
+      - echo "<html><body>Hello from $(hostname)</body></html>" > /var/www/html/index.html
+      - systemctl daemon-reload
+      - systemctl enable http-server https-server
+      - systemctl start http-server https-server
+  EOT
 }
 
 module "test_infrastructure" {
@@ -527,6 +573,7 @@ module "test_infrastructure" {
     name           = "${var.name_prefix}${v.name}"
     interface_name = "${var.name_prefix}${coalesce(v.interface_name, "${v.name}-nic")}"
     disk_name      = "${var.name_prefix}${coalesce(v.disk_name, "${v.name}-osdisk")}"
+    custom_data    = base64encode(coalesce(v.custom_data, local.web_server_cloud_init))
   }) }
   bastions = { for k, v in each.value.bastions : k => merge(v, {
     name           = "${var.name_prefix}${v.name}"
