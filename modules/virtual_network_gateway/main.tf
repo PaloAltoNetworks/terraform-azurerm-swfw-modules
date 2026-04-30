@@ -42,7 +42,7 @@ resource "azurerm_virtual_network_gateway" "this" {
 
     content {
       name = ip_configuration.value.name
-      public_ip_address_id = coalesce(
+      public_ip_address_id = var.instance_settings.type == "ExpressRoute" ? null : coalesce(
         ip_configuration.value.public_ip_id,
         try(azurerm_public_ip.this[ip_configuration.value.name].id, data.azurerm_public_ip.this[ip_configuration.value.name].id, null)
       )
@@ -125,6 +125,30 @@ resource "azurerm_virtual_network_gateway" "this" {
   tags = var.tags
 
   lifecycle {
+    precondition { # public_ip_id & public_ip_name
+      condition = var.instance_settings.type == "ExpressRoute" ? true : alltrue([
+        (var.ip_configurations.primary.public_ip_name != null || var.ip_configurations.primary.public_ip_id != null),
+        (
+          var.ip_configurations.secondary != null ? (
+            var.ip_configurations.secondary.public_ip_name != null || var.ip_configurations.secondary.public_ip_id != null
+          ) : true
+        )
+      ])
+      error_message = <<-EOF
+      VNG Name: [${var.name}]
+      Either `public_ip_name` or `public_ip_id` property must be set.
+      EOF
+    }
+    precondition { # ip_configurations.secondary
+      condition = var.instance_settings.active_active ? (
+        var.ip_configurations.secondary != null
+      ) : var.ip_configurations.secondary == null
+      error_message = <<-EOF
+      VNG Name: [${var.name}]
+      The `ip_configurations.secondary` property is required ONLY when `instance_settings.active_active` property is set
+      to `true`.
+      EOF
+    }
     precondition { # bgp
       condition     = var.instance_settings.type == "ExpressRoute" ? var.bgp == null : true
       error_message = <<-EOF
@@ -138,16 +162,6 @@ resource "azurerm_virtual_network_gateway" "this" {
       VNG Name: [${var.name}]
       BGP configuration is supported only for Virtual Network Gateways of "VPN" type, `var.azure_bgp_peer_addresses` map should
       be empty.
-      EOF
-    }
-    precondition { # ip_configurations.secondary
-      condition = var.instance_settings.active_active ? (
-        var.ip_configurations.secondary != null
-      ) : var.ip_configurations.secondary == null
-      error_message = <<-EOF
-      VNG Name: [${var.name}]
-      The `ip_configurations.secondary` property is required ONLY when `instance_settings.active_active` property is set
-      to `true`.
       EOF
     }
     precondition { # bgp.configuration.secondary_peering_addresses

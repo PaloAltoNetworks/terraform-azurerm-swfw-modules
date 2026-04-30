@@ -465,24 +465,29 @@ object({
 #### ip_configurations
 
 A map defining the Public IPs used by the Virtual Network Gateway.
-  
+
 Following properties are available:
 - `primary`   - (`map`, required) a map defining the primary Public IP address, following properties are available:
   - `name`                           - (`string`, required) name of the IP config.
   - `create_public_ip`               - (`bool`, optional, defaults to `true`) controls if a Public IP is created or sourced.
+                                       Must be set to `false` for `ExpressRoute` type gateways.
   - `public_ip_name`                 - (`string`, optional) name of a Public IP resource, required unless `public_ip` module
                                        and `public_ip_id` property are used. Depending on the value of `create_public_ip`
                                        property, this will be a name of a newly created or existing resource (for values of
-                                       `true` and `false` accordingly).
+                                       `true` and `false` accordingly). Must be `null` for `ExpressRoute` type gateways.
   - `public_ip_resource_group_name`  - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
-                                       hosting an existing Public IP resource.
+                                       hosting an existing Public IP resource. Must be `null` for `ExpressRoute` type gateways.
   - `public_ip_id`                   - (`string`, optional, defaults to `null`) ID of the public IP to associate with the
                                        interface. Property is used when public IP is not created or sourced within this module.
+                                       Must be `null` for `ExpressRoute` type gateways.
   - `dynamic_private_ip_allocation`  - (`bool`, optional, defaults to `true`) controls if the private IP address is assigned
                                        dynamically or statically.
 - `secondary` - (`map`, optional, defaults to `null`) a map defining the secondary Public IP address resource. Required only
                 for `type` set to `Vpn` and `active-active` set to `true`. Same properties available as for `primary` property.
 
+**Note!** \
+For `instance_settings.type` set to `ExpressRoute`, Public IPs are created automatically and fully managed by Azure platform. 
+In that case, `create_public_ip` must be set to `false`, and both `public_ip_name` and `public_ip_id` must be `null`.
 
 
 Type: 

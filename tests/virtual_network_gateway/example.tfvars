@@ -80,8 +80,7 @@ virtual_network_gateways = {
     ip_configurations = {
       primary = {
         name             = "primary"
-        create_public_ip = true
-        public_ip_name   = "expressroute_pip"
+        create_public_ip = false
       }
     }
   }
@@ -99,8 +98,7 @@ virtual_network_gateways = {
     ip_configurations = {
       primary = {
         name             = "primary"
-        create_public_ip = true
-        public_ip_name   = "er_policy_pip"
+        create_public_ip = false
       }
     }
   }
