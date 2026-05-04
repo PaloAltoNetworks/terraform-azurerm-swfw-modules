@@ -76,19 +76,14 @@ variable "instance_settings" {
     <tr><td>ErGw3AZ</td></tr>
     <tr>
       <td rowspan="11">Vpn</td>
-      <td rowspan="3">Generation1</td>
+      <td rowspan="2">Generation1</td>
       <td>Basic</td>
     </tr>
-    <tr><td>VpnGw1</td></tr>
     <tr><td>VpnGw1AZ</td></tr>
     <tr>
-      <td rowspan="8">Generation1/Generation2</td>
-      <td>VpnGw2</td>
+      <td rowspan="4">Generation1/Generation2</td>
+      <td>VpnGw2AZ</td>
     </tr>
-    <tr><td>VpnGw3</td></tr>
-    <tr><td>VpnGw4</td></tr>
-    <tr><td>VpnGw5</td></tr>
-    <tr><td>VpnGw2AZ</td></tr>
     <tr><td>VpnGw3AZ</td></tr>
     <tr><td>VpnGw4AZ</td></tr>
     <tr><td>VpnGw5AZ</td></tr>
@@ -145,7 +140,7 @@ variable "instance_settings" {
   }
   validation { # type & sku
     condition = (var.instance_settings.type == "Vpn" && contains(
-      ["Basic", "VpnGw1", "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"],
+      ["Basic", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"],
       var.instance_settings.sku
       )) || (
       var.instance_settings.type == "ExpressRoute" && contains(
