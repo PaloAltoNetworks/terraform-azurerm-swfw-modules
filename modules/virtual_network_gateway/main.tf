@@ -51,7 +51,7 @@ resource "azurerm_virtual_network_gateway" "this" {
     }
   }
 
-  enable_bgp = try(var.bgp.enable, false)
+  bgp_enabled = try(var.bgp.enable, false)
 
   dynamic "bgp_settings" {
     for_each = try(var.bgp.enable, false) ? [1] : []
@@ -206,7 +206,7 @@ resource "azurerm_virtual_network_gateway_connection" "this" {
   virtual_network_gateway_id = azurerm_virtual_network_gateway.this.id
   local_network_gateway_id   = azurerm_local_network_gateway.this[each.key].id
 
-  enable_bgp                     = var.bgp.enable
+  bgp_enabled                    = var.bgp.enable
   local_azure_ip_address_enabled = var.private_ip_address_enabled
   shared_key                     = each.value.connection.shared_key
 
