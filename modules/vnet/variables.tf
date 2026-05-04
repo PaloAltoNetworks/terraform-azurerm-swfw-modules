@@ -531,26 +531,28 @@ variable "subnets" {
   
   List of available attributes of each subnet entry:
 
-  - `create`                          - (`bool`, optional, defaults to `true`) controls subnet creation, subnets are created when
-                                        set to `true` or sourced when set to `false`.
-  - `name`                            - (`string`, required) name of a subnet.
-  - `address_prefixes`                - (`list(string)`, required when `create` = true`) a list of address prefixes within VNET's
-                                        address space to assign to a created subnet.
-  - `network_security_group_key`      - (`string`, optional, defaults to `null`) a key identifying an NSG defined in
-                                        `network_security_groups` that should be assigned to this subnet.
-  - `route_table_key`                 - (`string`, optional, defaults to `null`) a key identifying a Route Table defined in
-                                        `route_tables` that should be assigned to this subnet.
-  - `default_outbound_access_enabled` - (`bool`, optional, defaults to `false`) a flag that enables default outbound access to
-                                        the Internet from the subnet. Using explicit Internet access methods is recommended.
-  - `enable_storage_service_endpoint` - (`bool`, optional, defaults to `false`) a flag that enables `Microsoft.Storage` service
-                                        endpoint on a subnet. This is a suggested setting for the management interface when full
-                                        bootstrapping using an Azure Storage Account is used.
-  - `enable_appgw_delegation`         - (`bool`, optional, defaults to `false`) a flag that enables subnet delegation to 
-                                        `Microsoft.Network/applicationGateways` service. This is required for Application Gateway
-                                        Enhanced Network Isolation.
-  - `enable_cloudngfw_delegation`     - (`bool`, optional, defaults to `false`) a flag that enables subnet delegation to
-                                        `PaloAltoNetworks.Cloudngfw/firewalls` service. This is required for Cloud NGFW to work
-                                        in a VNET-based deployment.
+  - `create`                            - (`bool`, optional, defaults to `true`) controls subnet creation, subnets are created
+                                          when set to `true` or sourced when set to `false`.
+  - `name`                              - (`string`, required) name of a subnet.
+  - `address_prefixes`                  - (`list(string)`, required when `create` = true`) a list of address prefixes within
+                                          VNET's address space to assign to a created subnet.
+  - `network_security_group_key`        - (`string`, optional, defaults to `null`) a key identifying an NSG defined in
+                                          `network_security_groups` that should be assigned to this subnet.
+  - `route_table_key`                   - (`string`, optional, defaults to `null`) a key identifying a Route Table defined in
+                                          `route_tables` that should be assigned to this subnet.
+  - `default_outbound_access_enabled`   - (`bool`, optional, defaults to `false`) a flag that enables default outbound access to
+                                          the Internet from the subnet. Using explicit Internet access methods is recommended.
+  - `enable_storage_service_endpoint`   - (`bool`, optional, defaults to `false`) a flag that enables `Microsoft.Storage` service
+                                          endpoint on a subnet. This is a suggested setting for the management interface when
+                                          full bootstrapping using an Azure Storage Account is used.
+  - `private_endpoint_network_policies` - (`string`, optional, defaults to `Disabled`) an option disabling or enabling network
+                                          policies (NSGs, Route Tables or both) for Private Endpoints on the subnet.
+  - `enable_appgw_delegation`           - (`bool`, optional, defaults to `false`) a flag that enables subnet delegation to 
+                                          `Microsoft.Network/applicationGateways` service. This is required for Application
+                                          Gateway Enhanced Network Isolation.
+  - `enable_cloudngfw_delegation`       - (`bool`, optional, defaults to `false`) a flag that enables subnet delegation to
+                                          `PaloAltoNetworks.Cloudngfw/firewalls` service. This is required for Cloud NGFW to work
+                                          in a VNET-based deployment.
 
   Example:
   ```hcl
@@ -576,15 +578,16 @@ variable "subnets" {
   default     = {}
   nullable    = false
   type = map(object({
-    create                          = optional(bool, true)
-    name                            = string
-    address_prefixes                = optional(list(string), [])
-    network_security_group_key      = optional(string)
-    route_table_key                 = optional(string)
-    default_outbound_access_enabled = optional(bool, false)
-    enable_storage_service_endpoint = optional(bool, false)
-    enable_appgw_delegation         = optional(bool, false)
-    enable_cloudngfw_delegation     = optional(bool, false)
+    create                            = optional(bool, true)
+    name                              = string
+    address_prefixes                  = optional(list(string), [])
+    network_security_group_key        = optional(string)
+    route_table_key                   = optional(string)
+    default_outbound_access_enabled   = optional(bool, false)
+    enable_storage_service_endpoint   = optional(bool, false)
+    private_endpoint_network_policies = optional(string, "Disabled")
+    enable_appgw_delegation           = optional(bool, false)
+    enable_cloudngfw_delegation       = optional(bool, false)
   }))
   validation { # name
     condition     = length([for _, v in var.subnets : v.name]) == length(distinct([for _, v in var.subnets : v.name]))
@@ -607,6 +610,19 @@ variable "subnets" {
     ]))
     error_message = <<-EOF
     The `address_prefixes` should be list of CIDR blocks, with the maximum subnet of /29.
+    EOF
+  }
+  validation { # private_endpoint_network_policies
+    condition = alltrue([
+      for _, snet in var.subnets :
+      contains(
+        ["Disabled", "Enabled", "NetworkSecurityGroupEnabled", "RouteTableEnabled"],
+        snet.private_endpoint_network_policies
+      )
+    ])
+    error_message = <<-EOF
+    The `private_endpoint_network_policies` property should have value of either: \"Disabled\", \"Enabled\",
+    \"NetworkSecurityGroupEnabled\" or \"RouteTableEnabled\".
     EOF
   }
 }
