@@ -472,7 +472,7 @@ module "test_infrastructure" {
   )
   region = var.region
   vnets = { for k, v in each.value.vnets : k => merge(v, {
-    name                    = "${var.name_prefix}${v.name}"
+    name = "${var.name_prefix}${v.name}"
     hub_vnet_name = try(var.vnets[v.hub_vnet_key].create_virtual_network ?
     "${var.name_prefix}${var.vnets[v.hub_vnet_key].name}" : var.vnets[v.hub_vnet_key].name, null)
     hub_resource_group_name = try(
