@@ -253,7 +253,6 @@ variable "interfaces" {
   }
 }
 
-# Storage
 variable "logging_disks" {
   description = <<-EOF
    A map of objects describing the additional disks configuration.
@@ -272,15 +271,15 @@ variable "logging_disks" {
   ```hcl
   {
     logs-1 = {
-      size: "2048"
-      zone: "1"
-      lun: "1"
+      name = "logs-disk1" 
+      size = "2048"
+      lun  = "1"
     }
     logs-2 = {
-      size: "2048"
-      zone: "2"
-      lun: "2"
-      disk_type: "StandardSSD_LRS"
+      name      = "logs-disk2"
+      size      = "2048"
+      lun       = "2"
+      disk_type = "StandardSSD_LRS"
     }
   }
   ```
