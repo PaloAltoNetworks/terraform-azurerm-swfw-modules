@@ -142,8 +142,7 @@ module "panorama" {
     private_ip_address            = v.private_ip_address
   }]
 
-  logging_disks = { for k, v in each.value.logging_disks :
-  k => merge(v, { name = "${var.name_prefix}${coalesce(v.name, "${each.value.name}-osdisk")}" }) }
+  logging_disks = { for k, v in each.value.logging_disks : k => merge(v, { name = "${var.name_prefix}${v.name}" }) }
 
   tags       = var.tags
   depends_on = [module.vnet]

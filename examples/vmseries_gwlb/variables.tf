@@ -599,7 +599,15 @@ variable "vmseries" {
     - `appgw_backend_pool_id`   - (`string`, optional, defaults to `null`) ID of the Application Gateway backend pool to which
                                   the network interface will be added. Mutually exclusive with `application_gateway_key`.
 
-    For details on all properties refer to [module's documentation](../../modules/panorama/README.md#interfaces).
+    For details on all properties refer to [module's documentation](../../modules/vmseries/README.md#interfaces).
+
+  - `logging_disks`   - (`map`, optional, defaults to `null`) configuration of additional data disks for VM-Series logs. Most
+                        common properties are:
+
+    - `name` - (`string`, required) the Managed Disk name.
+    - `lun`  - (`string`, required) the Logical Unit Number of the Data Disk, which needs to be unique within the VM.
+
+    For details on all properties refer to [module's documentation](../../modules/vmseries/README.md#logging_disks).
   EOF
   default     = {}
   nullable    = false
@@ -692,6 +700,12 @@ variable "vmseries" {
       application_gateway_key = optional(string)
       appgw_backend_pool_id   = optional(string)
     }))
+    logging_disks = optional(map(object({
+      name      = string
+      size      = optional(string)
+      lun       = string
+      disk_type = optional(string)
+    })), {})
   }))
   validation { # virtual_machine.bootstrap_options & virtual_machine.bootstrap_package
     condition = alltrue([
