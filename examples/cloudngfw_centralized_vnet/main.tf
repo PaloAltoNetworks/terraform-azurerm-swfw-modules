@@ -394,7 +394,7 @@ module "test_infrastructure" {
     hub_vnet_name = try(var.vnets[v.hub_vnet_key].create_virtual_network ?
     "${var.name_prefix}${var.vnets[v.hub_vnet_key].name}" : var.vnets[v.hub_vnet_key].name, null)
     hub_resource_group_name = try(
-      coalesce(module.vnet[v.hub_vnet_key].virtual_network_resource_group, local.resource_group.name), null
+      coalesce(var.vnets[v.hub_vnet_key].resource_group_name, local.resource_group.name), null
     )
     network_security_groups = { for kv, vv in v.network_security_groups : kv => merge(vv, {
       name = "${var.name_prefix}${vv.name}" })
