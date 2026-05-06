@@ -396,9 +396,9 @@ variable "logging_disks" {
     disk_type = optional(string, "StandardSSD_LRS")
   }))
   validation { # size
-    condition     = alltrue([for _, v in var.logging_disks : contains(range(2048, 24577, 2048), parseint(v.size, 10))])
+    condition     = alltrue([for _, v in var.logging_disks : parseint(v.size, 10) >= 40 && parseint(v.size, 10) <= 8192])
     error_message = <<-EOF
-    The `size` property value must be a multiple of `2048` but not higher than `24576` (24 TB).
+    The `size` property value must be between `40` (40 GB) and `8192` (8 TB).
     EOF
   }
   validation { # lun
