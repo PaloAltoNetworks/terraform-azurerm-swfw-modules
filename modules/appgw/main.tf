@@ -43,7 +43,7 @@ resource "azurerm_application_gateway" "this" {
   resource_group_name = var.resource_group_name
   location            = var.region
   zones               = var.zones
-  enable_http2        = var.enable_http2
+  http2_enabled       = var.enable_http2
   tags                = var.tags
 
   sku {
