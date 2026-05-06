@@ -414,19 +414,14 @@ table below for details on available combinations:
   <tr><td>ErGw3AZ</td></tr>
   <tr>
     <td rowspan="11">Vpn</td>
-    <td rowspan="3">Generation1</td>
+    <td rowspan="2">Generation1</td>
     <td>Basic</td>
   </tr>
-  <tr><td>VpnGw1</td></tr>
   <tr><td>VpnGw1AZ</td></tr>
   <tr>
-    <td rowspan="8">Generation1/Generation2</td>
-    <td>VpnGw2</td>
+    <td rowspan="4">Generation1/Generation2</td>
+    <td>VpnGw2AZ</td>
   </tr>
-  <tr><td>VpnGw3</td></tr>
-  <tr><td>VpnGw4</td></tr>
-  <tr><td>VpnGw5</td></tr>
-  <tr><td>VpnGw2AZ</td></tr>
   <tr><td>VpnGw3AZ</td></tr>
   <tr><td>VpnGw4AZ</td></tr>
   <tr><td>VpnGw5AZ</td></tr>
