@@ -54,8 +54,8 @@ resource "azurerm_subnet" "this" {
   address_prefixes                              = each.value.address_prefixes
   default_outbound_access_enabled               = each.value.default_outbound_access_enabled
   service_endpoints                             = each.value.enable_storage_service_endpoint ? ["Microsoft.Storage"] : null
-  private_link_service_network_policies_enabled = true
   private_endpoint_network_policies             = each.value.private_endpoint_network_policies
+  private_link_service_network_policies_enabled = each.value.enable_private_link_network_policies
 
   dynamic "delegation" {
     for_each = each.value.enable_appgw_delegation ? [1] : []
