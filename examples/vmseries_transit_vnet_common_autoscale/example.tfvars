@@ -281,7 +281,7 @@ scale_sets = {
     name     = "common-vmss"
     vnet_key = "transit"
     image = {
-      version = "11.1.607"
+      version = "11.2.8"
     }
     authentication = {
       disable_password_authentication = false
