@@ -75,7 +75,7 @@ vmseries = {
     name     = "firewall01"
     vnet_key = "transit"
     image = {
-      version = "11.1.607"
+      version = "11.2.8"
     }
     virtual_machine = {
       zone = null

@@ -221,7 +221,7 @@ bootstrap_storages = {
 
 # All options under `scale_sets_universal` map can be overwritten on a per-firewall basis under `scale_sets` map
 scale_sets_universal = {
-  version = "11.1.607"
+  version = "11.2.8"
   size    = "Standard_D3_v2"
 }
 
