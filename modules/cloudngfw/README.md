@@ -68,12 +68,50 @@ cloudngfws = {
   "cloudngfw" = {
     name                 = "cloudngfw"
     attachment_type      = "vhub"
-    management_mode      = "panorama"
+    management_mode      = "rulestack"
     virtual_wan_key = "virtual_wan"
     virtual_hub_key = "virtual_hub"
     palo_alto_virtual_appliance_name = "cloudngfw-vhub-nva"
     cloudngfw_config = {
       rulestack_id               = "" # TODO: Put rulestack ID
+    }
+  }
+}
+```
+
+- management_mode = "scm" & attachment_type ="vnet" - deploys Cloud NGFW attached to a Virtual Network (VNet) managed via
+Strata Cloud Manager (SCM). Requires VNet-related parameters such as trusted and untrusted subnets, along with the SCM tenant name.
+
+```hcl
+cloudngfws = {
+  "cloudngfw" = {
+    name                 = "cloudngfw"
+    attachment_type      = "vnet"
+    management_mode      = "scm"
+    virtual_network_key  = "cloudngfw-vnet"
+    trusted_subnet_key   = "trusted"
+    untrusted_subnet_key = "untrusted"
+    cloudngfw_config = {
+      strata_cloud_manager_tenant_name = "" # TODO: Put SCM tenant name
+    }
+  }
+}
+```
+
+- management_mode = "scm" & attachment_type ="vhub" - deploys Cloud NGFW attached to a Virtual Hub in a Virtual WAN environment,
+managed via Strata Cloud Manager (SCM). Includes options to create or reference public IP addresses.
+
+```hcl
+cloudngfws = {
+  "cloudngfw" = {
+    name                 = "cloudngfw"
+    attachment_type      = "vhub"
+    management_mode      = "scm"
+    virtual_wan_key = "virtual_wan"
+    virtual_hub_key = "virtual_hub"
+    palo_alto_virtual_appliance_name = "cloudngfw-vhub-nva"
+    cloudngfw_config = {
+      strata_cloud_manager_tenant_name = "" # TODO: Put SCM tenant name
     }
   }
 }
@@ -96,8 +134,10 @@ cloudngfws = {
 
 - `palo_alto_next_generation_firewall_virtual_hub_local_rulestack` (managed)
 - `palo_alto_next_generation_firewall_virtual_hub_panorama` (managed)
+- `palo_alto_next_generation_firewall_virtual_hub_strata_cloud_manager` (managed)
 - `palo_alto_next_generation_firewall_virtual_network_local_rulestack` (managed)
 - `palo_alto_next_generation_firewall_virtual_network_panorama` (managed)
+- `palo_alto_next_generation_firewall_virtual_network_strata_cloud_manager` (managed)
 - `palo_alto_virtual_network_appliance` (managed)
 - `public_ip` (managed)
 - `public_ip` (data)
@@ -171,6 +211,7 @@ Type: string
 Defines how the cloudngfw is managed.
 - When set to `panorama`, the cloudngfw policies are managed through Panorama.
 - When set to `rulestack`, the cloudngfw policies are managed through Azure Rulestack.
+- When set to `scm`, the cloudngfw policies are managed through Strata Cloud Manager.
 
 
 Type: string
@@ -191,8 +232,10 @@ List of available properties:
                                       changing this forces a new resource to be created.
 - `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to Panorama server. 
                                       This field is required when `management_mode` is set to `panorama`.
-- `rulestack_id`                    - (`string`, optional) the ID of the Local Rulestack used to configure this Firewall 
+- `rulestack_id`                    - (`string`, optional) the ID of the Local Rulestack used to configure this Firewall
                                       Resource. This field is required when `management_mode` is set to `rulestack`.
+- `strata_cloud_manager_tenant_name` - (`string`, optional) the Strata Cloud Manager tenant name used to manage the policy
+                                      for this firewall. This field is required when `management_mode` is set to `scm`.
 - `create_public_ip`                - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or 
                                       sourced. This field is ignored when the variable `public_ip_ids` is used.
 - `public_ip_name`                  - (`string`, optional) the name of the Public IP resource. This field is required unless 
@@ -224,16 +267,17 @@ Type:
 
 ```hcl
 object({
-    plan_id                       = optional(string, "panw-cngfw-payg")
-    marketplace_offer_id          = optional(string, "pan_swfw_cloud_ngfw")
-    panorama_base64_config        = optional(string)
-    rulestack_id                  = optional(string)
-    create_public_ip              = optional(bool, true)
-    public_ip_name                = optional(string)
-    public_ip_resource_group_name = optional(string)
-    public_ip_ids                 = optional(map(string))
-    egress_nat_ip_ids             = optional(map(string))
-    trusted_address_ranges        = optional(list(string))
+    plan_id                          = optional(string, "panw-cngfw-payg")
+    marketplace_offer_id             = optional(string, "pan_swfw_cloud_ngfw")
+    panorama_base64_config           = optional(string)
+    rulestack_id                     = optional(string)
+    strata_cloud_manager_tenant_name = optional(string)
+    create_public_ip                 = optional(bool, true)
+    public_ip_name                   = optional(string)
+    public_ip_resource_group_name    = optional(string)
+    public_ip_ids                    = optional(map(string))
+    egress_nat_ip_ids                = optional(map(string))
+    trusted_address_ranges           = optional(list(string))
     destination_nats = optional(map(object({
       destination_nat_name          = string
       destination_nat_protocol      = string
