@@ -73,15 +73,15 @@ variable "virtual_hub_id" {
 variable "management_mode" {
   description = <<-EOF
   Defines how the cloudngfw is managed.
-  - When set to `panorama`, the cloudngfw policies are managed through Panorama.
   - When set to `rulestack`, the cloudngfw policies are managed through Azure Rulestack.
+  - When set to `panorama`, the cloudngfw policies are managed through Panorama.
   - When set to `scm`, the cloudngfw policies are managed through Strata Cloud Manager.
   EOF
   type        = string
   validation {
-    condition     = contains(["panorama", "rulestack", "scm"], var.management_mode)
+    condition     = contains(["rulestack", "panorama", "scm"], var.management_mode)
     error_message = <<-EOF
-    The `management_mode` must be set to \"panorama\", \"rulestack\", or \"scm\".
+    The `management_mode` must be set to \"rulestack\", \"panorama\", or \"scm\".
     EOF
   }
 }
@@ -98,10 +98,10 @@ variable "cloudngfw_config" {
                                         to explicitly set the `plan_id` to `panw-cngfw-payg` when creating new resources.
   - `marketplace_offer_id`            - (`string`, optional, defaults to `pan_swfw_cloud_ngfw`) the marketplace offer ID,
                                         changing this forces a new resource to be created.
-  - `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to Panorama server. 
-                                        This field is required when `management_mode` is set to `panorama`.
   - `rulestack_id`                    - (`string`, optional) the ID of the Local Rulestack used to configure this Firewall
                                         Resource. This field is required when `management_mode` is set to `rulestack`.
+  - `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to Panorama server.
+                                        This field is required when `management_mode` is set to `panorama`.
   - `strata_cloud_manager_tenant_name` - (`string`, optional) the Strata Cloud Manager tenant name used to manage the policy
                                         for this firewall. This field is required when `management_mode` is set to `scm`.
   - `create_public_ip`                - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or 
@@ -133,8 +133,8 @@ variable "cloudngfw_config" {
   type = object({
     plan_id                          = optional(string, "panw-cngfw-payg")
     marketplace_offer_id             = optional(string, "pan_swfw_cloud_ngfw")
-    panorama_base64_config           = optional(string)
     rulestack_id                     = optional(string)
+    panorama_base64_config           = optional(string)
     strata_cloud_manager_tenant_name = optional(string)
     create_public_ip                 = optional(bool, true)
     public_ip_name                   = optional(string)

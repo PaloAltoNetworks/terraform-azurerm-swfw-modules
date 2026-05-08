@@ -6,41 +6,6 @@ A Terraform module for deploying Palo Alto Networks Cloud Next-Generation Firewa
 
 This module is designed to work in several *modes* depending on which variables or flags are set. Most common usage scenarios are:
 
-- management_mode = "panorama" & attachment_type ="vnet" - deploys Cloud NGFW attached to a Virtual Hub in a Virtual WAN environment,
-managed via Panorama (using panorama_base64_config). Supports creation or referencing of public IP addresses for connectivity.
-
-```hcl
-cloudngfws = {
-  "cloudngfw" = {
-    name                 = "cloudngfw"
-    attachment_type      = "vnet"
-    management_mode      = "panorama"
-    virtual_network_key  = "cloudngfw-vnet"
-    cloudngfw_config = {
-      panorama_base64_config     = "" # TODO: Put panorama connection string
-    }
-  }
-}
-```
-- management_mode = "panorama" & attachment_type ="vhub" - deploys Cloud NGFW attached to a Virtual Hub in a Virtual WAN environment,
-managed via Panorama (using panorama_base64_config). Supports creation or referencing of public IP addresses for connectivity.
-
-```hcl
-cloudngfws = {
-  "cloudngfw" = {
-    name                 = "cloudngfw"
-    attachment_type      = "vhub"
-    management_mode      = "panorama"
-    virtual_wan_key = "virtual_wan"
-    virtual_hub_key = "virtual_hub"
-    palo_alto_virtual_appliance_name = "cloudngfw-vhub-nva"
-    cloudngfw_config = {
-      panorama_base64_config     = "" # TODO: Put panorama connection string
-    }
-  }
-}
-```
-
 - management_mode = "rulestack" & attachment_type ="vnet" - deploys Cloud NGFW attached to a Virtual Network (VNet) with a local
 rulestack for policy management. Requires VNet-related parameters such as trusted and untrusted subnets, along with the rulestack ID.
 
@@ -54,7 +19,7 @@ cloudngfws = {
     trusted_subnet_key   = "trusted"
     untrusted_subnet_key = "untrusted"
     cloudngfw_config = {
-      rulestack_id               = "" # TODO: Put rulestack ID
+      rulestack_id = "" # TODO: Put rulestack ID
     }
   }
 }
@@ -66,14 +31,50 @@ managed through a local rulestack. Includes options to create or reference publi
 ```hcl
 cloudngfws = {
   "cloudngfw" = {
-    name                 = "cloudngfw"
-    attachment_type      = "vhub"
-    management_mode      = "rulestack"
-    virtual_wan_key = "virtual_wan"
-    virtual_hub_key = "virtual_hub"
+    name                             = "cloudngfw"
+    attachment_type                  = "vhub"
+    management_mode                  = "rulestack"
+    virtual_wan_key                  = "virtual_wan"
+    virtual_hub_key                  = "virtual_hub"
     palo_alto_virtual_appliance_name = "cloudngfw-vhub-nva"
     cloudngfw_config = {
-      rulestack_id               = "" # TODO: Put rulestack ID
+      rulestack_id = "" # TODO: Put rulestack ID
+    }
+  }
+}
+```
+
+- management_mode = "panorama" & attachment_type ="vnet" - deploys Cloud NGFW attached to a Virtual Network (VNet),
+managed via Panorama (using panorama_base64_config). Supports creation or referencing of public IP addresses for connectivity.
+
+```hcl
+cloudngfws = {
+  "cloudngfw" = {
+    name                 = "cloudngfw"
+    attachment_type      = "vnet"
+    management_mode      = "panorama"
+    virtual_network_key  = "cloudngfw-vnet"
+    cloudngfw_config = {
+      panorama_base64_config = "" # TODO: Put panorama connection string
+    }
+  }
+}
+```
+
+- management_mode = "panorama" & attachment_type ="vhub" - deploys Cloud NGFW attached to a Virtual Hub in a Virtual WAN environment,
+managed via Panorama (using panorama_base64_config). Supports creation or referencing of public IP addresses for connectivity.
+
+```hcl
+cloudngfws = {
+  "cloudngfw" = {
+    name                             = "cloudngfw"
+    attachment_type                  = "vhub"
+    management_mode                  = "panorama"
+    virtual_wan_key                  = "virtual_wan"
+    virtual_hub_key                  = "virtual_hub"
+    palo_alto_virtual_appliance_name = "cloudngfw-vhub-nva"
+    cloudngfw_config = {
+      panorama_base64_config = "" # TODO: Put panorama connection string
     }
   }
 }
@@ -104,11 +105,11 @@ managed via Strata Cloud Manager (SCM). Includes options to create or reference 
 ```hcl
 cloudngfws = {
   "cloudngfw" = {
-    name                 = "cloudngfw"
-    attachment_type      = "vhub"
-    management_mode      = "scm"
-    virtual_wan_key = "virtual_wan"
-    virtual_hub_key = "virtual_hub"
+    name                             = "cloudngfw"
+    attachment_type                  = "vhub"
+    management_mode                  = "scm"
+    virtual_wan_key                  = "virtual_wan"
+    virtual_hub_key                  = "virtual_hub"
     palo_alto_virtual_appliance_name = "cloudngfw-vhub-nva"
     cloudngfw_config = {
       strata_cloud_manager_tenant_name = "" # TODO: Put SCM tenant name
@@ -209,8 +210,8 @@ Type: string
 #### management_mode
 
 Defines how the cloudngfw is managed.
-- When set to `panorama`, the cloudngfw policies are managed through Panorama.
 - When set to `rulestack`, the cloudngfw policies are managed through Azure Rulestack.
+- When set to `panorama`, the cloudngfw policies are managed through Panorama.
 - When set to `scm`, the cloudngfw policies are managed through Strata Cloud Manager.
 
 
@@ -230,10 +231,10 @@ List of available properties:
                                       to explicitly set the `plan_id` to `panw-cngfw-payg` when creating new resources.
 - `marketplace_offer_id`            - (`string`, optional, defaults to `pan_swfw_cloud_ngfw`) the marketplace offer ID,
                                       changing this forces a new resource to be created.
-- `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to Panorama server. 
-                                      This field is required when `management_mode` is set to `panorama`.
 - `rulestack_id`                    - (`string`, optional) the ID of the Local Rulestack used to configure this Firewall
                                       Resource. This field is required when `management_mode` is set to `rulestack`.
+- `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to Panorama server.
+                                      This field is required when `management_mode` is set to `panorama`.
 - `strata_cloud_manager_tenant_name` - (`string`, optional) the Strata Cloud Manager tenant name used to manage the policy
                                       for this firewall. This field is required when `management_mode` is set to `scm`.
 - `create_public_ip`                - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or 
@@ -269,8 +270,8 @@ Type:
 object({
     plan_id                          = optional(string, "panw-cngfw-payg")
     marketplace_offer_id             = optional(string, "pan_swfw_cloud_ngfw")
-    panorama_base64_config           = optional(string)
     rulestack_id                     = optional(string)
+    panorama_base64_config           = optional(string)
     strata_cloud_manager_tenant_name = optional(string)
     create_public_ip                 = optional(bool, true)
     public_ip_name                   = optional(string)
