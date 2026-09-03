@@ -118,11 +118,10 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
               name                    = "${nic.value.name}-${ip_configuration.value.name}-pip"
               domain_name_label       = ip_configuration.value.pip_domain_name_label
               idle_timeout_in_minutes = ip_configuration.value.pip_idle_timeout_in_minutes
-              public_ip_prefix_id = try(
+              public_ip_prefix_id = try(coalesce(
                 ip_configuration.value.pip_prefix_id,
-                data.azurerm_public_ip_prefix.allocate["${nic.value.name}-${ip_configuration.key}"].id,
-                null
-              )
+                try(data.azurerm_public_ip_prefix.allocate["${nic.value.name}-${ip_configuration.key}"].id, null)
+              ), null)
             }
           }
         }
@@ -244,11 +243,10 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
               name                    = "${nic.value.name}-${ip_configuration.value.name}-pip"
               domain_name_label       = ip_configuration.value.pip_domain_name_label
               idle_timeout_in_minutes = ip_configuration.value.pip_idle_timeout_in_minutes
-              public_ip_prefix_id = try(
+              public_ip_prefix_id = try(coalesce(
                 ip_configuration.value.pip_prefix_id,
-                data.azurerm_public_ip_prefix.allocate["${nic.value.name}-${ip_configuration.key}"].id,
-                null
-              )
+                try(data.azurerm_public_ip_prefix.allocate["${nic.value.name}-${ip_configuration.key}"].id, null)
+              ), null)
             }
           }
         }
