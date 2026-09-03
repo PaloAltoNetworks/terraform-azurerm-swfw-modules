@@ -310,15 +310,16 @@ Example:
 [
   # management interface with a new public IP
   {
-    name                 = "fw-mgmt"
-    subnet_id            = azurerm_subnet.my_mgmt_subnet.id
+    name      = "fw-mgmt"
+    subnet_id = azurerm_subnet.my_mgmt_subnet.id
     ip_configurations = {
       primary-ip = {
-        name = "primary-ip"
-        primary               = true
-        create_public_ip      = true
-        public_ip_name       = "fw-mgmt-pip"
+        name             = "primary-ip"
+        primary          = true
+        create_public_ip = true
+        public_ip_name   = "fw-mgmt-pip"
       }
+    }
   },
   # public interface reusing an existing public IP resource
   {
@@ -328,11 +329,12 @@ Example:
     lb_backend_pool_id        = module.inbound_lb.backend_pool_id
     ip_configurations = {
       primary-ip = {
-        name = "primary-ip"
-        primary               = true
-        create_public_ip      = false
-        public_ip_name        = "fw-public-pip"
+        name             = "primary-ip"
+        primary          = true
+        create_public_ip = false
+        public_ip_name   = "fw-public-pip"
       }
+    }
   },
   # interface with 2 IP addresses
   {
@@ -342,19 +344,20 @@ Example:
     lb_backend_pool_id        = module.inbound_lb.backend_pool_id
     ip_configurations = {
       primary-ip = {
-        name = "primary-ip"
-        primary               = true
-        create_public_ip      = false
-        private_ip_address    = "10.0.0.5"
-        public_ip_name        = "fw-public-pip"
+        name               = "primary-ip"
+        primary            = true
+        create_public_ip   = false
+        private_ip_address = "10.0.0.5"
+        public_ip_name     = "fw-public-pip"
       },
       secondary-ip = {
-        name = "secondary-ip"
-        primary               = false
-        create_public_ip      = false
-        private_ip_address    = "10.0.0.6"
-        public_ip_name        = "fw-public-pip"
+        name               = "secondary-ip"
+        primary            = false
+        create_public_ip   = false
+        private_ip_address = "10.0.0.6"
+        public_ip_name     = "fw-public-pip"
       }
+    }
   },
 ]
 ```
