@@ -156,6 +156,7 @@ Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`virtual_machine_scale_set`](#virtual_machine_scale_set) | `object` | Scale set parameters configuration.
+[`logging_disks`](#logging_disks) | `map` |  A map of objects describing the additional disks configuration.
 [`autoscaling_configuration`](#autoscaling_configuration) | `object` | Autoscaling configuration common to all policies.
 [`autoscaling_profiles`](#autoscaling_profiles) | `list` | A list defining autoscaling profiles.
 
@@ -462,6 +463,54 @@ object({
     identity_type                 = optional(string, "SystemAssigned")
     identity_ids                  = optional(list(string), [])
   })
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### logging_disks
+
+ A map of objects describing the additional disks configuration.
+
+Following configuration options are available:
+
+- `size`      - (`string`, optional, defaults to "2048") size of the disk in GB. The recommended size for additional disks
+                is at least 2TB (2048 GB).
+- `lun`       - (`string`, required) the Logical Unit Number of the Data Disk, which needs to be unique within the VM.
+- `disk_type` - (`string`, optional, defaults to "StandardSSD_LRS") type of Managed Disk which should be created, possible
+                values are `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS` or `UltraSSD_LRS`.
+
+**Note!** \
+Contrary to the `vmseries` module, the disks are a part of the Scale Set model instead of being standalone resources.
+Therefore they have no `name` property - Azure names the disks on its own, separately for each VM instance in the Scale Set.
+
+Example:
+
+```hcl
+{
+  logs-1 = {
+    size = "2048"
+    lun  = "1"
+  }
+  logs-2 = {
+    size      = "2048"
+    lun       = "2"
+    disk_type = "StandardSSD_LRS"
+  }
+}
+```
+
+
+Type: 
+
+```hcl
+map(object({
+    size      = optional(string, "2048")
+    lun       = string
+    disk_type = optional(string, "StandardSSD_LRS")
+  }))
 ```
 
 

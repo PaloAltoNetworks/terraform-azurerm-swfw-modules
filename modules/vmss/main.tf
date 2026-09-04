@@ -70,6 +70,27 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
     storage_account_type   = var.virtual_machine_scale_set.disk_type
   }
 
+  dynamic "data_disk" {
+    for_each = var.logging_disks
+
+    content {
+      lun                  = data_disk.value.lun
+      disk_size_gb         = data_disk.value.size
+      storage_account_type = data_disk.value.disk_type
+      create_option        = "Empty"
+      caching = (
+        data_disk.value.disk_type == "UltraSSD_LRS" || tonumber(data_disk.value.size) > 4095 ? "None" : "ReadWrite"
+      )
+    }
+  }
+
+  dynamic "additional_capabilities" {
+    for_each = anytrue([for _, v in var.logging_disks : v.disk_type == "UltraSSD_LRS"]) ? [1] : []
+    content {
+      ultra_ssd_enabled = true
+    }
+  }
+
   source_image_id = var.image.custom_id
 
   source_image_reference {
@@ -181,6 +202,27 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     caching                = "ReadWrite"
     disk_encryption_set_id = var.virtual_machine_scale_set.disk_encryption_set_id # the Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault, in addition to an Access Policy to the Key Vault
     storage_account_type   = var.virtual_machine_scale_set.disk_type
+  }
+
+  dynamic "data_disk" {
+    for_each = var.logging_disks
+
+    content {
+      lun                  = data_disk.value.lun
+      disk_size_gb         = data_disk.value.size
+      storage_account_type = data_disk.value.disk_type
+      create_option        = "Empty"
+      caching = (
+        data_disk.value.disk_type == "UltraSSD_LRS" || tonumber(data_disk.value.size) > 4095 ? "None" : "ReadWrite"
+      )
+    }
+  }
+
+  dynamic "additional_capabilities" {
+    for_each = anytrue([for _, v in var.logging_disks : v.disk_type == "UltraSSD_LRS"]) ? [1] : []
+    content {
+      ultra_ssd_enabled = true
+    }
   }
 
   source_image_id = var.image.custom_id

@@ -348,6 +348,69 @@ variable "interfaces" {
   }
 }
 
+variable "logging_disks" {
+  description = <<-EOF
+   A map of objects describing the additional disks configuration.
+
+  Following configuration options are available:
+
+  - `size`      - (`string`, optional, defaults to "2048") size of the disk in GB. The recommended size for additional disks
+                  is at least 2TB (2048 GB).
+  - `lun`       - (`string`, required) the Logical Unit Number of the Data Disk, which needs to be unique within the VM.
+  - `disk_type` - (`string`, optional, defaults to "StandardSSD_LRS") type of Managed Disk which should be created, possible
+                  values are `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS` or `UltraSSD_LRS`.
+
+  **Note!** \
+  Contrary to the `vmseries` module, the disks are a part of the Scale Set model instead of being standalone resources.
+  Therefore they have no `name` property - Azure names the disks on its own, separately for each VM instance in the Scale Set.
+
+  Example:
+
+  ```hcl
+  {
+    logs-1 = {
+      size = "2048"
+      lun  = "1"
+    }
+    logs-2 = {
+      size      = "2048"
+      lun       = "2"
+      disk_type = "StandardSSD_LRS"
+    }
+  }
+  ```
+  EOF
+  default     = {}
+  nullable    = false
+  type = map(object({
+    size      = optional(string, "2048")
+    lun       = string
+    disk_type = optional(string, "StandardSSD_LRS")
+  }))
+  validation { # size
+    condition     = alltrue([for _, v in var.logging_disks : parseint(v.size, 10) >= 40 && parseint(v.size, 10) <= 8192])
+    error_message = <<-EOF
+    The `size` property value must be between `40` (40 GB) and `8192` (8 TB).
+    EOF
+  }
+  validation { # lun
+    condition = alltrue([
+      for _, v in var.logging_disks : (parseint(v.lun, 10) >= 0 && parseint(v.lun, 10) <= 63) if v.lun != null
+    ])
+    error_message = <<-EOF
+    The `lun` property value must be a number between `0` and `63`.
+    EOF
+  }
+  validation { # disk_type
+    condition = alltrue([
+      for _, v in var.logging_disks : contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS", "UltraSSD_LRS"], v.disk_type)
+    ])
+    error_message = <<-EOF
+    The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS` or `UltraSSD_LRS`.
+    EOF
+  }
+}
+
 variable "autoscaling_configuration" {
   description = <<-EOF
   Autoscaling configuration common to all policies.
