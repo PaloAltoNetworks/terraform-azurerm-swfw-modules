@@ -505,8 +505,9 @@ Default value: `map[]`
 
 A map defining NAT Gateways.
 
-Please note that a NAT Gateway is a zonal resource, this means it's always placed in a zone (even when you do not specify one
-explicitly). Please refer to Microsoft documentation for notes on NAT Gateway's zonal resiliency.
+Zone resiliency of a NAT Gateway depends on its SKU. The default `StandardV2` SKU is zone-redundant, Azure deploys it across
+all Availability Zones in a region. The `Standard` SKU is a zonal resource, it is always placed in a single zone (even when
+you do not specify one explicitly). Please refer to Microsoft documentation for notes on NAT Gateway's zonal resiliency.
 For detailed documentation on each property refer to [module documentation](../../modules/natgw/README.md).
 
 Following properties are supported:
@@ -520,11 +521,14 @@ Following properties are supported:
                           created or sourced: the NAT Gateway will be assigned to a subnet created by the `vnet` module.
 - `resource_group_name` - (`string`, optional) name of a Resource Group hosting the NAT Gateway (newly created or the existing
                           one).
+- `sku_name`            - (`string`, optional) the SKU of a NAT Gateway, either `StandardV2` (zone-redundant) or
+                          `Standard` (zonal).
 - `zone`                - (`string`, optional) an Availability Zone in which the NAT Gateway will be placed, when skipped
-                          Azure will pick a zone.
-- `idle_timeout`        - (`number`, optional, defults to 4) connection IDLE timeout in minutes, for newly created resources.
+                          Azure will pick a zone. Supported by the `Standard` SKU only, it has to stay unset when `sku_name`
+                          is `StandardV2`.
+- `idle_timeout`        - (`number`, optional, defaults to 4) connection IDLE timeout in minutes, for newly created resources.
 - `public_ip`           - (`object`, optional) an object defining a public IP resource attached to the NAT Gateway.
-- `public_ip_prefix`    - (`object`, optional) an object defining a public IP prefix resource attached to the NAT Gatway.
+- `public_ip_prefix`    - (`object`, optional) an object defining a public IP prefix resource attached to the NAT Gateway.
 
 Example:
 ```
@@ -551,6 +555,7 @@ map(object({
     subnet_keys         = list(string)
     create_natgw        = optional(bool, true)
     resource_group_name = optional(string)
+    sku_name            = optional(string)
     zone                = optional(string)
     idle_timeout        = optional(number, 4)
     public_ip = optional(object({

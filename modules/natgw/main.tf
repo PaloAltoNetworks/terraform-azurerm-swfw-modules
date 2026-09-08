@@ -1,3 +1,7 @@
+locals {
+  pip_zones = var.sku_name == "StandardV2" ? ["1", "2", "3"] : (var.zone != null ? [var.zone] : null)
+}
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
   count = try(var.create_natgw && var.public_ip.create, false) ? 1 : 0
@@ -7,7 +11,7 @@ resource "azurerm_public_ip" "this" {
   location            = var.region
   allocation_method   = "Static"
   sku                 = "Standard"
-  zones               = var.zone != null ? [var.zone] : null
+  zones               = local.pip_zones
 
   tags = var.tags
 }
@@ -30,7 +34,7 @@ resource "azurerm_public_ip_prefix" "this" {
   ip_version          = "IPv4"
   prefix_length       = var.public_ip_prefix.length
   sku                 = "Standard"
-  zones               = var.zone != null ? [var.zone] : null
+  zones               = local.pip_zones
 
   tags = var.tags
 }
@@ -50,11 +54,22 @@ resource "azurerm_nat_gateway" "this" {
   name                    = var.name
   resource_group_name     = var.resource_group_name
   location                = var.region
-  sku_name                = "Standard"
+  sku_name                = var.sku_name
   idle_timeout_in_minutes = var.idle_timeout
-  zones                   = var.zone != null ? [var.zone] : null
+  zones                   = var.sku_name == "StandardV2" ? null : (var.zone != null ? [var.zone] : null)
 
   tags = var.tags
+
+  lifecycle {
+    precondition { # sku_name & zone
+      condition     = var.sku_name == "StandardV2" ? var.zone == null : true
+      error_message = <<-EOF
+      NAT Gateway Name: [${var.name}]
+      A NAT Gateway of the "StandardV2" SKU is zone-redundant, Azure deploys it across all Availability Zones itself.
+      The `zone` variable has to be `null`. Use the "Standard" SKU to deploy a zonal NAT Gateway instead.
+      EOF
+    }
+  }
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/nat_gateway

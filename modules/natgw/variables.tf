@@ -39,15 +39,43 @@ variable "create_natgw" {
   type        = bool
 }
 
+variable "sku_name" {
+  description = <<-EOF
+  The SKU of a NAT Gateway. Only for newly created resources.
+
+  Available values are `Standard` and `StandardV2`:
+
+  - `Standard`   - a zonal resource, it is always deployed in a single zone, either the one specified with the `zone` variable
+                   or one picked by Azure. Any Public IP and Public IP Prefix created by this module follows the same zone.
+  - `StandardV2` - a zone-redundant resource, Azure automatically deploys it across all Availability Zones in a region. The
+                   `zone` variable has to remain `null` and any Public IP and Public IP Prefix created by this module is
+                   zone-redundant as well.
+
+  For design considerations, limitation and examples of zone-resiliency architecture please refer to [Microsoft documentation](https://learn.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-availability-zones).
+  EOF
+  default     = "StandardV2"
+  nullable    = false
+  type        = string
+  validation {
+    condition     = contains(["Standard", "StandardV2"], var.sku_name)
+    error_message = <<-EOF
+    The `sku_name` variable should have value of either: \"Standard\" or \"StandardV2\".
+    EOF
+  }
+}
+
 variable "zone" {
   description = <<-EOF
   Controls whether the NAT Gateway will be bound to a specific zone or not. This is a string with the zone number or `null`. Only
   for newly created resources.
 
-  NAT Gateway is not zone-redundant. It is a zonal resource. It means that it's always deployed in a zone. It's up to the user to
-  decide if a zone will be specified during resource deployment or if Azure will take that decision for the user. Keep in mind
-  that regardless of the fact that NAT Gateway is placed in a specific zone it can serve traffic for resources in all zones. But
-  if that zone becomes unavailable, resources in other zones will lose internet connectivity.
+  This variable applies to the `Standard` SKU only, which is a zonal resource. It means that it's always deployed in a zone.
+  It's up to the user to decide if a zone will be specified during resource deployment or if Azure will take that decision for
+  the user. Keep in mind that regardless of the fact that NAT Gateway is placed in a specific zone it can serve traffic for
+  resources in all zones. But if that zone becomes unavailable, resources in other zones will lose internet connectivity.
+
+  A NAT Gateway of the `StandardV2` SKU is zone-redundant and is deployed by Azure across all Availability Zones in a region.
+  Therefore this variable has to remain `null` when `sku_name` is set to `StandardV2`.
 
   For design considerations, limitation and examples of zone-resiliency architecture please refer to [Microsoft documentation](https://learn.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-availability-zones).
   EOF
@@ -66,7 +94,7 @@ variable "idle_timeout" {
   default     = null
   type        = number
   validation {
-    condition     = (var.idle_timeout >= 1 && var.idle_timeout <= 120)
+    condition     = var.idle_timeout == null || (var.idle_timeout >= 1 && var.idle_timeout <= 120)
     error_message = <<-EOF
     The `idle_timeout` variable should be a number between 1 and 120.
     EOF

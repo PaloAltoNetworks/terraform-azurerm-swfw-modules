@@ -9,10 +9,15 @@ This module can be used to either create a new NAT Gateway or to connect
 an existing one with subnets deployed using (for example) the [VNET
 module](../vnet/README.md).
 
-NAT Gateway is not zone-redundant. It is a zonal resource. It means that it's always deployed in a zone. It's up to the user to
-decide if a zone will be specified during resource deployment or if Azure will take that decision for the user. Keep in mind
-that regardless of the fact that NAT Gateway is placed in a specific zone it can serve traffic for resources in all zones. But
-if that zone becomes unavailable, resources in other zones will lose internet connectivity.
+Zone resiliency depends on the SKU, controlled with the `sku_name` variable:
+
+- `StandardV2` (the module's default) is zone-redundant. Azure deploys it across all Availability Zones in a region on its own,
+  therefore the `zone` variable has to remain `null`. Any Public IP or Public IP Prefix created by this module is made
+  zone-redundant as well.
+- `Standard` is a zonal resource. It means that it's always deployed in a zone. It's up to the user to decide if a zone will be
+  specified during resource deployment or if Azure will take that decision for the user. Keep in mind that regardless of the
+  fact that NAT Gateway is placed in a specific zone it can serve traffic for resources in all zones. But if that zone becomes
+  unavailable, resources in other zones will lose internet connectivity.
 
 For design considerations, limitation and examples of zone-resiliency architecture please refer to
 [Microsoft documentation](https://learn.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-availability-zones).
@@ -20,34 +25,30 @@ For design considerations, limitation and examples of zone-resiliency architectu
 ## Usage
 
 To deploy this resource in it's minimum configuration following code
-snippet can be used (assuming that the VNET module is used to deploy VNET
-and Subnets):
+snippet can be used:
 
 ```hcl
 module "natgw" {
   source = "PaloAltoNetworks/swfw-modules/azurerm//modules/natgw"
 
-  name                = "NATGW_name"
+  name                = "natgw_name"
   resource_group_name = "resource_group_name"
-  location            = "region_name"
+  region              = "region_name"
   subnet_ids          = { "subnet_name" = "/subscription/xxxx/......." }
   idle_timeout        = 120
 }
 ```
-
-This will create a NAT Gateway in with a single Public IP in a zone chosen
-by Azure.
 
 ## Reference
 
 ### Requirements
 
 - `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 4.0
+- `azurerm`, version: ~> 4.67
 
 ### Providers
 
-- `azurerm`, version: ~> 4.0
+- `azurerm`, version: ~> 4.67
 
 
 
@@ -78,6 +79,7 @@ Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | A map of tags that will be assigned to resources created by this module.
 [`create_natgw`](#create_natgw) | `bool` | Triggers creation of a NAT Gateway when set to `true`.
+[`sku_name`](#sku_name) | `string` | The SKU of a NAT Gateway.
 [`zone`](#zone) | `string` | Controls whether the NAT Gateway will be bound to a specific zone or not.
 [`idle_timeout`](#idle_timeout) | `number` | Connection IDLE timeout in minutes (up to 120, defaults to Azure defaults).
 [`public_ip`](#public_ip) | `object` | A map defining a Public IP resource.
@@ -153,15 +155,39 @@ Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+#### sku_name
+
+The SKU of a NAT Gateway. Only for newly created resources.
+
+Available values are `Standard` and `StandardV2`:
+
+- `Standard`   - a zonal resource, it is always deployed in a single zone, either the one specified with the `zone` variable
+                 or one picked by Azure. Any Public IP and Public IP Prefix created by this module follows the same zone.
+- `StandardV2` - a zone-redundant resource, Azure automatically deploys it across all Availability Zones in a region. The
+                 `zone` variable has to remain `null` and any Public IP and Public IP Prefix created by this module is
+                 zone-redundant as well.
+
+For design considerations, limitation and examples of zone-resiliency architecture please refer to [Microsoft documentation](https://learn.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-availability-zones).
+
+
+Type: string
+
+Default value: `StandardV2`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
 #### zone
 
 Controls whether the NAT Gateway will be bound to a specific zone or not. This is a string with the zone number or `null`. Only
 for newly created resources.
 
-NAT Gateway is not zone-redundant. It is a zonal resource. It means that it's always deployed in a zone. It's up to the user to
-decide if a zone will be specified during resource deployment or if Azure will take that decision for the user. Keep in mind
-that regardless of the fact that NAT Gateway is placed in a specific zone it can serve traffic for resources in all zones. But
-if that zone becomes unavailable, resources in other zones will lose internet connectivity.
+This variable applies to the `Standard` SKU only, which is a zonal resource. It means that it's always deployed in a zone.
+It's up to the user to decide if a zone will be specified during resource deployment or if Azure will take that decision for
+the user. Keep in mind that regardless of the fact that NAT Gateway is placed in a specific zone it can serve traffic for
+resources in all zones. But if that zone becomes unavailable, resources in other zones will lose internet connectivity.
+
+A NAT Gateway of the `StandardV2` SKU is zone-redundant and is deployed by Azure across all Availability Zones in a region.
+Therefore this variable has to remain `null` when `sku_name` is set to `StandardV2`.
 
 For design considerations, limitation and examples of zone-resiliency architecture please refer to [Microsoft documentation](https://learn.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-availability-zones).
 

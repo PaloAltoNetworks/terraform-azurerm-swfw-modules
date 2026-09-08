@@ -128,6 +128,7 @@ module "natgw" {
   name                = each.value.create_natgw ? "${var.name_prefix}${each.value.name}" : each.value.name
   resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
   region              = var.region
+  sku_name            = each.value.sku_name
   zone                = try(each.value.zone, null)
   idle_timeout        = each.value.idle_timeout
   subnet_ids          = { for v in each.value.subnet_keys : v => module.vnet[each.value.vnet_key].subnet_ids[v] }
