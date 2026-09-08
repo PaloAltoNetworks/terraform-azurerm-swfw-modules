@@ -349,6 +349,17 @@ variable "interfaces" {
     The `pip_idle_timeout_in_minutes` value must be a number between 4 and 32.
     EOF
   }
+  validation { # pip_prefix_name & pip_prefix_id
+    condition = alltrue(flatten([
+      for interface in var.interfaces : [
+        for ip_config_name, ip_config in coalesce(interface.ip_configurations, {}) :
+        !(ip_config.pip_prefix_name != null && ip_config.pip_prefix_id != null)
+      ]
+    ]))
+    error_message = <<-EOF
+    The `pip_prefix_name` and `pip_prefix_id` properties are mutually exclusive, specify only one of them.
+    EOF
+  }
 }
 
 variable "autoscaling_configuration" {
