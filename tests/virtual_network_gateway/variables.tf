@@ -237,7 +237,7 @@ variable "virtual_network_gateways" {
         peer_weight         = optional(number)
       }))
       gateway_address = optional(string)
-      address_space   = optional(list(string), [])
+      address_space   = optional(set(string), [])
       connection = object({
         name = string
         custom_bgp_addresses = optional(object({
