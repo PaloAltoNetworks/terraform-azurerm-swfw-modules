@@ -790,7 +790,7 @@ map(object({
         name                     = string
         protocol                 = string
         allocated_outbound_ports = optional(number)
-        enable_tcp_reset         = optional(bool)
+        tcp_reset_enabled        = optional(bool)
         idle_timeout_in_minutes  = optional(number)
       })), {})
     })), {})
@@ -1664,7 +1664,7 @@ map(object({
           name                     = string
           protocol                 = string
           allocated_outbound_ports = optional(number)
-          enable_tcp_reset         = optional(bool)
+          tcp_reset_enabled        = optional(bool)
           idle_timeout_in_minutes  = optional(number)
         })), {})
       })), {})

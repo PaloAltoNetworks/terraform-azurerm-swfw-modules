@@ -466,7 +466,7 @@ variable "load_balancers" {
         name                     = string
         protocol                 = string
         allocated_outbound_ports = optional(number)
-        enable_tcp_reset         = optional(bool)
+        tcp_reset_enabled        = optional(bool)
         idle_timeout_in_minutes  = optional(number)
       })), {})
     })), {})
@@ -1354,7 +1354,7 @@ variable "test_infrastructure" {
           name                     = string
           protocol                 = string
           allocated_outbound_ports = optional(number)
-          enable_tcp_reset         = optional(bool)
+          tcp_reset_enabled        = optional(bool)
           idle_timeout_in_minutes  = optional(number)
         })), {})
       })), {})
