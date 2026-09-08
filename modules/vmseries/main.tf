@@ -107,6 +107,13 @@ resource "azurerm_linux_virtual_machine" "this" {
     disk_encryption_set_id = var.virtual_machine.disk_encryption_set_id
   }
 
+  dynamic "additional_capabilities" {
+    for_each = anytrue([for _, v in var.logging_disks : v.disk_type == "UltraSSD_LRS"]) ? [1] : []
+    content {
+      ultra_ssd_enabled = true
+    }
+  }
+
   source_image_id = var.image.custom_id
 
   dynamic "source_image_reference" {
@@ -195,5 +202,8 @@ resource "azurerm_virtual_machine_data_disk_attachment" "this" {
   managed_disk_id    = each.value.id
   virtual_machine_id = azurerm_linux_virtual_machine.this.id
   lun                = var.logging_disks[each.key].lun
-  caching            = tonumber(var.logging_disks[each.key].size) > 4095 ? "None" : "ReadWrite"
+  caching = (
+    var.logging_disks[each.key].disk_type == "UltraSSD_LRS" ||
+    tonumber(var.logging_disks[each.key].size) > 4095 ? "None" : "ReadWrite"
+  )
 }
