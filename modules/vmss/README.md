@@ -311,23 +311,25 @@ Example:
 ```hcl
 [
   {
-    name       = "management"
-    subnet_id  = azurerm_subnet.my_mgmt_subnet.id
+    name      = "management"
+    subnet_id = azurerm_subnet.my_mgmt_subnet.id
     ip_configurations = {
-        primary-ip = {
-          name             = "primary-ip"
-          primary          = true
-          create_public_ip = true
+      primary-ip = {
+        name             = "primary-ip"
+        primary          = true
+        create_public_ip = true
+      }
     }
   },
   {
     name      = "private"
     subnet_id = azurerm_subnet.my_priv_subnet.id
     ip_configurations = {
-        primary-ip = {
-          name             = "primary-ip"
-          primary          = true
-          create_public_ip = false
+      primary-ip = {
+        name             = "primary-ip"
+        primary          = true
+        create_public_ip = false
+      }
     }
   },
   {
@@ -335,10 +337,11 @@ Example:
     subnet_id           = azurerm_subnet.my_pub_subnet.id
     lb_backend_pool_ids = [azurerm_lb_backend_address_pool.lb_backend.id]
     ip_configurations = {
-        primary-ip = {
-          name             = "primary-ip"
-          primary          = true
-          create_public_ip = true
+      primary-ip = {
+        name             = "primary-ip"
+        primary          = true
+        create_public_ip = true
+      }
     }
   }
 ]
