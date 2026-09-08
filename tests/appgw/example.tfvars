@@ -214,7 +214,7 @@ appgws = {
     capacity = {
       static = 4
     }
-    enable_http2 = true
+    http2_enabled = true
     waf = {
       prevention_mode  = true
       rule_set_type    = "OWASP"

@@ -131,7 +131,7 @@ variable "capacity" {
   }
 }
 
-variable "enable_http2" {
+variable "http2_enabled" {
   description = "Enable HTTP2 on the Application Gateway."
   default     = false
   type        = bool

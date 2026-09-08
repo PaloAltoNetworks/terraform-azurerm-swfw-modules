@@ -763,7 +763,7 @@ map(object({
         max = number
       }))
     }))
-    enable_http2 = optional(bool)
+    http2_enabled = optional(bool)
     waf = optional(object({
       prevention_mode  = bool
       rule_set_type    = optional(string)
