@@ -10,7 +10,7 @@ resource "azurerm_public_ip" "this" {
   resource_group_name = var.resource_group_name
   location            = var.region
   allocation_method   = "Static"
-  sku                 = "Standard"
+  sku                 = var.sku_name
   zones               = local.pip_zones
 
   tags = var.tags
@@ -33,7 +33,7 @@ resource "azurerm_public_ip_prefix" "this" {
   location            = var.region
   ip_version          = "IPv4"
   prefix_length       = var.public_ip_prefix.length
-  sku                 = "Standard"
+  sku                 = var.sku_name
   zones               = local.pip_zones
 
   tags = var.tags
