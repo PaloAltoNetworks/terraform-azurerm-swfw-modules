@@ -118,6 +118,30 @@ cloudngfws = {
 }
 ```
 
+Additionally, regardless of the `management_mode` and `attachment_type` combination used, the DNS Proxy feature can be enabled by
+setting the `dns_settings` property. The feature is disabled by default. When enabled, either the Azure DNS servers or a custom
+list of DNS servers can be used - these two options are mutually exclusive.
+
+```hcl
+cloudngfws = {
+  "cloudngfw" = {
+    name                 = "cloudngfw"
+    attachment_type      = "vnet"
+    management_mode      = "scm"
+    virtual_network_key  = "cloudngfw-vnet"
+    trusted_subnet_key   = "trusted"
+    untrusted_subnet_key = "untrusted"
+    cloudngfw_config = {
+      strata_cloud_manager_tenant_name = "" # TODO: Put SCM tenant name
+      dns_settings = {
+        use_azure_dns = true
+        # dns_servers = ["8.8.8.8", "8.8.4.4"] # use instead of `use_azure_dns` to configure custom DNS servers
+      }
+    }
+  }
+}
+```
+
 ## Reference
 
 ### Requirements
@@ -250,6 +274,11 @@ List of available properties:
 - `trusted_address_ranges`          - (`list`, optional) a list of public IP address ranges that will be treated as internal
                                       traffic by Cloud NGFW in addition to RFC 1918 private subnets. Each list entry has to be
                                       in a CIDR format.
+- `dns_settings`                    - (`object`, optional, defaults to `null`) DNS Proxy configuration. When omitted, the DNS
+                                      Proxy feature is disabled. Exactly one of the properties below has to be specified:
+  - `use_azure_dns` - (`bool`, optional) when set to `true`, the Azure DNS servers are used. Conflicts with `dns_servers`.
+  - `dns_servers`   - (`list`, optional) a list of custom DNS servers to use. Each list entry has to be a valid IPv4 address. 
+                      Conflicts with `use_azure_dns`.
 - `destination_nats`                - (`map`, optional) defines one or more destination NAT configurations.
                                       Each object supports the following properties:
   - `destination_nat_name`          - (`string`, required) the name of the Destination NAT. Must be unique within this map.
@@ -279,6 +308,10 @@ object({
     public_ip_ids                    = optional(map(string))
     egress_nat_ip_ids                = optional(map(string))
     trusted_address_ranges           = optional(list(string))
+    dns_settings = optional(object({
+      use_azure_dns = optional(bool)
+      dns_servers   = optional(list(string))
+    }))
     destination_nats = optional(map(object({
       destination_nat_name          = string
       destination_nat_protocol      = string

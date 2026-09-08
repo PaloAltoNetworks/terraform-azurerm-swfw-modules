@@ -117,6 +117,11 @@ variable "cloudngfw_config" {
   - `trusted_address_ranges`          - (`list`, optional) a list of public IP address ranges that will be treated as internal
                                         traffic by Cloud NGFW in addition to RFC 1918 private subnets. Each list entry has to be
                                         in a CIDR format.
+  - `dns_settings`                    - (`object`, optional, defaults to `null`) DNS Proxy configuration. When omitted, the DNS
+                                        Proxy feature is disabled. Exactly one of the properties below has to be specified:
+    - `use_azure_dns` - (`bool`, optional) when set to `true`, the Azure DNS servers are used. Conflicts with `dns_servers`.
+    - `dns_servers`   - (`list`, optional) a list of custom DNS servers to use. Each list entry has to be a valid IPv4 address. 
+                        Conflicts with `use_azure_dns`.
   - `destination_nats`                - (`map`, optional) defines one or more destination NAT configurations.
                                         Each object supports the following properties:
     - `destination_nat_name`          - (`string`, required) the name of the Destination NAT. Must be unique within this map.
@@ -142,6 +147,10 @@ variable "cloudngfw_config" {
     public_ip_ids                    = optional(map(string))
     egress_nat_ip_ids                = optional(map(string))
     trusted_address_ranges           = optional(list(string))
+    dns_settings = optional(object({
+      use_azure_dns = optional(bool)
+      dns_servers   = optional(list(string))
+    }))
     destination_nats = optional(map(object({
       destination_nat_name          = string
       destination_nat_protocol      = string
@@ -158,6 +167,25 @@ variable "cloudngfw_config" {
     ])
     error_message = <<-EOF
     All items in `trusted_address_ranges` should be in CIDR notation.
+    EOF
+  }
+  validation { # dns_settings
+    condition = var.cloudngfw_config.dns_settings == null ? true : (
+      (coalesce(var.cloudngfw_config.dns_settings.use_azure_dns, false) ? 1 : 0)
+      + (length(coalesce(var.cloudngfw_config.dns_settings.dns_servers, [])) > 0 ? 1 : 0)
+      == 1
+    )
+    error_message = <<-EOF
+    Exactly one of `dns_settings.use_azure_dns` (set to `true`) or a non-empty `dns_settings.dns_servers` has to be specified.
+    EOF
+  }
+  validation { # dns_servers
+    condition = alltrue([
+      for v in try(coalesce(var.cloudngfw_config.dns_settings.dns_servers, []), []) :
+      can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", v))
+    ])
+    error_message = <<-EOF
+    All items in `dns_settings.dns_servers` should be valid IPv4 addresses.
     EOF
   }
   validation { # destination_nat_name

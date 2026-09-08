@@ -48,6 +48,14 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_network_local_rules
     }
   }
 
+  dynamic "dns_settings" {
+    for_each = var.cloudngfw_config.dns_settings != null ? [1] : []
+    content {
+      use_azure_dns = var.cloudngfw_config.dns_settings.use_azure_dns
+      dns_servers   = var.cloudngfw_config.dns_settings.dns_servers
+    }
+  }
+
   dynamic "destination_nat" {
     for_each = var.cloudngfw_config.destination_nats
     content {
@@ -98,6 +106,14 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_network_panorama" "
     }
   }
 
+  dynamic "dns_settings" {
+    for_each = var.cloudngfw_config.dns_settings != null ? [1] : []
+    content {
+      use_azure_dns = var.cloudngfw_config.dns_settings.use_azure_dns
+      dns_servers   = var.cloudngfw_config.dns_settings.dns_servers
+    }
+  }
+
   dynamic "destination_nat" {
     for_each = var.cloudngfw_config.destination_nats
     content {
@@ -145,6 +161,14 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_network_strata_clou
       virtual_network_id  = var.virtual_network_id
       untrusted_subnet_id = var.untrusted_subnet_id
       trusted_subnet_id   = var.trusted_subnet_id
+    }
+  }
+
+  dynamic "dns_settings" {
+    for_each = var.cloudngfw_config.dns_settings != null ? [1] : []
+    content {
+      use_azure_dns = var.cloudngfw_config.dns_settings.use_azure_dns
+      dns_servers   = var.cloudngfw_config.dns_settings.dns_servers
     }
   }
 
@@ -202,6 +226,14 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_hub_local_rulestack
     network_virtual_appliance_id = azurerm_palo_alto_virtual_network_appliance.this[0].id
   }
 
+  dynamic "dns_settings" {
+    for_each = var.cloudngfw_config.dns_settings != null ? [1] : []
+    content {
+      use_azure_dns = var.cloudngfw_config.dns_settings.use_azure_dns
+      dns_servers   = var.cloudngfw_config.dns_settings.dns_servers
+    }
+  }
+
   dynamic "destination_nat" {
     for_each = var.cloudngfw_config.destination_nats
     content {
@@ -249,6 +281,14 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_hub_panorama" "this
     network_virtual_appliance_id = azurerm_palo_alto_virtual_network_appliance.this[0].id
   }
 
+  dynamic "dns_settings" {
+    for_each = var.cloudngfw_config.dns_settings != null ? [1] : []
+    content {
+      use_azure_dns = var.cloudngfw_config.dns_settings.use_azure_dns
+      dns_servers   = var.cloudngfw_config.dns_settings.dns_servers
+    }
+  }
+
   dynamic "destination_nat" {
     for_each = var.cloudngfw_config.destination_nats
     content {
@@ -294,6 +334,14 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_hub_strata_cloud_ma
     trusted_address_ranges       = var.cloudngfw_config.trusted_address_ranges
     virtual_hub_id               = var.virtual_hub_id
     network_virtual_appliance_id = azurerm_palo_alto_virtual_network_appliance.this[0].id
+  }
+
+  dynamic "dns_settings" {
+    for_each = var.cloudngfw_config.dns_settings != null ? [1] : []
+    content {
+      use_azure_dns = var.cloudngfw_config.dns_settings.use_azure_dns
+      dns_servers   = var.cloudngfw_config.dns_settings.dns_servers
+    }
   }
 
   dynamic "destination_nat" {
