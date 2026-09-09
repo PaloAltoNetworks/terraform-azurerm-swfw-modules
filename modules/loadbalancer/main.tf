@@ -180,7 +180,7 @@ resource "azurerm_lb_outbound_rule" "this" {
   backend_address_pool_id = azurerm_lb_backend_address_pool.this.id
 
   protocol                 = each.value.rule.protocol
-  tcp_reset_enabled        = each.value.rule.protocol != "Udp" ? each.value.rule.enable_tcp_reset : null
+  tcp_reset_enabled        = each.value.rule.protocol != "Udp" ? each.value.rule.tcp_reset_enabled : null
   allocated_outbound_ports = each.value.rule.allocated_outbound_ports
   idle_timeout_in_minutes  = each.value.rule.protocol != "Udp" ? each.value.rule.idle_timeout_in_minutes : null
 

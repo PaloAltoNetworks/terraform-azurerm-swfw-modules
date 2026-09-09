@@ -44,11 +44,11 @@ module "natgw" {
 ### Requirements
 
 - `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 4.67
+- `azurerm`, version: ~> 5.0
 
 ### Providers
 
-- `azurerm`, version: ~> 4.67
+- `azurerm`, version: ~> 5.0
 
 
 

@@ -147,11 +147,11 @@ cloudngfws = {
 ### Requirements
 
 - `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 4.19
+- `azurerm`, version: ~> 5.0
 
 ### Providers
 
-- `azurerm`, version: ~> 4.19
+- `azurerm`, version: ~> 5.0
 
 
 
@@ -249,10 +249,9 @@ Map of objects describing Palo Alto Next Generation Firewalls (cloudngfw).
 
 List of available properties:
 
-- `plan_id`                         - (`string`, optional, defaults to `panw-cngfw-payg`) the former plan_id
-                                      `panw-cloud-ngfw-payg` is defined as stop sell, but has been set as the provider default
-                                      to not break any existing resources that were originally provisioned with it. Users need
-                                      to explicitly set the `plan_id` to `panw-cngfw-payg` when creating new resources.
+- `plan_id`                         - (`string`, optional, defaults to `panw-cngfw-payg`) the former provider-default plan_id
+                                      `panw-cloud-ngfw-payg` is defined as stop sell, users need to explicitly set it for 
+                                      backwards compatibility. New plan_id `panw-cngfw-payg` is the default from provider v5.
 - `marketplace_offer_id`            - (`string`, optional, defaults to `pan_swfw_cloud_ngfw`) the marketplace offer ID,
                                       changing this forces a new resource to be created.
 - `rulestack_id`                    - (`string`, optional) the ID of the Local Rulestack used to configure this Firewall

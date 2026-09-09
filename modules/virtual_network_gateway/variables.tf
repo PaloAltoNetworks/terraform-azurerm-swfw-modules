@@ -363,8 +363,8 @@ variable "local_network_gateways" {
     - `bgp_peering_address` - (`string`, required) the BGP peering address and BGP identifier of this BGP speaker.
     - `peer_weight`         - (`number`, optional, defaults to `null`) the weight added to routes learned from this BGP speaker.
   - `gateway_address`      - (`string`, optional, defaults to `null`) the gateway IP address to connect with.
-  - `address_space`        - (`list`, optional, defaults to `[]`) the list of string CIDRs representing the address spaces
-                             the gateway exposes.
+  - `address_space`        - (`set`, optional, defaults to `[]`) the list of string CIDRs representing the address spaces the
+                             gateway exposes.
   - `custom_bgp_addresses` - (`list`, optional, defaults to `[]`) Border Gateway Protocol custom IP Addresses,
                              which can only be used on IPSec / active-active connections. Object contains 2 attributes:
     - `primary_key`   - (`string`, required) single IP address that is part of the azurerm_virtual_network_gateway
@@ -401,7 +401,7 @@ variable "local_network_gateways" {
       bgp_peering_address = string
       peer_weight         = optional(number)
     }))
-    address_space   = optional(list(string), [])
+    address_space   = optional(set(string), [])
     gateway_address = optional(string)
     connection = object({
       name = string

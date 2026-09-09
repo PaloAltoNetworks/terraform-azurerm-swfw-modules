@@ -23,7 +23,7 @@ module "appgw" {
   managed_identities = each.value.managed_identities
   capacity           = each.value.capacity
   waf                = each.value.waf
-  enable_http2       = each.value.enable_http2
+  http2_enabled      = each.value.http2_enabled
   zones              = each.value.zones
 
   frontend_ip_configuration_name = each.value.frontend_ip_configuration_name
@@ -815,11 +815,11 @@ appgws = {
 ### Requirements
 
 - `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 4.62
+- `azurerm`, version: ~> 5.0
 
 ### Providers
 
-- `azurerm`, version: ~> 4.62
+- `azurerm`, version: ~> 5.0
 
 
 
@@ -850,7 +850,7 @@ Name | Type | Description
 [`zones`](#zones) | `list` | A list of zones the Application Gateway should be available in.
 [`domain_name_label`](#domain_name_label) | `string` | A label for the Domain Name.
 [`capacity`](#capacity) | `object` | A map defining whether static or autoscale configuration is used.
-[`enable_http2`](#enable_http2) | `bool` | Enable HTTP2 on the Application Gateway.
+[`http2_enabled`](#http2_enabled) | `bool` | Enable HTTP2 on the Application Gateway.
 [`waf`](#waf) | `object` | A map defining only the SKU and providing basic WAF (Web Application Firewall) configuration for Application Gateway.
 [`managed_identities`](#managed_identities) | `list` | A list of existing User-Assigned Managed Identities.
 [`global_ssl_policy`](#global_ssl_policy) | `object` | A map defining global SSL settings.
@@ -1096,7 +1096,7 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### enable_http2
+#### http2_enabled
 
 Enable HTTP2 on the Application Gateway.
 

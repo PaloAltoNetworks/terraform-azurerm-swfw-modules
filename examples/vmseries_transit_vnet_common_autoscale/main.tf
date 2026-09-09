@@ -219,7 +219,7 @@ module "appgw" {
   )
   domain_name_label              = each.value.domain_name_label
   capacity                       = each.value.capacity
-  enable_http2                   = each.value.enable_http2
+  http2_enabled                  = each.value.http2_enabled
   waf                            = each.value.waf
   managed_identities             = each.value.managed_identities
   global_ssl_policy              = each.value.global_ssl_policy

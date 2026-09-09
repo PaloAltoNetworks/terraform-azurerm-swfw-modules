@@ -125,9 +125,9 @@ variable "storage_network_security" {
     allowed_subnet_ids = optional(list(string), [])
   })
   validation { # min_tls_version
-    condition     = contains(["TLS1_0", "TLS1_1", "TLS1_2"], var.storage_network_security.min_tls_version)
+    condition     = contains(["TLS1_2"], var.storage_network_security.min_tls_version)
     error_message = <<-EOF
-    The `min_tls_version` property can be one of: \"TLS1_0\", \"TLS1_1\", \"TLS1_2\".
+    The `min_tls_version` property can be one of: \"TLS1_2\".
     EOF
   }
 }

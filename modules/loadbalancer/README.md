@@ -89,11 +89,11 @@ module "lbe" {
 ### Requirements
 
 - `terraform`, version: >= 1.5, < 2.0
-- `azurerm`, version: ~> 4.42
+- `azurerm`, version: ~> 5.0
 
 ### Providers
 
-- `azurerm`, version: ~> 4.42
+- `azurerm`, version: ~> 5.0
 
 
 
@@ -245,7 +245,7 @@ switches the outgoing traffic route for **ALL** `in_rules`.
                                 when skipped provider defaults will be used (`1024`),
                                 when set to `0` port allocation will be set to default number (Azure defaults);
                                 maximum value is `64000`.
-- `enable_tcp_reset`          - (`bool`, optional, defaults to Azure defaults) ignored when `protocol` is set to `Udp`.
+- `tcp_reset_enabled`         - (`bool`, optional, defaults to Azure defaults) ignored when `protocol` is set to `Udp`.
 - `idle_timeout_in_minutes`   - (`number`, optional, defaults to Azure defaults) TCP connection timeout in minutes (between 4 
                                 and 120) in case the connection is idle, ignored when `protocol` is set to `Udp`.
 
@@ -298,7 +298,7 @@ frontend_ips = {
     "outbound_tcp" = {
       protocol                 = "Tcp"
       allocated_outbound_ports = 2048
-      enable_tcp_reset         = true
+      tcp_reset_enabled         = true
       idle_timeout_in_minutes  = 10
     }
   }
@@ -336,7 +336,7 @@ map(object({
       name                     = string
       protocol                 = string
       allocated_outbound_ports = optional(number)
-      enable_tcp_reset         = optional(bool)
+      tcp_reset_enabled        = optional(bool)
       idle_timeout_in_minutes  = optional(number)
     })), {})
   }))

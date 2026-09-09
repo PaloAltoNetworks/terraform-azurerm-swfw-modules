@@ -114,10 +114,10 @@ resource "azurerm_orchestrated_virtual_machine_scale_set" "this" {
     iterator = nic
 
     content {
-      name                          = nic.value.name
-      primary                       = nic.key == 0 ? true : false
-      enable_ip_forwarding          = nic.key == 0 ? false : true
-      enable_accelerated_networking = nic.key == 0 ? false : var.virtual_machine_scale_set.accelerated_networking
+      name                           = nic.value.name
+      primary                        = nic.key == 0 ? true : false
+      ip_forwarding_enabled          = nic.key == 0 ? false : true
+      accelerated_networking_enabled = nic.key == 0 ? false : var.virtual_machine_scale_set.accelerated_networking
 
       dynamic "ip_configuration" {
         for_each = nic.value.ip_configurations
@@ -260,10 +260,10 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     iterator = nic
 
     content {
-      name                          = nic.value.name
-      primary                       = nic.key == 0 ? true : false
-      enable_ip_forwarding          = nic.key == 0 ? false : true
-      enable_accelerated_networking = nic.key == 0 ? false : var.virtual_machine_scale_set.accelerated_networking
+      name                           = nic.value.name
+      primary                        = nic.key == 0 ? true : false
+      ip_forwarding_enabled          = nic.key == 0 ? false : true
+      accelerated_networking_enabled = nic.key == 0 ? false : var.virtual_machine_scale_set.accelerated_networking
 
       dynamic "ip_configuration" {
         for_each = nic.value.ip_configurations
