@@ -147,6 +147,14 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_network_strata_clou
   marketplace_offer_id             = var.cloudngfw_config.marketplace_offer_id
   strata_cloud_manager_tenant_name = var.cloudngfw_config.strata_cloud_manager_tenant_name
 
+  dynamic "identity" {
+    for_each = var.cloudngfw_config.identity_ids != null ? [1] : []
+    content {
+      type         = "UserAssigned"
+      identity_ids = var.cloudngfw_config.identity_ids
+    }
+  }
+
   network_profile {
     public_ip_address_ids = coalesce(
       try(values(var.cloudngfw_config.public_ip_ids), null),
@@ -321,6 +329,14 @@ resource "azurerm_palo_alto_next_generation_firewall_virtual_hub_strata_cloud_ma
   plan_id                          = var.cloudngfw_config.plan_id
   marketplace_offer_id             = var.cloudngfw_config.marketplace_offer_id
   strata_cloud_manager_tenant_name = var.cloudngfw_config.strata_cloud_manager_tenant_name
+
+  dynamic "identity" {
+    for_each = var.cloudngfw_config.identity_ids != null ? [1] : []
+    content {
+      type         = "UserAssigned"
+      identity_ids = var.cloudngfw_config.identity_ids
+    }
+  }
 
   network_profile {
     public_ip_address_ids = coalesce(

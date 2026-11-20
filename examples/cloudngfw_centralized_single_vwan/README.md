@@ -305,6 +305,9 @@ Each cloudngfw entry in the map supports the following attributes:
                                          server. This field is required when `management_mode` is set to `panorama`.
   - `strata_cloud_manager_tenant_name` - (`string`, optional) the Strata Cloud Manager tenant name used to manage the policy
                                          for this firewall. This field is required when `management_mode` is set to `scm`.
+  - `identity_ids`                     - (`list`, optional) a list of User Assigned Managed Identity IDs to be assigned to this
+                                         firewall. When specified, an identity block of type `UserAssigned` is created.
+                                         Supported only when `management_mode` is set to `scm`.
   - `create_public_ip`                 - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or
                                          sourced. This field is ignored when the variable `public_ip_keys` is used.
   - `public_ip_name`                   - (`string`, optional) the name of the Public IP resource. This field is required unless
@@ -360,6 +363,7 @@ map(object({
       rulestack_id                     = optional(string)
       panorama_base64_config           = optional(string)
       strata_cloud_manager_tenant_name = optional(string)
+      identity_ids                     = optional(list(string))
       create_public_ip                 = optional(bool, true)
       public_ip_name                   = optional(string)
       public_ip_resource_group_name    = optional(string)

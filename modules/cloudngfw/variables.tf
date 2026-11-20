@@ -92,37 +92,40 @@ variable "cloudngfw_config" {
 
   List of available properties:
 
-  - `plan_id`                         - (`string`, optional, defaults to `panw-cngfw-payg`) the former provider-default plan_id
-                                        `panw-cloud-ngfw-payg` is defined as stop sell, users need to explicitly set it for 
-                                        backwards compatibility. New plan_id `panw-cngfw-payg` is the default from provider v5.
-  - `marketplace_offer_id`            - (`string`, optional, defaults to `pan_swfw_cloud_ngfw`) the marketplace offer ID,
-                                        changing this forces a new resource to be created.
-  - `rulestack_id`                    - (`string`, optional) the ID of the Local Rulestack used to configure this Firewall
-                                        Resource. This field is required when `management_mode` is set to `rulestack`.
-  - `panorama_base64_config`          - (`string`, optional) the Base64-encoded configuration for connecting to Panorama server.
-                                        This field is required when `management_mode` is set to `panorama`.
+  - `plan_id`                          - (`string`, optional, defaults to `panw-cngfw-payg`) the former provider-default plan_id
+                                         `panw-cloud-ngfw-payg` is defined as stop sell, users need to explicitly set it for 
+                                         backwards compatibility. New plan_id `panw-cngfw-payg` is the default from provider v5.
+  - `marketplace_offer_id`             - (`string`, optional, defaults to `pan_swfw_cloud_ngfw`) the marketplace offer ID,
+                                         changing this forces a new resource to be created.
+  - `rulestack_id`                     - (`string`, optional) the ID of the Local Rulestack used to configure this Firewall
+                                         Resource. This field is required when `management_mode` is set to `rulestack`.
+  - `panorama_base64_config`           - (`string`, optional) the Base64-encoded configuration for connecting to Panorama server.
+                                         This field is required when `management_mode` is set to `panorama`.
   - `strata_cloud_manager_tenant_name` - (`string`, optional) the Strata Cloud Manager tenant name used to manage the policy
-                                        for this firewall. This field is required when `management_mode` is set to `scm`.
-  - `create_public_ip`                - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or 
-                                        sourced. This field is ignored when the variable `public_ip_ids` is used.
-  - `public_ip_name`                  - (`string`, optional) the name of the Public IP resource. This field is required unless 
-                                        the variable `public_ip_ids` is used.
-  - `public_ip_resource_group_name`   - (`string`, optional) the name of the Resource Group hosting the Public IP resource. 
-                                        This is used only for sourced resources.
-  - `public_ip_ids`                   - (`map`, optional) a map of IDs for public IP addresses. Each key represents a logical
-                                        identifier and the value is the resource ID of the public IP. 
-  - `egress_nat_ip_ids`               - (`map`, optional) a map of IDs for egress NAT public IP addresses. Each key represents
-                                        a logical identifier and the value is the resource ID of the public IP.
-  - `trusted_address_ranges`          - (`list`, optional) a list of public IP address ranges that will be treated as internal
-                                        traffic by Cloud NGFW in addition to RFC 1918 private subnets. Each list entry has to be
-                                        in a CIDR format.
-  - `dns_settings`                    - (`object`, optional, defaults to `null`) DNS Proxy configuration. When omitted, the DNS
-                                        Proxy feature is disabled. Exactly one of the properties below has to be specified:
+                                         for this firewall. This field is required when `management_mode` is set to `scm`.
+  - `identity_ids`                     - (`list`, optional) a list of User Assigned Managed Identity IDs to be assigned to this
+                                         firewall. When specified, an identity block of type `UserAssigned` is created. Supported
+                                         only when `management_mode` is set to `scm`.
+  - `create_public_ip`                 - (`bool`, optional, defaults to `true`) controls if the Public IP resource is created or 
+                                         sourced. This field is ignored when the variable `public_ip_ids` is used.
+  - `public_ip_name`                   - (`string`, optional) the name of the Public IP resource. This field is required unless 
+                                         the variable `public_ip_ids` is used.
+  - `public_ip_resource_group_name`    - (`string`, optional) the name of the Resource Group hosting the Public IP resource. 
+                                         This is used only for sourced resources.
+  - `public_ip_ids`                    - (`map`, optional) a map of IDs for public IP addresses. Each key represents a logical
+                                         identifier and the value is the resource ID of the public IP. 
+  - `egress_nat_ip_ids`                - (`map`, optional) a map of IDs for egress NAT public IP addresses. Each key represents
+                                         a logical identifier and the value is the resource ID of the public IP.
+  - `trusted_address_ranges`           - (`list`, optional) a list of public IP address ranges that will be treated as internal
+                                         traffic by Cloud NGFW in addition to RFC 1918 private subnets. Each list entry has to be
+                                         in a CIDR format.
+  - `dns_settings`                     - (`object`, optional, defaults to `null`) DNS Proxy configuration. When omitted, the DNS
+                                         Proxy feature is disabled. Exactly one of the properties below has to be specified:
     - `use_azure_dns` - (`bool`, optional) when set to `true`, the Azure DNS servers are used. Conflicts with `dns_servers`.
     - `dns_servers`   - (`list`, optional) a list of custom DNS servers to use. Each list entry has to be a valid IPv4 address. 
                         Conflicts with `use_azure_dns`.
-  - `destination_nats`                - (`map`, optional) defines one or more destination NAT configurations.
-                                        Each object supports the following properties:
+  - `destination_nats`                 - (`map`, optional) defines one or more destination NAT configurations.
+                                         Each object supports the following properties:
     - `destination_nat_name`          - (`string`, required) the name of the Destination NAT. Must be unique within this map.
     - `destination_nat_protocol`      - (`string`, required) the protocol for this Destination NAT. Possible values are `TCP` or
                                         `UDP`.
@@ -140,6 +143,7 @@ variable "cloudngfw_config" {
     rulestack_id                     = optional(string)
     panorama_base64_config           = optional(string)
     strata_cloud_manager_tenant_name = optional(string)
+    identity_ids                     = optional(list(string))
     create_public_ip                 = optional(bool, true)
     public_ip_name                   = optional(string)
     public_ip_resource_group_name    = optional(string)
