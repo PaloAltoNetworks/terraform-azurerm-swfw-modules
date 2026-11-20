@@ -1,0 +1,43 @@
+examples/cloudngfw_centralized_single_vwan/README.md
+  s_b93e3085f3b722::t_c8d429ba6b73ba 308,366
+  s_b93e3085f3b722::t_04b84d5a86a06e 309-310
+examples/cloudngfw_centralized_vnet/variables.tf
+  s_b93e3085f3b722::t_04b84d5a86a06e 338-339
+  s_b93e3085f3b722::t_c8d429ba6b73ba 337,391
+examples/cloudngfw_distributed/variables.tf
+  s_b93e3085f3b722::t_c8d429ba6b73ba 337,391
+  s_b93e3085f3b722::t_04b84d5a86a06e 338-339
+modules/cloudngfw/variables.tf
+  s_b93e3085f3b722::t_fe669f1816a8c6 106-108
+  s_b93e3085f3b722::t_0c47f9ea1df9d8 146
+  s_b93e3085f3b722::t_589e915045b352 105
+  s_b93e3085f3b722::t_596bcdefd9527a 109-111
+examples/cloudngfw_distributed/README.md
+  s_b93e3085f3b722::t_04b84d5a86a06e 300-301
+  s_b93e3085f3b722::t_c8d429ba6b73ba 299,357
+examples/cloudngfw_centralized_single_vwan/variables.tf
+  s_b93e3085f3b722::t_c8d429ba6b73ba 337,391
+  s_b93e3085f3b722::t_04b84d5a86a06e 338-339
+examples/cloudngfw_centralized_vnet/README.md
+  s_b93e3085f3b722::t_c8d429ba6b73ba 308,366
+  s_b93e3085f3b722::t_04b84d5a86a06e 309-310
+modules/cloudngfw/main.tf
+  s_b93e3085f3b722::t_5a2f5946f85803 333-340
+  s_b93e3085f3b722::t_f45633cf7094d1 150-157
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "1326eaf5fd7b77ef7ccf29787d4040f0525a21c5",
+  "prompts": {},
+  "sessions": {
+    "s_b93e3085f3b722": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "613e5a77-f684-4197-9163-4a766779e26f",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Adrian Celebanski <acelebanski@paloaltonetworks.com>"
+    }
+  }
+}
